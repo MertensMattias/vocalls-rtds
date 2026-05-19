@@ -1,0 +1,27 @@
+{
+    "intake": {
+        "token": "STAGE_COMPLETE",
+        "reason": "stub: intake happy path",
+        "slice": {}
+    },
+    "scenarioDesign": {
+        "token": "STAGE_COMPLETE",
+        "reason": "stub: scenarioDesign happy path",
+        "slice": {}
+    },
+    "configBuild": {
+        "token": "STAGE_COMPLETE",
+        "reason": "stub: configBuild happy path",
+        "slice": {}
+    },
+    "validate": {
+        "token": "STAGE_COMPLETE",
+        "reason": "stub: validate happy path",
+        "findings": []
+    },
+    "translate": {
+        "token": "STAGE_COMPLETE",
+        "reason": "stub: translate happy path",
+        "slice": {}
+    }
+}

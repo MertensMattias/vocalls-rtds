@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "primaryLanguage": {
+      "type": "string",
+      "enum": [
+        "NL",
+        "FR",
+        "DE",
+        "EN"
+      ]
+    },
+    "scenarios": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "DETECT_INTENT",
+              "ROUTE",
+              "COLLECT",
+              "CONFIRM",
+              "OFFER",
+              "EXECUTE",
+              "INFORM",
+              "AUTHENTICATE"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "appliesTo": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^\\d+(\\.\\d+)*$"
+            }
+          },
+          "objective": {
+            "type": "string",
+            "minLength": 50
+          },
+          "facts": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "actionsUsed": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "name",
+          "appliesTo",
+          "objective",
+          "facts",
+          "actionsUsed"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "caseToScenario": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^\\d+(\\.\\d+)*$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*$"
+      }
+    },
+    "defaultScenario": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "knowledgeWiring": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^\\d+(\\.\\d+)*$"
+      },
+      "additionalProperties": {
+        "default": [],
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        }
+      }
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "primaryLanguage",
+    "scenarios",
+    "caseToScenario",
+    "defaultScenario",
+    "knowledgeWiring",
+    "rationale"
+  ],
+  "additionalProperties": false
+}
