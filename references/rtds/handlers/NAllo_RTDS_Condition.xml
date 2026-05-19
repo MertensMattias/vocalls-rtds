@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Handler name="NAllo_RTDS_Condition" description="" version="2.0" category="NAllo RTDS">
+  <Steps>
+    <Step id="0" isInitiator="True" type="Initiator" creatorModule="" creatorName="Subroutine" creatorVersion="" label="NAllo_RTDS_Condition" notes="" left="50" top="40" right="222" bottom="129" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter label="Interaction Id" name="" defaultValue="Interaction1" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="Telephony" typeName="CallId" typeLabel="Call ID" value="Interaction1" index="0"/>
+        <Parameter label="Attribute Names" name="" defaultValue="" defaultValueIsVariable="False" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttrNames" index="1"/>
+        <Parameter label="Attribute Values" name="" defaultValue="" defaultValueIsVariable="False" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttrValues" index="2"/>
+        <Parameter label="In Queue ?" name="" defaultValue="" defaultValueIsVariable="False" defaultValueIsBlankString="False" input="True" typeModule="" typeName="Boolean" typeLabel="Boolean" value="p_bInQueue" index="3"/>
+        <Parameter label="Next Step" name="" defaultValue="" defaultValueIsVariable="False" defaultValueIsBlankString="False" input="False" typeModule="" typeName="String" typeLabel="String" value="p_sNextStep" index="4"/>
+        <Parameter label="Result" name="" defaultValue="" defaultValueIsVariable="False" defaultValueIsBlankString="False" input="False" typeModule="" typeName="Boolean" typeLabel="Boolean" value="p_bResult" index="5"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Start" targetStepID="66"/>
+      </ExitPaths>
+    </Step>
+    <Step id="10" type="Tool" creatorModule="" creatorName="Selection" creatorVersion="" label="Selection" notes="" left="1440" top="630" right="1640" bottom="846" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="sOperator = &quot;gt&quot;" returnValue="-1" targetStepID="12"/>
+        <ExitPath label="sOperator = &quot;eq&quot;" returnValue="-1" targetStepID="15"/>
+        <ExitPath label="sOperator = &quot;ne&quot;" returnValue="-1" targetStepID="16"/>
+        <ExitPath label="sOperator = &quot;lt&quot;" returnValue="-1" targetStepID="17"/>
+        <ExitPath label="sOperator = &quot;ge&quot;" returnValue="-1" targetStepID="18"/>
+        <ExitPath label="sOperator = &quot;le&quot;" returnValue="-1" targetStepID="19"/>
+        <ExitPath label="Default" returnValue="0" targetStepID="29"/>
+      </ExitPaths>
+    </Step>
+    <Step id="12" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iResult &gt; iValue" notes="" left="1890" top="630" right="2030" bottom="719" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_bResult"/>
+        <Parameter name="RHS" value="iResult &gt; iValue"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="37"/>
+      </ExitPaths>
+    </Step>
+    <Step id="15" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iResult = iValue" notes="" left="1870" top="720" right="2000" bottom="809" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_bResult"/>
+        <Parameter name="RHS" value="iResult = iValue"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="37"/>
+      </ExitPaths>
+    </Step>
+    <Step id="16" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iResult &lt;&gt; iValue" notes="" left="1830" top="820" right="1974" bottom="909" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_bResult"/>
+        <Parameter name="RHS" value="iResult &lt;&gt; iValue"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="37"/>
+      </ExitPaths>
+    </Step>
+    <Step id="17" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iResult &lt; iValue" notes="" left="1800" top="910" right="1950" bottom="999" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_bResult"/>
+        <Parameter name="RHS" value="iResult &lt; iValue"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="37"/>
+      </ExitPaths>
+    </Step>
+    <Step id="18" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iResult &gt;= iValue" notes="" left="1760" top="1000" right="1910" bottom="1089" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_bResult"/>
+        <Parameter name="RHS" value="iResult &gt;= iValue"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="37"/>
+      </ExitPaths>
+    </Step>
+    <Step id="19" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iResult &lt;= iValue" notes="" left="1720" top="1100" right="1870" bottom="1189" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_bResult"/>
+        <Parameter name="RHS" value="iResult &lt;= iValue"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="37"/>
+      </ExitPaths>
+    </Step>
+    <Step id="24" type="Tool" creatorModule="DsLookup" creatorName="ReplaceAttributes" creatorVersion="" label="sValue" notes="" left="960" top="40" right="1150" bottom="141" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="InteractionID" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="Next" defaultValIsVar="False" defaultValIsBlankStr="False" label="Format String" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Value&quot;, 0))" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Result String" value="sValue" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="31"/>
+        <ExitPath label="Failure" returnValue="-2" targetStepID="31"/>
+      </ExitPaths>
+    </Step>
+    <Step id="29" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_bCriteriaMeet = false" notes="" left="1680" top="1200" right="1850" bottom="1289" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_bResult"/>
+        <Parameter name="RHS" value="false"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="37"/>
+      </ExitPaths>
+    </Step>
+    <Step id="31" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iValue" notes="" left="1200" top="40" right="1304" bottom="129" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iValue"/>
+        <Parameter name="RHS" value="toI(sValue)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="75"/>
+      </ExitPaths>
+    </Step>
+    <Step id="32" type="Tool" creatorModule="DsLookup" creatorName="ReplaceAttributes" creatorVersion="" label="sOperator" notes="" left="730" top="40" right="920" bottom="141" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="InteractionID" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="Next" defaultValIsVar="False" defaultValIsBlankStr="False" label="Format String" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Operator&quot;, 0))" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Result String" value="sOperator" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="24"/>
+        <ExitPath label="Failure" returnValue="-2" targetStepID="24"/>
+      </ExitPaths>
+    </Step>
+    <Step id="33" type="Tool" creatorModule="DsLookup" creatorName="ReplaceAttributes" creatorVersion="" label="sStatistic" notes="" left="500" top="40" right="691" bottom="141" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="InteractionID" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="Next" defaultValIsVar="False" defaultValIsBlankStr="False" label="Format String" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Statistic&quot;, 0))" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Result String" value="sStatistic" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="32"/>
+        <ExitPath label="Failure" returnValue="-2" targetStepID="32"/>
+      </ExitPaths>
+    </Step>
+    <Step id="37" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Log Result" notes="&quot;Check QueueCondition : &quot; &amp; sStatistic &amp; &quot;(&quot; &amp; sWorkgroup &amp; &quot; &quot; &amp; sOperator &amp; &quot; &quot; &amp; sValue &amp; &quot;). Result = &quot; &amp; Test(p_bResult, &quot;true&quot;, &quot;false&quot;) &amp; &quot; &quot; &amp; toS(iResult) &amp; &quot; &quot; &amp; sOperator &amp; &quot; &quot; &amp; toS(iValue)" left="2071" top="1200" right="2231" bottom="1289" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="&quot;Check QueueCondition : &quot; &amp; sStatistic &amp; &quot;(&quot; &amp; sWorkgroup &amp; &quot; &quot; &amp; sOperator &amp; &quot; &quot; &amp; sValue &amp; &quot;). Result = &quot; &amp; Test(p_bResult, &quot;true&quot;, &quot;false&quot;) &amp; &quot; &quot; &amp; toS(iResult) &amp; &quot; &quot; &amp; sOperator &amp; &quot; &quot; &amp; toS(iValue)" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="60" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="62"/>
+      </ExitPaths>
+    </Step>
+    <Step id="44" type="Tool" creatorModule="" creatorName="Selection" creatorVersion="" label="Selection" notes="" left="410" top="500" right="730" bottom="670" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="StrEqlNoCase(sStatistic, &quot;TimeInQueue&quot;)" returnValue="-1" targetStepID="45"/>
+        <ExitPath label="StrEqlNoCase(sStatistic, &quot;PositionInQueue&quot;)" returnValue="-1" targetStepID="47"/>
+        <ExitPath label="StrEqlNoCase(sStatistic, &quot;EstimatedWaitTime&quot;)" returnValue="-1" targetStepID="47"/>
+        <ExitPath label="StrEqlNoCase(sStatistic, &quot;CallsWaiting&quot;)" returnValue="-1" targetStepID="71"/>
+        <ExitPath label="Default" returnValue="0" targetStepID="53"/>
+      </ExitPaths>
+    </Step>
+    <Step id="45" type="Tool" creatorModule="DsLookup" creatorName="AcdInteractionDetails" creatorVersion="" label="Acd Interaction Details" notes="" left="830" top="410" right="990" bottom="511" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="False" defaultVal="AcdInteractionIsAcd" defaultValIsVar="True" defaultValIsBlankStr="False" label="Interaction Is Acd" value="bAcdInteractionIsAcd" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdInteractionPriority" defaultValIsVar="True" defaultValIsBlankStr="False" label="Acd Interaction Priority" value="iAcdInteractionPriority" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdInteractionTimeInQueue" defaultValIsVar="True" defaultValIsBlankStr="False" label="Interaction Time in Acd Queue" value="iAcdInteractionTimeInQueue" index="3"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdInteractionTimeTillTimout" defaultValIsVar="True" defaultValIsBlankStr="False" label="Interaction Time Until Acd Timeout" value="iAcdInteractionTimeTillTimout" index="4"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="False" defaultVal="AcdInteractionIsInQueueTimeout" defaultValIsVar="True" defaultValIsBlankStr="False" label="Acd Item is in Queue Timeout" value="bAcdInteractionIsInQueueTimeout" index="5"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="False" defaultVal="AcdInteractionIsOnHold" defaultValIsVar="True" defaultValIsBlankStr="False" label="Acd Interaction Is Currently On Hold" value="bAcdInteractionIsOnHold" index="6"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdinteractionTimeInSystem" defaultValIsVar="True" defaultValIsBlankStr="False" label="Acd Interaction Time In System" value="iAcdinteractionTimeInSystem" index="7"/>
+        <Parameter required="True" isCustom="False" typeName="DateTime" typeLabel="DateTime" moduleName="" isInput="False" defaultVal="AcdInteractionAnsweredTimeStamp" defaultValIsVar="True" defaultValIsBlankStr="False" label="Acd Interaction Answered Timestamp" value="dtAcdInteractionAnsweredTimeStamp" index="8"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="AcdInteractionSkills" defaultValIsVar="True" defaultValIsBlankStr="False" label="Acd Skills Required for Interaction" value="lsAcdInteractionSkills" index="9"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="AcdInteractionSkillWeights" defaultValIsVar="True" defaultValIsBlankStr="False" label="Acd Skill Weights for Interaction" value="lsAcdInteractionSkillWeights" index="10"/>
+        <Parameter required="True" isCustom="False" typeName="List of Integer" typeLabel="List of Integer" moduleName="" isInput="False" defaultVal="AcdInteractionProficiencies" defaultValIsVar="True" defaultValIsBlankStr="False" label="Acd Interaction Skill Proficiencies" value="lsAcdInteractionProficiencies" index="11"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="AcdInteractionCategories" defaultValIsVar="True" defaultValIsBlankStr="False" label="Acd Categories for Interaction" value="lsAcdInteractionCategories" index="12"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="AcdInteractionQueue" defaultValIsVar="True" defaultValIsBlankStr="False" label="Acd Queue That Interaction is Assigned to" value="sAcdQueueId" index="13"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="AcdInteractionAssignedAgent" defaultValIsVar="True" defaultValIsBlankStr="False" label="Acd Interaction Assigned Agent" value="sAcdInteractionAssignedAgent" index="14"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="48"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="48"/>
+      </ExitPaths>
+    </Step>
+    <Step id="47" type="Tool" creatorModule="DsLookup" creatorName="Acd Call Statistics" creatorVersion="" label="Acd Statistics (Interaction)" notes="" left="830" top="520" right="990" bottom="621" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="AcdQueueId" defaultValIsVar="True" defaultValIsBlankStr="False" label="Acd Queue containing this call" value="sAcdQueueId" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdStatEstWaitTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Estimated wait time (seconds)" value="iAcdStatEstWaitTime" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdStatPosition" defaultValIsVar="True" defaultValIsBlankStr="False" label="Estimated position in queue
+(1=First, 0=Assigned)" value="iAcdStatPosition" index="3"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdAgentsLoggedIn" defaultValIsVar="True" defaultValIsBlankStr="False" label="Number of Agents Logged In" value="iAcdAgentsLoggedIn" index="4"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdAgentsAvailable" defaultValIsVar="True" defaultValIsBlankStr="False" label="Number of Agents Available" value="iAcdAgentsAvailable" index="5"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdAgentsConnected" defaultValIsVar="True" defaultValIsBlankStr="False" label="Number of Agents On Calls" value="iAcdAgentsConnected" index="6"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdAgentsInFollowUp" defaultValIsVar="True" defaultValIsBlankStr="False" label="Number of Agents in Follow Up" value="iAcdAgentsInFollowUp" index="7"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdAgentMaxAvailableTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Longest Time an Agent has been Available" value="iAcdAgentMaxAvailableTime" index="8"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdCallWaitingCount" defaultValIsVar="True" defaultValIsBlankStr="False" label="Number of Calls Waiting Assignment" value="iAcdCallWaitingCount" index="9"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdCallConectedCount" defaultValIsVar="True" defaultValIsBlankStr="False" label="Number of Connected Calls" value="iAcdCallConectedCount" index="10"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdCallMaxWaitTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Longest Wait Time for a Call" value="iAcdCallMaxWaitTime" index="11"/>
+        <Parameter required="True" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="False" defaultVal="AcdAvgWaitTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Average Wait Time for Connected Calls" value="nAcdAvgWaitTime" index="12"/>
+        <Parameter required="True" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="False" defaultVal="AcdAvgAbandonTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Average Wait Time for Abandoned Calls" value="nAcdAvgAbandonTime" index="13"/>
+        <Parameter required="True" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="False" defaultVal="AcdAvgDuration" defaultValIsVar="True" defaultValIsBlankStr="False" label="Average Duration of Connected Calls" value="nAcdAvgDuration" index="14"/>
+        <Parameter required="True" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="False" defaultVal="AcdAvgFollowUpTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Average Follow Up Time for Connected Calls" value="nAcdAvgFollowUpTime" index="15"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdWaitDenominator" defaultValIsVar="True" defaultValIsBlankStr="False" label="Denominator for Average Wait Time" value="iAcdWaitDenominator" index="16"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdAbandonDenominator" defaultValIsVar="True" defaultValIsBlankStr="False" label="Denominator for Average Abandon Time" value="iAcdAbandonDenominator" index="17"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdDurationDenominator" defaultValIsVar="True" defaultValIsBlankStr="False" label="Denominator for Average Duration" value="iAcdDurationDenominator" index="18"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdFollowUpDenominator" defaultValIsVar="True" defaultValIsBlankStr="False" label="Denominator for Average Follow Up Time" value="iAcdFollowUpDenominator" index="19"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="48"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="48"/>
+      </ExitPaths>
+    </Step>
+    <Step id="48" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iResult" notes="Test(StrEqlNoCase(sStatistic, &quot;PositionInQueue&quot;), iAcdStatPosition, Test(StrEqlNoCase(sStatistic, &quot;EstimatedWaitTime&quot;), iAcdStatEstWaitTime, Test(StrEqlNoCase(sStatistic, &quot;TimeInQueue&quot;), iAcdInteractionTimeInQueue, 0)))" left="1080" top="630" right="1230" bottom="719" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iResult"/>
+        <Parameter name="RHS" value="Test(StrEqlNoCase(sStatistic, &quot;PositionInQueue&quot;), iAcdStatPosition, Test(StrEqlNoCase(sStatistic, &quot;EstimatedWaitTime&quot;), iAcdStatEstWaitTime, Test(StrEqlNoCase(sStatistic, &quot;TimeInQueue&quot;), iAcdInteractionTimeInQueue, 0)))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="10"/>
+      </ExitPaths>
+    </Step>
+    <Step id="49" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="p_bInQueue ?" notes="" left="240" top="500" right="361" bottom="601" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="p_bInQueue"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="44"/>
+        <ExitPath label="False" returnValue="0" targetStepID="51"/>
+      </ExitPaths>
+    </Step>
+    <Step id="50" type="Tool" creatorModule="" creatorName="Selection" creatorVersion="" label="Selection" notes="" left="522" top="951" right="862" bottom="1213" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="StrEqlNoCase(sStatistic, &quot;EstimatedWaittime&quot;)" returnValue="-1" targetStepID="56"/>
+        <ExitPath label="StrEqlNoCase(sStatistic, &quot;CallsWaiting&quot;)" returnValue="-1" targetStepID="57"/>
+        <ExitPath label="StrEqlNoCase(sStatistic, &quot;LongestWaittime&quot;)" returnValue="-1" targetStepID="58"/>
+        <ExitPath label="StrEqlNoCase(sStatistic, &quot;CallsConnected&quot;)" returnValue="-1" targetStepID="60"/>
+        <ExitPath label="StrEqlNoCase(sStatistic, &quot;AgentsLoggedIn&quot;)" returnValue="-1" targetStepID="59"/>
+        <ExitPath label="StrEqlNoCase(sStatistic, &quot;AgentsAvailable&quot;)" returnValue="-1" targetStepID="67"/>
+        <ExitPath label="StrEqlNoCase(sStatistic, &quot;AgentsInAcw&quot;)" returnValue="-1" targetStepID="69"/>
+        <ExitPath label="StrEqlNoCase(sStatistic, &quot;AgentsOnNonACD&quot;)" returnValue="-1" targetStepID="68"/>
+        <ExitPath label="Default" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="51" type="Tool" creatorModule="DsLookup" creatorName="Acd Queue Statistics" creatorVersion="" label="sWorkgroup" notes="" left="330" top="870" right="480" bottom="971" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Workgroup Queue Name" value="sWorkgroup" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdStatEstWaitTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Estimated wait time (seconds)" value="iAcdStatEstWaitTime" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdAgentsLoggedIn" defaultValIsVar="True" defaultValIsBlankStr="False" label="Number of Agents Logged In" value="iAcdAgentsLoggedIn" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdAgentsAvailable" defaultValIsVar="True" defaultValIsBlankStr="False" label="Number of Agents Available" value="iAcdAgentsAvailable" index="3"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdAgentsConnected" defaultValIsVar="True" defaultValIsBlankStr="False" label="Number of Agents On Calls" value="iAcdAgentsConnected" index="4"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdAgentsInFollowUp" defaultValIsVar="True" defaultValIsBlankStr="False" label="Number of Agents in Follow Up" value="iAcdAgentsInFollowUp" index="5"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdAgentMaxAvailableTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Longest Time an Agent has been Available" value="iAcdAgentMaxAvailableTime" index="6"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdCallWaitingCount" defaultValIsVar="True" defaultValIsBlankStr="False" label="Number of Calls Waiting Assignment" value="iAcdCallWaitingCount" index="7"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdCallConectedCount" defaultValIsVar="True" defaultValIsBlankStr="False" label="Number of Connected Calls" value="iAcdCallConectedCount" index="8"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdCallMaxWaitTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Longest Wait Time for a Call" value="iAcdCallMaxWaitTime" index="9"/>
+        <Parameter required="True" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="False" defaultVal="AcdAvgWaitTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Average Wait Time for Connected Calls" value="nAcdAvgWaitTime" index="10"/>
+        <Parameter required="True" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="False" defaultVal="AcdAvgAbandonTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Average Wait Time for Abandoned Calls" value="nAcdAvgAbandonTime" index="11"/>
+        <Parameter required="True" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="False" defaultVal="AcdAvgDuration" defaultValIsVar="True" defaultValIsBlankStr="False" label="Average Duration of Connected Calls" value="nAcdAvgDuration" index="12"/>
+        <Parameter required="True" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="False" defaultVal="AcdAvgFollowUpTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Average Follow Up Time for Connected Calls" value="nAcdAvgFollowUpTime" index="13"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdWaitDenominator" defaultValIsVar="True" defaultValIsBlankStr="False" label="Denominator for Average Wait Time" value="iAcdWaitDenominator" index="14"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdAbandonDenominator" defaultValIsVar="True" defaultValIsBlankStr="False" label="Denominator for Average Abandon Time" value="iAcdAbandonDenominator" index="15"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdDurationDenominator" defaultValIsVar="True" defaultValIsBlankStr="False" label="Denominator for Average Duration" value="iAcdDurationDenominator" index="16"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdFollowUpDenominator" defaultValIsVar="True" defaultValIsBlankStr="False" label="Denominator for Average Follow Up Time" value="iAcdFollowUpDenominator" index="17"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="50"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="52"/>
+      </ExitPaths>
+    </Step>
+    <Step id="52" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iResult = 0" notes="" left="1080" top="870" right="1230" bottom="959" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iResult"/>
+        <Parameter name="RHS" value="0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="10"/>
+      </ExitPaths>
+    </Step>
+    <Step id="53" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Invalid Statistic" notes="" left="770" top="790" right="920" bottom="879" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="&quot;Invalid Statistic: &quot; &amp; sStatistic" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="41" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="52"/>
+      </ExitPaths>
+    </Step>
+    <Step id="56" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iResult = iAcdStatEstWaitTime" notes="" left="1030" top="990" right="1230" bottom="1079" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iResult"/>
+        <Parameter name="RHS" value="iAcdStatEstWaitTime"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="10"/>
+      </ExitPaths>
+    </Step>
+    <Step id="57" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iResult = iAcdCallWaitingCount" notes="" left="1020" top="1090" right="1230" bottom="1179" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iResult"/>
+        <Parameter name="RHS" value="iAcdCallWaitingCount"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="10"/>
+      </ExitPaths>
+    </Step>
+    <Step id="58" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iResult = iAcdCallMaxWaitTime" notes="" left="1000" top="1190" right="1230" bottom="1279" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iResult"/>
+        <Parameter name="RHS" value="iAcdCallMaxWaitTime"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="10"/>
+      </ExitPaths>
+    </Step>
+    <Step id="59" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iResult = iAcdAgentsLoggedIn" notes="" left="970" top="1380" right="1230" bottom="1469" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iResult"/>
+        <Parameter name="RHS" value="iAcdAgentsLoggedIn"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="10"/>
+      </ExitPaths>
+    </Step>
+    <Step id="60" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iResult = iAcdCallConectedCount" notes="" left="990" top="1290" right="1230" bottom="1379" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iResult"/>
+        <Parameter name="RHS" value="iAcdCallConectedCount"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="10"/>
+      </ExitPaths>
+    </Step>
+    <Step id="61" type="Tool" creatorModule="DsLookup" creatorName="ReplaceAttributes" creatorVersion="" label="sWorkgroup" notes="" left="30" top="500" right="214" bottom="601" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="InteractionID" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="Next" defaultValIsVar="False" defaultValIsBlankStr="False" label="Format String" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Workgroup&quot;, 0))" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Result String" value="sWorkgroup" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="49"/>
+        <ExitPath label="Failure" returnValue="-2"/>
+      </ExitPaths>
+    </Step>
+    <Step id="62" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sNextStep" notes="" left="2280" top="1200" right="2430" bottom="1289" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="Test(p_bResult, GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_True&quot;, 0)), GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_False&quot;, 0)))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="63" type="Tool" creatorModule="" creatorName="Selection" creatorVersion="" label="Selection" notes="" left="720" top="200" right="1010" bottom="324" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="StrEqlNoCase(sStatistic, &quot;Date&quot;)" returnValue="-1" targetStepID="65"/>
+        <ExitPath label="StrEqlNoCase(sStatistic, &quot;Time&quot;)" returnValue="-1" targetStepID="64"/>
+        <ExitPath label="Default" returnValue="0" targetStepID="61"/>
+      </ExitPaths>
+    </Step>
+    <Step id="64" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iResult" notes="" left="1080" top="320" right="1230" bottom="409" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iResult"/>
+        <Parameter name="RHS" value="GetHourTZ($Now, &quot;&quot;) * 100 + GetMinuteTZ($Now, &quot;&quot;)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="10"/>
+      </ExitPaths>
+    </Step>
+    <Step id="65" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iResult" notes="" left="1110" top="200" right="1230" bottom="289" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iResult"/>
+        <Parameter name="RHS" value="GetYearTZ($Now, &quot;&quot;) * 10000 + GetMonthTZ($Now, &quot;&quot;) * 100 + GetDayTZ($Now, &quot;&quot;)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="10"/>
+      </ExitPaths>
+    </Step>
+    <Step id="66" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_NextStep = NextStep_False" notes="" left="260" top="40" right="462" bottom="129" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_False&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="33"/>
+      </ExitPaths>
+    </Step>
+    <Step id="67" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iResult = iAcdAgentsAvailable" notes="" left="960" top="1480" right="1230" bottom="1569" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iResult"/>
+        <Parameter name="RHS" value="iAcdAgentsAvailable"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="10"/>
+      </ExitPaths>
+    </Step>
+    <Step id="68" type="Subroutine" creatorModule="" creatorName="NAllo_GetUsersOnNonACDCalls" creatorVersion="" label="iAcdAgentsOnNonACDCalls" notes="" left="530" top="1670" right="730" bottom="1759" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Workgroup" value="sWorkgroup" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Agents On Other Calls" value="iAcdAgentsOnOtherCalls" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="70"/>
+      </ExitPaths>
+    </Step>
+    <Step id="69" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iResult = iAcdAgentsInFollowUp" notes="" left="940" top="1580" right="1231" bottom="1669" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iResult"/>
+        <Parameter name="RHS" value="iAcdAgentsInFollowUp"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="10"/>
+      </ExitPaths>
+    </Step>
+    <Step id="70" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iResult =  iAcdAgentsConnected + iAcdAgentsInFollowUp + iAcdAgentsOnOtherCalls" notes="" left="760" top="1670" right="1230" bottom="1759" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iResult"/>
+        <Parameter name="RHS" value="iAcdAgentsConnected + iAcdAgentsInFollowUp + iAcdAgentsOnOtherCalls"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="10"/>
+      </ExitPaths>
+    </Step>
+    <Step id="71" type="Tool" creatorModule="DsLookup" creatorName="Acd Queue Statistics" creatorVersion="" label="sWorkgroup" notes="" left="830" top="650" right="990" bottom="751" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Workgroup Queue Name" value="sWorkgroup" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdStatEstWaitTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Estimated wait time (seconds)" value="iAcdStatEstWaitTime" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdAgentsLoggedIn" defaultValIsVar="True" defaultValIsBlankStr="False" label="Number of Agents Logged In" value="iAcdAgentsLoggedIn" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdAgentsAvailable" defaultValIsVar="True" defaultValIsBlankStr="False" label="Number of Agents Available" value="iAcdAgentsAvailable" index="3"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdAgentsConnected" defaultValIsVar="True" defaultValIsBlankStr="False" label="Number of Agents On Calls" value="iAcdAgentsConnected" index="4"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdAgentsInFollowUp" defaultValIsVar="True" defaultValIsBlankStr="False" label="Number of Agents in Follow Up" value="iAcdAgentsInFollowUp" index="5"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdAgentMaxAvailableTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Longest Time an Agent has been Available" value="iAcdAgentMaxAvailableTime" index="6"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdCallWaitingCount" defaultValIsVar="True" defaultValIsBlankStr="False" label="Number of Calls Waiting Assignment" value="iAcdCallWaitingCount" index="7"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdCallConectedCount" defaultValIsVar="True" defaultValIsBlankStr="False" label="Number of Connected Calls" value="iAcdCallConectedCount" index="8"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdCallMaxWaitTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Longest Wait Time for a Call" value="iAcdCallMaxWaitTime" index="9"/>
+        <Parameter required="True" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="False" defaultVal="AcdAvgWaitTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Average Wait Time for Connected Calls" value="nAcdAvgWaitTime" index="10"/>
+        <Parameter required="True" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="False" defaultVal="AcdAvgAbandonTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Average Wait Time for Abandoned Calls" value="nAcdAvgAbandonTime" index="11"/>
+        <Parameter required="True" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="False" defaultVal="AcdAvgDuration" defaultValIsVar="True" defaultValIsBlankStr="False" label="Average Duration of Connected Calls" value="nAcdAvgDuration" index="12"/>
+        <Parameter required="True" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="False" defaultVal="AcdAvgFollowUpTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Average Follow Up Time for Connected Calls" value="nAcdAvgFollowUpTime" index="13"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdWaitDenominator" defaultValIsVar="True" defaultValIsBlankStr="False" label="Denominator for Average Wait Time" value="iAcdWaitDenominator" index="14"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdAbandonDenominator" defaultValIsVar="True" defaultValIsBlankStr="False" label="Denominator for Average Abandon Time" value="iAcdAbandonDenominator" index="15"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdDurationDenominator" defaultValIsVar="True" defaultValIsBlankStr="False" label="Denominator for Average Duration" value="iAcdDurationDenominator" index="16"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="AcdFollowUpDenominator" defaultValIsVar="True" defaultValIsBlankStr="False" label="Denominator for Average Follow Up Time" value="iAcdFollowUpDenominator" index="17"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="72"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="72"/>
+      </ExitPaths>
+    </Step>
+    <Step id="72" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iResult = iAcdCallWaitingCount" notes="" left="1080" top="730" right="1232" bottom="819" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iResult"/>
+        <Parameter name="RHS" value="iAcdCallWaitingCount"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="10"/>
+      </ExitPaths>
+    </Step>
+    <Step id="73" type="Tool" creatorModule="" creatorName="Notify Debugger" creatorVersion="" label="Start" notes="" left="1882" top="64" right="2002" bottom="153" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="63"/>
+      </ExitPaths>
+    </Step>
+    <Step id="74" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="sDebug = 1" notes="" left="1652" top="54" right="1792" bottom="155" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="sDebug = &quot;1&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="73"/>
+        <ExitPath label="False" returnValue="0" targetStepID="63"/>
+      </ExitPaths>
+    </Step>
+    <Step id="75" type="Tool" creatorModule="Telephony" creatorName="Get Attribute" creatorVersion="" label="GENIVR_DEBUG" notes="" left="1456" top="60" right="1596" bottom="149" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;GENIVR_DEBUG&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="sDebug" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="74"/>
+      </ExitPaths>
+    </Step>
+  </Steps>
+  <Variables>
+    <Variable name="Interaction1" initialValue="" boundGlobalVarID="" typeModule="Telephony" typeName="CallId" typeLabel="Call ID"/>
+    <Variable name="bAcdInteractionIsAcd" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="bAcdInteractionIsInQueueTimeout" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="bAcdInteractionIsOnHold" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="dtAcdInteractionAnsweredTimeStamp" initialValue="" boundGlobalVarID="" typeModule="" typeName="DateTime" typeLabel="DateTime"/>
+    <Variable name="iAcdAbandonDenominator" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iAcdAgentMaxAvailableTime" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iAcdAgentsAvailable" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iAcdAgentsConnected" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iAcdAgentsInFollowUp" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iAcdAgentsLoggedIn" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iAcdAgentsOnOtherCalls" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iAcdCallConectedCount" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iAcdCallMaxWaitTime" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iAcdCallWaitingCount" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iAcdDurationDenominator" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iAcdFollowUpDenominator" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iAcdInteractionPriority" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iAcdInteractionTimeInQueue" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iAcdInteractionTimeTillTimout" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iAcdStatEstWaitTime" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iAcdStatPosition" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iAcdWaitDenominator" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iAcdinteractionTimeInSystem" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iResult" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iValue" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="lsAcdInteractionCategories" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsAcdInteractionProficiencies" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of Integer" typeLabel="List of Integer"/>
+    <Variable name="lsAcdInteractionSkillWeights" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsAcdInteractionSkills" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="nAcdAvgAbandonTime" initialValue="" boundGlobalVarID="" typeModule="" typeName="Numeric" typeLabel="Numeric"/>
+    <Variable name="nAcdAvgDuration" initialValue="" boundGlobalVarID="" typeModule="" typeName="Numeric" typeLabel="Numeric"/>
+    <Variable name="nAcdAvgFollowUpTime" initialValue="" boundGlobalVarID="" typeModule="" typeName="Numeric" typeLabel="Numeric"/>
+    <Variable name="nAcdAvgWaitTime" initialValue="" boundGlobalVarID="" typeModule="" typeName="Numeric" typeLabel="Numeric"/>
+    <Variable name="p_bInQueue" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="p_bResult" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="p_lsAttrNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_lsAttrValues" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_sNextStep" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sAcdInteractionAssignedAgent" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sAcdQueueId" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sDebug" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sOperator" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sStatistic" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sValue" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sWorkgroup" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+  </Variables>
+</Handler>

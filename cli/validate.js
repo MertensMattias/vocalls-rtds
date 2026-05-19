@@ -198,7 +198,7 @@ const main = () => {
 
         if (configFiles.length === 0) {
             console.error(`No AGENT_*.js files found in: ${callScriptsDir}`);
-            console.error('Run the pipeline first: /vocalls-build');
+            console.error('No AGENT_*.js found — add an agent config under callScripts/ first.');
             hasErrors = true;
         } else {
             console.log(

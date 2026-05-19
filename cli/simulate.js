@@ -446,7 +446,7 @@ function main() {
                             '\nWarning: Agent config appears to be unpopulated (persona name is empty or a placeholder).'
                         );
                         console.warn(
-                            'Run /vocalls-build first to generate a CONFIG from your brief.\n'
+                            'Add callScripts/AGENT_*.js or build an agent config before simulating this case.\n'
                         );
                         warnedUnpopulated = true;
                     }

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="3582" dy="2425" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100">
+  <root>
+    <object label="" DefaultLanguage="" LanguageKey="" DefaultVoice="" MaxEntryCount="" MaxEntryNodeId="" SayAgainNodeId="" SpeechRecognitionEngine="" SpeechSyntEngine="" Code="" Extensions="" VoicePitch="" VoiceSpeed="" VoiceVolume="" BackgroundNoise="" BreathInEffect="" AudioSourceUrl="" PreferredAudio="TTS" Sections="[]" Languages="{'nl':{'isDefault':true,'languageName':'Dutch','ttsLanguageCode':'nl-NL','ttsVoiceName':'nl-NL-Wavenet-A','ttsEngine':'Google','ttsPitch':'','ttsSpeed':'','ttsVolume':'','prosodyBaseEnabled':true,'prosodyContourEnabled':false}}" Variables="" id="vocalls-master-layer">
+      <mxCell />
+    </object>
+    <mxCell id="baselayer" parent="vocalls-master-layer" />
+
+    <!-- EDGES -->
+
+    <mxCell id="e-input-init" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-input" target="n-init" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-init-skillloop" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-init" target="n-skill-loop" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-skillloop-buildskills" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-skill-loop" target="n-build-skills" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-buildskills-priority" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-build-skills" target="n-priority" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-priority-timeoutbranch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-priority" target="n-timeout-branch" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-timeout-found-settimeout" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-timeout-found" target="n-set-timeout" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-timeout-notfound-cleartimeout" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-timeout-notfound" target="n-clear-timeout" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-settimeout-escapebranch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-set-timeout" target="n-escape-branch" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-cleartimeout-escapebranch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-clear-timeout" target="n-escape-branch" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-escape-found-setescape" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-escape-found" target="n-set-escape" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-escape-notfound-clearescape" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-escape-notfound" target="n-clear-escape" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-setescape-output" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-set-escape" target="n-output" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-clearescape-output" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-clear-escape" target="n-output" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- NODES -->
+
+    <!-- INPUT -->
+    <object label="RTDS_OP_*" Type="transient" OnEnter="" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Title="RTDS_OP_*" Kind="input" id="n-input">
+      <mxCell style="rounded=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#f5f5f5;strokeColor=#666666;;fontColor=#333333;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="310" y="-100" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- 1. INIT: read RTDS_OP_QueueName + split RTDS_OP_Skills -->
+    <object label="init: read params" Type="script" OnEnter="" OnLeave="" DynamicNextId="" MaxEntryNodeId="" MaxEntryCount="" Code="var vars = context.session.variables; &#xa;var sWorkgroup = vars.RTDS_OP_QueueName; &#xa;if (sWorkgroup === undefined || sWorkgroup === null) { sWorkgroup = ''; } &#xa;vars._wgt_sWorkgroup = sWorkgroup; &#xa; &#xa;var sSkillsRaw = vars.RTDS_OP_Skills; &#xa;if (sSkillsRaw === undefined || sSkillsRaw === null) { sSkillsRaw = ''; } &#xa; &#xa;var aSkillsRaw = []; &#xa;if (sSkillsRaw.length &gt; 0) { &#xa;    aSkillsRaw = sSkillsRaw.split('|'); &#xa;    } &#xa;vars._wgt_aSkillsRaw   = aSkillsRaw; &#xa;vars._wgt_aSkillsValid = []; &#xa;vars._wgt_iSkillIdx    = 0; &#xa; &#xa;log_debug('[RTDS] workgroupTransfer: QueueName=' + sWorkgroup + ' Skills=' + sSkillsRaw);" DynamicNextTabGuid="" id="n-init">
+      <mxCell style="rounded=1;arcSize=8;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;image=/Content/Designer/Icons/script.svg;imageAlign=center;imageVerticalAlign=top;imageWidth=24;imageHeight=24;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="263" y="20" width="225" height="80" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- 2. SKILL LOOP: trim and collect non-empty skill names -->
+    <object label="validate skills (trim + collect)" Type="script" OnEnter="" OnLeave="" DynamicNextId="" MaxEntryNodeId="" MaxEntryCount="" Code="var vars = context.session.variables; &#xa;var aRaw   = vars._wgt_aSkillsRaw; &#xa;var aValid = []; &#xa; &#xa;for (var i = 0; i &lt; aRaw.length; i++) { &#xa;    var skill = aRaw[i]; &#xa;    if (typeof skill === 'string') { &#xa;        skill = skill.replace(/^\s+|\s+$/g, ''); &#xa;        } &#xa;    if (skill !== undefined &amp;&amp; skill !== null &amp;&amp; skill.length &gt; 0) { &#xa;        aValid.push(skill); &#xa;        } &#xa;    } &#xa; &#xa;vars._wgt_aSkillsValid = aValid; &#xa;log_debug('[RTDS] workgroupTransfer: validSkillCount=' + aValid.length);" DynamicNextTabGuid="" id="n-skill-loop">
+      <mxCell style="rounded=1;arcSize=8;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;image=/Content/Designer/Icons/script.svg;imageAlign=center;imageVerticalAlign=top;imageWidth=24;imageHeight=24;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="263" y="180" width="225" height="80" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- 3. BUILD SKILLS: join into RTDS_AcdSkills (comma) and Custom_AcdSkills (pipe) -->
+    <object label="build skill strings" Type="script" OnEnter="" OnLeave="" DynamicNextId="" MaxEntryNodeId="" MaxEntryCount="" Code="var vars = context.session.variables; &#xa;var aValid = vars._wgt_aSkillsValid; &#xa; &#xa;var sSkillComma = ''; &#xa;for (var i = 0; i &lt; aValid.length; i++) { &#xa;    if (i &gt; 0) { sSkillComma = sSkillComma + ','; } &#xa;    sSkillComma = sSkillComma + aValid[i]; &#xa;    } &#xa; &#xa;var sSkillPipe = ''; &#xa;for (var i = 0; i &lt; aValid.length; i++) { &#xa;    if (i &gt; 0) { sSkillPipe = sSkillPipe + '|'; } &#xa;    sSkillPipe = sSkillPipe + aValid[i]; &#xa;    } &#xa; &#xa;vars.RTDS_AcdSkills   = sSkillComma; &#xa;vars.Custom_AcdSkills = sSkillPipe; &#xa; &#xa;log_debug('[RTDS] workgroupTransfer: RTDS_AcdSkills=' + sSkillComma);" DynamicNextTabGuid="" id="n-build-skills">
+      <mxCell style="rounded=1;arcSize=8;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;image=/Content/Designer/Icons/script.svg;imageAlign=center;imageVerticalAlign=top;imageWidth=24;imageHeight=24;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="263" y="340" width="225" height="80" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- 4. PRIORITY: write Custom_AcdPriority from RTDS_OP_Priority -->
+    <object label="set Custom_AcdPriority" Type="script" OnEnter="" OnLeave="" DynamicNextId="" MaxEntryNodeId="" MaxEntryCount="" Code="var vars = context.session.variables; &#xa;var sPriority = vars.RTDS_OP_Priority; &#xa;if (sPriority === undefined || sPriority === null) { sPriority = ''; } &#xa;vars.Custom_AcdPriority = sPriority; &#xa;log_debug('[RTDS] workgroupTransfer: Custom_AcdPriority=' + sPriority);" DynamicNextTabGuid="" id="n-priority">
+      <mxCell style="rounded=1;arcSize=8;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;image=/Content/Designer/Icons/script.svg;imageAlign=center;imageVerticalAlign=top;imageWidth=24;imageHeight=24;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="263" y="500" width="225" height="80" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- 5. TIMEOUT BRANCH: parseInt(Timeout) > 0 AND NextStep_Timeout defined? -->
+    <object label="" Type="case" OnEnter="" OnLeave="" MaxEntryNodeId="" MaxEntryCount="" id="n-timeout-branch">
+      <mxCell style="swimlane;swimlaneFillColor=#FFFFFF;childLayout=stackLayout;horizontal=1;startSize=16;horizontalStack=0;rounded=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;container=0;spacingTop=-90;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;arcSize=16;spacing=2;spacingBottom=0;allowArrows=0;rotatable=0;overflow=hidden;marginTop=0;marginLeft=10;marginRight=10;marginBottom=10;separatorColor=none;rounded=1;swimlaneLine=0;" parent="baselayer" vertex="1">
+        <mxGeometry x="138" y="660" width="475" height="126" as="geometry" />
+      </mxCell>
+    </object>
+    <object id="n-timeout-branch-icon">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=none;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=none;image=/Content/Designer/Icons/case.svg;imageWidth=24;imageHeight=24;imageVerticalAlign=top;imageAlign=center;absoluteArcSize=0;noLabel=0;connectable=0;imageAspect=1;editable=0;cloneable=0;deletable=0;resizable=0;" vertex="1" parent="n-timeout-branch">
+        <mxGeometry x="10" y="16" width="455" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="Timeout &gt; 0 and NextStep_Timeout defined" DynamicNextId="" SubType="expression" Expression="parseInt(context.session.variables.RTDS_OP_Timeout, 10) &gt; 0 &amp;&amp; context.session.variables.RTDS_OP_NextStep_Timeout !== undefined &amp;&amp; context.session.variables.RTDS_OP_NextStep_Timeout !== null &amp;&amp; String(context.session.variables.RTDS_OP_NextStep_Timeout).length &gt; 0" DynamicNextTabGuid="" id="n-timeout-found">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=#B3B3B3;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=#ffffff;image=/Content/Designer/Icons/_case.svg;dashed=1;overflow=hidden;" vertex="1" parent="n-timeout-branch">
+        <mxGeometry x="10" y="56" width="455" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="no timeout" DynamicNextId="" SubType="default" id="n-timeout-notfound">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=#559BBF;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=#A9E1F5;image=/Content/Designer/Icons/_nothing.svg;" vertex="1" parent="n-timeout-branch">
+        <mxGeometry x="10" y="86" width="455" height="30" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- 6a. SET TIMEOUT: RTDS_QueueTimeoutSet="Yes", Custom_AcdTimeout, RTDS_Timeout_Next -->
+    <object label="set timeout attrs" Type="script" OnEnter="" OnLeave="" DynamicNextId="" MaxEntryNodeId="" MaxEntryCount="" Code="var vars = context.session.variables; &#xa;vars.RTDS_QueueTimeoutSet = 'Yes'; &#xa;vars.Custom_AcdTimeout    = String(vars.RTDS_OP_Timeout); &#xa;vars.RTDS_Timeout_Next    = String(vars.RTDS_OP_NextStep_Timeout); &#xa;log_debug('[RTDS] workgroupTransfer: timeout set. Custom_AcdTimeout=' + vars.Custom_AcdTimeout + ' RTDS_Timeout_Next=' + vars.RTDS_Timeout_Next);" DynamicNextTabGuid="" id="n-set-timeout">
+      <mxCell style="rounded=1;arcSize=8;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;image=/Content/Designer/Icons/script.svg;imageAlign=center;imageVerticalAlign=top;imageWidth=24;imageHeight=24;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="263" y="870" width="225" height="80" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- 6b. CLEAR TIMEOUT: empty all three timeout attrs -->
+    <object label="clear timeout attrs" Type="script" OnEnter="" OnLeave="" DynamicNextId="" MaxEntryNodeId="" MaxEntryCount="" Code="var vars = context.session.variables; &#xa;vars.RTDS_QueueTimeoutSet = ''; &#xa;vars.Custom_AcdTimeout    = ''; &#xa;vars.RTDS_Timeout_Next    = ''; &#xa;log_debug('[RTDS] workgroupTransfer: no timeout configured - attrs cleared.');" DynamicNextTabGuid="" id="n-clear-timeout">
+      <mxCell style="rounded=1;arcSize=8;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;image=/Content/Designer/Icons/script.svg;imageAlign=center;imageVerticalAlign=top;imageWidth=24;imageHeight=24;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="680" y="870" width="225" height="80" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- 7. ESCAPE BRANCH: EscapeKey matches *#0-9 AND NextStep_EscapeKey defined? -->
+    <object label="" Type="case" OnEnter="" OnLeave="" MaxEntryNodeId="" MaxEntryCount="" id="n-escape-branch">
+      <mxCell style="swimlane;swimlaneFillColor=#FFFFFF;childLayout=stackLayout;horizontal=1;startSize=16;horizontalStack=0;rounded=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;container=0;spacingTop=-90;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;arcSize=16;spacing=2;spacingBottom=0;allowArrows=0;rotatable=0;overflow=hidden;marginTop=0;marginLeft=10;marginRight=10;marginBottom=10;separatorColor=none;rounded=1;swimlaneLine=0;" parent="baselayer" vertex="1">
+        <mxGeometry x="138" y="1040" width="475" height="126" as="geometry" />
+      </mxCell>
+    </object>
+    <object id="n-escape-branch-icon">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=none;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=none;image=/Content/Designer/Icons/case.svg;imageWidth=24;imageHeight=24;imageVerticalAlign=top;imageAlign=center;absoluteArcSize=0;noLabel=0;connectable=0;imageAspect=1;editable=0;cloneable=0;deletable=0;resizable=0;" vertex="1" parent="n-escape-branch">
+        <mxGeometry x="10" y="16" width="455" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="EscapeKey valid and NextStep_EscapeKey defined" DynamicNextId="" SubType="expression" Expression="/[*#0-9]/.test(String(context.session.variables.RTDS_OP_EscapeKey)) &amp;&amp; context.session.variables.RTDS_OP_NextStep_EscapeKey !== undefined &amp;&amp; context.session.variables.RTDS_OP_NextStep_EscapeKey !== null &amp;&amp; String(context.session.variables.RTDS_OP_NextStep_EscapeKey).length &gt; 0" DynamicNextTabGuid="" id="n-escape-found">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=#B3B3B3;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=#ffffff;image=/Content/Designer/Icons/_case.svg;dashed=1;overflow=hidden;" vertex="1" parent="n-escape-branch">
+        <mxGeometry x="10" y="56" width="455" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="no escape key" DynamicNextId="" SubType="default" id="n-escape-notfound">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=#559BBF;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=#A9E1F5;image=/Content/Designer/Icons/_nothing.svg;" vertex="1" parent="n-escape-branch">
+        <mxGeometry x="10" y="86" width="455" height="30" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- 8a. SET ESCAPE: RTDS_EscapeKey and RTDS_EscapeKey_Next -->
+    <object label="set escape attrs" Type="script" OnEnter="" OnLeave="" DynamicNextId="" MaxEntryNodeId="" MaxEntryCount="" Code="var vars = context.session.variables; &#xa;vars.RTDS_EscapeKey      = String(vars.RTDS_OP_EscapeKey); &#xa;vars.RTDS_EscapeKey_Next = String(vars.RTDS_OP_NextStep_EscapeKey); &#xa;log_debug('[RTDS] workgroupTransfer: escape set. RTDS_EscapeKey=' + vars.RTDS_EscapeKey + ' RTDS_EscapeKey_Next=' + vars.RTDS_EscapeKey_Next);" DynamicNextTabGuid="" id="n-set-escape">
+      <mxCell style="rounded=1;arcSize=8;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;image=/Content/Designer/Icons/script.svg;imageAlign=center;imageVerticalAlign=top;imageWidth=24;imageHeight=24;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="263" y="1250" width="225" height="80" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- 8b. CLEAR ESCAPE: empty both escape attrs -->
+    <object label="clear escape attrs" Type="script" OnEnter="" OnLeave="" DynamicNextId="" MaxEntryNodeId="" MaxEntryCount="" Code="var vars = context.session.variables; &#xa;vars.RTDS_EscapeKey      = ''; &#xa;vars.RTDS_EscapeKey_Next = ''; &#xa;log_debug('[RTDS] workgroupTransfer: no escape configured - attrs cleared.');" DynamicNextTabGuid="" id="n-clear-escape">
+      <mxCell style="rounded=1;arcSize=8;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;image=/Content/Designer/Icons/script.svg;imageAlign=center;imageVerticalAlign=top;imageWidth=24;imageHeight=24;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="680" y="1250" width="225" height="80" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- OUTPUT -->
+    <object label="ready for transfer" Type="transient" OnEnter="" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Title="ready_for_transfer" Kind="output" id="n-output">
+      <mxCell style="rounded=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#f5f5f5;strokeColor=#666666;;fontColor=#333333;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="310" y="1420" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+
+  </root>
+</mxGraphModel>

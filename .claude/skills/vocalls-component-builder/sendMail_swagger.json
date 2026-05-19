@@ -1,0 +1,225 @@
+{
+  "info": {
+    "_postman_id": "e45b611c-6d17-4aff-87a7-c48a8d3f9595",
+    "name": "NAllo - SendMail",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "5874436",
+    "_collection_link": "https://go.postman.co/collection/5874436-e45b611c-6d17-4aff-87a7-c48a8d3f9595?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "api",
+      "item": [
+        {
+          "name": "Configuration",
+          "item": [
+            {
+              "name": "encryptPassword",
+              "item": [
+                {
+                  "name": "/api/Configuration/encryptPassword",
+                  "request": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "text/plain"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"password\": \"string\"\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/api/Configuration/encryptPassword",
+                      "host": ["{{baseUrl}}"],
+                      "path": ["api", "Configuration", "encryptPassword"]
+                    }
+                  },
+                  "response": [
+                    {
+                      "name": "OK",
+                      "originalRequest": {
+                        "method": "POST",
+                        "header": [
+                          {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                          },
+                          {
+                            "key": "Accept",
+                            "value": "text/plain"
+                          }
+                        ],
+                        "body": {
+                          "mode": "raw",
+                          "raw": "{\n  \"password\": \"string\"\n}",
+                          "options": {
+                            "raw": {
+                              "headerFamily": "json",
+                              "language": "json"
+                            }
+                          }
+                        },
+                        "url": {
+                          "raw": "{{baseUrl}}/api/Configuration/encryptPassword",
+                          "host": ["{{baseUrl}}"],
+                          "path": ["api", "Configuration", "encryptPassword"]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "json",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/json"
+                        }
+                      ],
+                      "cookie": [],
+                      "body": "string"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "SendMail",
+          "item": [
+            {
+              "name": "/api/SendMail",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"from\": \"OnS1zo3P@JIIkgCmKSxpoPuCMxaauAzFpeW.zmow\",\n  \"subject\": \"Test mail for digiopolis\",\n  \"to\": [\n    \"mattias.mertens@n-allo.be\",\n    \"imamodfreak@gmail.com\"\n  ],\n  \"cc\": [\n    \"mattias.mertens@n-allo.be\",\n    \"mertensmattias@gmail.com\"\n  ],\n  \"bcc\": [],\n  \"body\": \"Dit is een test mail van digiopolis. Als je deze mail ontvangt, is de API correct geconfigureerd.\",\n  \"files\": [],\n  \"attachments\": [],\n  \"priority\": 1,\n  \"fieldValue\": [],\n  \"customerKey\": \"DEV\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/SendMail",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "SendMail"]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"from\": \"OnS1zo3P@JIIkgCmKSxpoPuCMxaauAzFpeW.zmow\",\n  \"subject\": \"string\",\n  \"to\": [\n    \"string\",\n    \"string\"\n  ],\n  \"cc\": [\n    \"string\",\n    \"string\"\n  ],\n  \"bcc\": [\n    \"string\",\n    \"string\"\n  ],\n  \"body\": \"string\",\n  \"files\": [\n    \"string\",\n    \"string\"\n  ],\n  \"attachments\": [\n    {\n      \"fileName\": \"string\",\n      \"fileData\": \"string\"\n    },\n    {\n      \"fileName\": \"string\",\n      \"fileData\": \"string\"\n    }\n  ],\n  \"priority\": 1,\n  \"fieldValue\": [\n    \"string\",\n    \"string\"\n  ],\n  \"customerKey\": \"string\"\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/api/SendMail",
+                      "host": ["{{baseUrl}}"],
+                      "path": ["api", "SendMail"]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [],
+                  "cookie": [],
+                  "body": ""
+                },
+                {
+                  "name": "/api/SendMail",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"from\": \"OnS1zo3P@JIIkgCmKSxpoPuCMxaauAzFpeW.zmow\",\n  \"subject\": \"string\",\n  \"to\": [\n    \"string\",\n    \"string\"\n  ],\n  \"cc\": [\n    \"string\",\n    \"string\"\n  ],\n  \"bcc\": [\n    \"string\",\n    \"string\"\n  ],\n  \"body\": \"string\",\n  \"files\": [\n    \"string\",\n    \"string\"\n  ],\n  \"attachments\": [\n    {\n      \"fileName\": \"string\",\n      \"fileData\": \"string\"\n    },\n    {\n      \"fileName\": \"string\",\n      \"fileData\": \"string\"\n    }\n  ],\n  \"priority\": 1,\n  \"fieldValue\": [\n    \"string\",\n    \"string\"\n  ],\n  \"customerKey\": \"string\"\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/api/SendMail",
+                      "host": ["{{baseUrl}}"],
+                      "path": ["api", "SendMail"]
+                    }
+                  },
+                  "_postman_previewlanguage": null,
+                  "header": null,
+                  "cookie": [],
+                  "body": null
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "/"
+    }
+  ]
+}

@@ -1,0 +1,1215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Handler name="NAllo_RTDS_UpdateSourceId" description="" version="2.0" category="NAllo RTDS">
+  <Steps>
+    <Step id="0" isInitiator="True" type="Initiator" creatorModule="" creatorName="Subroutine" creatorVersion="" label="NAllo_RTDS_UpdateSourceId" notes="" left="28" top="51" right="224" bottom="140" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter label="Action" name="" defaultValue="" defaultValueIsVariable="False" defaultValueIsBlankString="False" input="True" typeModule="" typeName="String" typeLabel="String" value="p_sAction" index="0"/>
+        <Parameter label="Result" name="" defaultValue="" defaultValueIsVariable="False" defaultValueIsBlankString="False" input="False" typeModule="" typeName="String" typeLabel="String" value="p_sResult" index="1"/>
+        <Parameter label="Source Id" name="" defaultValue="" defaultValueIsVariable="False" defaultValueIsBlankString="False" input="True" typeModule="" typeName="String" typeLabel="String" value="p_sSourceId" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Start" returnValue="1" targetStepID="10"/>
+      </ExitPaths>
+    </Step>
+    <Step id="1" type="Tool" creatorModule="" creatorName="DB Open" creatorVersion="" label="dbVar" notes="" left="196" top="596" right="323" bottom="697" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="DataSource" value="IC_REPORTING"/>
+        <Parameter name="UserName" value="&quot;IC_Admin&quot;"/>
+        <Parameter name="Password" value="************"/>
+        <Parameter name="DatabaseVariable" value="dbVar"/>
+        <Parameter name="MaxDatabaseConnections" value="True"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="2"/>
+        <ExitPath label="Failure" returnValue="-1" targetStepID="7"/>
+      </ExitPaths>
+    </Step>
+    <Step id="2" type="Tool" creatorModule="" creatorName="DB Get Connection" creatorVersion="" label="dbConn" notes="" left="383" top="596" right="515" bottom="697" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="DatabaseVariable" value="dbVar"/>
+        <Parameter name="DatabaseConnectionVariable" value="dbConn"/>
+        <Parameter name="Timeout" value="10"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="3"/>
+        <ExitPath label="Failure" returnValue="-1" targetStepID="6"/>
+      </ExitPaths>
+    </Step>
+    <Step id="3" type="Tool" creatorModule="" creatorName="DB Query" creatorVersion="" label="DB Query" notes="" left="580" top="596" right="687" bottom="697" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="FromTable" value="&quot;[NALLO_APP].[rtds].[DsTree]&quot;"/>
+        <Parameter name="DatabaseConnectionVariable" value="dbConn"/>
+        <Parameter name="DatabaseWhereClause" value="sWhereClause"/>
+        <Parameter name="DataSource" value="IC_REPORTING"/>
+        <Parameter name="TableName" value="DsTree"/>
+        <Parameter type="bindings">
+          <bindings type="db">
+            <Binding fieldName="Sourceid" value=""/>
+            <Binding fieldName="Path" value="sDsPath"/>
+            <Binding fieldName="Attribute" value="sDsAttribute"/>
+            <Binding fieldName="Value" value="sDsValue"/>
+            <Binding fieldName="MutationDate" value=""/>
+          </bindings>
+        </Parameter>
+        <Parameter name="Timeout" value="10.0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="5"/>
+        <ExitPath label="Failure" returnValue="-1" targetStepID="6"/>
+      </ExitPaths>
+    </Step>
+    <Step id="4" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sWhereClause" notes="" left="41" top="596" right="168" bottom="685" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sWhereClause"/>
+        <Parameter name="RHS" value="&quot;[SourceId] = &quot; &amp; SQLStr(p_sSourceId) &amp; &quot; ORDER BY [Path]&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="1"/>
+      </ExitPaths>
+    </Step>
+    <Step id="5" type="Tool" creatorModule="" creatorName="DB Fetch" creatorVersion="" label="DB Fetch" notes="" left="751" top="596" right="867" bottom="697" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter type="Variable" variable="dbConn" name="DatabaseConnection"/>
+        <Parameter name="Timeout" value="5.0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="31"/>
+        <ExitPath label="Failure" returnValue="-1" targetStepID="141"/>
+      </ExitPaths>
+    </Step>
+    <Step id="6" type="Tool" creatorModule="" creatorName="DB Release Connection" creatorVersion="" label="dbConn" notes="" left="711" top="862" right="890" bottom="963" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="DatabaseConnectionVariable" value="dbConn"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="7"/>
+        <ExitPath label="Failure" returnValue="-1" targetStepID="7"/>
+      </ExitPaths>
+    </Step>
+    <Step id="7" type="Tool" creatorModule="" creatorName="DB Close" creatorVersion="" label="dbVar" notes="" left="346" top="1018" right="452" bottom="1119" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="DatabaseVariable" value="dbVar"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="163"/>
+        <ExitPath label="Failure" returnValue="-1" targetStepID="163"/>
+      </ExitPaths>
+    </Step>
+    <Step id="9" type="Tool" creatorModule="IpMiscellaneousToolsU" creatorName="SynchronizeLockSemaphore" creatorVersion="" label="Semaphore Lock" notes="" left="410" top="50" right="540" bottom="174" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Semaphore Resource Name" value="&quot;RTDS&quot; &amp; p_sSourceId" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="1" defaultValIsVar="False" defaultValIsBlankStr="False" label="Shared Access Limit" value="1" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="500" defaultValIsVar="False" defaultValIsBlankStr="False" label="Wait Timeout Milliseconds" value="2000" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="SynchronizeLockHandleType" typeLabel="Semaphore Lock Handle" moduleName="SynchronizeTools" isInput="False" defaultVal="LockHandle1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Semaphore Lock Handle" value="LockHandle1" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="155"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="145"/>
+        <ExitPath label="Timeout" returnValue="2" targetStepID="145"/>
+      </ExitPaths>
+    </Step>
+    <Step id="10" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="Source Id ?" notes="" left="261" top="51" right="376" bottom="152" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="StrLen(p_sSourceId) &gt; 0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="9"/>
+        <ExitPath label="False" returnValue="0" targetStepID="144"/>
+      </ExitPaths>
+    </Step>
+    <Step id="11" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iCount + 1" notes="" left="3344" top="595" right="3444" bottom="684" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iCount"/>
+        <Parameter name="RHS" value="iCount + 1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="5"/>
+      </ExitPaths>
+    </Step>
+    <Step id="14" type="Tool" creatorModule="DsLookup" creatorName="PutDsAttr" creatorVersion="" label="sDsAttribute = lsValue" notes="" left="1712" top="596" right="1883" bottom="697" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Path" value="c_sDsCachePath &amp; sDsPath" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Attribute" value="sDsAttribute" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Attribute Values" value="lsValue" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="false" defaultValIsVar="False" defaultValIsBlankStr="False" label="Append Attribute Values" value="false" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="56"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="22"/>
+      </ExitPaths>
+    </Step>
+    <Step id="15" type="Tool" creatorModule="" creatorName="SetAt" creatorVersion="" label="lsValue(0) = sDsValue" notes="" left="1500" top="596" right="1677" bottom="685" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsValue"/>
+        <Parameter name="Value" value="sDsValue"/>
+        <Parameter name="Index" value="0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="14"/>
+      </ExitPaths>
+    </Step>
+    <Step id="17" type="Tool" creatorModule="DsLookup" creatorName="PutDsKey" creatorVersion="" label="sDsPath" notes="" left="1295" top="675" right="1415" bottom="776" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Path" value="c_sDsCachePath &amp; sDsPath" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Class of entry to be created" value="&quot;RoutingTable&quot;" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="15"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="21"/>
+      </ExitPaths>
+    </Step>
+    <Step id="19" type="Tool" creatorModule="DsLookup" creatorName="GetDsAttr" creatorVersion="" label="Check existence" notes="" left="1135" top="596" right="1271" bottom="697" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Path" value="c_sDsCachePath &amp; sDsPath" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Attribute" value="&quot;snCreated&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Attribute Values" value="lsCreated" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="15"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="17"/>
+      </ExitPaths>
+    </Step>
+    <Step id="20" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Insert" notes="" left="1630" top="410" right="1770" bottom="499" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="&quot;{{RTDS}} Inserting new call flow for SourceId &quot; &amp; p_sSourceId &amp; &quot;(Version=&quot; &amp; sVersion &amp; &quot;)&quot;" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="41" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="100"/>
+      </ExitPaths>
+    </Step>
+    <Step id="21" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Failure" notes="" left="1462" top="730" right="1614" bottom="819" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="&quot;{{RTDS}} Creating key failed: &quot; &amp; sDsPath" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="6"/>
+      </ExitPaths>
+    </Step>
+    <Step id="22" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Failure" notes="" left="1923" top="660" right="2063" bottom="749" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="&quot;{{RTDS}} Attribute creating failed. Key=&quot; &amp; sDsPath &amp; &quot;; Attribute=&quot; &amp; sDsAttribute &amp; &quot;; Value=&quot; &amp; sDsValue" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="23"/>
+      </ExitPaths>
+    </Step>
+    <Step id="23" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iErrorCount + 1" notes="" left="2095" top="660" right="2231" bottom="749" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iErrorCount"/>
+        <Parameter name="RHS" value="iErrorCount + 1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="56"/>
+      </ExitPaths>
+    </Step>
+    <Step id="24" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Insert Ready" notes="" left="684" top="1034" right="797" bottom="1123" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="&quot;{{RTDS}} Import Ready. : &quot; &amp; Test(iErrorCount &gt; 0, &quot;Number of errors =&quot; &amp; toS(iErrorCount) &amp; &quot;.&quot;, &quot;No Errors.&quot;)" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="Test(iErrorCount &gt; 0, 21, 41)" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="72"/>
+      </ExitPaths>
+    </Step>
+    <Step id="25" type="Tool" creatorModule="DsLookup" creatorName="GetDsAttr" creatorVersion="" label="Check active config" notes="" left="915" top="290" right="1071" bottom="391" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Path" value="c_sDsCachePath &amp; &quot;\\RoutingTable\\&quot; &amp; p_sSourceId" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Attribute" value="&quot;ActiveConfig&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Attribute Values" value="lsVersion" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="26"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="28"/>
+      </ExitPaths>
+    </Step>
+    <Step id="26" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="Increase version" notes="" left="1105" top="240" right="1255" bottom="329" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sVersion"/>
+        <Parameter name="RHS" value="&quot;v&quot; &amp; toS(toI(SubstStr(GetHead(lsVersion), &quot;v&quot;, &quot;&quot;)) + 1)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="30"/>
+      </ExitPaths>
+    </Step>
+    <Step id="27" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="Version = v1" notes="" left="1290" top="312" right="1410" bottom="401" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sVersion"/>
+        <Parameter name="RHS" value="&quot;v1&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="30"/>
+      </ExitPaths>
+    </Step>
+    <Step id="28" type="Tool" creatorModule="DsLookup" creatorName="PutDsKey" creatorVersion="" label="SourceId" notes="" left="1105" top="340" right="1225" bottom="441" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Path" value="c_sDsCachePath &amp; &quot;\\RoutingTable\\&quot; &amp; p_sSourceId" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Class of entry to be created" value="&quot;RoutingTable&quot;" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="27"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="146"/>
+      </ExitPaths>
+    </Step>
+    <Step id="29" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Failure" notes="" left="1383" top="420" right="1535" bottom="509" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="&quot;{{RTDS}} Creating key failed: &quot; &amp; p_sSourceId" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1"/>
+      </ExitPaths>
+    </Step>
+    <Step id="30" type="Tool" creatorModule="DsLookup" creatorName="PutDsKey" creatorVersion="" label="Version" notes="" left="1442" top="240" right="1563" bottom="341" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Path" value="c_sDsCachePath &amp; &quot;\\RoutingTable\\&quot; &amp; p_sSourceId &amp; &quot;\\&quot; &amp; sVersion" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Class of entry to be created" value="&quot;RoutingTable&quot;" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="20"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="147"/>
+      </ExitPaths>
+    </Step>
+    <Step id="31" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="Add version to DsPath" notes="" left="927" top="595" right="1095" bottom="684" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sDsPath"/>
+        <Parameter name="RHS" value="SubstStr(sDsPath, p_sSourceId, p_sSourceId &amp; &quot;\\&quot; &amp; sVersion)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="19"/>
+      </ExitPaths>
+    </Step>
+    <Step id="32" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Failure" notes="" left="1781" top="240" right="1933" bottom="329" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="&quot;{{RTDS}} Creating key failed: &quot; &amp; sVersion" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1"/>
+      </ExitPaths>
+    </Step>
+    <Step id="33" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="iCount &gt; 0 and iErrorCount = 0" notes="" left="262" top="1245" right="464" bottom="1346" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="iCount &gt; 0 and iErrorCount = 0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="37"/>
+        <ExitPath label="False" returnValue="0" targetStepID="34"/>
+      </ExitPaths>
+    </Step>
+    <Step id="34" type="Tool" creatorModule="DsLookup" creatorName="DeleteDsKey" creatorVersion="" label="sVersion" notes="" left="490" top="1365" right="608" bottom="1466" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Path" value="c_sDsCachePath &amp; &quot;\\RoutingTable\\&quot; &amp; p_sSourceId &amp; &quot;\\&quot; &amp; sVersion" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="false" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delete entries under this key?" value="true" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="148"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="148"/>
+      </ExitPaths>
+    </Step>
+    <Step id="35" type="Tool" creatorModule="DsLookup" creatorName="PutDsAttr" creatorVersion="" label="lsVersion" notes="" left="734" top="1245" right="862" bottom="1346" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Path" value="c_sDsCachePath &amp; &quot;\\RoutingTable\\&quot; &amp; p_sSourceId" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Attribute" value="&quot;ActiveConfig&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Attribute Values" value="lsVersion" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="false" defaultValIsVar="False" defaultValIsBlankStr="False" label="Append Attribute Values" value="false" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="153"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="153"/>
+      </ExitPaths>
+    </Step>
+    <Step id="37" type="Tool" creatorModule="" creatorName="SetAt" creatorVersion="" label="lsVersion[0] = sVersion" notes="" left="522" top="1245" right="702" bottom="1334" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsVersion"/>
+        <Parameter name="Value" value="sVersion"/>
+        <Parameter name="Index" value="0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="35"/>
+      </ExitPaths>
+    </Step>
+    <Step id="39" type="Tool" creatorModule="DsLookup" creatorName="PutDsAttr" creatorVersion="" label="lsDate" notes="" left="1200" top="1240" right="1330" bottom="1341" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Path" value="c_sDsCachePath &amp; &quot;\\RoutingTable\\&quot; &amp; p_sSourceId &amp; &quot;\\&quot; &amp; sVersion" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Attribute" value="&quot;PublishDate&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Attribute Values" value="lsDate" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="false" defaultValIsVar="False" defaultValIsBlankStr="False" label="Append Attribute Values" value="false" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="154"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="154"/>
+      </ExitPaths>
+    </Step>
+    <Step id="40" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="lsDate" notes="" left="1060" top="1240" right="1170" bottom="1329" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="toS($Now)" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;|&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsDate" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="39"/>
+      </ExitPaths>
+    </Step>
+    <Step id="42" type="Tool" creatorModule="DsLookup" creatorName="GetDsKeys" creatorVersion="" label="p_sSourceId" notes="" left="194" top="2008" right="318" bottom="2109" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Path" value="c_sDsCachePath &amp; &quot;\\RoutingTable\\&quot; &amp; p_sSourceId" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Directory Services Keys" value="lsKeys" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Directory Services Paths" value="lsPaths" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="123"/>
+        <ExitPath label="Failure" returnValue="1"/>
+      </ExitPaths>
+    </Step>
+    <Step id="48" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iIndex = 0" notes="" left="790" top="2264" right="897" bottom="2353" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iIndex"/>
+        <Parameter name="RHS" value="0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="50"/>
+      </ExitPaths>
+    </Step>
+    <Step id="49" type="Tool" creatorModule="DsLookup" creatorName="GetDsAttr" creatorVersion="" label="PublishDate" notes="" left="1194" top="2264" right="1316" bottom="2365" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Path" value="GetAt(lsPaths, iIndex)" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Attribute" value="&quot;PublishDate&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Attribute Values" value="lsDate" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="52"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="51"/>
+      </ExitPaths>
+    </Step>
+    <Step id="50" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="iIndex &lt; GetCount(lsKeys)" notes="" left="921" top="2264" right="1105" bottom="2365" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="iIndex &lt; GetCount(lsKeys)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="49"/>
+        <ExitPath label="False" returnValue="0" targetStepID="140"/>
+      </ExitPaths>
+    </Step>
+    <Step id="51" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iIndex + 1" notes="" left="1890" top="2261" right="1998" bottom="2350" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iIndex"/>
+        <Parameter name="RHS" value="iIndex + 1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="50"/>
+      </ExitPaths>
+    </Step>
+    <Step id="52" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="PublishDate old enough" notes="" left="1352" top="2328" right="1530" bottom="2429" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="toDT(GetHead(lsDate)) &lt; AddDays($Now, - c_iNumberOfDaysToKeep)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="53"/>
+        <ExitPath label="False" returnValue="0" targetStepID="51"/>
+      </ExitPaths>
+    </Step>
+    <Step id="53" type="Tool" creatorModule="DsLookup" creatorName="DeleteDsKey" creatorVersion="" label="sVersion" notes="" left="1560" top="2420" right="1686" bottom="2521" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Path" value="GetAt(lsPaths, iIndex)" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="false" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delete entries under this key?" value="true" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="55"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="54"/>
+      </ExitPaths>
+    </Step>
+    <Step id="54" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Failure" notes="" left="1724" top="2475" right="1868" bottom="2564" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="&quot;{{RTDS}} Delete key failed: &quot; &amp; GetAt(lsPaths, iIndex)" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="51"/>
+      </ExitPaths>
+    </Step>
+    <Step id="55" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Deleted" notes="" left="1724" top="2372" right="1868" bottom="2461" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="&quot;{{RTDS}} Old key deleted failed: &quot; &amp; GetAt(lsPaths, iIndex)" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="61" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="51"/>
+      </ExitPaths>
+    </Step>
+    <Step id="56" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="sDsPath = sDsPath_Previous?" notes="" left="2295" top="595" right="2511" bottom="696" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="sDsPath = sDsPath_Previous"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="57"/>
+        <ExitPath label="False" returnValue="0" targetStepID="65"/>
+      </ExitPaths>
+    </Step>
+    <Step id="57" type="Tool" creatorModule="" creatorName="InsertAtTail" creatorVersion="" label="lsOperationAttrNames" notes="" left="2950" top="594" right="3114" bottom="683" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsOperationAttrNames"/>
+        <Parameter name="Value" value="sDsAttribute"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="58"/>
+      </ExitPaths>
+    </Step>
+    <Step id="58" type="Tool" creatorModule="" creatorName="InsertAtTail" creatorVersion="" label="lsOperationAttrValues" notes="" left="3142" top="595" right="3314" bottom="684" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsOperationAttrValues"/>
+        <Parameter name="Value" value="sDsValue"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="11"/>
+      </ExitPaths>
+    </Step>
+    <Step id="59" type="Tool" creatorModule="" creatorName="RemoveAll" creatorVersion="" label="lsOperationAttrNames" notes="" left="3170" top="740" right="3350" bottom="829" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsOperationAttrNames"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="66"/>
+      </ExitPaths>
+    </Step>
+    <Step id="61" type="Tool" creatorModule="" creatorName="InsertAtTail" creatorVersion="" label="lsOperationAttrNames[0] = &quot;SourceId&quot; or &quot;Id&quot;" notes="" left="3594" top="740" right="3875" bottom="829" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsOperationAttrNames"/>
+        <Parameter name="Value" value="Test(GetCount(lsDsPath) = 1, &quot;SourceId&quot;, &quot;Id&quot;)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="62"/>
+      </ExitPaths>
+    </Step>
+    <Step id="62" type="Tool" creatorModule="" creatorName="InsertAtTail" creatorVersion="" label="lsOperationAttrValues[0] = SourceId/OperationId" notes="" left="3906" top="740" right="4200" bottom="829" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsOperationAttrValues"/>
+        <Parameter name="Value" value="GetTail(lsDsPath)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="69"/>
+      </ExitPaths>
+    </Step>
+    <Step id="65" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="sDsPath -&gt; lsDsPath" notes="" left="2534" top="740" right="2693" bottom="829" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="SubstStr(SubstStr(sDsPath, &quot;\\RoutingTable\\&quot;, &quot;&quot;), &quot;\\&quot; &amp; sVersion, &quot;&quot;)" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;\\&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsDsPath" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="67"/>
+      </ExitPaths>
+    </Step>
+    <Step id="66" type="Tool" creatorModule="" creatorName="RemoveAll" creatorVersion="" label="lsOperationAttrValues" notes="" left="3388" top="740" right="3568" bottom="829" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsOperationAttrValues"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="61"/>
+      </ExitPaths>
+    </Step>
+    <Step id="67" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="GetCount(lsDsPath) = 1" notes="" left="2720" top="740" right="2900" bottom="841" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="GetCount(lsDsPath) = 1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="59"/>
+        <ExitPath label="False" returnValue="0" targetStepID="73"/>
+      </ExitPaths>
+    </Step>
+    <Step id="69" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="Set Previous DsPath" notes="" left="4225" top="740" right="4385" bottom="829" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sDsPath_Previous"/>
+        <Parameter name="RHS" value="sDsPath"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="57"/>
+      </ExitPaths>
+    </Step>
+    <Step id="70" type="Tool" creatorModule="I3_RESTTools" creatorName="JSONBuilder" creatorVersion="" label="JSON Builder" notes="" left="3674" top="925" right="3866" bottom="1095" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Names List" value="lsOperationAttrNames" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Values List" value="lsOperationAttrValues" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Value Type List" value="lsOperationAttrTypes" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="sJSONstring1" defaultValIsVar="True" defaultValIsBlankStr="False" label="JSON string" value="sJSONstring" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="77"/>
+        <ExitPath label="Failure" returnValue="0" targetStepID="108"/>
+        <ExitPath label="List Length Not Equal" returnValue="2" targetStepID="108"/>
+        <ExitPath label="Value Type Mismatch" returnValue="3" targetStepID="108"/>
+        <ExitPath label="Invalid Value Type" returnValue="4" targetStepID="108"/>
+      </ExitPaths>
+    </Step>
+    <Step id="71" type="Tool" creatorModule="DsLookup" creatorName="Sort Lists" creatorVersion="" label="lsOperationAttrNames/Values" notes="" left="3142" top="925" right="3365" bottom="1014" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="true" defaultValIsVar="False" defaultValIsBlankStr="False" label="Sort in Ascending Order?" value="true" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of strings to be processed" value="lsOperationAttrNames" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parallel list" value="lsOperationAttrValues" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parallel list" value="lsOperationAttrValues" index="3"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parallel list" value="lsOperationAttrValues" index="4"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parallel list" value="lsOperationAttrValues" index="5"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="75"/>
+      </ExitPaths>
+    </Step>
+    <Step id="72" type="Tool" creatorModule="" creatorName="Notify Debugger" creatorVersion="" label="DS import Succeeded" notes="" left="70" top="1245" right="235" bottom="1334" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="33"/>
+      </ExitPaths>
+    </Step>
+    <Step id="73" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="SourceId?" notes="" left="2930" top="925" right="3048" bottom="1026" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="GetHead(lsOperationAttrNames) = &quot;SourceId&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="71"/>
+        <ExitPath label="False" returnValue="0" targetStepID="79"/>
+      </ExitPaths>
+    </Step>
+    <Step id="75" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="lsOperationAttrTypes" notes="" left="3414" top="925" right="3618" bottom="1014" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="&quot;string&quot; &amp; SubstStr(StrLeft(sOperationAttrTypes, GetCount(lsOperationAttrNames) - 1), &quot;|&quot;, &quot;|string&quot;)" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;|&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsOperationAttrTypes" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="70"/>
+      </ExitPaths>
+    </Step>
+    <Step id="77" type="Tool" creatorModule="" creatorName="InsertAtTail" creatorVersion="" label="lsLogData" notes="" left="5310" top="920" right="5420" bottom="1009" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsLogData"/>
+        <Parameter name="Value" value="SubstStr(SubstStr(sJSONstring, &quot;\r&quot;, &quot;&quot;), &quot;\n&quot;, &quot;&quot;)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="143"/>
+      </ExitPaths>
+    </Step>
+    <Step id="78" type="Tool" creatorModule="" creatorName="Find" creatorVersion="" label="Header Field" notes="" left="3700" top="1186" right="3821" bottom="1287" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsOperationAttrNames"/>
+        <Parameter name="Index" value="0"/>
+        <Parameter name="Value" value="GetAt(lsOperationHeaders, iIndex)"/>
+        <Parameter name="OutputVariable" value="iFound"/>
+        <Parameter name="StringMatch" value="Full"/>
+        <Parameter name="CaseSensitive" value="false"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Found" returnValue="1" targetStepID="80"/>
+        <ExitPath label="Not Found" returnValue="-1" targetStepID="103"/>
+      </ExitPaths>
+    </Step>
+    <Step id="79" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sOperationId" notes="" left="3041" top="1182" right="3165" bottom="1271" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sOperationId"/>
+        <Parameter name="RHS" value="GetAt(lsOperationAttrValues, 0)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="101"/>
+      </ExitPaths>
+    </Step>
+    <Step id="80" type="Tool" creatorModule="" creatorName="InsertAtTail" creatorVersion="" label="lsOperationHeaderAttrNames" notes="" left="3864" top="1188" right="4076" bottom="1277" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsOperationHeaderAttrNames"/>
+        <Parameter name="Value" value="GetAt(lsOperationHeaders, iIndex)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="81"/>
+      </ExitPaths>
+    </Step>
+    <Step id="81" type="Tool" creatorModule="" creatorName="InsertAtTail" creatorVersion="" label="lsOperationHeaderAttrValues" notes="" left="4098" top="1188" right="4304" bottom="1277" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsOperationHeaderAttrValues"/>
+        <Parameter name="Value" value="GetAt(lsOperationAttrValues, iFound)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="82"/>
+      </ExitPaths>
+    </Step>
+    <Step id="82" type="Tool" creatorModule="" creatorName="RemoveAt" creatorVersion="" label="lsOperationAttrNames[iFound]" notes="" left="4332" top="1188" right="4536" bottom="1277" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsOperationAttrNames"/>
+        <Parameter name="Index" value="iFound"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="83"/>
+      </ExitPaths>
+    </Step>
+    <Step id="83" type="Tool" creatorModule="" creatorName="RemoveAt" creatorVersion="" label="lsOperationAttrValues[iFound]" notes="" left="4562" top="1188" right="4777" bottom="1277" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsOperationAttrValues"/>
+        <Parameter name="Index" value="iFound"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="103"/>
+      </ExitPaths>
+    </Step>
+    <Step id="100" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="lsOperationHeaders" notes="" left="1811" top="415" right="1977" bottom="504" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="c_sOperationHeaders" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;|&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsOperationHeaders" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="4"/>
+      </ExitPaths>
+    </Step>
+    <Step id="101" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iIndex = 0" notes="" left="3230" top="1184" right="3343" bottom="1273" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iIndex"/>
+        <Parameter name="RHS" value="0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="102"/>
+      </ExitPaths>
+    </Step>
+    <Step id="102" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="iIndex &lt; GetCount(lsOperationHeaders)" notes="" left="3380" top="1187" right="3635" bottom="1288" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="iIndex &lt; GetCount(lsOperationHeaders)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="78"/>
+        <ExitPath label="False" returnValue="0" targetStepID="112"/>
+      </ExitPaths>
+    </Step>
+    <Step id="103" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iIndex + 1" notes="" left="3230" top="1360" right="3343" bottom="1449" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iIndex"/>
+        <Parameter name="RHS" value="iIndex + 1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="102"/>
+      </ExitPaths>
+    </Step>
+    <Step id="105" type="Tool" creatorModule="DsLookup" creatorName="Sort Lists" creatorVersion="" label="lsOperationAttrNames/Values" notes="" left="3596" top="1638" right="3797" bottom="1727" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="true" defaultValIsVar="False" defaultValIsBlankStr="False" label="Sort in Ascending Order?" value="true" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of strings to be processed" value="lsOperationAttrNames" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parallel list" value="lsOperationAttrValues" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parallel list" value="lsOperationAttrValues" index="3"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parallel list" value="lsOperationAttrValues" index="4"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parallel list" value="lsOperationAttrValues" index="5"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="107"/>
+      </ExitPaths>
+    </Step>
+    <Step id="106" type="Tool" creatorModule="I3_RESTTools" creatorName="JSONBuilder" creatorVersion="" label="JSON Builder" notes="" left="4080" top="1660" right="4276" bottom="1830" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Names List" value="lsOperationAttrNames" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Values List" value="lsOperationAttrValues" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Value Type List" value="lsOperationAttrTypes" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="sJSONstring1" defaultValIsVar="True" defaultValIsBlankStr="False" label="JSON string" value="sJSONParams" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="110"/>
+        <ExitPath label="Failure" returnValue="0" targetStepID="109"/>
+        <ExitPath label="List Length Not Equal" returnValue="2" targetStepID="109"/>
+        <ExitPath label="Value Type Mismatch" returnValue="3" targetStepID="109"/>
+        <ExitPath label="Invalid Value Type" returnValue="4" targetStepID="109"/>
+      </ExitPaths>
+    </Step>
+    <Step id="107" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="lsOperationAttrTypes" notes="" left="3885" top="1660" right="4047" bottom="1749" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="&quot;string&quot; &amp; SubstStr(StrLeft(sOperationAttrTypes, GetCount(lsOperationAttrNames) - 1), &quot;|&quot;, &quot;|string&quot;)" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;|&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsOperationAttrTypes" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="106"/>
+      </ExitPaths>
+    </Step>
+    <Step id="108" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iErrorCount + 1" notes="" left="3930" top="1005" right="4096" bottom="1094" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iErrorCount"/>
+        <Parameter name="RHS" value="iErrorCount + 1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="77"/>
+      </ExitPaths>
+    </Step>
+    <Step id="109" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iErrorCount + 1" notes="" left="4335" top="1763" right="4482" bottom="1852" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iErrorCount"/>
+        <Parameter name="RHS" value="iErrorCount + 1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="113"/>
+      </ExitPaths>
+    </Step>
+    <Step id="110" type="Tool" creatorModule="" creatorName="InsertAtTail" creatorVersion="" label="lsOperationHeaderAttrNames: &quot;Params&quot;" notes="" left="4527" top="1660" right="4784" bottom="1749" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsOperationHeaderAttrNames"/>
+        <Parameter name="Value" value="&quot;Params&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="111"/>
+      </ExitPaths>
+    </Step>
+    <Step id="111" type="Tool" creatorModule="" creatorName="InsertAtTail" creatorVersion="" label="lsOperationHeaderAttrValues: sJSONParams" notes="" left="4811" top="1660" right="5094" bottom="1749" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsOperationHeaderAttrValues"/>
+        <Parameter name="Value" value="sJSONParams"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="116"/>
+      </ExitPaths>
+    </Step>
+    <Step id="112" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="GetCount(lsOperationAttrNames) = 0" notes="" left="3665" top="1376" right="3925" bottom="1477" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="GetCount(lsOperationAttrNames) = 0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="115"/>
+        <ExitPath label="False" returnValue="0" targetStepID="105"/>
+      </ExitPaths>
+    </Step>
+    <Step id="113" type="Tool" creatorModule="I3_RESTTools" creatorName="JSONBuilder" creatorVersion="" label="JSON Builder" notes="" left="4471" top="1368" right="4658" bottom="1538" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Names List" value="lsOperationHeaderAttrNames" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Values List" value="lsOperationHeaderAttrValues" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Value Type List" value="lsOperationAttrTypes" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="sJSONstring1" defaultValIsVar="True" defaultValIsBlankStr="False" label="JSON string" value="sJSONstring" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="118"/>
+        <ExitPath label="Failure" returnValue="0" targetStepID="114"/>
+        <ExitPath label="List Length Not Equal" returnValue="2" targetStepID="114"/>
+        <ExitPath label="Value Type Mismatch" returnValue="3" targetStepID="114"/>
+        <ExitPath label="Invalid Value Type" returnValue="4" targetStepID="114"/>
+      </ExitPaths>
+    </Step>
+    <Step id="114" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iErrorCount + 1" notes="" left="4680" top="1450" right="4816" bottom="1539" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iErrorCount"/>
+        <Parameter name="RHS" value="iErrorCount + 1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="118"/>
+      </ExitPaths>
+    </Step>
+    <Step id="115" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="lsOperationAttrTypes" notes="" left="3990" top="1370" right="4170" bottom="1459" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="&quot;string&quot; &amp; SubstStr(StrLeft(sOperationAttrTypes, GetCount(lsOperationHeaderAttrNames) - 1), &quot;|&quot;, &quot;|string&quot;)" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;|&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsOperationAttrTypes" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="113"/>
+      </ExitPaths>
+    </Step>
+    <Step id="116" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="lsOperationAttrTypes" notes="" left="5121" top="1660" right="5298" bottom="1749" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="SubstStr(StrLeft(sOperationAttrTypes, GetCount(lsOperationHeaderAttrNames) - 1), &quot;|&quot;, &quot;string|&quot;) &amp; &quot;object&quot;" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;|&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsOperationAttrTypes" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="113"/>
+      </ExitPaths>
+    </Step>
+    <Step id="117" type="Tool" creatorModule="" creatorName="Notify Debugger" creatorVersion="" label="LogData" notes="" left="70" top="1680" right="198" bottom="1769" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="130"/>
+      </ExitPaths>
+    </Step>
+    <Step id="118" type="Tool" creatorModule="" creatorName="RemoveAll" creatorVersion="" label="lsOperationHeaderAttrNames" notes="" left="4844" top="1368" right="5058" bottom="1457" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsOperationHeaderAttrNames"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="119"/>
+      </ExitPaths>
+    </Step>
+    <Step id="119" type="Tool" creatorModule="" creatorName="RemoveAll" creatorVersion="" label="lsOperationHeaderAttrValues" notes="" left="5084" top="1368" right="5292" bottom="1457" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsOperationHeaderAttrValues"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="77"/>
+      </ExitPaths>
+    </Step>
+    <Step id="120" type="Tool" creatorModule="" creatorName="Find" creatorVersion="" label="sVersion" notes="" left="970" top="2007" right="1106" bottom="2108" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsKeys"/>
+        <Parameter name="Index" value="0"/>
+        <Parameter name="Value" value="sVersion"/>
+        <Parameter name="OutputVariable" value="iFound"/>
+        <Parameter name="StringMatch" value="Full"/>
+        <Parameter name="CaseSensitive" value="false"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Found" returnValue="1" targetStepID="121"/>
+        <ExitPath label="Not Found" returnValue="-1" targetStepID="126"/>
+      </ExitPaths>
+    </Step>
+    <Step id="121" type="Tool" creatorModule="" creatorName="RemoveAt" creatorVersion="" label="lsKeys[iFound]" notes="" left="1164" top="2007" right="1300" bottom="2096" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsKeys"/>
+        <Parameter name="Index" value="iFound"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="122"/>
+      </ExitPaths>
+    </Step>
+    <Step id="122" type="Tool" creatorModule="" creatorName="RemoveAt" creatorVersion="" label="lsPaths[iFound]" notes="" left="1335" top="2007" right="1470" bottom="2096" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsPaths"/>
+        <Parameter name="Index" value="iFound"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="126"/>
+      </ExitPaths>
+    </Step>
+    <Step id="123" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iIndex = 0" notes="" left="360" top="2008" right="472" bottom="2097" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iIndex"/>
+        <Parameter name="RHS" value="0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="124"/>
+      </ExitPaths>
+    </Step>
+    <Step id="124" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="iIndex &lt;= c_iNumberOfOldConfigsToKeep" notes="" left="503" top="2007" right="773" bottom="2108" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="iIndex &lt;= c_iNumberOfOldConfigsToKeep"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="125"/>
+        <ExitPath label="False" returnValue="0" targetStepID="48"/>
+      </ExitPaths>
+    </Step>
+    <Step id="125" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sVersion" notes="" left="821" top="2007" right="934" bottom="2096" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sVersion"/>
+        <Parameter name="RHS" value="&quot;v&quot; &amp; toS(toI(SubstStr(sVersion, &quot;v&quot;, &quot;&quot;)) - iIndex)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="120"/>
+      </ExitPaths>
+    </Step>
+    <Step id="126" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iIndex + 1" notes="" left="360" top="2170" right="472" bottom="2259" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iIndex"/>
+        <Parameter name="RHS" value="iIndex + 1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="124"/>
+      </ExitPaths>
+    </Step>
+    <Step id="130" type="Tool" creatorModule="DsLookup" creatorName="List To String" creatorVersion="" label="List To String" notes="" left="241" top="1680" right="360" bottom="1769" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Strings" value="lsLogData" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;\n&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimited String" value="sLogData" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="136"/>
+      </ExitPaths>
+    </Step>
+    <Step id="135" type="Tool" creatorModule="IPReportLog" creatorName="LogCustomPassthrough" creatorVersion="" label="Logging Custom Passthrough" notes="" left="557" top="1681" right="754" bottom="1782" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="SQL Text to be Executed on Logging Server" value="sSQL" index="0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="139"/>
+        <ExitPath label="Failure" returnValue="0" targetStepID="137"/>
+      </ExitPaths>
+    </Step>
+    <Step id="136" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sSQL" notes="
+" left="400" top="1681" right="513" bottom="1770" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sSQL"/>
+        <Parameter name="RHS" value="&quot;EXEC [NALLO_APP].[rtds].[sp_AddHistory] &quot; &amp; SQLStr(sLogData) &amp; &quot;, &quot; &amp; SQLStr(MakeDateTimeTZ(GetYearUTC($Now), GetMonthUTC($Now), GetDayUTC($Now), GetHourUTC($Now), GetMinuteUTC($Now), GetSecondUTC($Now), &quot;&quot;))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="135"/>
+      </ExitPaths>
+    </Step>
+    <Step id="137" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Failure" notes="" left="806" top="1681" right="956" bottom="1770" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="&quot;{{RTDS}} History Logging Failed: &quot; &amp; sSQL" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="139"/>
+      </ExitPaths>
+    </Step>
+    <Step id="139" type="Tool" creatorModule="" creatorName="Notify Debugger" creatorVersion="" label="Cleanup" notes="" left="70" top="2008" right="170" bottom="2097" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="42"/>
+      </ExitPaths>
+    </Step>
+    <Step id="140" type="Tool" creatorModule="" creatorName="Notify Debugger" creatorVersion="" label="Ready" notes="" left="1141" top="2565" right="1282" bottom="2654" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="152"/>
+      </ExitPaths>
+    </Step>
+    <Step id="141" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="iCount &gt; 0" notes="" left="898" top="707" right="1017" bottom="808" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="iCount &gt; 0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="142"/>
+        <ExitPath label="False" returnValue="0" targetStepID="151"/>
+      </ExitPaths>
+    </Step>
+    <Step id="142" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="bLastAttr = true" notes="" left="1128" top="868" right="1275" bottom="957" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="bLastAttr"/>
+        <Parameter name="RHS" value="true"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="65"/>
+      </ExitPaths>
+    </Step>
+    <Step id="143" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="bLastAttr" notes="" left="5450" top="920" right="5570" bottom="1021" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="bLastAttr"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="6"/>
+        <ExitPath label="False" returnValue="0" targetStepID="59"/>
+      </ExitPaths>
+    </Step>
+    <Step id="144" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sResult" notes="" left="391" top="205" right="504" bottom="294" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sResult"/>
+        <Parameter name="RHS" value="&quot;Error|No SourceId defined&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="145" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sResult" notes="" left="557" top="207" right="670" bottom="296" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sResult"/>
+        <Parameter name="RHS" value="&quot;Error|SourceId currently locked&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="146" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sResult" notes="" left="1246" top="420" right="1360" bottom="509" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sResult"/>
+        <Parameter name="RHS" value="&quot;Error| Update SourceId Failed. ErrorStep=&quot; &amp; $PreviousStepID"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="29"/>
+      </ExitPaths>
+    </Step>
+    <Step id="147" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sResult" notes="" left="1644" top="244" right="1757" bottom="333" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sResult"/>
+        <Parameter name="RHS" value="&quot;Error|Update SourceId failed. ErrorStep=&quot; &amp; $PreviousStepID"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="32"/>
+      </ExitPaths>
+    </Step>
+    <Step id="148" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sResult" notes="" left="630" top="1360" right="760" bottom="1449" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sResult"/>
+        <Parameter name="RHS" value="&quot;Error|&quot; &amp; Test(StrLen(p_sResult) &gt; 0, p_sResult, &quot;Database failure&quot;)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="151" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sResult" notes="" left="1112" top="730" right="1225" bottom="819" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sResult"/>
+        <Parameter name="RHS" value="&quot;Unknown SourceId&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="6"/>
+      </ExitPaths>
+    </Step>
+    <Step id="152" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sResult" notes="" left="1311" top="2566" right="1424" bottom="2655" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sResult"/>
+        <Parameter name="RHS" value="&quot;OK|&quot; &amp; sNewVersion &amp; &quot;|&quot; &amp; sNewPublishDate"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="153" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sNewVersion" notes="" left="894" top="1240" right="1032" bottom="1329" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sNewVersion"/>
+        <Parameter name="RHS" value="sVersion"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="40"/>
+      </ExitPaths>
+    </Step>
+    <Step id="154" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sNewPublishDate" notes="" left="1363" top="1240" right="1514" bottom="1329" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sNewPublishDate"/>
+        <Parameter name="RHS" value="GetHead(lsDate)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="117"/>
+      </ExitPaths>
+    </Step>
+    <Step id="155" type="Tool" creatorModule="" creatorName="Selection" creatorVersion="" label="Selection" notes="" left="580" top="50" right="870" bottom="174" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="StrEqlNoCase(p_sAction, &quot;Delete&quot;)" returnValue="-1" targetStepID="156"/>
+        <ExitPath label="StrEqlNoCase(p_sAction, &quot;Update&quot;)" returnValue="-1" targetStepID="25"/>
+        <ExitPath label="Default" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="156" type="Tool" creatorModule="DsLookup" creatorName="DeleteDsKey" creatorVersion="" label="sVersion" notes="" left="975" top="51" right="1093" bottom="152" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Path" value="c_sDsCachePath &amp; &quot;\\RoutingTable\\&quot; &amp; p_sSourceId" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="false" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delete entries under this key?" value="true" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="162"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="158"/>
+      </ExitPaths>
+    </Step>
+    <Step id="157" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sResult" notes="" left="2045" top="51" right="2158" bottom="140" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sResult"/>
+        <Parameter name="RHS" value="&quot;OK|&quot; &amp; &quot;Deleted&quot; &amp; &quot;|&quot; &amp; sNewPublishDate"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="158" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sResult" notes="&quot;Error|Delete SourceId Failed.&quot;" left="1124" top="104" right="1237" bottom="193" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sResult"/>
+        <Parameter name="RHS" value="&quot;Error|Delete SourceId Failed.&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="159"/>
+      </ExitPaths>
+    </Step>
+    <Step id="159" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Failure" notes="" left="1261" top="106" right="1413" bottom="195" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="&quot;{{RTDS}} Deleting key failed: &quot; &amp; p_sSourceId" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1"/>
+      </ExitPaths>
+    </Step>
+    <Step id="160" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Failure" notes="" left="1861" top="122" right="2011" bottom="211" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="&quot;{{RTDS}} History Logging Failed: &quot; &amp; sSQL" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="157"/>
+      </ExitPaths>
+    </Step>
+    <Step id="161" type="Tool" creatorModule="IPReportLog" creatorName="LogCustomPassthrough" creatorVersion="" label="Logging Custom Passthrough" notes="" left="1624" top="50" right="1821" bottom="151" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="SQL Text to be Executed on Logging Server" value="sSQL" index="0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="157"/>
+        <ExitPath label="Failure" returnValue="0" targetStepID="160"/>
+      </ExitPaths>
+    </Step>
+    <Step id="162" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sSQL" notes="&quot;EXEC [NALLO_APP].[rtds].[sp_AddHistory] &quot; &amp; SQLStr(&quot;DELETE|&quot; &amp; p_sSourceId) &amp; &quot;, &quot; &amp; SQLStr(MakeDateTimeTZ(GetYearUTC($Now), GetMonthUTC($Now), GetDayUTC($Now), GetHourUTC($Now), GetMinuteUTC($Now), GetSecondUTC($Now), &quot;&quot;))" left="1482" top="48" right="1595" bottom="137" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sSQL"/>
+        <Parameter name="RHS" value="&quot;EXEC [NALLO_APP].[rtds].[sp_AddHistory] &quot; &amp; SQLStr(&quot;DELETE|&quot; &amp; p_sSourceId) &amp; &quot;, &quot; &amp; SQLStr(MakeDateTimeTZ(GetYearUTC($Now), GetMonthUTC($Now), GetDayUTC($Now), GetHourUTC($Now), GetMinuteUTC($Now), GetSecondUTC($Now), &quot;&quot;))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="161"/>
+      </ExitPaths>
+    </Step>
+    <Step id="163" type="Tool" creatorModule="" creatorName="Notify Debugger" creatorVersion="" label="DB Close" notes="" left="510" top="1041" right="610" bottom="1130" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="24"/>
+      </ExitPaths>
+    </Step>
+  </Steps>
+  <Variables>
+    <Variable name="LockHandle1" initialValue="" boundGlobalVarID="" typeModule="SynchronizeTools" typeName="SynchronizeLockHandleType" typeLabel="Semaphore Lock Handle"/>
+    <Variable name="bLastAttr" initialValue="false" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="c_iNumberOfDaysToKeep" initialValue="1" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="c_iNumberOfOldConfigsToKeep" initialValue="1" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="c_sDsCachePath" initialValue="${SERVER}\Custom" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="c_sOperationHeaders" initialValue="Id|Type|Name|IsFirstOperation" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="dbConn" initialValue="" boundGlobalVarID="" typeModule="" typeName="DBConnection" typeLabel="DBConnection"/>
+    <Variable name="dbVar" initialValue="" boundGlobalVarID="" typeModule="" typeName="Database" typeLabel="Database"/>
+    <Variable name="iCount" initialValue="0" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iErrorCount" initialValue="0" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iFound" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iIndex" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="lsCreated" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsDate" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsDsPath" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsKeys" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsLogData" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsOperationAttrNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsOperationAttrTypes" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsOperationAttrValues" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsOperationHeaderAttrNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsOperationHeaderAttrValues" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsOperationHeaders" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsPaths" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsValue" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsVersion" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_sAction" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="p_sResult" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="p_sSourceId" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sDsAttribute" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sDsPath" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sDsPath_Previous" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sDsValue" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sJSONParams" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sJSONstring" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sLogData" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sNewPublishDate" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sNewVersion" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sOperationAttrTypes" initialValue="||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sOperationId" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sSQL" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sVersion" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sWhereClause" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+  </Variables>
+</Handler>

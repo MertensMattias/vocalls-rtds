@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Skill(compound-engineering:ce-compound-refresh)"
-    ]
-  }
-}

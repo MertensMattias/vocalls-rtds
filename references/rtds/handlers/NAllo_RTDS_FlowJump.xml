@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Handler name="NAllo_RTDS_FlowJump" description="" version="2.0" category="NAllo RTDS">
+  <Steps>
+    <Step id="0" isInitiator="True" type="Initiator" creatorModule="" creatorName="Subroutine" creatorVersion="" label="NAllo_RTDS_FlowJump" notes="" left="49" top="56" right="212" bottom="145" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter label="Interaction Id" name="" defaultValue="Interaction1" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="Telephony" typeName="CallId" typeLabel="Call ID" value="Interaction1" index="0"/>
+        <Parameter label="Attribute Names" name="" defaultValue="lsAttrNames" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttrNames" index="1"/>
+        <Parameter label="Attribute Values" name="" defaultValue="lsAttrValues" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttrValues" index="2"/>
+        <Parameter label="Next Step" name="" defaultValue="sNextStep" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="False" typeModule="" typeName="String" typeLabel="String" value="p_sNextStep" index="3"/>
+        <Parameter label="DS Path" name="" defaultValue="" defaultValueIsVariable="False" defaultValueIsBlankString="False" input="False" typeModule="" typeName="String" typeLabel="String" value="p_sDsPath" index="4"/>
+        <Parameter label="bFirstOperationId" name="" defaultValue="bFirstOperationId" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="False" typeModule="" typeName="Boolean" typeLabel="Boolean" value="bFirstOperationId" index="5"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Start" returnValue="1" targetStepID="17"/>
+      </ExitPaths>
+    </Step>
+    <Step id="17" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_NextStep = &quot;&quot;" notes="" left="254" top="56" right="387" bottom="145" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="&quot;&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="49"/>
+      </ExitPaths>
+    </Step>
+    <Step id="21" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sNextStep" notes="" left="1363" top="53" right="1482" bottom="142" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;OperationId&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="24"/>
+      </ExitPaths>
+    </Step>
+    <Step id="22" type="Tool" creatorModule="DsLookup" creatorName="GetDsAttrs" creatorVersion="" label="c_sDsCachePath &amp; SourceId" notes="" left="667" top="53" right="873" bottom="154" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Path" value="c_sDsRtPath &amp; GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;SourceId&quot;, 0))" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Directory Services Attributes" value="lsAttrNames" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Attribute Values" value="lsAttrValues" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="26"/>
+        <ExitPath label="Failure" returnValue="1"/>
+      </ExitPaths>
+    </Step>
+    <Step id="24" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_DsPath" notes="c_sDsRtPath &amp; GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;SourceId&quot;, 0)) &amp; &quot;\\&quot; &amp; GetAt(lsAttrValues, Find(lsAttrNames, &quot;ActiveConfig&quot;, 0)) &amp; &quot;\\&quot; &amp; p_sNextStep" left="1980" top="49" right="2087" bottom="138" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sDsPath"/>
+        <Parameter name="RHS" value="c_sDsRtPath &amp; GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;SourceId&quot;, 0)) &amp; &quot;\\&quot; &amp; GetAt(lsAttrValues, Find(lsAttrNames, &quot;ActiveConfig&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="50"/>
+      </ExitPaths>
+    </Step>
+    <Step id="26" type="Subroutine" creatorModule="" creatorName="NAllo_RTDS_IVRLogging" creatorVersion="" label="SetBasePath" notes="" left="915" top="53" right="1083" bottom="142" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Interaction Id" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Action" value="&quot;SetBasePath&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parameter" value="c_sDsRtPath &amp; GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;SourceId&quot;, 0)) &amp; &quot;\\&quot; &amp; GetAt(lsAttrValues, Find(lsAttrNames, &quot;ActiveConfig&quot;, 0))" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="27"/>
+      </ExitPaths>
+    </Step>
+    <Step id="27" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="OperationId exists?" notes="" left="1120" top="53" right="1279" bottom="154" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="StrLen(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;OperationId&quot;, 0))) &gt; 0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="21"/>
+        <ExitPath label="False" returnValue="0" targetStepID="28"/>
+      </ExitPaths>
+    </Step>
+    <Step id="28" type="Tool" creatorModule="DsLookup" creatorName="GetDsAttr" creatorVersion="" label="FirstOperationID" notes="c_sDsRtPath &amp; GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;SourceId&quot;, 0)) &amp; &quot;\\&quot; &amp; GetAt(lsAttrValues, Find(lsAttrNames, &quot;ActiveConfig&quot;, 0))" left="1327" top="174" right="1476" bottom="275" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Path" value="c_sDsRtPath &amp; GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;SourceId&quot;, 0)) &amp; &quot;\\&quot; &amp; GetAt(lsAttrValues, Find(lsAttrNames, &quot;ActiveConfig&quot;, 0))" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Attribute" value="&quot;FirstOperationID&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Attribute Values" value="lsFirstStep" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="29"/>
+        <ExitPath label="Failure" returnValue="1"/>
+      </ExitPaths>
+    </Step>
+    <Step id="29" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sNextStep" notes="" left="1552" top="186" right="1671" bottom="275" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetHead(lsFirstStep)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="48"/>
+      </ExitPaths>
+    </Step>
+    <Step id="48" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="bFirstOperationId" notes="" left="1746" top="188" right="1865" bottom="277" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="bFirstOperationId"/>
+        <Parameter name="RHS" value="true"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="24"/>
+      </ExitPaths>
+    </Step>
+    <Step id="49" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="bFirstOperationId" notes="" left="461" top="60" right="580" bottom="149" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="bFirstOperationId"/>
+        <Parameter name="RHS" value="false"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="22"/>
+      </ExitPaths>
+    </Step>
+    <Step id="50" type="Tool" creatorModule="DsLookup" creatorName="GetDsAttrs" creatorVersion="" label="p_sDsPath" notes="" left="2185" top="40" right="2298" bottom="141" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Path" value="p_sDsPath" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Directory Services Attributes" value="lsAttrNames" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Attribute Values" value="lsAttrValues" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="55"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="55"/>
+      </ExitPaths>
+    </Step>
+    <Step id="52" type="Tool" creatorModule="" creatorName="Notify Debugger" creatorVersion="" label="test" notes="" left="2122" top="392" right="2222" bottom="481" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1"/>
+      </ExitPaths>
+    </Step>
+    <Step id="54" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_DsPath" notes="c_sDsRtPath &amp; GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;SourceId&quot;, 0)) &amp; &quot;\\&quot; &amp; GetAt(lsAttrValues, Find(lsAttrNames, &quot;ActiveConfig&quot;, 0)) &amp; &quot;\\&quot; &amp; p_sNextStep" left="1753" top="393" right="1860" bottom="482" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sDsPath"/>
+        <Parameter name="RHS" value="p_sDsPath &amp; &quot;\\&quot; &amp; p_sNextStep"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="64"/>
+      </ExitPaths>
+    </Step>
+    <Step id="55" type="Tool" creatorModule="Telephony" creatorName="Set Attribute" creatorVersion="" label="ATTR_AttendantProfile = &quot;RTDS&quot;" notes="" left="55" top="392" right="271" bottom="481" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;ATTR_AttendantProfile&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="&quot;RTDS&quot;" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="56"/>
+      </ExitPaths>
+    </Step>
+    <Step id="56" type="Tool" creatorModule="Telephony" creatorName="Log Message" creatorVersion="" label="RTDS Routing: Name" notes="" left="301" top="392" right="465" bottom="481" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="CallLog" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Log Identifier" value="&quot;CallLog&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Text of log message" value="&quot;RTDS Routing: &quot; &amp; GetAt(lsAttrValues, Find(lsAttrNames, &quot;Name&quot;, 0))" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="57"/>
+      </ExitPaths>
+    </Step>
+    <Step id="57" type="Tool" creatorModule="Telephony" creatorName="Set Attribute" creatorVersion="" label="RTDS_ProjectId" notes="" left="488" top="392" right="627" bottom="481" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;RTDS_ProjectId&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="GetAt(lsAttrValues, Find(lsAttrNames, &quot;ProjectId&quot;, 0))" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="58"/>
+      </ExitPaths>
+    </Step>
+    <Step id="58" type="Tool" creatorModule="Telephony" creatorName="Set Attribute" creatorVersion="" label="RTDS_ProjectName" notes="" left="652" top="392" right="815" bottom="481" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;RTDS_ProjectName&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="GetAt(lsAttrValues, Find(lsAttrNames, &quot;ProjectName&quot;, 0))" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="59"/>
+      </ExitPaths>
+    </Step>
+    <Step id="59" type="Tool" creatorModule="Telephony" creatorName="Set Attribute" creatorVersion="" label="RTDS_PromptLibrary" notes="" left="845" top="392" right="1007" bottom="481" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;RTDS_PromptLibrary&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="GetAt(lsAttrValues, Find(lsAttrNames, &quot;PromptLibrary&quot;, 0))" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="60"/>
+      </ExitPaths>
+    </Step>
+    <Step id="60" type="Tool" creatorModule="Telephony" creatorName="Set Attribute" creatorVersion="" label="RTDS_SupportedLanguages" notes="" left="1041" top="392" right="1245" bottom="481" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;RTDS_SupportedLanguages&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="GetAt(lsAttrValues, Find(lsAttrNames, &quot;SupportedLanguages&quot;, 0))" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="61"/>
+      </ExitPaths>
+    </Step>
+    <Step id="61" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="lsLanguages" notes="" left="1312" top="393" right="1442" bottom="482" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="GetAt(lsAttrValues, Find(lsAttrNames, &quot;SupportedLanguages&quot;, 0))" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;|&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsLanguages" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="63"/>
+      </ExitPaths>
+    </Step>
+    <Step id="63" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_bActive = true" notes="" left="1532" top="395" right="1678" bottom="484" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_bActive"/>
+        <Parameter name="RHS" value="true"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="54"/>
+      </ExitPaths>
+    </Step>
+    <Step id="64" type="Tool" creatorModule="Telephony" creatorName="Set Attribute" creatorVersion="" label="RTDS_Path" notes="" left="1928" top="393" right="2044" bottom="482" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;RTDS_Path&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="p_sDsPath" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="52"/>
+      </ExitPaths>
+    </Step>
+  </Steps>
+  <Variables>
+    <Variable name="Interaction1" initialValue="" boundGlobalVarID="" typeModule="Telephony" typeName="CallId" typeLabel="Call ID"/>
+    <Variable name="bFirstOperationId" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="c_sDsRtPath" initialValue="${SERVER}\Custom\RoutingTable\" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="lsAttrNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsAttrValues" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsFirstStep" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsLanguages" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_bActive" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="p_lsAttrNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_lsAttrValues" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_sDsPath" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="p_sNextStep" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+  </Variables>
+</Handler>

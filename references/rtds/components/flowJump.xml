@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="3582" dy="2425" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100">
+  <root>
+    <object label="" DefaultLanguage="" LanguageKey="" DefaultVoice="" MaxEntryCount="" MaxEntryNodeId="" SayAgainNodeId="" SpeechRecognitionEngine="" SpeechSyntEngine="" Code="" Extensions="" VoicePitch="" VoiceSpeed="" VoiceVolume="" BackgroundNoise="" BreathInEffect="" AudioSourceUrl="" PreferredAudio="TTS" Sections="[]" Languages="{'nl':{'isDefault':true,'languageName':'Dutch','ttsLanguageCode':'nl-NL','ttsVoiceName':'nl-NL-Wavenet-A','ttsEngine':'Google','ttsPitch':'','ttsSpeed':'','ttsVolume':'','prosodyBaseEnabled':true,'prosodyContourEnabled':false}}" Variables="" id="vocalls-master-layer">
+      <mxCell />
+    </object>
+    <mxCell id="baselayer" parent="vocalls-master-layer" />
+
+    <!-- EDGES -->
+
+    <mxCell id="e-input-read" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-input" target="n-read-params" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-read-fetch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-read-params" target="n-fetch" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-fetch-parse" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-fetch" target="n-parse" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-parse-output-ok" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-parse" target="n-output-ok" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-parse-output-err" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-parse" target="n-output-err" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- NODES -->
+
+    <!-- INPUT -->
+    <object label="RTDS_OP_*" Type="transient" OnEnter="" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Title="RTDS_OP_*" Kind="input" id="n-input">
+      <mxCell style="rounded=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#f5f5f5;strokeColor=#666666;;fontColor=#333333;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="310" y="-100" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- 1. READ PARAMS -->
+    <object label="read params" Type="script" OnEnter="" OnLeave="" DynamicNextId="" MaxEntryNodeId="" MaxEntryCount="" Code="var vars = context.session.variables; &#xa; &#xa;// Read SourceId for the target flow &#xa;var sSourceId = vars.RTDS_OP_SourceId; &#xa;if (sSourceId === undefined || sSourceId === null) { &#xa;    sSourceId = ''; &#xa;} &#xa; &#xa;// Read optional specific OperationId to land on (empty = use IsFirstOperation) &#xa;var sOperationId = vars.RTDS_OP_OperationId; &#xa;if (sOperationId === undefined || sOperationId === null) { &#xa;    sOperationId = ''; &#xa;} &#xa; &#xa;// Store in component-internal session vars (__ prefix = hidden from CSV, internal to component) &#xa;vars.__fj_sourceId     = sSourceId; &#xa;vars.__fj_operationId  = sOperationId; &#xa;vars.__fj_error        = '0'; &#xa; &#xa;log_debug('[RTDS] flowJump: SourceId=' + sSourceId + ' OperationId=' + sOperationId);" DynamicNextTabGuid="" id="n-read-params">
+      <mxCell style="rounded=1;arcSize=8;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;image=/Content/Designer/Icons/script.svg;imageAlign=center;imageVerticalAlign=top;imageWidth=24;imageHeight=24;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="263" y="20" width="225" height="80" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- 2. FETCH -->
+    <object label="fetch new routing table" Type="script" OnEnter="" OnLeave="" DynamicNextId="" MaxEntryNodeId="" MaxEntryCount="" Code="var vars = context.session.variables; &#xa; &#xa;var sSourceId = vars.__fj_sourceId; &#xa; &#xa;if (sSourceId === undefined || sSourceId === null || sSourceId.length === 0) { &#xa;    log_error('[RTDS] flowJump: SourceId is empty - cannot fetch'); &#xa;    vars.RTDS_error    = 'RTDS_FLOWJUMP_NO_SOURCE_ID'; &#xa;    vars.__fj_error    = '1'; &#xa;    return; &#xa;} &#xa; &#xa;// Build the API URL from the base stored in session &#xa;var sApiBase = vars.RTDS_apiBase; &#xa;if (sApiBase === undefined || sApiBase === null) { &#xa;    sApiBase = ''; &#xa;} &#xa;var sUrl = sApiBase + '/api/routing-table/' + sSourceId; &#xa; &#xa;log_debug('[RTDS] flowJump: fetching ' + sUrl); &#xa; &#xa;return httpRequest(sUrl, { method: 'GET' }).then(function(response) { &#xa;    if (response.statusCode !== 200) { &#xa;        log_error('[RTDS] flowJump: API returned ' + response.statusCode); &#xa;        vars.RTDS_error = 'RTDS_FLOWJUMP_API_ERROR_' + response.statusCode; &#xa;        vars.__fj_error = '1'; &#xa;        return; &#xa;    } &#xa;    vars.__fj_responseBody = response.body; &#xa;    log_debug('[RTDS] flowJump: fetch OK for ' + sSourceId); &#xa;});" DynamicNextTabGuid="" id="n-fetch">
+      <mxCell style="rounded=1;arcSize=8;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;image=/Content/Designer/Icons/script.svg;imageAlign=center;imageVerticalAlign=top;imageWidth=24;imageHeight=24;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="263" y="180" width="225" height="80" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- 3. PARSE + BUILD INDEX -->
+    <object label="parse + build opIndex" Type="script" OnEnter="" OnLeave="" DynamicNextId="" MaxEntryNodeId="" MaxEntryCount="" Code="var vars = context.session.variables; &#xa; &#xa;// Abort early if a previous node flagged an error &#xa;if (vars.__fj_error === '1') { &#xa;    log_warn('[RTDS] flowJump: skipping parse due to earlier error'); &#xa;    return; &#xa;} &#xa; &#xa;// Parse the response body &#xa;var json; &#xa;try { &#xa;    json = JSON.parse(vars.__fj_responseBody); &#xa;} catch (e) { &#xa;    log_error('[RTDS] flowJump: JSON parse failed: ' + e.message); &#xa;    vars.RTDS_error = 'RTDS_FLOWJUMP_PARSE_ERROR'; &#xa;    vars.__fj_error = '1'; &#xa;    return; &#xa;} &#xa; &#xa;if (!json || !json.Operations || json.Operations.length === 0) { &#xa;    log_error('[RTDS] flowJump: Operations array missing or empty'); &#xa;    vars.RTDS_error = 'RTDS_FLOWJUMP_PARSE_ERROR'; &#xa;    vars.__fj_error = '1'; &#xa;    return; &#xa;} &#xa; &#xa;// Write flow header fields to session &#xa;vars.RTDS_sourceId            = json.SourceId; &#xa;vars.RTDS_name                = json.Name; &#xa;vars.RTDS_project             = json.Project; &#xa;vars.RTDS_promptLibrary       = json.PromptLibrary; &#xa;vars.RTDS_supportedLanguages  = json.SupportedLanguages; &#xa; &#xa;// Build operation index keyed by Id &#xa;var opIndex = {}; &#xa;var ops = json.Operations; &#xa;for (var i = 0; i &lt; ops.length; i++) { &#xa;    if (ops[i].Id) { &#xa;        opIndex[ops[i].Id] = ops[i]; &#xa;    } &#xa;} &#xa;vars.RTDS_opIndex = opIndex; &#xa; &#xa;// Determine the step to resume at &#xa;var sOperationId = vars.__fj_operationId; &#xa; &#xa;if (sOperationId !== undefined &amp;&amp; sOperationId !== null &amp;&amp; sOperationId.length &gt; 0) { &#xa;    // Explicit target operation supplied &#xa;    vars.RTDS_nextStepId = sOperationId; &#xa;    log_debug('[RTDS] flowJump: resuming at operationId=' + sOperationId); &#xa;} else { &#xa;    // Find the lexicographically lowest IsFirstOperation &#xa;    var sFirstId = null; &#xa;    for (var j = 0; j &lt; ops.length; j++) { &#xa;        if (ops[j].IsFirstOperation === true) { &#xa;            if (sFirstId === null || ops[j].Id &lt; sFirstId) { &#xa;                sFirstId = ops[j].Id; &#xa;            } &#xa;        } &#xa;    } &#xa;    if (sFirstId === null) { &#xa;        log_error('[RTDS] flowJump: no IsFirstOperation found in new flow'); &#xa;        vars.RTDS_error = 'RTDS_NO_ENTRY_POINT'; &#xa;        vars.__fj_error = '1'; &#xa;        return; &#xa;    } &#xa;    vars.RTDS_nextStepId = sFirstId; &#xa;    log_debug('[RTDS] flowJump: entry point is ' + sFirstId); &#xa;}" DynamicNextTabGuid="" id="n-parse">
+      <mxCell style="rounded=1;arcSize=8;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;image=/Content/Designer/Icons/script.svg;imageAlign=center;imageVerticalAlign=top;imageWidth=24;imageHeight=24;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="263" y="340" width="225" height="80" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- OUTPUT: ok -->
+    <object label="flow_jump_ok" Type="transient" OnEnter="" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Title="flow_jump_ok" Kind="output" id="n-output-ok">
+      <mxCell style="rounded=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#f5f5f5;strokeColor=#666666;;fontColor=#333333;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="310" y="500" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- OUTPUT: error -->
+    <object label="flow_jump_error" Type="transient" OnEnter="" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Title="flow_jump_error" Kind="output" id="n-output-err">
+      <mxCell style="rounded=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#f5f5f5;strokeColor=#666666;;fontColor=#333333;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="580" y="340" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+
+  </root>
+</mxGraphModel>

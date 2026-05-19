@@ -22,7 +22,8 @@
  * (which uses GROUNDING_LINES from core/grounding-line.js — the full-sentence
  * variant, not the short marker phrase). The npm run validate CLI no longer
  * emits check_kq_knowledge_grounding directly; the canonical check survives
- * inside `node bin/vocalls.js validate` via Mode 4. The two CLIs have always
+ * inside the 5-mode pipeline validator when present. This module is used by
+ * `cli/validate.js`. The two validators have always
  * had different scopes; this just makes the boundary explicit.
  */
 

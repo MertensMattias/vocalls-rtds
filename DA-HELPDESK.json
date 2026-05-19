@@ -1,0 +1,428 @@
+{
+  "SourceId": "+3233389999",
+  "Name": "DIGIPOLIS - LPA_ICT_HELPDESK",
+  "Project": "LPA ICT",
+  "PromptLibrary": "DIGIPOLIS\\LPA\\ICT_HELPDESK",
+  "SupportedLanguages": "NL",
+  "Operations": [
+    {
+      "Id": "00000",
+      "Type": "SetAttributes",
+      "Name": "Call Initialization",
+      "IsFirstOperation": true,
+      "Params": {
+        "LogAttributes": "RTDS_ProjectName|Eic_RemoteId|ATTR_RoutingId|ATTR_CallflowId|ATTR_IVREvent|ATTR_IVRAction|ATTR_CQR|ATTR_CQS",
+        "CallflowId": "LPA_ICT_HELPDESK",
+        "RoutingId": "LPA_ICT_HELPDESK",
+        "IVREvent": "9999",
+        "IVRAction": "CT",
+        "NextStep": "00001"
+      }
+    },
+    {
+      "Id": "00001",
+      "Type": "Emergency",
+      "Name": "Check: Emergency",
+      "Params": {
+        "Active": "1",
+        "EmergencyId": "DIGIPOLIS LPA_ICT_HELPDESK Exception Prompt",
+        "NextStep_Transfer": "00002",
+        "NextStep_Disconnect": "00002",
+        "NextStep_Continue": "00002",
+        "NextStep_Failure": "00002",
+        "NextStep": "00002"
+      }
+    },
+    {
+      "Id": "00002",
+      "Type": "Schedule",
+      "Name": "Check: Scheduler",
+      "Params": {
+        "ApplicationId": "1",
+        "ScheduleID": "8",
+        "NextStep_Open": "00003",
+        "NextStep_Guard_ICT": "00004",
+        "NextStep_Transfer": "00005",
+        "NextStep_Closed": "00006",
+        "NextStep_Failure": "00060",
+        "NextStep": "00060"
+      }
+    },
+    {
+      "Id": "00003",
+      "Type": "SetAttributes",
+      "Name": "Set: Congnos Open",
+      "Params": {
+        "IVREvent": "1200",
+        "IVRAction": "CT",
+        "NextStep": "00010"
+      }
+    },
+    {
+      "Id": "00004",
+      "Type": "SetAttributes",
+      "Name": "Set: Congnos Guard",
+      "Params": {
+        "IVREvent": "1200",
+        "IVRAction": "GD03",
+        "NextStep": "00060"
+      }
+    },
+    {
+      "Id": "00005",
+      "Type": "SetAttributes",
+      "Name": "Set: Congnos Transfer",
+      "Params": {
+        "IVREvent": "1200",
+        "IVRAction": "TX",
+        "NextStep": "00097"
+      }
+    },
+    {
+      "Id": "00006",
+      "Type": "SetAttributes",
+      "Name": "Set: Congnos Closed",
+      "Params": {
+        "IVREvent": "1201",
+        "IVRAction": "DC",
+        "NextStep": "00098"
+      }
+    },
+    {
+      "Id": "00010",
+      "Type": "Emergency",
+      "Name": "Check: Emergency",
+      "Params": {
+        "Active": "1",
+        "EmergencyId": "Emergency Routing LPA ICT Helpdesk",
+        "NextStep_Transfer": "00011",
+        "NextStep_Disconnect": "00012",
+        "NextStep_Continue": "00013",
+        "NextStep_Failure": "00020",
+        "NextStep": "00020"
+      }
+    },
+    {
+      "Id": "00011",
+      "Type": "SetAttributes",
+      "Name": "Set: Congnos Emergency Transfer",
+      "Params": {
+        "IVREvent": "1204",
+        "IVRAction": "TX",
+        "NextStep": "00097"
+      }
+    },
+    {
+      "Id": "00012",
+      "Type": "SetAttributes",
+      "Name": "Set: Congnos Emergency Disconnect",
+      "Params": {
+        "IVREvent": "1204",
+        "IVRAction": "DC",
+        "NextStep": "00098"
+      }
+    },
+    {
+      "Id": "00013",
+      "Type": "SetAttributes",
+      "Name": "Set: Congnos Emergency Continue",
+      "Params": {
+        "IVREvent": "1204",
+        "IVRAction": "CT",
+        "NextStep": "00020"
+      }
+    },
+    {
+      "Id": "00020",
+      "Type": "PlayPrompt",
+      "Name": "Play: Welcome",
+      "Params": {
+        "Active": ["1", "isEditable"],
+        "Prompt": "Welcome.wav",
+        "NextStep": "00021"
+      }
+    },
+    {
+      "Id": "00021",
+      "Type": "PlayPrompt",
+      "Name": "Play: Extra",
+      "Params": {
+        "Active": ["0", "isEditable"],
+        "ApplicationId": "6",
+        "Prompt": ["AdHoc_Extra", "isDisplayed", "isEditable"],
+        "NextStep": "00022"
+      }
+    },
+    {
+      "Id": "00022",
+      "Type": "PlayPrompt",
+      "Name": "Play: Exceptions",
+      "Params": {
+        "Active": ["0", "isEditable"],
+        "ApplicationId": "6",
+        "Prompt": ["AdHoc_ExceptionBadPortal", "isDisplayed", "isEditable"],
+        "NextStep": "00024"
+      }
+    },
+    {
+      "Id": "00024",
+      "Type": "Condition",
+      "Name": "Check: Staffing",
+      "Params": {
+        "Statistic": "AgentsLoggedIn",
+        "Workgroup": "LPA_ICT_HELPDESK_V",
+        "Operator": "gt",
+        "Value": "0",
+        "NextStep_True": "00025",
+        "NextStep_False": "00060"
+      }
+    },
+    {
+      "Id": "00025",
+      "Type": "Condition",
+      "Name": "Check: MaxQueue",
+      "Params": {
+        "Statistic": "CallsWaiting",
+        "Workgroup": "LPA_ICT_HELPDESK_V",
+        "Operator": "gt",
+        "Value": "39",
+        "NextStep_True": "00096",
+        "NextStep_False": "00030"
+      }
+    },
+    {
+      "Id": "00030",
+      "Type": "WorkgroupTransfer",
+      "Name": "Route-To: Workgroup",
+      "Params": {
+        "QueueName": "LPA_ICT_HELPDESK_V",
+        "Skills": "LPA_ICT_Helpdesk",
+        "Priority": "100",
+        "NextStep": "00050"
+      }
+    },
+    {
+      "Id": "00050",
+      "Type": "PlayPrompt",
+      "Name": "Queue: Message 1",
+      "Params": {
+        "Prompt": "Queue_Waitmessage01",
+        "NextStep": "00051"
+      }
+    },
+    {
+      "Id": "00051",
+      "Type": "PlayPrompt",
+      "Name": "Queue: Message 2",
+      "Params": {
+        "Prompt": "Queue_Waitmessage02",
+        "NextStep": "00050"
+      }
+    },
+    {
+      "Id": "00060",
+      "Type": "Menu",
+      "Name": "Menu: Guard",
+      "Params": {
+        "Active": ["1", "isDisplayed", "isEditable"],
+        "ApplicationId": "7",
+        "StaticPrompt": "Menu_Guard.wav",
+        "Timeout": 8,
+        "MaxTries": 0,
+        "NextStep_0": "00065",
+        "NextStep_DefaultChoice": "00070",
+        "NextStep": "00070"
+      }
+    },
+    {
+      "Id": "00065",
+      "Type": "SetAttributes",
+      "Name": "Set: Congnos Guard LTSU",
+      "Params": {
+        "IVREvent": "1200",
+        "IVRAction": "GD04",
+        "NextStep": "00066"
+      }
+    },
+    {
+      "Id": "00066",
+      "Type": "FlowJump",
+      "Name": "FlowJump: LPA_LTSU_GUARD",
+      "IsFirstOperation": true,
+      "Params": {
+        "SourceId": "+3271690037"
+      }
+    },
+    {
+      "Id": "00080",
+      "Type": "GuardRouting",
+      "Name": "LPA_LTSU_GUARD",
+      "Params": {
+        "Active": 1,
+        "ConfigId": 4,
+        "ConfigName": "LPA_LTSU_GUARD",
+        "DialGuard": true,
+        "DialGroup": "SIP_TO_TELENET_DIGIPOLIS_STAD",
+        "OnHoldAudio": "TENANT_DA_GUARD",
+        "Timeout": 15,
+        "RecordVoicemail": true,
+        "AcceptCallMenu": true,
+        "SendSMS": true,
+        "SendMail": true,
+        "NextStep_Failure": "00067",
+        "NextStep_Success": "00067",
+        "NextStep": "00067"
+      }
+    },
+    {
+      "Id": "00081",
+      "Type": "SendEmail",
+      "Name": "Mail-To: LPA_LTSU_GUARD",
+      "Params": {
+        "Active": 1,
+        "Subject": "LPA_LTSU_GUARD: Call Report",
+        "From": "IVR_EVENTS@n-allo.be",
+        "To": "$(ATTR_EmailTo)",
+        "CC": "veerle.georges@police.belgium.eu;mattias.mertens@n-allo.be",
+        "Body": "$(ATTR_EmailBody)",
+        "Importance": "Normal",
+        "Attachment": "$(ATTR_EmailAttachment)",
+        "NextStep_Success": "00068",
+        "NextStep_Failure": "00068",
+        "NextStep": "00068"
+      }
+    },
+    {
+      "Id": "00082",
+      "Type": "SendSMS",
+      "Name": "SMS-To: LPA_LTSU_GUARD",
+      "Params": {
+        "Active": 1,
+        "ConfigId": 47,
+        "Routing": "LPA_LTSU_GUARD",
+        "From": "8850",
+        "To": "$(ATTR_SMSTo)",
+        "Body": "$(ATTR_SMSBody)",
+        "NextStep_Failure": "00098",
+        "NextStep_Success": "00098",
+        "NextStep": "00098"
+      }
+    },
+    {
+      "Id": "00070",
+      "Type": "Emergency",
+      "Name": "Check: Emergency",
+      "Params": {
+        "Active": "1",
+        "EmergencyId": "DIGIPOLIS LPA_ICT_HELPDESK Exception Prompt",
+        "NextStep_Transfer": "00097",
+        "NextStep_Disconnect": "00098",
+        "NextStep_Continue": "00071",
+        "NextStep_Failure": "00071",
+        "NextStep": "00071"
+      }
+    },
+    {
+      "Id": "00071",
+      "Type": "GuardRouting",
+      "Name": "LPA_ICT_GUARD",
+      "Params": {
+        "Active": 1,
+        "ConfigId": 3,
+        "ConfigName": "LPA_ICT_GUARD",
+        "DialGuard": true,
+        "DialGroup": "SIP_TO_TELENET_DIGIPOLIS_STAD",
+        "OnHoldAudio": "TENANT_DA_GUARD",
+        "Timeout": 30,
+        "RecordVoicemail": true,
+        "AcceptCallMenu": true,
+        "SendSMS": true,
+        "SendMail": true,
+        "NextStep_Failure": "00072",
+        "NextStep_Success": "00072",
+        "NextStep": "00072"
+      }
+    },
+    {
+      "Id": "00072",
+      "Type": "SendEmail",
+      "Name": "Mail-To: LPA_ICT_GUARD",
+      "Params": {
+        "Active": 1,
+        "Subject": "LPA_ICT_GUARD: Call Report",
+        "From": "IVR_EVENTS@n-allo.be",
+        "To": "$(ATTR_EmailTo)",
+        "CC": "veerle.georges@police.belgium.eu;mattias.mertens@n-allo.be",
+        "Body": "$(ATTR_EmailBody)",
+        "Importance": "Normal",
+        "Attachment": "$(ATTR_EmailAttachment)",
+        "NextStep_Success": "00073",
+        "NextStep_Failure": "00073",
+        "NextStep": "00073"
+      }
+    },
+    {
+      "Id": "00073",
+      "Type": "SendSMS",
+      "Name": "SMS-To: LPA_ICT_GUARD",
+      "Params": {
+        "Active": 1,
+        "ConfigId": 47,
+        "Routing": "LPA_ICT_GUARD",
+        "From": "8850",
+        "To": "$(ATTR_SMSTo)",
+        "Body": "$(ATTR_SMSBody)",
+        "NextStep_Failure": "00098",
+        "NextStep_Success": "00098",
+        "NextStep": "00098"
+      }
+    },
+    {
+      "Id": "00096",
+      "Type": "Disconnect",
+      "Name": "RTDS: MaxQueue Disconnect",
+      "Params": {
+        "Prompt": "PreQueue_MaxQueueDisconnect",
+        "ApplicationId": "4"
+      }
+    },
+    {
+      "Id": "00097",
+      "Type": "ExternalTransfer",
+      "Name": "Route-To: External Number",
+      "Params": {
+        "PhoneNumber": "",
+        "OutboundANI": "",
+        "PerformCallAnalysis": "Yes",
+        "DiversionReason": "8",
+        "Timeout": "30",
+        "NextStep_Busy": "00099",
+        "NextStep_RNA": "00099",
+        "NextStep": "00098"
+      }
+    },
+    {
+      "Id": "00098",
+      "Type": "Disconnect",
+      "Name": "RTDS: Disconnect"
+    },
+    {
+      "Id": "00099",
+      "Type": "SetAttributes",
+      "Name": "Set: Congnos Error",
+      "Params": {
+        "IVREvent": "1200",
+        "IVRAction": "CT",
+        "NextStep": "00100"
+      }
+    },
+    {
+      "Id": "00100",
+      "Type": "Disconnect",
+      "Name": "RTDS: IVR Error",
+      "Params": {
+        "Prompt": "Scheduler_ClosedDisconnect"
+      }
+    }
+  ]
+}

@@ -1,0 +1,169 @@
+<mxGraphModel dx="5282" dy="2425" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100">
+  <root>
+    <object label="" DefaultLanguage="" LanguageKey="" DefaultVoice="" MaxEntryCount="" MaxEntryNodeId="" SayAgainNodeId="" SpeechRecognitionEngine="" SpeechSyntEngine="" Code="" Extensions="" VoicePitch="" VoiceSpeed="" VoiceVolume="" BackgroundNoise="" BreathInEffect="" AudioSourceUrl="" PreferredAudio="TTS" Sections="" Languages="{&#39;nl&#39;:{&#39;isDefault&#39;:true,&#39;languageName&#39;:&#39;Dutch&#39;,&#39;ttsLanguageCode&#39;:&#39;nl-NL&#39;,&#39;ttsVoiceName&#39;:&#39;nl-NL-Wavenet-A&#39;,&#39;ttsEngine&#39;:&#39;Google&#39;,&#39;ttsPitch&#39;:&#39;&#39;,&#39;ttsSpeed&#39;:&#39;&#39;,&#39;ttsVolume&#39;:&#39;&#39;,&#39;prosodyBaseEnabled&#39;:true,&#39;prosodyContourEnabled&#39;:false}}" Variables="" id="vocalls-master-layer">
+      <mxCell />
+    </object>
+    <mxCell id="baselayer" parent="vocalls-master-layer" />
+    <mxCell id="29dc556e-dbd1-4242-99ba-461923e74692" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="0" target="1" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="47364d97-78d5-426d-bfec-f936b08608f5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="1" target="6" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="input" Type="transient" OnEnter="" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Title="input" Kind="input" id="0">
+      <mxCell style="rounded=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#f5f5f5;strokeColor=#666666;;fontColor=#333333;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="230" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="I am your first component" Type="say" OnEnter="context.returnTo = context.currentNode.id" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Language="" Voice="" SelectionMode="temporary" Cache="True" Text="I am your first component" AltTexts="" id="1">
+      <mxCell style="rounded=1;arcSize=8;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#8BE767;strokeColor=#6AB04E;;fontColor=#1A1A1A;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;image=/Content/Designer/Icons/say.svg;imageWidth=24;imageHeight=24;imageAlign=center;imageVerticalAlign=top;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="230" y="140" width="175" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="output" Type="transient" OnEnter="" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Title="output" Kind="output" id="6">
+      <mxCell style="rounded=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#f5f5f5;strokeColor=#666666;;fontColor=#333333;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="505" y="-200" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="enter text" Type="say" OnEnter="context.returnTo = context.currentNode.id" OnLeave="" DynamicNextId="" Text="enter text" AltTexts="" SelectionMode="temporary" MaxEntryCount="" MaxEntryNodeId="" Language="" Voice="" id="21">
+      <mxCell style="rounded=1;arcSize=8;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#8BE767;strokeColor=#6AB04E;;fontColor=#1A1A1A;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;image=/Content/Designer/Icons/say.svg;imageWidth=24;imageHeight=24;imageAlign=center;imageVerticalAlign=top;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="-1100" y="-450" width="287" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="dial" OnEnter="" OnLeave="" DynamicNextId="" id="22">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FDDE4A;strokeColor=#D1B73D;;fontColor=#1A1A1A;fontFamily=Verdana;fontStyle=0;image=/Content/Designer/Icons/dial.svg;imageAlign=center;imageWidth=22;imageHeight=22;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="-1290.0000000000002" y="-260" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="pickup" OnEnter="" OnLeave="" DynamicNextId="" id="23">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FDDE4A;strokeColor=#D1B73D;;fontColor=#1A1A1A;fontFamily=Verdana;fontStyle=0;image=/Content/Designer/Icons/pickup.svg;imageAlign=center;imageWidth=28;imageHeight=28;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="-1280.0000000000002" y="-160" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="hung" OnEnter="" OnLeave="" id="24">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FF956A;strokeColor=#C97654;;fontColor=#1A1A1A;fontFamily=Verdana;fontStyle=0;image=/Content/Designer/Icons/hung.svg;imageAlign=center;imageWidth=28;imageHeight=28;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="-1280.0000000000002" y="-20" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="redirect" OnEnter="" OnLeave="" Destination="+420" MaxEntryCount="" MaxEntryNodeId="" Parameters="" id="25">
+      <mxCell style="swimlane;swimlaneFillColor=#FDDE4A;childLayout=stackLayout;horizontal=1;startSize=16;horizontalStack=0;rounded=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FDDE4A;strokeColor=#D1B73D;;fontColor=#1A1A1A;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;container=0;spacingTop=-90;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;arcSize=16;spacing=2;spacingBottom=0;allowArrows=0;rotatable=0;overflow=hidden;marginTop=0;marginLeft=10;marginRight=10;marginBottom=10;separatorColor=none;rounded=1;swimlaneLine=0;" parent="baselayer" vertex="1">
+        <mxGeometry x="-1305" y="119.99999999999989" width="160" height="120" as="geometry" />
+      </mxCell>
+    </object>
+    <object id="26">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=none;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=none;image=/Content/Designer/Icons/redirect.svg;imageWidth=28;imageHeight=28;imageVerticalAlign=top;imageAlign=center;absoluteArcSize=0;noLabel=0;connectable=0;imageAspect=1;editable=0;cloneable=0;deletable=0;resizable=0;" parent="25" vertex="1">
+        <mxGeometry x="10" y="16" width="140" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="not accepted" DynamicNextId="" SubType="default" id="27">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=#b85450;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=#f8cecc;" parent="25" vertex="1">
+        <mxGeometry x="10" y="56" width="140" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="script" Type="script" OnEnter="" OnLeave="" DynamicNextId="" Code="log_debug(&#39;message&#39;);" MaxEntryNodeId="" MaxEntryCount="" id="28">
+      <mxCell style="rounded=1;arcSize=8;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;image=/Content/Designer/Icons/script.svg;imageAlign=center;imageVerticalAlign=top;imageWidth=24;imageHeight=24;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="-1040" y="-240" width="168" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="name = &#39;value&#39;" Type="setvar" OnEnter="" OnLeave="" DynamicNextId="" VariableName="name" VariableValue="&#39;value&#39;" MaxEntryNodeId="" MaxEntryCount="" id="29">
+      <mxCell style="rounded=1;arcSize=8;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;image=/Content/Designer/Icons/setvar.svg;imageAlign=center;imageVerticalAlign=top;imageWidth=24;imageHeight=18;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="-610" y="-270" width="130" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="1000ms" Type="pause" OnEnter="" OnLeave="" DynamicNextId="" Interval="1000" MaxEntryNodeId="" MaxEntryCount="" id="30">
+      <mxCell style="rounded=1;arcSize=8;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;image=/Content/Designer/Icons/pause.svg;imageAlign=center;imageVerticalAlign=top;imageWidth=24;imageHeight=24;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="-640" y="-440" width="130" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="recognize" OnEnter="" OnLeave="" Timeout="15000" MinTimeout="8000" ExpectedSpeechType="default" SpeechConfigParams="" SimilarityTreshold="0.4" NoiseDistance="0.05" MaxWords="" ReactionType="normal" VariableName="" HintKeywords="" HintGrammar="" Wait="" MaxEntryNodeId="" MaxEntryCount="" SpeechRecognition="" ResponseAudio="false" NLPEngine="Embedding" id="31">
+      <mxCell style="swimlane;swimlaneFillColor=#67BBE7;childLayout=stackLayout;horizontal=1;startSize=16;horizontalStack=0;   rounded=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#67BBE7;strokeColor=#559BBF;;fontColor=#1A1A1A;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;container=0;spacingTop=-90;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;arcSize=16;spacing=2;spacingBottom=0;allowArrows=0;rotatable=0;overflow=hidden;marginTop=0;marginLeft=10;marginRight=10;marginBottom=10;separatorColor=none;rounded=1;swimlaneLine=0;" parent="baselayer" vertex="1">
+        <mxGeometry x="-400" y="-430" width="163" height="210" as="geometry" />
+      </mxCell>
+    </object>
+    <object id="32">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=none;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=none;image=/Content/Designer/Icons/recognize.svg;imageWidth=28;imageHeight=28;imageVerticalAlign=top;imageAlign=center;absoluteArcSize=0;noLabel=0;connectable=0;imageAspect=1;editable=0;cloneable=0;deletable=0;resizable=0;" parent="31" vertex="1">
+        <mxGeometry x="10" y="16" width="143" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="yes" SubType="reactionGroup" Priority="0.5" Lemma="true" MaxWords="" DynamicNextId="" Keywords="" Grammar="yes" Sentences="" Groups="" OnSelected="" ShowOption="true" id="33">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=#559BBF;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=#ffffff;" parent="31" vertex="1">
+        <mxGeometry x="10" y="56" width="143" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="no" SubType="reactionGroup" Priority="0.5" Lemma="true" MaxWords="" DynamicNextId="" Keywords="" Grammar="no" Sentences="" Groups="" OnSelected="" ShowOption="true" id="34">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=#559BBF;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=#ffffff;" parent="31" vertex="1">
+        <mxGeometry x="10" y="86" width="143" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="no match" DynamicNextId="" SubType="notRecognized" id="35">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=#b85450;allowArrows=0;rotatable=0;fillColor=#f8cecc;" parent="31" vertex="1">
+        <mxGeometry x="10" y="116" width="143" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="counter" OnEnter="" OnLeave="" MaxEntryNodeId="" MaxEntryCount="" VariableName="" id="39">
+      <mxCell style="swimlane;swimlaneFillColor=#FFFFFF;childLayout=stackLayout;horizontal=1;startSize=16;horizontalStack=0;rounded=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;container=0;spacingTop=-90;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;arcSize=16;spacing=2;spacingBottom=0;allowArrows=0;rotatable=0;overflow=hidden;marginTop=0;marginLeft=10;marginRight=10;marginBottom=10;separatorColor=none;rounded=1;swimlaneLine=0;" parent="baselayer" vertex="1">
+        <mxGeometry x="-490" y="-86" width="160" height="126" as="geometry" />
+      </mxCell>
+    </object>
+    <object id="40">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=none;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=none;image=/Content/Designer/Icons/counter.svg;imageWidth=24;imageHeight=24;imageVerticalAlign=top;imageAlign=center;absoluteArcSize=0;noLabel=0;connectable=0;imageAspect=1;editable=0;cloneable=0;deletable=0;resizable=0;" parent="39" vertex="1">
+        <mxGeometry x="10" y="16" width="140" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="&amp;gt;= 2" DynamicNextId="" SubType="expression" Expression="&gt;= 2" id="41">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=#B3B3B3;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=#ffffff;image=/Content/Designer/Icons/_case.svg;dashed=1;overflow=hidden;" parent="39" vertex="1">
+        <mxGeometry x="10" y="56" width="140" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="number" OnEnter="" OnLeave="" DynamicNextId="" Timeout="15000" SubmitCode="#" VariableName="myNumber" MinTimeout="" MaxEntryNodeId="" MaxEntryCount="" id="42">
+      <mxCell style="swimlane;swimlaneFillColor=#67BBE7;childLayout=stackLayout;horizontal=1;startSize=16;horizontalStack=0;   rounded=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#67BBE7;strokeColor=#559BBF;;fontColor=#1A1A1A;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;container=0;spacingTop=-90;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;arcSize=16;spacing=2;spacingBottom=0;allowArrows=0;rotatable=0;overflow=hidden;marginTop=0;marginLeft=10;marginRight=10;marginBottom=10;separatorColor=none;rounded=1;swimlaneLine=0;" parent="baselayer" vertex="1">
+        <mxGeometry x="-1100" y="-70" width="160" height="126" as="geometry" />
+      </mxCell>
+    </object>
+    <object id="43">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=none;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=none;image=/Content/Designer/Icons/number.svg;imageWidth=28;imageHeight=28;imageVerticalAlign=top;imageAlign=center;absoluteArcSize=0;noLabel=0;connectable=0;imageAspect=1;editable=0;cloneable=0;deletable=0;resizable=0;" parent="42" vertex="1">
+        <mxGeometry x="10" y="16" width="140" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="no input" DynamicNextId="" SubType="noInput" id="44">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=#559BBF;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=#A9E1F5;image=/Content/Designer/Icons/_nothing.svg" parent="42" vertex="1">
+        <mxGeometry x="10" y="56" width="140" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="no match" DynamicNextId="" SubType="notRecognized" id="45">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=#b85450;allowArrows=0;rotatable=0;fillColor=#f8cecc;" parent="42" vertex="1">
+        <mxGeometry x="10" y="86" width="140" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="case" OnEnter="" OnLeave="" MaxEntryNodeId="" MaxEntryCount="" id="46">
+      <mxCell style="swimlane;swimlaneFillColor=#FFFFFF;childLayout=stackLayout;horizontal=1;startSize=16;horizontalStack=0;rounded=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;container=0;spacingTop=-90;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;arcSize=16;spacing=2;spacingBottom=0;allowArrows=0;rotatable=0;overflow=hidden;marginTop=0;marginLeft=10;marginRight=10;marginBottom=10;separatorColor=none;rounded=1;swimlaneLine=0;" parent="baselayer" vertex="1">
+        <mxGeometry x="-505" y="128" width="160" height="126" as="geometry" />
+      </mxCell>
+    </object>
+    <object id="47">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=none;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=none;image=/Content/Designer/Icons/case.svg;imageWidth=24;imageHeight=24;imageVerticalAlign=top;imageAlign=center;absoluteArcSize=0;noLabel=0;connectable=0;imageAspect=1;editable=0;cloneable=0;deletable=0;resizable=0;" parent="46" vertex="1">
+        <mxGeometry x="10" y="16" width="140" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="no choice" DynamicNextId="" SubType="default" id="48">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=#559BBF;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=#A9E1F5;image=/Content/Designer/Icons/_nothing.svg" parent="46" vertex="1">
+        <mxGeometry x="10" y="56" width="140" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="name == &#39;value&#39;" DynamicNextId="" SubType="expression" Expression="name == &#39;value&#39;" id="49">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=#B3B3B3;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=#ffffff;image=/Content/Designer/Icons/_case.svg;dashed=1;overflow=hidden;" parent="46" vertex="1">
+        <mxGeometry x="10" y="86" width="140" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="free text" Type="label" OnEnter="" OnLeave="" DynamicNextId="" Title="free text" MaxEntryNodeId="" MaxEntryCount="" id="50">
+      <mxCell style="rounded=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;allowArrows=0;rotatable=0;overflow=hidden;strokeColor=#999999;fontColor=#4D4D4D;" parent="baselayer" vertex="1">
+        <mxGeometry x="-770" y="30" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="input / output" Type="transient" OnEnter="" OnLeave="" DynamicNextId="" Title="" Kind="output" MaxEntryNodeId="" MaxEntryCount="" id="51">
+      <mxCell style="rounded=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#f5f5f5;strokeColor=#666666;;fontColor=#333333;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="-790" y="-260" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+  </root>
+</mxGraphModel>

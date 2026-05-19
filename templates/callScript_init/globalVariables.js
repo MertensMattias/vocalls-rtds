@@ -203,10 +203,6 @@ _apiResult = {
     failureOccurred: false,
 };
 
-// Output variables set by agentEngine
-var base_prompt = '';
-var opening = '';
-
 // Extract caller language from context
 if (context && context.language) {
     varObj.language = context.language;

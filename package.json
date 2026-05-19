@@ -1,59 +1,35 @@
 {
-    "name": "vocalls-sdk-workflow",
-    "version": "0.1.0",
-    "private": true,
-    "description": "Vocalls IVR build pipeline — workflow-tier architecture (in-code FSM, direct Anthropic SDK)",
-    "homepage": "https://github.com/MertensMattias/vocalls-sdk-workflow#readme",
-    "bugs": {
-        "url": "https://github.com/MertensMattias/vocalls-sdk-workflow/issues"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/MertensMattias/vocalls-sdk-workflow.git"
-    },
-    "license": "ISC",
-    "author": "",
-    "type": "commonjs",
-    "main": "core/minimalVocallsCore.js",
-    "bin": {
-        "vocalls-sdk-workflow": "bin/vocalls.js"
-    },
-    "directories": {
-        "doc": "docs",
-        "test": "tests"
-    },
-    "scripts": {
-        "init": "node cli/init.js",
-        "build": "node cli/build.js",
-        "vocalls": "node bin/vocalls.js",
-        "validate": "node cli/validate.js",
-        "simulate": "node cli/simulate.js",
-        "switch": "node cli/switch.js",
-        "translate": "node cli/translate.js",
-        "export": "node cli/export.js",
-        "reset": "node cli/reset.js",
-        "delete": "node cli/delete.js",
-        "schema:docs": "node scripts/gen-docs.js",
-        "schema:jsonschema": "node scripts/gen-jsonschema.js",
-        "schema:check": "node scripts/gen-docs.js --check",
-        "prompts:hash": "node scripts/prompts-hash.js",
-        "prompts:check": "node scripts/prompts-hash.js --check",
-        "test": "node ./node_modules/jest/bin/jest.js --runInBand",
-        "format": "prettier --write .",
-        "format:check": "prettier --check ."
-    },
-    "dependencies": {
-        "@anthropic-ai/sdk": "^0.81.0",
-        "acorn": "^8.16.0",
-        "acorn-walk": "^8.0.0",
-        "subfinder": "^1.3.1",
-        "zod": "^4.4.3"
-    },
-    "devDependencies": {
-        "jest": "^29.7.0",
-        "prettier": "^3.5.3"
-    },
-    "engines": {
-        "node": ">=18.18.0"
-    }
+  "name": "vocalls-rtds",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vocalls IVR development environment — simulate, validate, and export call scripts",
+  "homepage": "https://github.com/MertensMattias/vocalls-rtds#readme",
+  "bugs": {
+    "url": "https://github.com/MertensMattias/vocalls-rtds/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MertensMattias/vocalls-rtds.git"
+  },
+  "license": "ISC",
+  "type": "commonjs",
+  "main": "core/minimalVocallsCore.js",
+  "scripts": {
+    "init": "node cli/init.js",
+    "simulate": "node cli/simulate.js",
+    "validate": "node cli/validate.js",
+    "export": "node cli/export.js",
+    "switch": "node cli/switch.js",
+    "delete": "node cli/delete.js",
+    "test": "node ./node_modules/jest/bin/jest.js --runInBand --passWithNoTests",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "prettier": "^3.5.3"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  }
 }

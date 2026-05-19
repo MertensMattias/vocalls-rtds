@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="3582" dy="2425" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100">
+  <root>
+    <object label="" DefaultLanguage="" LanguageKey="" DefaultVoice="" MaxEntryCount="" MaxEntryNodeId="" SayAgainNodeId="" SpeechRecognitionEngine="" SpeechSyntEngine="" Code="" Extensions="" VoicePitch="" VoiceSpeed="" VoiceVolume="" BackgroundNoise="" BreathInEffect="" AudioSourceUrl="" PreferredAudio="TTS" Sections="[]" Languages="{'nl':{'isDefault':true,'languageName':'Dutch','ttsLanguageCode':'nl-NL','ttsVoiceName':'nl-NL-Wavenet-A','ttsEngine':'Google','ttsPitch':'','ttsSpeed':'','ttsVolume':'','prosodyBaseEnabled':true,'prosodyContourEnabled':false}}" Variables="" id="vocalls-master-layer">
+      <mxCell />
+    </object>
+    <mxCell id="baselayer" parent="vocalls-master-layer" />
+
+    <!-- EDGES -->
+
+    <mxCell id="e-input-read" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-input" target="n-read-params" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-read-evaluate" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-read-params" target="n-evaluate" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-evaluate-branch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-evaluate" target="n-branch" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-branch-true-output" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-branch-true" target="n-output-true" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e-branch-false-output" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;" parent="baselayer" source="n-branch-false" target="n-output-false" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- NODES -->
+
+    <!-- INPUT -->
+    <object label="RTDS_OP_*" Type="transient" OnEnter="" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Title="RTDS_OP_*" Kind="input" id="n-input">
+      <mxCell style="rounded=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#f5f5f5;strokeColor=#666666;;fontColor=#333333;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="310" y="-100" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- 1. READ PARAMS: copy RTDS_OP_* into component-internal session vars (__) -->
+    <object label="read params" Type="script" OnEnter="" OnLeave="" DynamicNextId="" MaxEntryNodeId="" MaxEntryCount="" Code="var vars = context.session.variables; &#xa; &#xa;// Read all RTDS_OP_* params into local vars for clarity &#xa;var sAttribute = vars.RTDS_OP_Attribute; &#xa;if (sAttribute === undefined || sAttribute === null) { &#xa;    sAttribute = ''; &#xa;} &#xa; &#xa;var sOperator = vars.RTDS_OP_Operator; &#xa;if (sOperator === undefined || sOperator === null) { &#xa;    sOperator = 'eq'; &#xa;} &#xa; &#xa;var sValue = vars.RTDS_OP_Value; &#xa;if (sValue === undefined || sValue === null) { &#xa;    sValue = ''; &#xa;} &#xa; &#xa;var sNextTrue = vars.RTDS_OP_NextStep_True; &#xa;if (sNextTrue === undefined || sNextTrue === null) { &#xa;    sNextTrue = ''; &#xa;} &#xa; &#xa;var sNextFalse = vars.RTDS_OP_NextStep_False; &#xa;if (sNextFalse === undefined || sNextFalse === null) { &#xa;    sNextFalse = ''; &#xa;} &#xa; &#xa;// Store in component-internal session vars (__ prefix = hidden from CSV, internal to component) &#xa;vars.__ca_attribute  = sAttribute; &#xa;vars.__ca_operator   = sOperator; &#xa;vars.__ca_value      = sValue; &#xa;vars.__ca_nextTrue   = sNextTrue; &#xa;vars.__ca_nextFalse  = sNextFalse; &#xa; &#xa;log_debug('[RTDS] checkAttribute: Attribute=' + sAttribute + ' Operator=' + sOperator + ' Value=' + sValue);" DynamicNextTabGuid="" id="n-read-params">
+      <mxCell style="rounded=1;arcSize=8;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;image=/Content/Designer/Icons/script.svg;imageAlign=center;imageVerticalAlign=top;imageWidth=24;imageHeight=24;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="263" y="20" width="225" height="80" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- 2. EVALUATE: read the named session variable, compare, write __ca_result -->
+    <object label="evaluate attribute" Type="script" OnEnter="" OnLeave="" DynamicNextId="" MaxEntryNodeId="" MaxEntryCount="" Code="var vars = context.session.variables; &#xa; &#xa;// Read component-internal params (__) &#xa;var sAttribute = vars.__ca_attribute; &#xa;var sOperator  = vars.__ca_operator; &#xa;var sValue     = vars.__ca_value; &#xa; &#xa;// Read the named session variable being tested, coerce to string &#xa;var sActual = vars[sAttribute]; &#xa;if (sActual === undefined || sActual === null) { &#xa;    sActual = ''; &#xa;} &#xa;sActual = String(sActual); &#xa; &#xa;// Attempt numeric coercion - use numeric comparison when both sides are valid numbers &#xa;var nActual  = parseFloat(sActual); &#xa;var nValue   = parseFloat(sValue); &#xa;var bNumeric = !isNaN(nActual) &amp;&amp; !isNaN(nValue); &#xa; &#xa;var bResult = false; &#xa; &#xa;if (sOperator === 'eq') { &#xa;    bResult = bNumeric ? (nActual === nValue) : (sActual === sValue); &#xa;} else if (sOperator === 'ne') { &#xa;    bResult = bNumeric ? (nActual !== nValue) : (sActual !== sValue); &#xa;} else if (sOperator === 'gt') { &#xa;    bResult = bNumeric &amp;&amp; (nActual &gt; nValue); &#xa;} else if (sOperator === 'ge') { &#xa;    bResult = bNumeric &amp;&amp; (nActual &gt;= nValue); &#xa;} else if (sOperator === 'lt') { &#xa;    bResult = bNumeric &amp;&amp; (nActual &lt; nValue); &#xa;} else if (sOperator === 'le') { &#xa;    bResult = bNumeric &amp;&amp; (nActual &lt;= nValue); &#xa;} else if (sOperator === 'contains') { &#xa;    bResult = sActual.indexOf(sValue) !== -1; &#xa;} else if (sOperator === 'startswith') { &#xa;    bResult = sActual.indexOf(sValue) === 0; &#xa;} else if (sOperator === 'empty') { &#xa;    bResult = sActual.length === 0; &#xa;} else if (sOperator === 'notempty') { &#xa;    bResult = sActual.length &gt; 0; &#xa;} else { &#xa;    log_warn('[RTDS] checkAttribute: unknown operator=' + sOperator + ' - defaulting to false'); &#xa;    bResult = false; &#xa;} &#xa; &#xa;// Write result to component-internal session var (__ prefix) &#xa;vars.__ca_result = bResult ? '1' : '0'; &#xa; &#xa;log_debug('[RTDS] checkAttribute: ' + sAttribute + '(' + sActual + ') ' + sOperator + ' ' + sValue + ' =&gt; ' + (bResult ? 'true' : 'false'));" DynamicNextTabGuid="" id="n-evaluate">
+      <mxCell style="rounded=1;arcSize=8;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;image=/Content/Designer/Icons/script.svg;imageAlign=center;imageVerticalAlign=top;imageWidth=24;imageHeight=24;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="263" y="180" width="225" height="80" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- 3. BRANCH: case on __ca_result -->
+    <object label="" Type="case" OnEnter="" OnLeave="" MaxEntryNodeId="" MaxEntryCount="" id="n-branch">
+      <mxCell style="swimlane;swimlaneFillColor=#FFFFFF;childLayout=stackLayout;horizontal=1;startSize=16;horizontalStack=0;rounded=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#FFFFFF;strokeColor=#999999;;fontColor=#4D4D4D;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;container=0;spacingTop=-90;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;arcSize=16;spacing=2;spacingBottom=0;allowArrows=0;rotatable=0;overflow=hidden;marginTop=0;marginLeft=10;marginRight=10;marginBottom=10;separatorColor=none;rounded=1;swimlaneLine=0;" parent="baselayer" vertex="1">
+        <mxGeometry x="138" y="340" width="475" height="126" as="geometry" />
+      </mxCell>
+    </object>
+    <object id="n-branch-icon">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=none;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=none;image=/Content/Designer/Icons/case.svg;imageWidth=24;imageHeight=24;imageVerticalAlign=top;imageAlign=center;absoluteArcSize=0;noLabel=0;connectable=0;imageAspect=1;editable=0;cloneable=0;deletable=0;resizable=0;" vertex="1" parent="n-branch">
+        <mxGeometry x="10" y="16" width="455" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="result is true" DynamicNextId="" SubType="expression" Expression="context.session.variables.__ca_result === '1'" DynamicNextTabGuid="" id="n-branch-true">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=#B3B3B3;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=#ffffff;image=/Content/Designer/Icons/_case.svg;dashed=1;overflow=hidden;" vertex="1" parent="n-branch">
+        <mxGeometry x="10" y="56" width="455" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="result is false (default)" DynamicNextId="" SubType="default" id="n-branch-false">
+      <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontStyle=0;strokeColor=#559BBF;fontColor=#1A1A1A;allowArrows=0;rotatable=0;fillColor=#A9E1F5;image=/Content/Designer/Icons/_nothing.svg;" vertex="1" parent="n-branch">
+        <mxGeometry x="10" y="86" width="455" height="30" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- OUTPUT: true -->
+    <object label="check_attribute_true" Type="transient" OnEnter="" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Title="check_attribute_true" Kind="output" id="n-output-true">
+      <mxCell style="rounded=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#f5f5f5;strokeColor=#666666;;fontColor=#333333;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="50" y="540" width="160" height="40" as="geometry" />
+      </mxCell>
+    </object>
+
+    <!-- OUTPUT: false -->
+    <object label="check_attribute_false" Type="transient" OnEnter="" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Title="check_attribute_false" Kind="output" id="n-output-false">
+      <mxCell style="rounded=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fillColor=#f5f5f5;strokeColor=#666666;;fontColor=#333333;fontStyle=0;labelBackgroundColor=none;labelBorderColor=none;html=1;spacingTop=0;perimeterSpacing=0;fontFamily=Verdana;FType=g;horizontal=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=middle;dashed=1;allowArrows=0;rotatable=0;overflow=hidden;" parent="baselayer" vertex="1">
+        <mxGeometry x="545" y="540" width="160" height="40" as="geometry" />
+      </mxCell>
+    </object>
+
+  </root>
+</mxGraphModel>
