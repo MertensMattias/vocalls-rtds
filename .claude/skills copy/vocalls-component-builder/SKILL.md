@@ -41,13 +41,8 @@ default sequence; skip files that don't apply.
 4. [references/operation_bodies/INDEX.md](references/operation_bodies/INDEX.md) — decision tree from Type to pattern file.
 5. One file from [references/operation_bodies/](references/operation_bodies/) — one of `http_call.md`, `gui_exit.md`, `set_attributes.md`, `condition.md`, `flow_jump.md`. Load only the one that matches.
 
-**When the component embeds Vocalls Designer primitives between Script and output**
-6a. [references/operation_bodies/composite.md](references/operation_bodies/composite.md) — composition rules (graph shape, id-numbering, edge contract). **Layered on top of** the Script-body pattern from step 5; does not replace it.
-6b. [references/node_types.md](references/node_types.md) — per-Type attribute catalogue for `say`, `recognize`, `dtmf`, `case`, `counter`, `number`, `redirect`, `pause`, `setvar`. Load only when emitting one of those Types.
-6c. [references/primitive_examples.md](references/primitive_examples.md) — **ground-truth XML examples** for the master layer, `Languages`, `Translations`, the canonical 4-node skeleton, every primitive Type, and the edge / `parent` wiring rules. Use as the canonical source when emitting any of these. Also covers the `${name}` (runtime-against-globals) vs `{name}` (Say-node TTS-time) substitution distinction.
-
 **When in doubt about the runtime API or the v2 helpers**
-7. [references/runtime_pointer.md](references/runtime_pointer.md) — pointer to the live `rtds_globalCodeAndHelpers.js`, with a cheat sheet for `getValue` / `walk` / `hasKey` etc.
+6. [references/runtime_pointer.md](references/runtime_pointer.md) — pointer to the live `rtds_globalCodeAndHelpers.js`, with a cheat sheet for `getValue` / `walk` / `hasKey` etc.
 
 **Reference only (rarely needed)**
 - [references/RTDS_runtime_spec.md](references/RTDS_runtime_spec.md) — operation catalogue + Params semantics. Consult when you don't know what Params a given Type accepts.
@@ -131,41 +126,6 @@ strings are pinned in `references/conventions.md` §1.6.
 
 Output node `OnEnter`: `Logger.info('[<componentName>] exit', { nextStep: __rtNextStep });`.
 
-### Step 5a — Primitive nodes (composite mode, optional)
-
-The four-node graph is the **floor**, not the ceiling. If the component
-needs Vocalls Designer primitives (`say`, `recognize`, `dtmf`, `case`,
-`counter`, `number`, `redirect`, `pause`, `setvar`) between the Script
-(id=29) and the output (id=6):
-
-- Load [references/operation_bodies/composite.md](references/operation_bodies/composite.md)
-  for composition rules and worked examples.
-- Load [references/node_types.md](references/node_types.md) for per-Type
-  attributes and the edge-routing contract.
-- The four canonical ids (`0`/`7`/`29`/`6`) and their geometry stay put.
-  Edge `38` (29→6) is replaced by a chain that ends at id=6. Primitive,
-  child, and edge ids are **freely-allocated unique integers** — no
-  rigid "≥ 100 / ≥ 200" rule (earlier convention; replaced because it
-  doesn't match production components). Chrome row ids are conventionally
-  `parent_id + 1`.
-- Wiring rules (load-bearing): every non-chrome branch child carries
-  `DynamicNextId=""` and is wired by an **explicit `<mxCell edge="1">`**
-  sourced from its id; branching-Type children's `<mxCell>` carry
-  `parent="<parent-primitive-id>"`, not `parent="baselayer"`. The
-  ground-truth XML for these is
-  [references/primitive_examples.md](references/primitive_examples.md).
-- **The Script body (id=29) is unchanged** — selected from one of the
-  five Script-body patterns in Step 6 and emitted verbatim. The runtime
-  handles handoff from Script into the primitive chain; the component
-  just defines the topology. No `__makeLocalNodeId('<primitive-id>')`
-  calls in the work body; no primitive ids returned as exit keys.
-- Conventions §4a and §5a in [references/conventions.md](references/conventions.md)
-  spell out the composite-mode rules. The composite-mode checklist
-  section in [references/checklist.md](references/checklist.md) is the
-  pre-delivery sweep.
-
-If no primitives are needed, skip this step.
-
 ### Step 6 — Init + script node Codes
 
 The **init node body** is universal — exactly three lines:
@@ -188,36 +148,9 @@ to pick the right one, then load just that file:
 | [operation_bodies/set_attributes.md](references/operation_bodies/set_attributes.md) | `SetAttributes` and any setVariables-style attribute-projection Type |
 | [operation_bodies/condition.md](references/operation_bodies/condition.md)     | `Condition`, `CheckAttribute`                                       |
 | [operation_bodies/flow_jump.md](references/operation_bodies/flow_jump.md)     | `FlowJump`                                                          |
-| [operation_bodies/composite.md](references/operation_bodies/composite.md)     | **Modifier** — components that embed Vocalls Designer primitives (`say`, `recognize`, `dtmf`, `case`, `counter`, `number`, `redirect`, `pause`, `setvar`) between Script (id=29) and output (id=6). Layered on top of one of the five Script-body patterns above; does not replace it. Pair with [references/node_types.md](references/node_types.md). See also Step 5a. |
 
 All Param reads go through `getValue` / `getValueOrFalsy` / `hasKey` /
 `walk` from the global helpers library. Never inline a manual loop.
-
-### Step 6b — Lay out the canvas (mandatory after Step 5/5a)
-
-The model that emits the XML doesn't have to compute clean coordinates
-by hand. Once the graph is written to disk, run:
-
-```bash
-python .claude/skills/vocalls-component-builder/scripts/layout_component.py \
-  rtds_vocalls_operations/components/<componentName>.js
-```
-
-This rewrites every baselayer node's `<mxGeometry>` so the trunk
-(input → init → script → primitives → output) sits in a single vertical
-column at x=317.5, and off-trunk branch destinations sit in a right
-column next to the branching primitive that points at them. The script
-**only edits geometry** — quotes, encoding, and the rest of the file
-stay byte-identical except for the 4-6 changed lines.
-
-For canonical 4-node components (no composite primitives), running this
-is harmless: the layout matches `conventions.md §1.6` anyway. For
-composite components it's the difference between a usable graph and
-the unreadable side-by-side scatter you get from hand-picked
-coordinates.
-
-Use `--dry-run` first if you want to see the proposed trunk and target
-geometry without writing.
 
 ### Step 7 — Validate
 
@@ -231,26 +164,23 @@ callback, v1 `__rt<Key>` splay sneaking back in) are all listed there.
 vocalls-component-builder/
 ├── SKILL.md                                (this file)
 ├── references/
-│   ├── conventions.md                      v2 component rules (incl. §4a composite shape, §5a primitive attrs)
-│   ├── checklist.md                        Pre-delivery sweep (+ composite-mode section)
+│   ├── conventions.md                      v2 component rules
+│   ├── checklist.md                        Pre-delivery sweep
 │   ├── canonical_helpers.js                The three master-Code helpers
 │   ├── runtime_pointer.md                  Pointer to live rtds_globalCodeAndHelpers.js + v2-helper cheat sheet
 │   ├── example_sendSms.xml                 v1 historical sample (diff only — do not copy patterns)
 │   ├── RTDS_runtime_spec.md                Operation catalogue + Params semantics
-│   ├── node_types.md                       Vocalls Designer primitive Type catalogue (say, recognize, dtmf, case, counter, number, redirect, pause, setvar)
 │   └── operation_bodies/
-│       ├── INDEX.md                        Decision tree from Type to pattern (+ composite branch)
+│       ├── INDEX.md                        Decision tree from Type to pattern
 │       ├── http_call.md                    HTTP-calling Types (+ inlined __isMobileNumber)
 │       ├── gui_exit.md                     11 GUI-exit Types (+ Type → exit-key table)
 │       ├── set_attributes.md               SetAttributes / setVariables
 │       ├── condition.md                    Condition / CheckAttribute (+ inlined __compareAttr)
-│       ├── flow_jump.md                    FlowJump (one-off pattern)
-│       └── composite.md                    Modifier — primitives between Script (id=29) and output (id=6)
+│       └── flow_jump.md                    FlowJump (one-off pattern)
 ├── assets/
 │   └── template.xml                        Skeleton with {{placeholders}}
 └── scripts/
-    ├── encode_for_xml_attr.py              JS → XML-attribute encoder (pipe JS through this)
-    └── layout_component.py                 Single-column-trunk + right-branch layout pass (run after the XML is on disk; see Step 6b)
+    └── encode_for_xml_attr.py              JS → XML-attribute encoder (pipe JS through this)
 ```
 
 ## Output

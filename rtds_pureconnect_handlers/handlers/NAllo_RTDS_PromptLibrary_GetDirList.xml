@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Handler name="NAllo_RTDS_PromptLibrary_GetDirList" description="" version="2.0" category="NAllo RTDS">
+  <Steps>
+    <Step id="1" type="Tool" creatorModule="DsLookup" creatorName="FileDirectoryList" creatorVersion="" label="lsItems" notes="" left="300" top="50" right="407" bottom="151" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Path:" value="p_sDirectory" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="*.*" defaultValIsVar="True" defaultValIsBlankStr="False" label="Directory Mask:" value="&quot;*.*&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="DirList" defaultValIsVar="True" defaultValIsBlankStr="False" label="Directory List:" value="lsItems" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="3"/>
+        <ExitPath label="Failure" returnValue="1"/>
+      </ExitPaths>
+    </Step>
+    <Step id="3" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iIndex = 0" notes="" left="438" top="50" right="538" bottom="139" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iIndex"/>
+        <Parameter name="RHS" value="0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="4"/>
+      </ExitPaths>
+    </Step>
+    <Step id="4" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="iIndex &lt; GetCount(lsItems)" notes="" left="561" top="48" right="738" bottom="149" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="iIndex &lt; GetCount(lsItems)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="6"/>
+        <ExitPath label="False" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="5" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iIndex + 1" notes="" left="2113" top="45" right="2301" bottom="134" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iIndex"/>
+        <Parameter name="RHS" value="iIndex + 1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="4"/>
+      </ExitPaths>
+    </Step>
+    <Step id="6" type="Tool" creatorModule="DsLookup" creatorName="FileAttrGet" creatorVersion="" label="File Attributes Query" notes="" left="763" top="48" right="906" bottom="149" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Source Filename" value="GetAt(lsItems, iIndex)" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="False" defaultVal="bFileAttrNormal" defaultValIsVar="True" defaultValIsBlankStr="False" label="Normal" value="bFileAttrNormal" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="False" defaultVal="bFileAttrReadOnly" defaultValIsVar="True" defaultValIsBlankStr="False" label="Read-Only" value="bFileAttrReadOnly" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="False" defaultVal="bFileAttrHidden" defaultValIsVar="True" defaultValIsBlankStr="False" label="Hidden" value="bFileAttrHidden" index="3"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="False" defaultVal="bFileAttrSystem" defaultValIsVar="True" defaultValIsBlankStr="False" label="System" value="bFileAttrSystem" index="4"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="False" defaultVal="bFileAttrVolume" defaultValIsVar="True" defaultValIsBlankStr="False" label="Volume" value="bFileAttrVolume" index="5"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="False" defaultVal="bFileAttrDirectory" defaultValIsVar="True" defaultValIsBlankStr="False" label="Directory" value="bFileAttrDirectory" index="6"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="False" defaultVal="bFileAttrArchive" defaultValIsVar="True" defaultValIsBlankStr="False" label="Archive" value="bFileAttrArchive" index="7"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="11"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="5"/>
+      </ExitPaths>
+    </Step>
+    <Step id="9" type="Tool" creatorModule="DsLookup" creatorName="FileGetStat" creatorVersion="" label="Get File Statistics" notes="" left="1227" top="508" right="1358" bottom="609" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Source Filename" value="GetAt(lsItems, iIndex)" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="FullPath" defaultValIsVar="True" defaultValIsBlankStr="False" label="Full Path:" value="sFullPath" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="FileSize" defaultValIsVar="True" defaultValIsBlankStr="False" label="File Size:" value="iFileSize" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="DateTime" typeLabel="DateTime" moduleName="" isInput="False" defaultVal="CreationTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Creation Time:" value="CreationTime" index="3"/>
+        <Parameter required="True" isCustom="False" typeName="DateTime" typeLabel="DateTime" moduleName="" isInput="False" defaultVal="ModifyTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Modify Time:" value="ModifyTime" index="4"/>
+        <Parameter required="True" isCustom="False" typeName="DateTime" typeLabel="DateTime" moduleName="" isInput="False" defaultVal="AccessTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Access Time:" value="AccessTime" index="5"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="13"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="5"/>
+      </ExitPaths>
+    </Step>
+    <Step id="10" isInitiator="True" type="Initiator" creatorModule="" creatorName="Subroutine" creatorVersion="" label="NAllo_RTDS_PromptLibrary_GetDirList" notes="" left="30" top="46" right="274" bottom="135" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter label="Directory" name="" defaultValue="" defaultValueIsVariable="False" defaultValueIsBlankString="False" input="True" typeModule="" typeName="String" typeLabel="String" value="p_sDirectory" index="0"/>
+        <Parameter label="List of File Names" name="" defaultValue="" defaultValueIsVariable="False" defaultValueIsBlankString="False" input="False" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsFileNames" index="1"/>
+        <Parameter label="List of File Paths" name="" defaultValue="" defaultValueIsVariable="False" defaultValueIsBlankString="False" input="False" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsFilePaths" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Start" returnValue="1" targetStepID="1"/>
+      </ExitPaths>
+    </Step>
+    <Step id="11" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="Directory?" notes="" left="940" top="142" right="1050" bottom="243" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="bFileAttrDirectory"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="19"/>
+        <ExitPath label="False" returnValue="0" targetStepID="12"/>
+      </ExitPaths>
+    </Step>
+    <Step id="12" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="Wave File?" notes="" left="1075" top="434" right="1188" bottom="535" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="StrEqlNoCase(StrRight(GetAt(lsItems, iIndex), 4), &quot;.wav&quot;)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="9"/>
+        <ExitPath label="False" returnValue="0" targetStepID="5"/>
+      </ExitPaths>
+    </Step>
+    <Step id="13" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="lsFullPath" notes="" left="1385" top="575" right="1494" bottom="664" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="sFullPath" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;\\&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsFullPath" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="14"/>
+      </ExitPaths>
+    </Step>
+    <Step id="14" type="Tool" creatorModule="" creatorName="InsertAtTail" creatorVersion="" label="p_lsFileNames" notes="" left="1522" top="575" right="1650" bottom="664" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="p_lsFileNames"/>
+        <Parameter name="Value" value="SubstStr(GetAt(lsItems, iIndex), p_sDirectory &amp; &quot;\\&quot;, &quot;&quot;)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="17"/>
+      </ExitPaths>
+    </Step>
+    <Step id="17" type="Tool" creatorModule="" creatorName="InsertAtTail" creatorVersion="" label="p_lsFilePaths" notes="" left="1677" top="575" right="1810" bottom="664" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="p_lsFilePaths"/>
+        <Parameter name="Value" value="p_sDirectory"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="5"/>
+      </ExitPaths>
+    </Step>
+    <Step id="18" type="Subroutine" creatorModule="" creatorName="NAllo_RTDS_PromptLibrary_GetDirList" creatorVersion="" label="NAllo_RTDS_PromptLibrary_GetDirList" notes="" left="1400" top="212" right="1633" bottom="301" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory" value="GetAt(lsItems, iIndex)" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of File Names" value="p_lsFileNames" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of File Paths" value="p_lsFilePaths" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="5"/>
+      </ExitPaths>
+    </Step>
+    <Step id="19" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="lsFullPath" notes="" left="1107" top="145" right="1216" bottom="234" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="GetAt(lsItems, iIndex)" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;\\&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsFullPath" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="20"/>
+      </ExitPaths>
+    </Step>
+    <Step id="20" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="Sub Folder?" notes="" left="1250" top="146" right="1378" bottom="247" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="GetTail(lsFullPath) &lt;&gt; &quot;.&quot; and GetTail(lsFullPath) &lt;&gt; &quot;..&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="18"/>
+        <ExitPath label="False" returnValue="0" targetStepID="5"/>
+      </ExitPaths>
+    </Step>
+  </Steps>
+  <Variables>
+    <Variable name="AccessTime" initialValue="" boundGlobalVarID="" typeModule="" typeName="DateTime" typeLabel="DateTime"/>
+    <Variable name="CreationTime" initialValue="" boundGlobalVarID="" typeModule="" typeName="DateTime" typeLabel="DateTime"/>
+    <Variable name="CustomEventId" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="ModifyTime" initialValue="" boundGlobalVarID="" typeModule="" typeName="DateTime" typeLabel="DateTime"/>
+    <Variable name="bFileAttrArchive" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="bFileAttrDirectory" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="bFileAttrHidden" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="bFileAttrNormal" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="bFileAttrReadOnly" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="bFileAttrSystem" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="bFileAttrVolume" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="iFileSize" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iIndex" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="lsFullPath" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsItems" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_lsFileNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_lsFilePaths" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_sDirectory" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sFullPath" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+  </Variables>
+</Handler>

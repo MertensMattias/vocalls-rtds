@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Handler name="NAllo_RTDS_ManageCallCapacity" description="" version="2.0" category="NAllo RTDS">
+  <Steps>
+    <Step id="0" isInitiator="True" type="Initiator" creatorModule="" creatorName="Subroutine" creatorVersion="" label="NAllo_RTDS_ManageCallCapacity" notes="" left="80" top="70" right="270" bottom="159" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter label="Interaction Id" name="" defaultValue="Interaction1" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="Telephony" typeName="CallId" typeLabel="Call ID" value="Interaction1" index="0"/>
+        <Parameter label="Attribute Names" name="" defaultValue="lsAttrNames" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttrNames" index="1"/>
+        <Parameter label="Attribute Values" name="" defaultValue="lsAttrValues" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttrValues" index="2"/>
+        <Parameter label="Next Step" name="" defaultValue="sNextStep" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="False" typeModule="" typeName="String" typeLabel="String" value="p_sNextStep" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Start" returnValue="1" targetStepID="7"/>
+      </ExitPaths>
+    </Step>
+    <Step id="7" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_NextStep = NextStep" notes="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep&quot;, 0))" left="370" top="70" right="590" bottom="159" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="74"/>
+      </ExitPaths>
+    </Step>
+    <Step id="53" type="Tool" creatorModule="IPAccServer" creatorName="Lock Accumulator" creatorVersion="" label="Lock Accumulator" notes="" left="1380" top="90" right="1520" bottom="191" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Accumulator Name" value="sAccumulatorName" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Instance Name" value="sAccumulatorInstance" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="Accumulator Lock Key" typeLabel="Accumulator Lock Key" moduleName="IPAccServer" isInput="False" defaultVal="AccumulatorKey" defaultValIsVar="True" defaultValIsBlankStr="False" label="Returns an 'Accumulator Key' which must be used with future Accumulator tools." value="AccumulatorKey" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="76"/>
+        <ExitPath label="Failure" returnValue="0" targetStepID="76"/>
+      </ExitPaths>
+    </Step>
+    <Step id="58" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="Get iAllowedRatio" notes="toI(toI(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;AllowedCallRatio&quot;, 0))))" left="1000" top="80" right="1230" bottom="169" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iAllowedRatio"/>
+        <Parameter name="RHS" value="toI(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;AllowedCallRatio&quot;, 0)))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="60"/>
+      </ExitPaths>
+    </Step>
+    <Step id="60" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="Get AccumulatorName" notes="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;AccumulatorName&quot;, 0)))" left="1010" top="210" right="1231" bottom="299" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sAccumulatorName"/>
+        <Parameter name="RHS" value="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;AccumulatorName&quot;, 0)))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="62"/>
+      </ExitPaths>
+    </Step>
+    <Step id="62" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="Get AccumulatorInstance" notes="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;AccumulatorInstance&quot;, 0)))" left="1000" top="340" right="1220" bottom="429" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sAccumulatorInstance"/>
+        <Parameter name="RHS" value="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;AccumulatorInstance&quot;, 0)))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="53"/>
+      </ExitPaths>
+    </Step>
+    <Step id="66" type="Tool" creatorModule="IPAccServer" creatorName="Get Acc. (Integer)" creatorVersion="" label="Get Acc. (Integer)" notes="" left="1810" top="94" right="1936" bottom="195" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Accumulator Name" value="sAccumulatorName" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Instance Name" value="sAccumulatorInstance" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Integer Accumulator Value Retrieved" value="iAccumulatorValue" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="69"/>
+        <ExitPath label="Failure" returnValue="0" targetStepID="69"/>
+      </ExitPaths>
+    </Step>
+    <Step id="68" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="Mod(iAccumulatorValue, iAllowRatio) = 0" notes="Mod(iAccumulatorValue, iAllowRatio) = 0" left="2536" top="90" right="2716" bottom="191" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="Mod(iAccumulatorValue, iAllowedRatio) = 0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="70"/>
+        <ExitPath label="False" returnValue="0" targetStepID="71"/>
+      </ExitPaths>
+    </Step>
+    <Step id="69" type="Tool" creatorModule="IPAccServer" creatorName="Unlock Accumulator" creatorVersion="" label="Unlock Accumulator" notes="" left="2041" top="90" right="2191" bottom="191" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Accumulator Name" value="sAccumulatorName" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Instance Name" value="sAccumulatorInstance" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="Accumulator Lock Key" typeLabel="Accumulator Lock Key" moduleName="IPAccServer" isInput="True" defaultVal="AccumulatorKey" defaultValIsVar="True" defaultValIsBlankStr="False" label="AccumulatorKey" value="AccumulatorKey" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="68"/>
+        <ExitPath label="Failure" returnValue="0" targetStepID="81"/>
+      </ExitPaths>
+    </Step>
+    <Step id="70" type="Tool" creatorModule="Telephony" creatorName="Log Message" creatorVersion="" label="Allowed" notes="" left="2846" top="50" right="2996" bottom="139" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="CallLog" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Log Identifier" value="&quot;CallLog&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Text of log message" value="&quot;ManageCallCapacity: Allowed&quot;" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="72"/>
+      </ExitPaths>
+    </Step>
+    <Step id="71" type="Tool" creatorModule="Telephony" creatorName="Log Message" creatorVersion="" label="Denied" notes="" left="2846" top="180" right="2996" bottom="269" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="CallLog" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Log Identifier" value="&quot;CallLog&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Text of log message" value="&quot;ManageCallCapacity: Denied&quot;" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="73"/>
+      </ExitPaths>
+    </Step>
+    <Step id="72" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sNextStep = NextStep_Allowed" notes="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_Allowed&quot;, 0))" left="3106" top="50" right="3336" bottom="139" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_Allowed&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="73" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sNextStep = NextStep_NotAllowed" notes="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_NotAllowed&quot;, 0))" left="3106" top="180" right="3336" bottom="269" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_NotAllowed&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="74" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="Active = Yes?" notes="not StrEqlNoCase(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Active&quot;, 0)), &quot;No&quot;)" left="681" top="70" right="820" bottom="171" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="not StrEqlNoCase(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Active&quot;, 0)), &quot;0&quot;)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="58"/>
+        <ExitPath label="False" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="76" type="Tool" creatorModule="IPAccServer" creatorName="Inc. Acc. (Integer)" creatorVersion="" label="Inc. Acc. (Integer)" notes="" left="1572" top="90" right="1711" bottom="191" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Accumulator Name" value="sAccumulatorName" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Instance Name" value="sAccumulatorInstance" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Value" value="1" index="2"/>
+        <Parameter required="False" isCustom="False" typeName="Accumulator Lock Key" typeLabel="Accumulator Lock Key" moduleName="IPAccServer" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="AccumulatorKey" value="AccumulatorKey" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="66"/>
+        <ExitPath label="Failure" returnValue="0" targetStepID="66"/>
+      </ExitPaths>
+    </Step>
+    <Step id="81" type="Tool" creatorModule="Telephony" creatorName="Log Message" creatorVersion="" label="CounterValue" notes="" left="2274" top="150" right="2424" bottom="239" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="CallLog" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Log Identifier" value="&quot;CallLog&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Text of log message" value="&quot;ManageCallCapacity counter: &quot; &amp; toS(iAccumulatorValue)" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="68"/>
+      </ExitPaths>
+    </Step>
+  </Steps>
+  <Variables>
+    <Variable name="AccumulatorKey" initialValue="" boundGlobalVarID="" typeModule="IPAccServer" typeName="Accumulator Lock Key" typeLabel="Accumulator Lock Key"/>
+    <Variable name="Interaction1" initialValue="" boundGlobalVarID="" typeModule="Telephony" typeName="CallId" typeLabel="Call ID"/>
+    <Variable name="iAccumulatorValue" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iAllowedRatio" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="p_lsAttrNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_lsAttrValues" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_sNextStep" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sAccumulatorInstance" initialValue="callCounter" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sAccumulatorName" initialValue="counter" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+  </Variables>
+</Handler>

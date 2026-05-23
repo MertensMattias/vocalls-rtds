@@ -1,0 +1,1045 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "DigipolisAPI | v1",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-nal-digipolisapi-api-acc.azurewebsites.net/"
+    }
+  ],
+  "paths": {
+    "/api/GuardConfigs/GetAll": {
+      "get": {
+        "tags": ["GuardConfigs"],
+        "operationId": "GetAllGuardConfigsDefault",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GuardConfigDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GuardConfigDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GuardConfigDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/GuardConfigs/GetAll/{limitation}": {
+      "get": {
+        "tags": ["GuardConfigs"],
+        "operationId": "GetAllGuardConfigs",
+        "parameters": [
+          {
+            "name": "limitation",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GuardConfigDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GuardConfigDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GuardConfigDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/GuardConfigs/GetById/{id}": {
+      "get": {
+        "tags": ["GuardConfigs"],
+        "operationId": "GetGuardConfigById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardConfigDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardConfigDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardConfigDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/GuardConfigs": {
+      "post": {
+        "tags": ["GuardConfigs"],
+        "operationId": "CreateGuardConfig",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGuardConfigDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGuardConfigDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGuardConfigDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardConfigDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardConfigDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardConfigDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["GuardConfigs"],
+        "operationId": "UpdateGuardConfig",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGuardConfigDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGuardConfigDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGuardConfigDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/GuardConfigs/DeleteById/{id}": {
+      "delete": {
+        "tags": ["GuardConfigs"],
+        "operationId": "DeleteGuardConfigById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/Guard": {
+      "get": {
+        "tags": ["Guard"],
+        "operationId": "GetGuards",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GuardDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GuardDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GuardDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Guard"],
+        "operationId": "CreateGuard",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGuardDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGuardDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGuardDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Guard/active": {
+      "get": {
+        "tags": ["Guard"],
+        "operationId": "GetActiveGuards",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GuardDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GuardDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GuardDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Guard/current": {
+      "get": {
+        "tags": ["Guard"],
+        "operationId": "GetCurrentGuard",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Guard/{id}": {
+      "get": {
+        "tags": ["Guard"],
+        "operationId": "GetGuardById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Guard/activate/{guardID}": {
+      "post": {
+        "tags": ["Guard"],
+        "operationId": "ActivateGuard",
+        "parameters": [
+          {
+            "name": "guardID",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Guard/deactivate/{guardID}": {
+      "post": {
+        "tags": ["Guard"],
+        "operationId": "DeactivateGuard",
+        "parameters": [
+          {
+            "name": "guardID",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Recall/{phoneNumber}": {
+      "get": {
+        "tags": ["Recall"],
+        "operationId": "GetRecallByPhoneNumber",
+        "parameters": [
+          {
+            "name": "phoneNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecallDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecallDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecallDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Recall": {
+      "post": {
+        "tags": ["Recall"],
+        "operationId": "CreateRecall",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRecallDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRecallDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRecallDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecallDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecallDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecallDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateGuardConfigDto": {
+        "required": [
+          "oktaActivity",
+          "isMultipleActiveUserEnabled",
+          "label",
+          "orderResultOn",
+          "createdBy"
+        ],
+        "type": "object",
+        "properties": {
+          "oktaActivity": {
+            "type": "string",
+            "nullable": true
+          },
+          "isMultipleActiveUserEnabled": {
+            "type": "boolean"
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderResultOn": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int16",
+            "nullable": true
+          },
+          "createdBy": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateGuardDto": {
+        "required": [
+          "guardConfigID",
+          "guardActive",
+          "guardName",
+          "guardPhone",
+          "guardEmail",
+          "dateActivated",
+          "dateDeactivated",
+          "createdBy"
+        ],
+        "type": "object",
+        "properties": {
+          "guardConfigID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "guardActive": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32",
+            "nullable": true
+          },
+          "guardName": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "dateActivated": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dateDeactivated": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdBy": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateRecallDto": {
+        "required": [
+          "callIDKey",
+          "remoteNumber",
+          "direction",
+          "customerProjectId",
+          "customerProjectName",
+          "localNumber",
+          "localUserId",
+          "userProfile",
+          "lastAssignedQueue",
+          "data",
+          "initiatedDateTimeUTC",
+          "terminatedDateTimeUTC",
+          "validUntilDateTimeUTC",
+          "createdBy"
+        ],
+        "type": "object",
+        "properties": {
+          "callIDKey": {
+            "type": "string"
+          },
+          "remoteNumber": {
+            "type": "string"
+          },
+          "direction": {
+            "type": "string",
+            "nullable": true
+          },
+          "customerProjectId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int16",
+            "nullable": true
+          },
+          "customerProjectName": {
+            "type": "string",
+            "nullable": true
+          },
+          "localNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "localUserId": {
+            "type": "string",
+            "nullable": true
+          },
+          "userProfile": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastAssignedQueue": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/JsonElement"
+              }
+            ]
+          },
+          "initiatedDateTimeUTC": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "terminatedDateTimeUTC": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "validUntilDateTimeUTC": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdBy": {
+            "type": "string"
+          }
+        }
+      },
+      "GuardConfigDto": {
+        "required": [
+          "guardConfigID",
+          "oktaActivity",
+          "isMultipleActiveUserEnabled",
+          "label",
+          "orderResultOn",
+          "dateCreated",
+          "createdBy",
+          "dateUpdated",
+          "updatedBy"
+        ],
+        "type": "object",
+        "properties": {
+          "guardConfigID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "oktaActivity": {
+            "type": "string",
+            "nullable": true
+          },
+          "isMultipleActiveUserEnabled": {
+            "type": "boolean"
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderResultOn": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int16",
+            "nullable": true
+          },
+          "dateCreated": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "dateUpdated": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updatedBy": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "GuardDto": {
+        "required": [
+          "guardID",
+          "guardConfigID",
+          "guardActive",
+          "guardName",
+          "guardPhone",
+          "guardEmail",
+          "dateActivated",
+          "dateDeactivated",
+          "dateCreated",
+          "createdBy",
+          "dateUpdated",
+          "updatedBy"
+        ],
+        "type": "object",
+        "properties": {
+          "guardID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "guardConfigID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "guardActive": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32",
+            "nullable": true
+          },
+          "guardName": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "dateActivated": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dateDeactivated": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dateCreated": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "dateUpdated": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updatedBy": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "JsonElement": {},
+      "RecallDto": {
+        "required": [
+          "recallID",
+          "callIDKey",
+          "remoteNumber",
+          "direction",
+          "customerProjectId",
+          "customerProjectName",
+          "localNumber",
+          "localUserId",
+          "userProfile",
+          "lastAssignedQueue",
+          "data",
+          "initiatedDateTimeUTC",
+          "terminatedDateTimeUTC",
+          "validUntilDateTimeUTC",
+          "dateCreated",
+          "createdBy"
+        ],
+        "type": "object",
+        "properties": {
+          "recallID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int64"
+          },
+          "callIDKey": {
+            "type": "string"
+          },
+          "remoteNumber": {
+            "type": "string"
+          },
+          "direction": {
+            "type": "string",
+            "nullable": true
+          },
+          "customerProjectId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int16",
+            "nullable": true
+          },
+          "customerProjectName": {
+            "type": "string",
+            "nullable": true
+          },
+          "localNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "localUserId": {
+            "type": "string",
+            "nullable": true
+          },
+          "userProfile": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastAssignedQueue": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/JsonElement"
+              }
+            ]
+          },
+          "initiatedDateTimeUTC": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "terminatedDateTimeUTC": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "validUntilDateTimeUTC": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dateCreated": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateGuardConfigDto": {
+        "required": [
+          "guardConfigID",
+          "oktaActivity",
+          "isMultipleActiveUserEnabled",
+          "label",
+          "orderResultOn",
+          "updatedBy"
+        ],
+        "type": "object",
+        "properties": {
+          "guardConfigID": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "oktaActivity": {
+            "type": "string",
+            "nullable": true
+          },
+          "isMultipleActiveUserEnabled": {
+            "type": "boolean"
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderResultOn": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int16",
+            "nullable": true
+          },
+          "updatedBy": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "GuardConfigs"
+    },
+    {
+      "name": "Guard"
+    },
+    {
+      "name": "Recall"
+    }
+  ]
+}

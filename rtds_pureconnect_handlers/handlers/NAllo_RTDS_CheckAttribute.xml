@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Handler name="NAllo_RTDS_CheckAttribute" description="" version="2.0" category="NAllo RTDS">
+  <Steps>
+    <Step id="0" isInitiator="True" type="Initiator" creatorModule="" creatorName="Subroutine" creatorVersion="" label="NAllo_RTDS_CheckAttribute" notes="" left="82" top="70" right="270" bottom="159" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter label="Interaction Id" name="" defaultValue="Interaction1" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="Telephony" typeName="CallId" typeLabel="Call ID" value="Interaction1" index="0"/>
+        <Parameter label="Attribute Names" name="" defaultValue="lsAttrNames" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttrNames" index="1"/>
+        <Parameter label="Attribute Values" name="" defaultValue="lsAttrValues" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttrValues" index="2"/>
+        <Parameter label="Next Step" name="" defaultValue="sNextStep" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="False" typeModule="" typeName="String" typeLabel="String" value="p_sNextStep" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Start" returnValue="1" targetStepID="7"/>
+      </ExitPaths>
+    </Step>
+    <Step id="7" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_NextStep = NextStep_Failure" notes="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_Failure&quot;, 0))" left="362" top="72" right="584" bottom="161" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_Failure&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="14"/>
+      </ExitPaths>
+    </Step>
+    <Step id="11" type="Tool" creatorModule="" creatorName="Selection" creatorVersion="" label="Selection" notes="" left="816" top="569" right="1137" bottom="693" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="sOperator = &quot;eq&quot;" returnValue="-1" targetStepID="19"/>
+        <ExitPath label="sOperator = &quot;ne&quot;" returnValue="-1" targetStepID="23"/>
+        <ExitPath label="Default" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="12" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iValue" notes="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Operator&quot;, 0))" left="430" top="1053" right="652" bottom="1142" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iValue"/>
+        <Parameter name="RHS" value="toI(sValue)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="29"/>
+      </ExitPaths>
+    </Step>
+    <Step id="13" type="Tool" creatorModule="DsLookup" creatorName="ReplaceAttributes" creatorVersion="" label="Get sAttributeValue" notes="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;AttributeName&quot;, 0)))" left="1045" top="83" right="1245" bottom="184" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="InteractionID" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="Next" defaultValIsVar="False" defaultValIsBlankStr="False" label="Format String" value="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;AttributeName&quot;, 0)))" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Result String" value="sAttributeValue" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="17"/>
+        <ExitPath label="Failure" returnValue="-2"/>
+      </ExitPaths>
+    </Step>
+    <Step id="14" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="StrEqlNoCase(StrLeft(StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;AttributeName&quot;, 0))), 2), &quot;$(&quot;)" notes="StrLeft(StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;AttributeName&quot;, 0))), 2)
+
+StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;AttributeName&quot;, 0)))" left="679" top="100" right="855" bottom="201" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="StrEqlNoCase(StrLeft(StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;AttributeName&quot;, 0))), 2), &quot;$(&quot;)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="13"/>
+        <ExitPath label="False" returnValue="0" targetStepID="16"/>
+      </ExitPaths>
+    </Step>
+    <Step id="16" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="$( &amp; sAttributeValue &amp; )" notes="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_False&quot;, 0))" left="652" top="256" right="874" bottom="345" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sAttributeName"/>
+        <Parameter name="RHS" value="&quot;$(&quot; &amp; StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;AttributeName&quot;, 0))) &amp; &quot;)&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="51"/>
+      </ExitPaths>
+    </Step>
+    <Step id="17" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="Get Operator" notes="StrLower(StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Operator&quot;, 0))))" left="1348" top="86" right="1570" bottom="175" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sOperator"/>
+        <Parameter name="RHS" value="StrLower(StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Operator&quot;, 0))))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="18"/>
+      </ExitPaths>
+    </Step>
+    <Step id="18" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="Get Value" notes="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Operator&quot;, 0)))" left="1671" top="88" right="1893" bottom="177" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sValue"/>
+        <Parameter name="RHS" value="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Value&quot;, 0)))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="20"/>
+      </ExitPaths>
+    </Step>
+    <Step id="19" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="StrEqlNoCase(sAttributeValue, sValue)" notes="" left="1323" top="473" right="1562" bottom="574" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="StrEqlNoCase(sAttributeValue, sValue)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="44"/>
+        <ExitPath label="False" returnValue="0" targetStepID="45"/>
+      </ExitPaths>
+    </Step>
+    <Step id="20" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="Get ValueDataType" notes="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Operator&quot;, 0)))" left="2037" top="100" right="2259" bottom="189" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sValueDataType"/>
+        <Parameter name="RHS" value="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;ValueDataType&quot;, 0)))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="21"/>
+      </ExitPaths>
+    </Step>
+    <Step id="21" type="Tool" creatorModule="" creatorName="Selection" creatorVersion="" label="Selection" notes="" left="163" top="606" right="517" bottom="753" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="StrEqlNoCase(sValueDataType, &quot;string&quot;)" returnValue="-1" targetStepID="11"/>
+        <ExitPath label="StrEqlNoCase(sValueDataType, &quot;boolean&quot;)" returnValue="-1" targetStepID="28"/>
+        <ExitPath label="StrEqlNoCase(sValueDataType, &quot;integer&quot;)" returnValue="-1" targetStepID="12"/>
+        <ExitPath label="Default" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="22" type="Tool" creatorModule="" creatorName="Selection" creatorVersion="" label="Selection" notes="" left="1114" top="1143" right="1398" bottom="1359" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="sOperator = &quot;gt&quot;" returnValue="-1" targetStepID="43"/>
+        <ExitPath label="sOperator = &quot;eq&quot;" returnValue="-1" targetStepID="46"/>
+        <ExitPath label="sOperator = &quot;ne&quot;" returnValue="-1" targetStepID="47"/>
+        <ExitPath label="sOperator = &quot;lt&quot;" returnValue="-1" targetStepID="48"/>
+        <ExitPath label="sOperator = &quot;ge&quot;" returnValue="-1" targetStepID="49"/>
+        <ExitPath label="sOperator = &quot;le&quot;" returnValue="-1" targetStepID="50"/>
+        <ExitPath label="Default" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="23" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="StrEqlNoCase(sAttributeValue, sValue)" notes="" left="1325" top="612" right="1564" bottom="713" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="StrEqlNoCase(sAttributeValue, sValue)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="45"/>
+        <ExitPath label="False" returnValue="0" targetStepID="44"/>
+      </ExitPaths>
+    </Step>
+    <Step id="28" type="Tool" creatorModule="" creatorName="Selection" creatorVersion="" label="Selection" notes="" left="815" top="798" right="1137" bottom="922" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="StrEqlNoCase(sAttributeValue, &quot;true&quot;)" returnValue="-1" targetStepID="44"/>
+        <ExitPath label="StrEqlNoCase(sAttributeValue, &quot;false&quot;)" returnValue="-1" targetStepID="45"/>
+        <ExitPath label="Default" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="29" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iValue" notes="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Operator&quot;, 0))" left="761" top="1058" right="983" bottom="1147" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iAttributeValue"/>
+        <Parameter name="RHS" value="toI(sAttributeValue)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="22"/>
+      </ExitPaths>
+    </Step>
+    <Step id="43" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="iAttributeValue &gt; iValue" notes="" left="1604" top="1084" right="1843" bottom="1185" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="iAttributeValue &gt; iValue"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="44"/>
+        <ExitPath label="False" returnValue="0" targetStepID="45"/>
+      </ExitPaths>
+    </Step>
+    <Step id="44" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sNextStep = NextStep_True" notes="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_True&quot;, 0))" left="2326" top="794" right="2555" bottom="883" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_True&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="45" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sNextStep = NextStep_False" notes="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_False&quot;, 0))" left="2311" top="1209" right="2546" bottom="1298" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_False&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="46" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="iAttributeValue = iValue" notes="" left="1593" top="1219" right="1832" bottom="1320" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="iAttributeValue = iValue"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="44"/>
+        <ExitPath label="False" returnValue="0" targetStepID="45"/>
+      </ExitPaths>
+    </Step>
+    <Step id="47" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="iAttributeValue &lt;&gt; iValue" notes="" left="1590" top="1349" right="1829" bottom="1450" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="iAttributeValue &lt;&gt; iValue"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="44"/>
+        <ExitPath label="False" returnValue="0" targetStepID="45"/>
+      </ExitPaths>
+    </Step>
+    <Step id="48" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="iAttributeValue &lt; iValue" notes="" left="1583" top="1481" right="1822" bottom="1582" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="iAttributeValue &lt; iValue"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="44"/>
+        <ExitPath label="False" returnValue="0" targetStepID="45"/>
+      </ExitPaths>
+    </Step>
+    <Step id="49" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="iAttributeValue &gt;= iValue" notes="" left="1568" top="1630" right="1807" bottom="1731" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="iAttributeValue &gt;= iValue"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="44"/>
+        <ExitPath label="False" returnValue="0" targetStepID="45"/>
+      </ExitPaths>
+    </Step>
+    <Step id="50" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="iAttributeValue &lt;= iValue" notes="" left="1546" top="1772" right="1785" bottom="1873" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="iAttributeValue &lt;= iValue"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="44"/>
+        <ExitPath label="False" returnValue="0" targetStepID="45"/>
+      </ExitPaths>
+    </Step>
+    <Step id="51" type="Tool" creatorModule="DsLookup" creatorName="ReplaceAttributes" creatorVersion="" label="Get sAttributeValue" notes="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;AttributeName&quot;, 0)))" left="1040" top="242" right="1240" bottom="343" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="InteractionID" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="Next" defaultValIsVar="False" defaultValIsBlankStr="False" label="Format String" value="sAttributeName" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Result String" value="sAttributeValue" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="17"/>
+        <ExitPath label="Failure" returnValue="-2"/>
+      </ExitPaths>
+    </Step>
+  </Steps>
+  <Variables>
+    <Variable name="Interaction1" initialValue="" boundGlobalVarID="" typeModule="Telephony" typeName="CallId" typeLabel="Call ID"/>
+    <Variable name="iAttributeValue" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iValue" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="p_lsAttrNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_lsAttrValues" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_sNextStep" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sAttributeName" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sAttributeValue" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sOperator" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sValue" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sValueDataType" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+  </Variables>
+</Handler>

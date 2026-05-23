@@ -1,0 +1,491 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Handler name="NAllo_RTDS_ExternalTransfer" description="" version="2.0" category="NAllo RTDS">
+  <Steps>
+    <Step id="0" isInitiator="True" type="Initiator" creatorModule="" creatorName="Subroutine" creatorVersion="" label="NAllo_RTDS_ExternalTransfer" notes="" left="40" top="60" right="250" bottom="149" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter label="Call Identifier" name="" defaultValue="Interaction1" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="Telephony" typeName="CallId" typeLabel="Call ID" value="Interaction1" index="0"/>
+        <Parameter label="Transferred?" name="" defaultValue="p_bTransferred" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="False" typeModule="" typeName="Boolean" typeLabel="Boolean" value="p_bTransferred" index="1"/>
+        <Parameter label="Next Step" name="" defaultValue="" defaultValueIsVariable="False" defaultValueIsBlankString="False" input="False" typeModule="" typeName="String" typeLabel="String" value="p_sNextStep" index="2"/>
+        <Parameter label="Attribute Names" name="" defaultValue="" defaultValueIsVariable="False" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttributeNames" index="3"/>
+        <Parameter label="Attribute Values" name="" defaultValue="" defaultValueIsVariable="False" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttributeValues" index="4"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Start" returnValue="1" targetStepID="83"/>
+      </ExitPaths>
+    </Step>
+    <Step id="5" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="Valid External?" notes="" left="420" top="300" right="540" bottom="401" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="bExternalCall and not bInvalidSecurity and not bDialPlanError"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="100"/>
+        <ExitPath label="False" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="15" type="Tool" creatorModule="Telephony" creatorName="PickUp" creatorVersion="" label="Interaction1" notes="" left="2440" top="370" right="2560" bottom="471" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="true" defaultValIsVar="False" defaultValIsBlankStr="False" label="Move Call to System Queue?" value="false" index="1"/>
+        <Parameter required="False" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="false" defaultValIsVar="False" defaultValIsBlankStr="False" label="True: Claim control of this call" value="false" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="16"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="16"/>
+      </ExitPaths>
+    </Step>
+    <Step id="16" type="Tool" creatorModule="Telephony" creatorName="Transfer" creatorVersion="2.3" label="Interaction1 &amp; Interaction2" notes="" left="2610" top="370" right="2790" bottom="471" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction2" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction2" index="1"/>
+        <Parameter required="False" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="false" defaultValIsVar="False" defaultValIsBlankStr="False" label="Use Putback (if available)" value="bPutback" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="79"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="39"/>
+      </ExitPaths>
+    </Step>
+    <Step id="19" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="Disconnected?" notes="" left="2250" top="360" right="2370" bottom="461" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="StrEqlNoCase(&quot;E&quot;, sCallState) or StrEqlNoCase(&quot;I&quot;, sCallState)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="20"/>
+        <ExitPath label="False" returnValue="0" targetStepID="15"/>
+      </ExitPaths>
+    </Step>
+    <Step id="20" type="Tool" creatorModule="Telephony" creatorName="Disconnect" creatorVersion="3.0" label="Interaction2" notes="" left="2410" top="800" right="2530" bottom="889" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction2" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="false" defaultValIsVar="False" defaultValIsBlankStr="False" label="Cancel pending operations?" value="false" index="1"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="0" defaultValIsVar="False" defaultValIsBlankStr="False" label="Reason Code:" value="0" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="78"/>
+      </ExitPaths>
+    </Step>
+    <Step id="21" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="Disconnected?" notes="" left="2240" top="630" right="2360" bottom="731" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="StrEqlNoCase(&quot;E&quot;, sCallState) or StrEqlNoCase(&quot;I&quot;, sCallState)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="20"/>
+        <ExitPath label="False" returnValue="0" targetStepID="22"/>
+      </ExitPaths>
+    </Step>
+    <Step id="22" type="Tool" creatorModule="Telephony" creatorName="PickUp" creatorVersion="" label="Interaction1" notes="" left="2450" top="630" right="2570" bottom="731" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="true" defaultValIsVar="False" defaultValIsBlankStr="False" label="Move Call to System Queue?" value="false" index="1"/>
+        <Parameter required="False" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="false" defaultValIsVar="False" defaultValIsBlankStr="False" label="True: Claim control of this call" value="false" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="39"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="39"/>
+      </ExitPaths>
+    </Step>
+    <Step id="24" type="Tool" creatorModule="Telephony" creatorName="Get Attribute" creatorVersion="" label="Call State" notes="" left="2080" top="640" right="2180" bottom="729" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;Eic_State&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="sCallState" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="21"/>
+      </ExitPaths>
+    </Step>
+    <Step id="25" type="Tool" creatorModule="Telephony" creatorName="Extended Place Call_2.0" creatorVersion="2.4" label="Extended Place Call" notes="not StrEqlNoCase(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;PerformCallAnalysis&quot;, 0)), &quot;No&quot;)
+
+Test(toI(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;DiversionReason&quot;, 0))) &gt; 0, toI(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;DiversionReason&quot;, 0), 0)
+
+
+Test(toI(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;DiversionReason&quot;, 0))) &gt; 0, toI(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;DiversionReason&quot;, 0))), 0)" left="1080" top="540" right="1250" bottom="848" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Telephone Number" value="sDialString" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="LineList" defaultValIsVar="True" defaultValIsBlankStr="False" label="Line groups
+(empty list means any line)" value="lsLines" index="1"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Station Queue Identifier" value="?" index="2"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Workgroup Queue Identifier" value="?" index="3"/>
+        <Parameter required="False" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="DialStringList" defaultValIsVar="True" defaultValIsBlankStr="False" label="List of dial strings to be used" value="lsDialStrings" index="4"/>
+        <Parameter required="False" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Perform Call Analysis" value="not StrEqlNoCase(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;PerformCallAnalysis&quot;, 0)), &quot;No&quot;)" index="5"/>
+        <Parameter required="False" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Include Answering Machine Detection in Call Analysis?" value="false" index="6"/>
+        <Parameter required="False" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Silence Wait Timeout (seconds)
+(Starts after answering machine detected)" value="?" index="7"/>
+        <Parameter required="False" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="True" defaultVal="30" defaultValIsVar="False" defaultValIsBlankStr="False" label="No Answer Timeout (seconds)" value="Test(toR(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;Timeout&quot;, 0))) &gt; 0.0, toR(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;Timeout&quot;, 0))), 30.0)" index="8"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="CallingPartyNumber" defaultValIsVar="True" defaultValIsBlankStr="False" label="Calling Party Number" value="sOutboundANI" index="9"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="CallingPartyName" defaultValIsVar="True" defaultValIsBlankStr="False" label="Calling Party Name" value="sOutboundANI" index="10"/>
+        <Parameter required="False" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Use the dial plan? (allows intercom calls)" value="false" index="11"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Create the call with the CallInitiationContext attribute set to this value" value="sCallInitiationContext" index="12"/>
+        <Parameter required="False" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call for which this is a consulting call (optional)" value="Interaction1" index="13"/>
+        <Parameter required="False" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Names" value="?" index="14"/>
+        <Parameter required="False" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Values" value="?" index="15"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Diversion Number" value="sOutboundANI" index="16"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Diversion Name" value="sOutboundANI" index="17"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="CallingPartyName" defaultValIsVar="False" defaultValIsBlankStr="False" label="Diversion Reason
+   0: None             1: Unknown
+   2: Busy             3: No answer
+   4: Unavilable       5: Unconditional
+   6: Time of day      7: Do not disturb
+   8: Deflection       9: Follow-me
+  10: Out of service  11: Away
+ 255: Other" value="Test(toI(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;DiversionReason&quot;, 0))) &gt; 0, toI(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;DiversionReason&quot;, 0))), 8)" index="18"/>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="False" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction2" index="19"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="72"/>
+        <ExitPath label="Busy" returnValue="2" targetStepID="67"/>
+        <ExitPath label="No Answer" returnValue="3" targetStepID="94"/>
+        <ExitPath label="Not Reached" returnValue="4" targetStepID="67"/>
+        <ExitPath label="Intercept" returnValue="5" targetStepID="67"/>
+        <ExitPath label="Machine" returnValue="6" targetStepID="67"/>
+        <ExitPath label="Fax" returnValue="7" targetStepID="67"/>
+        <ExitPath label="No Lines" returnValue="8" targetStepID="67"/>
+        <ExitPath label="Disconnect" returnValue="10" targetStepID="67"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="67"/>
+        <ExitPath label="Canceled" returnValue="9" targetStepID="115"/>
+      </ExitPaths>
+    </Step>
+    <Step id="26" type="Tool" creatorModule="Telephony" creatorName="Get Attribute" creatorVersion="" label="Call State" notes="" left="2090" top="370" right="2190" bottom="459" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;Eic_State&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="sCallState" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="19"/>
+      </ExitPaths>
+    </Step>
+    <Step id="28" type="Tool" creatorModule="Telephony" creatorName="Hold" creatorVersion="" label="Interaction1" notes="" left="780" top="610" right="900" bottom="711" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="false" defaultValIsVar="False" defaultValIsBlankStr="False" label="True: Claim control of this call" value="false" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="25"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="25"/>
+      </ExitPaths>
+    </Step>
+    <Step id="29" type="Tool" creatorModule="Telephony" creatorName="Set Attribute" creatorVersion="" label="Eic_OnHoldAudioFile" notes="" left="520" top="620" right="680" bottom="709" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;Eic_OnHoldAudioFile&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="Test(StrLen(StrTrimW(GetHead(lsRingback))) &gt; 0, GetHead(lsRingback), c_sRingbackDefault)" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="28"/>
+      </ExitPaths>
+    </Step>
+    <Step id="34" type="Tool" creatorModule="DsLookup" creatorName="GetDsAttr" creatorVersion="" label="lsRingback" notes="" left="100" top="600" right="220" bottom="701" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Path" value="c_sTSParameterPath" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Directory Services Attribute" value="c_sRingbackAttr" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Attribute Values" value="lsRingback" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="103"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="103"/>
+      </ExitPaths>
+    </Step>
+    <Step id="39" type="Tool" creatorModule="Telephony" creatorName="Disconnect" creatorVersion="3.0" label="Interaction2" notes="" left="2850" top="630" right="2980" bottom="719" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction2" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="false" defaultValIsVar="False" defaultValIsBlankStr="False" label="Cancel pending operations?" value="false" index="1"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="0" defaultValIsVar="False" defaultValIsBlankStr="False" label="Reason Code:" value="0" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="40" type="Subroutine" creatorModule="" creatorName="I3DialPlan" creatorVersion="" label="I3DialPlan" notes="" left="110" top="310" right="210" bottom="399" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Dialed Number" value="sExternalNumber" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="User Queue Id" value="&quot;&quot;" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Station Queue Id" value="&quot;Station:System&quot;" index="3"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="0" defaultValIsVar="False" defaultValIsBlankStr="False" label="Dialing Mode (0=ClientMakeCall(), 1=Forward, 2=Follow-me, 3=TUI Calls)" value="0" index="4"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="sDialString" defaultValIsVar="True" defaultValIsBlankStr="False" label="Dial String" value="sDialString" index="5"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="lsDialStrings" defaultValIsVar="True" defaultValIsBlankStr="False" label="Dial Strings" value="lsDialStrings" index="6"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="lsLines" defaultValIsVar="True" defaultValIsBlankStr="False" label="Dial Groups" value="lsLines" index="7"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="sFormattedTn" defaultValIsVar="True" defaultValIsBlankStr="False" label="Formatted Tn" value="sFormattedTN" index="8"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="sQueueId" defaultValIsVar="True" defaultValIsBlankStr="False" label="Called Queue Id" value="sTemp" index="9"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="sRemoteName" defaultValIsVar="True" defaultValIsBlankStr="False" label="Called Party Name" value="sTemp" index="10"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="False" defaultVal="bExternalCall" defaultValIsVar="True" defaultValIsBlankStr="False" label="External Call?" value="bExternalCall" index="11"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="False" defaultVal="bInvalidExtension" defaultValIsVar="True" defaultValIsBlankStr="False" label="Invalid Extension?" value="bTemp" index="12"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="False" defaultVal="bInvalidSecurity" defaultValIsVar="True" defaultValIsBlankStr="False" label="Invalid Security?" value="bInvalidSecurity" index="13"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="False" defaultVal="bDialPlanError" defaultValIsVar="True" defaultValIsBlankStr="False" label="Dial Plan Error?" value="bDialPlanError" index="14"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="118"/>
+      </ExitPaths>
+    </Step>
+    <Step id="67" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="NextStep_Busy" notes="Test(StrLen(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;NextStep_Busy&quot;, 0))) &gt; 0, GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;NextStep_Busy&quot;, 0)), p_sNextStep)" left="1580" top="470" right="1760" bottom="559" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="Test(StrLen(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;NextStep_Busy&quot;, 0))) &gt; 0, GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;NextStep_Busy&quot;, 0)), p_sNextStep)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="88"/>
+      </ExitPaths>
+    </Step>
+    <Step id="68" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_Status = &quot;Cancelled&quot;" notes="" left="1850" top="800" right="2030" bottom="889" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sStatus"/>
+        <Parameter name="RHS" value="&quot;Cancelled&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="87"/>
+      </ExitPaths>
+    </Step>
+    <Step id="72" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_Status = &quot;Success&quot;" notes="" left="1550" top="370" right="1760" bottom="459" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sStatus"/>
+        <Parameter name="RHS" value="&quot;Success&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="85"/>
+      </ExitPaths>
+    </Step>
+    <Step id="78" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_bTransferred = true" notes="" left="2570" top="800" right="2740" bottom="889" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_bTransferred"/>
+        <Parameter name="RHS" value="true"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="79" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_bTransferred = true" notes="" left="2850" top="370" right="3020" bottom="459" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_bTransferred"/>
+        <Parameter name="RHS" value="true"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="83" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_bTransferred = false" notes="" left="310" top="60" right="490" bottom="149" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_bTransferred"/>
+        <Parameter name="RHS" value="false"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="92"/>
+      </ExitPaths>
+    </Step>
+    <Step id="85" type="Tool" creatorModule="Telephony" creatorName="Set Attribute" creatorVersion="" label="OnHoldAudioFile back to Org" notes="" left="1820" top="370" right="2030" bottom="459" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;Eic_OnHoldAudioFile&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="sOrg_OnHoldAudioFile" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="26"/>
+      </ExitPaths>
+    </Step>
+    <Step id="86" type="Tool" creatorModule="Telephony" creatorName="Get Attribute" creatorVersion="" label="Eic_OnHoldAudioFile" notes="" left="760" top="60" right="930" bottom="149" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;Eic_OnHoldAudioFile&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="sOrg_OnHoldAudioFile" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="96"/>
+      </ExitPaths>
+    </Step>
+    <Step id="87" type="Tool" creatorModule="Telephony" creatorName="Set Attribute" creatorVersion="" label="OnHoldAudioFile back to Org" notes="" left="2090" top="800" right="2290" bottom="889" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;Eic_OnHoldAudioFile&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="sOrg_OnHoldAudioFile" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="20"/>
+      </ExitPaths>
+    </Step>
+    <Step id="88" type="Tool" creatorModule="Telephony" creatorName="Set Attribute" creatorVersion="" label="OnHoldAudioFile back to Org" notes="" left="1840" top="640" right="2020" bottom="729" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;Eic_OnHoldAudioFile&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="sOrg_OnHoldAudioFile" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="24"/>
+      </ExitPaths>
+    </Step>
+    <Step id="92" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sNextStep (Error)" notes="" left="540" top="60" right="700" bottom="149" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;NextStep&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="86"/>
+      </ExitPaths>
+    </Step>
+    <Step id="94" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="NextStep_RNA" notes="Test(StrLen(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;NextStep_RNA&quot;, 0))) &gt; 0, GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;NextStep_RNA&quot;, 0)), p_sNextStep)" left="1620" top="570" right="1760" bottom="659" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="Test(StrLen(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;NextStep_RNA&quot;, 0))) &gt; 0, GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;NextStep_RNA&quot;, 0)), p_sNextStep)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="88"/>
+      </ExitPaths>
+    </Step>
+    <Step id="95" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="External number not empty" notes="" left="1190" top="60" right="1310" bottom="161" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="sExternalNumber &lt;&gt; &quot;&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="40"/>
+        <ExitPath label="False" returnValue="0" targetStepID="104"/>
+      </ExitPaths>
+    </Step>
+    <Step id="96" type="Tool" creatorModule="Telephony" creatorName="Get Attribute" creatorVersion="" label="Get Scheduler External Number" notes="" left="980" top="60" right="1130" bottom="149" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;SchedulerExternalNumber&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="sExternalNumber" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="95"/>
+      </ExitPaths>
+    </Step>
+    <Step id="99" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="OutboundANI?" notes="GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;OutboundANI&quot;, 0))" left="1085" top="351" right="1245" bottom="440" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sOutboundANI"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;OutboundANI&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="34"/>
+      </ExitPaths>
+    </Step>
+    <Step id="100" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="Diversion?" notes="toI(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;DiversionReason&quot;, 0))) &lt;&gt; 8
+
+toI(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;DiversionReason&quot;, 0))) = 8" left="622" top="301" right="742" bottom="402" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="toI(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;DiversionReason&quot;, 0))) = 8"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="102"/>
+        <ExitPath label="False" returnValue="0" targetStepID="99"/>
+      </ExitPaths>
+    </Step>
+    <Step id="102" type="Tool" creatorModule="Telephony" creatorName="Get Attribute" creatorVersion="" label="Eic_RemoteAddress" notes="" left="1085" top="251" right="1245" bottom="340" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;Eic_RemoteAddress&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="sOutboundANI" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="34"/>
+      </ExitPaths>
+    </Step>
+    <Step id="103" type="Tool" creatorModule="" creatorName="Notify Debugger" creatorVersion="" label="Debug: 1" notes="" left="290" top="620" right="390" bottom="709" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="29"/>
+      </ExitPaths>
+    </Step>
+    <Step id="104" type="Tool" creatorModule="Telephony" creatorName="Get Attribute" creatorVersion="" label="Get Emergency External Number" notes="" left="1400" top="60" right="1620" bottom="149" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;EmergencyExternalNumber&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="sExternalNumber" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="105"/>
+      </ExitPaths>
+    </Step>
+    <Step id="105" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="External number not empty" notes="" left="1710" top="50" right="1830" bottom="151" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="sExternalNumber &lt;&gt; &quot;&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="40"/>
+        <ExitPath label="False" returnValue="0" targetStepID="113"/>
+      </ExitPaths>
+    </Step>
+    <Step id="106" type="Tool" creatorModule="Telephony" creatorName="Log Message" creatorVersion="" label="Log Message" notes="&quot;External number: &quot; &amp; sExternalNumber" left="250" top="310" right="370" bottom="399" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="CallLog" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Log Identifier" value="&quot;CallLog&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Text of log message" value="&quot;External number: &quot; &amp; sExternalNumber" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="5"/>
+      </ExitPaths>
+    </Step>
+    <Step id="113" type="Tool" creatorModule="DsLookup" creatorName="ReplaceAttributes" creatorVersion="" label="sExternalNumber" notes="GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;PhoneNumber&quot;, 0))
+
+
+StrTrimW(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;PhoneNumber&quot;, 0)))" left="1900" top="50" right="2100" bottom="151" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="InteractionID" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="Next" defaultValIsVar="False" defaultValIsBlankStr="False" label="Format String" value="StrTrimW(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;PhoneNumber&quot;, 0)))" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Result String" value="sExternalNumber" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="114"/>
+        <ExitPath label="Failure" returnValue="-2" targetStepID="114"/>
+      </ExitPaths>
+    </Step>
+    <Step id="114" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sExternalNumber" notes="Test(StrLeft(sExternalNumber, 2) = &quot;$(&quot;, GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;PhoneNumber&quot;, 0)), sExternalNumber)
+
+
+
+
+
+
+Test(StrLeft(sExternalNumber, 2) = &quot;$(&quot;, GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;PhoneNumber&quot;, 0)), sExternalNumber
+
+StrTrimW(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;PhoneNumber&quot;, 0)))" left="2170" top="60" right="2310" bottom="149" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sExternalNumber"/>
+        <Parameter name="RHS" value="Test(StrLeft(sExternalNumber, 2) = &quot;$(&quot;, GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;PhoneNumber&quot;, 0)), sExternalNumber)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="40"/>
+      </ExitPaths>
+    </Step>
+    <Step id="115" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="NextStep_Busy" notes="Test(StrLen(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;NextStep_Busy&quot;, 0))) &gt; 0, GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;NextStep_Busy&quot;, 0)), p_sNextStep)" left="1600" top="794" right="1780" bottom="883" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="Test(StrLen(GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;NextStep_Busy&quot;, 0))) &gt; 0, GetAt(p_lsAttributeValues, Find(p_lsAttributeNames, &quot;NextStep_Busy&quot;, 0)), p_sNextStep)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="68"/>
+      </ExitPaths>
+    </Step>
+    <Step id="118" type="Tool" creatorModule="" creatorName="Notify Debugger" creatorVersion="" label="Debug: MM" notes="" left="217" top="404" right="317" bottom="493" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="106"/>
+      </ExitPaths>
+    </Step>
+  </Steps>
+  <Variables>
+    <Variable name="Interaction1" initialValue="" boundGlobalVarID="" typeModule="Telephony" typeName="CallId" typeLabel="Call ID"/>
+    <Variable name="Interaction2" initialValue="" boundGlobalVarID="" typeModule="Telephony" typeName="CallId" typeLabel="Call ID"/>
+    <Variable name="bDialPlanError" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="bExternalCall" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="bInvalidSecurity" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="bPutback" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="bTemp" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="c_sRingbackAttr" initialValue="Ringback File" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="c_sRingbackDefault" initialValue="Ringback.wav" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="c_sTSParameterPath" initialValue="${SERVER}\TS Parameters" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="iDiversionReason" initialValue="1" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="lsDialStrings" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsLines" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsRingback" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_bTransferred" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="p_lsAttributeNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_lsAttributeValues" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_sNextStep" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="p_sStatus" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sCallInitiationContext" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sCallState" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sDialString" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sExternalNumber" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sFormattedTN" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sOrg_OnHoldAudioFile" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sOutboundANI" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sTemp" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+  </Variables>
+</Handler>

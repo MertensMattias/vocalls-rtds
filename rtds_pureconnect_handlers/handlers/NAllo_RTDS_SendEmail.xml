@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Handler name="NAllo_RTDS_SendEmail" description="" version="2.0" category="NAllo RTDS">
+  <Steps>
+    <Step id="0" isInitiator="True" type="Initiator" creatorModule="" creatorName="Subroutine" creatorVersion="" label="NAllo_RTDS_SendEmail" notes="" left="30" top="70" right="220" bottom="159" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter label="Interaction Id" name="" defaultValue="Interaction1" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="Telephony" typeName="CallId" typeLabel="Call ID" value="Interaction1" index="0"/>
+        <Parameter label="Attribute Names" name="" defaultValue="lsAttrNames" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttrNames" index="1"/>
+        <Parameter label="Attribute Values" name="" defaultValue="lsAttrValues" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttrValues" index="2"/>
+        <Parameter label="Next Step" name="" defaultValue="sNextStep" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="False" typeModule="" typeName="String" typeLabel="String" value="p_sNextStep" index="3"/>
+        <Parameter label="NextStep Forced" name="" defaultValue="p_bNextStepForced" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="False" typeModule="" typeName="Boolean" typeLabel="Boolean" value="p_bNextStepForced" index="4"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Start" returnValue="1" targetStepID="7"/>
+      </ExitPaths>
+    </Step>
+    <Step id="7" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_NextStep" notes="" left="300" top="70" right="420" bottom="159" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="113"/>
+      </ExitPaths>
+    </Step>
+    <Step id="57" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="Active = Yes?" notes="not StrEqlNoCase(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Active&quot;, 0)), &quot;0&quot;) or not StrEqlNoCase(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Active&quot;, 0)), &quot;False&quot;)" left="760" top="60" right="900" bottom="161" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="not StrEqlNoCase(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Active&quot;, 0)), &quot;0&quot;) or not StrEqlNoCase(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Active&quot;, 0)), &quot;False&quot;)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="120"/>
+        <ExitPath label="False" returnValue="0" targetStepID="116"/>
+      </ExitPaths>
+    </Step>
+    <Step id="59" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_NextStep = NextStep_DefaultChoice" notes="" left="2860" top="1710" right="3040" bottom="1799" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_DefaultChoice&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="86" type="Tool" creatorModule="DsLookup" creatorName="ReplaceAttributes" creatorVersion="" label="sSubject" notes="" left="1170" top="60" right="1370" bottom="161" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="InteractionID" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="Next" defaultValIsVar="False" defaultValIsBlankStr="False" label="Format String" value="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Subject&quot;, 0)))" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Result String" value="sSubject" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="94"/>
+        <ExitPath label="Failure" returnValue="-2" targetStepID="94"/>
+      </ExitPaths>
+    </Step>
+    <Step id="88" type="Tool" creatorModule="DsLookup" creatorName="ReplaceAttributes" creatorVersion="" label="sFrom" notes="" left="1720" top="60" right="1920" bottom="161" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="InteractionID" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="Next" defaultValIsVar="False" defaultValIsBlankStr="False" label="Format String" value="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;From&quot;, 0)))" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Result String" value="sFrom" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="95"/>
+        <ExitPath label="Failure" returnValue="-2" targetStepID="95"/>
+      </ExitPaths>
+    </Step>
+    <Step id="89" type="Tool" creatorModule="DsLookup" creatorName="ReplaceAttributes" creatorVersion="" label="sTo" notes="" left="2230" top="60" right="2430" bottom="161" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="InteractionID" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="Next" defaultValIsVar="False" defaultValIsBlankStr="False" label="Format String" value="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;To&quot;, 0)))" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Result String" value="sTo" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="96"/>
+        <ExitPath label="Failure" returnValue="-2" targetStepID="96"/>
+      </ExitPaths>
+    </Step>
+    <Step id="90" type="Tool" creatorModule="DsLookup" creatorName="ReplaceAttributes" creatorVersion="" label="sCC" notes="" left="2920" top="60" right="3120" bottom="161" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="InteractionID" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="Next" defaultValIsVar="False" defaultValIsBlankStr="False" label="Format String" value="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;CC&quot;, 0)))" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Result String" value="sCC" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="97"/>
+        <ExitPath label="Failure" returnValue="-2" targetStepID="97"/>
+      </ExitPaths>
+    </Step>
+    <Step id="91" type="Tool" creatorModule="DsLookup" creatorName="ReplaceAttributes" creatorVersion="" label="sBody" notes="" left="3472" top="50" right="3672" bottom="151" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="InteractionID" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="Next" defaultValIsVar="False" defaultValIsBlankStr="False" label="Format String" value="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Body&quot;, 0)))" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Result String" value="sBody" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="98"/>
+        <ExitPath label="Failure" returnValue="-2" targetStepID="98"/>
+      </ExitPaths>
+    </Step>
+    <Step id="93" type="Tool" creatorModule="DsLookup" creatorName="ReplaceAttributes" creatorVersion="" label="sAttachment" notes="" left="4296" top="54" right="4496" bottom="155" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="InteractionID" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="Next" defaultValIsVar="False" defaultValIsBlankStr="False" label="Format String" value="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Attachment&quot;, 0)))" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Result String" value="sAttachment" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="99"/>
+        <ExitPath label="Failure" returnValue="-2" targetStepID="99"/>
+      </ExitPaths>
+    </Step>
+    <Step id="94" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sSubject" notes="" left="1480" top="60" right="1620" bottom="149" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sSubject"/>
+        <Parameter name="RHS" value="Test(StrLen(sSubject) &gt; 0, sSubject, GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Subject&quot;, 0)))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="88"/>
+      </ExitPaths>
+    </Step>
+    <Step id="95" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sFrom" notes="" left="2010" top="70" right="2150" bottom="159" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sFrom"/>
+        <Parameter name="RHS" value="Test(StrLen(sFrom) &gt; 0, sFrom, GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;From&quot;, 0)))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="89"/>
+      </ExitPaths>
+    </Step>
+    <Step id="96" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sTo" notes="" left="2510" top="60" right="2650" bottom="149" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sTo"/>
+        <Parameter name="RHS" value="Test(StrLen(sTo) &gt; 0, sTo, GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;To&quot;, 0)))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="123"/>
+      </ExitPaths>
+    </Step>
+    <Step id="97" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sCC" notes="" left="3212" top="60" right="3352" bottom="149" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sCC"/>
+        <Parameter name="RHS" value="Test(StrLen(sCC) &gt; 0, sCC, GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;CC&quot;, 0)))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="91"/>
+      </ExitPaths>
+    </Step>
+    <Step id="98" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sBody" notes="Test(StrLen(sBody) &gt; 0, sBody, GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Body&quot;, 0)))" left="3762" top="60" right="3902" bottom="149" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sBody"/>
+        <Parameter name="RHS" value="Test((StrLen(sBody)) &gt; 0, sBody, GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Body&quot;, 0)))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="124"/>
+      </ExitPaths>
+    </Step>
+    <Step id="99" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sAttachment" notes="" left="4601" top="61" right="4741" bottom="150" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sAttachment"/>
+        <Parameter name="RHS" value="Test(StrLen(sAttachment) &gt; 0, sAttachment, GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Attachment&quot;, 0)))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="107"/>
+      </ExitPaths>
+    </Step>
+    <Step id="101" type="Tool" creatorModule="EmailToolsIDA" creatorName="Make Email Body" creatorVersion="1" label="Make Email Body" notes="" left="423" top="490" right="560" bottom="591" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="1" value="&quot;1&quot;" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="sContentType" defaultValIsVar="True" defaultValIsBlankStr="False" label="Content-type" value="&quot;text/plain&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="sData" defaultValIsVar="True" defaultValIsBlankStr="False" label="Data" value="sBody" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="Email Body" typeLabel="Email Body" moduleName="EmailToolsIDA" isInput="False" defaultVal="ebEmailBody" defaultValIsVar="True" defaultValIsBlankStr="False" label="Email Body" value="ebBody" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="102"/>
+        <ExitPath label="Failure" returnValue="0" targetStepID="115"/>
+      </ExitPaths>
+    </Step>
+    <Step id="102" type="Tool" creatorModule="" creatorName="InsertAt" creatorVersion="" label="InsertAt" notes="" left="640" top="490" right="740" bottom="579" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lebBodies"/>
+        <Parameter name="Value" value="ebBody"/>
+        <Parameter name="Index" value="0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="110"/>
+      </ExitPaths>
+    </Step>
+    <Step id="106" type="Tool" creatorModule="EmailToolsIDA" creatorName="Send Email" creatorVersion="6" label="Send E-Mail" notes="" left="1281" top="400" right="1383" bottom="501" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="6" value="&quot;6&quot;" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="To Recipients" value="sTo" index="1"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Cc Recipients" value="sCC" index="2"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Bcc Recipients" value="?" index="3"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Reply To" value="?" index="4"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Sender" value="sFrom" index="5"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Subject" value="sSubject" index="6"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Importance" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Importance&quot;, 0))" index="7"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Sensitivity" value="&quot;Normal&quot;" index="8"/>
+        <Parameter required="False" isCustom="False" typeName="List of Email Body" typeLabel="List of Email Body" moduleName="EmailToolsIDA" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Body" value="lebBodies" index="9"/>
+        <Parameter required="False" isCustom="False" typeName="List of Email Cookie" typeLabel="List of Email Cookie" moduleName="EmailToolsIDA" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Message Attachments" value="?" index="10"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Attachment Files" value="lsAttachments" index="11"/>
+        <Parameter required="False" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delete Attachments" value="?" index="12"/>
+        <Parameter required="False" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delivery Receipt" value="?" index="13"/>
+        <Parameter required="False" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Read Receipt" value="?" index="14"/>
+        <Parameter required="False" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Saved Copy" value="false" index="15"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Message Class" value="?" index="16"/>
+        <Parameter required="False" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Timeout" value="?" index="17"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="iRetVal" defaultValIsVar="True" defaultValIsBlankStr="False" label="Result" value="iResultCode" index="18"/>
+        <Parameter required="False" isCustom="False" typeName="DateTime" typeLabel="DateTime" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Scheduled" value="?" index="19"/>
+        <Parameter required="False" isCustom="False" typeName="List of Attached File" typeLabel="List of Attached File" moduleName="EmailToolsIDA" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Attachment Files" value="?" index="20"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="112"/>
+        <ExitPath label="Failure" returnValue="0" targetStepID="114"/>
+      </ExitPaths>
+    </Step>
+    <Step id="107" type="Tool" creatorModule="" creatorName="Notify Debugger" creatorVersion="" label="Debug: Send Mail" notes="" left="40" top="490" right="240" bottom="579" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="101"/>
+      </ExitPaths>
+    </Step>
+    <Step id="108" type="Tool" creatorModule="" creatorName="InsertAtHead" creatorVersion="" label="InsertAtHead" notes="" left="1050" top="400" right="1170" bottom="489" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsAttachments"/>
+        <Parameter name="Value" value="sAttachment"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="106"/>
+      </ExitPaths>
+    </Step>
+    <Step id="110" type="Tool" creatorModule="DsLookup" creatorName="FileGetStat" creatorVersion="" label="sFilename" notes="" left="850" top="490" right="990" bottom="591" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Source Filename" value="sAttachment" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="FullPath" defaultValIsVar="True" defaultValIsBlankStr="False" label="Full Path:" value="sFullPath" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="FileSize" defaultValIsVar="True" defaultValIsBlankStr="False" label="File Size:" value="iFileSize" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="DateTime" typeLabel="DateTime" moduleName="" isInput="False" defaultVal="CreationTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Creation Time:" value="dtCreationTime" index="3"/>
+        <Parameter required="True" isCustom="False" typeName="DateTime" typeLabel="DateTime" moduleName="" isInput="False" defaultVal="ModifyTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Modify Time:" value="dtModifyTime" index="4"/>
+        <Parameter required="True" isCustom="False" typeName="DateTime" typeLabel="DateTime" moduleName="" isInput="False" defaultVal="AccessTime" defaultValIsVar="True" defaultValIsBlankStr="False" label="Access Time:" value="AccessTime" index="5"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="108"/>
+        <ExitPath label="Failure" returnValue="1" targetStepID="111"/>
+      </ExitPaths>
+    </Step>
+    <Step id="111" type="Tool" creatorModule="EmailToolsIDA" creatorName="Send Email" creatorVersion="6" label="Send E-Mail" notes="" left="1280" top="540" right="1380" bottom="641" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="6" value="&quot;6&quot;" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="To Recipients" value="sTo" index="1"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Cc Recipients" value="sCC" index="2"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Bcc Recipients" value="?" index="3"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Reply To" value="?" index="4"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Sender" value="sFrom" index="5"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Subject" value="sSubject" index="6"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Importance" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Importance&quot;, 0))" index="7"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Sensitivity" value="&quot;Normal&quot;" index="8"/>
+        <Parameter required="False" isCustom="False" typeName="List of Email Body" typeLabel="List of Email Body" moduleName="EmailToolsIDA" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Body" value="lebBodies" index="9"/>
+        <Parameter required="False" isCustom="False" typeName="List of Email Cookie" typeLabel="List of Email Cookie" moduleName="EmailToolsIDA" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Message Attachments" value="?" index="10"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Attachment Files" value="?" index="11"/>
+        <Parameter required="False" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delete Attachments" value="?" index="12"/>
+        <Parameter required="False" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delivery Receipt" value="?" index="13"/>
+        <Parameter required="False" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Read Receipt" value="?" index="14"/>
+        <Parameter required="False" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Saved Copy" value="false" index="15"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Message Class" value="?" index="16"/>
+        <Parameter required="False" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Timeout" value="?" index="17"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="iRetVal" defaultValIsVar="True" defaultValIsBlankStr="False" label="Result" value="iResultCode" index="18"/>
+        <Parameter required="False" isCustom="False" typeName="DateTime" typeLabel="DateTime" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Scheduled" value="?" index="19"/>
+        <Parameter required="False" isCustom="False" typeName="List of Attached File" typeLabel="List of Attached File" moduleName="EmailToolsIDA" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Attachment Files" value="?" index="20"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="112"/>
+        <ExitPath label="Failure" returnValue="0" targetStepID="114"/>
+      </ExitPaths>
+    </Step>
+    <Step id="112" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :Send E-Mail: Success&quot;" notes="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :Send E-Mail: Success&quot;" left="1650" top="620" right="2020" bottom="709" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :Send E-Mail: Success&quot;" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="61" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="117"/>
+      </ExitPaths>
+    </Step>
+    <Step id="113" type="Tool" creatorModule="TelephonyToolA" creatorName="ConvertCallIdToString" creatorVersion="" label="Convert Call Id to String" notes="" left="510" top="60" right="670" bottom="149" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Interaction Id" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String" value="sInteraction1" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="57"/>
+      </ExitPaths>
+    </Step>
+    <Step id="114" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :Send E-Mail: Failure&quot;" notes="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :Send E-Mail: Failure&quot;" left="1650" top="730" right="2020" bottom="819" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :Send E-Mail: Failure&quot;" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="118"/>
+      </ExitPaths>
+    </Step>
+    <Step id="115" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :Send E-Mail: Failure&quot;" notes="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :Send E-Mail: Failure&quot;" left="600" top="710" right="970" bottom="799" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :Make Email Body: Failure&quot;" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="119"/>
+      </ExitPaths>
+    </Step>
+    <Step id="116" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :RTDS - Inactive&quot;" notes="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :RTDS - Inactive&quot;" left="950" top="190" right="1320" bottom="279" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :RTDS - Inactive&quot;" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1"/>
+      </ExitPaths>
+    </Step>
+    <Step id="117" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_NextStep_Success" notes="" left="2120" top="620" right="2280" bottom="709" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_Success&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="118" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="NextStep_Failure" notes="" left="2120" top="730" right="2280" bottom="819" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_Failure&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="119" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_NextStep_Failure" notes="" left="1050" top="710" right="1210" bottom="799" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_Failure&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="120" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_bNextStepForced" notes="" left="970" top="60" right="1130" bottom="149" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_bNextStepForced"/>
+        <Parameter name="RHS" value="true"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="86"/>
+      </ExitPaths>
+    </Step>
+    <Step id="121" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="NextStep_Failure" notes="" left="3357" top="205" right="3577" bottom="294" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;'NextStep_Failure&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="122" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :RTDS - 'To' field empty&quot;" notes="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :RTDS - 'To' field empty&quot;" left="2922" top="204" right="3292" bottom="293" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :RTDS - 'To' field empty&quot;" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="21" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="121"/>
+      </ExitPaths>
+    </Step>
+    <Step id="123" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="StrLen(sTo) &gt; 0" notes="" left="2726" top="60" right="2826" bottom="161" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="StrLen(sTo) &gt; 0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="90"/>
+        <ExitPath label="False" returnValue="0" targetStepID="122"/>
+      </ExitPaths>
+    </Step>
+    <Step id="124" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="not StrEqlNoCase(sBody, &quot;$(ATTR_EmailBody)&quot;)" notes="" left="3977" top="52" right="4132" bottom="153" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="not StrEqlNoCase(sBody, &quot;$(ATTR_EmailBody)&quot;)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="93"/>
+        <ExitPath label="False" returnValue="0" targetStepID="126"/>
+      </ExitPaths>
+    </Step>
+    <Step id="125" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="NextStep_Failure" notes="" left="4674" top="193" right="4894" bottom="282" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;'NextStep_Failure&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="126" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :RTDS - 'Body' field empty&quot;" notes="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :RTDS - 'Body' field empty&quot;" left="4238" top="190" right="4632" bottom="279" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :RTDS - 'Body' field empty&quot;" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="21" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="125"/>
+      </ExitPaths>
+    </Step>
+  </Steps>
+  <Variables>
+    <Variable name="AccessTime" initialValue="" boundGlobalVarID="" typeModule="" typeName="DateTime" typeLabel="DateTime"/>
+    <Variable name="Interaction1" initialValue="" boundGlobalVarID="" typeModule="Telephony" typeName="CallId" typeLabel="Call ID"/>
+    <Variable name="c_sHandlerName" initialValue="$HandlerName" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="c_sTraceTag" initialValue="[SendEmail]" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="dtCreationTime" initialValue="" boundGlobalVarID="" typeModule="" typeName="DateTime" typeLabel="DateTime"/>
+    <Variable name="dtModifyTime" initialValue="" boundGlobalVarID="" typeModule="" typeName="DateTime" typeLabel="DateTime"/>
+    <Variable name="ebBody" initialValue="" boundGlobalVarID="" typeModule="EmailToolsIDA" typeName="Email Body" typeLabel="Email Body"/>
+    <Variable name="iFileSize" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iResultCode" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="lebBodies" initialValue="" boundGlobalVarID="" typeModule="EmailToolsIDA" typeName="List of Email Body" typeLabel="List of Email Body"/>
+    <Variable name="lsAttachments" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_bNextStepForced" initialValue="true" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="p_lsAttrNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_lsAttrValues" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_sNextStep" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sAttachment" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sBody" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sCC" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sFrom" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sFullPath" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sInteraction1" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sSubject" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sTo" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+  </Variables>
+</Handler>

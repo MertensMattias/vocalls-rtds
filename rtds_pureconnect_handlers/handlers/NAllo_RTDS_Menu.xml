@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Handler name="NAllo_RTDS_Menu" description="" version="2.0" category="NAllo RTDS">
+  <Steps>
+    <Step id="0" isInitiator="True" type="Initiator" creatorModule="" creatorName="Subroutine" creatorVersion="" label="NAllo_RTDS_Menu" notes="" left="34" top="71" right="220" bottom="160" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter label="Interaction Id" name="" defaultValue="Interaction1" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="Telephony" typeName="CallId" typeLabel="Call ID" value="Interaction1" index="0"/>
+        <Parameter label="Attribute Names" name="" defaultValue="lsAttrNames" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttrNames" index="1"/>
+        <Parameter label="Attribute Values" name="" defaultValue="lsAttrValues" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttrValues" index="2"/>
+        <Parameter label="Next Step" name="" defaultValue="sNextStep" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="False" typeModule="" typeName="String" typeLabel="String" value="p_sNextStep" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Start" returnValue="1" targetStepID="7"/>
+      </ExitPaths>
+    </Step>
+    <Step id="7" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_NextStep" notes="" left="260" top="71" right="380" bottom="160" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="57"/>
+      </ExitPaths>
+    </Step>
+    <Step id="18" type="Subroutine" creatorModule="" creatorName="NAllo_RTDS_Play" creatorVersion="" label="NAllo_RTDS_Play" notes="" left="928" top="724" right="1070" bottom="813" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Interaction Id" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Prompts" value="lsMenuPrompts" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="&quot;&quot;" defaultValIsVar="False" defaultValIsBlankStr="True" label="Valid Keys" value="sValidKeys" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="&quot;&quot;" defaultValIsVar="False" defaultValIsBlankStr="True" label="Escape Keys" value="&quot;&quot;" index="3"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="&quot;&quot;" defaultValIsVar="False" defaultValIsBlankStr="True" label="Termination Keys" value="&quot;&quot;" index="4"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="32" defaultValIsVar="False" defaultValIsBlankStr="False" label="Maximum Number of Keys" value="1" index="5"/>
+        <Parameter required="True" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="True" defaultVal="0.0" defaultValIsVar="False" defaultValIsBlankStr="False" label="Timeout (seconds)" value="Test(nTimeout &gt; 0.0, nTimeout, 7.0)" index="6"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="sDigits" defaultValIsVar="True" defaultValIsBlankStr="False" label="Keys" value="sDigits" index="7"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="sResult" defaultValIsVar="True" defaultValIsBlankStr="False" label="Result" value="sResult" index="8"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="false" defaultValIsVar="False" defaultValIsBlankStr="False" label="Stop Play at Invalid Input" value="StrLen(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;InvalidChoicePrompt&quot;, 0))) &gt; 0" index="9"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="47"/>
+      </ExitPaths>
+    </Step>
+    <Step id="21" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iIndex = 0" notes="" left="51" top="310" right="158" bottom="399" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iIndex"/>
+        <Parameter name="RHS" value="0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="22"/>
+      </ExitPaths>
+    </Step>
+    <Step id="22" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="iIndex &lt; GetCount(p_lsAttrNames)" notes="" left="181" top="310" right="406" bottom="411" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="iIndex &lt; GetCount(p_lsAttrNames)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="24"/>
+        <ExitPath label="False" returnValue="0" targetStepID="35"/>
+      </ExitPaths>
+    </Step>
+    <Step id="23" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iIndex + 1" notes="" left="1648" top="310" right="1842" bottom="399" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iIndex"/>
+        <Parameter name="RHS" value="iIndex + 1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="22"/>
+      </ExitPaths>
+    </Step>
+    <Step id="24" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="NextStep_ ?" notes="" left="478" top="308" right="586" bottom="409" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="StrLeft(GetAt(p_lsAttrNames, iIndex), 9) = &quot;NextStep_&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="58"/>
+        <ExitPath label="False" returnValue="0" targetStepID="23"/>
+      </ExitPaths>
+    </Step>
+    <Step id="25" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sValidKeys" notes="" left="965" top="457" right="1076" bottom="546" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sValidKeys"/>
+        <Parameter name="RHS" value="sValidKeys &amp; StrRight(GetAt(p_lsAttrNames, iIndex), 1)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="30"/>
+      </ExitPaths>
+    </Step>
+    <Step id="27" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="StaticPrompt" notes="" left="982" top="66" right="1102" bottom="155" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sStaticPrompt"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;StaticPrompt&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="28"/>
+      </ExitPaths>
+    </Step>
+    <Step id="28" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="Static Prompt exists?" notes="" left="1196" top="62" right="1368" bottom="163" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="StrLen(sStaticPrompt) &gt; 0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="53"/>
+        <ExitPath label="False" returnValue="0" targetStepID="21"/>
+      </ExitPaths>
+    </Step>
+    <Step id="29" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="bStaticPrompt = true" notes="" left="1785" top="62" right="1957" bottom="151" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="bStaticPrompt"/>
+        <Parameter name="RHS" value="true"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="21"/>
+      </ExitPaths>
+    </Step>
+    <Step id="30" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="bStaticPrompt" notes="" left="1136" top="452" right="1275" bottom="553" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="bStaticPrompt"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="23"/>
+        <ExitPath label="False" returnValue="0" targetStepID="31"/>
+      </ExitPaths>
+    </Step>
+    <Step id="31" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="DynamicPrompt" notes="" left="1354" top="545" right="1484" bottom="634" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sDynamicPrompt"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Prompt_&quot; &amp; StrRight(GetAt(p_lsAttrNames, iIndex), 1), 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="32"/>
+      </ExitPaths>
+    </Step>
+    <Step id="32" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="Static Prompt exists?" notes="" left="1549" top="545" right="1721" bottom="646" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="StrLen(sDynamicPrompt) &gt; 0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="34"/>
+        <ExitPath label="False" returnValue="0" targetStepID="23"/>
+      </ExitPaths>
+    </Step>
+    <Step id="33" type="Tool" creatorModule="" creatorName="InsertAtTail" creatorVersion="" label="Press Prompt" notes="&quot;Press&quot; &amp; StrRight(GetAt(p_lsAttrNames, iIndex), 1)" left="2004" top="610" right="2137" bottom="699" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsMenuPrompts"/>
+        <Parameter name="Value" value="&quot;Press&quot; &amp; StrRight(GetAt(p_lsAttrNames, iIndex), 1)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="23"/>
+      </ExitPaths>
+    </Step>
+    <Step id="34" type="Tool" creatorModule="" creatorName="InsertAtTail" creatorVersion="" label="Dynamic Prompt" notes="" left="1814" top="609" right="1951" bottom="698" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsMenuPrompts"/>
+        <Parameter name="Value" value="sDynamicPrompt"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="33"/>
+      </ExitPaths>
+    </Step>
+    <Step id="35" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="Timeout" notes="" left="457" top="725" right="580" bottom="814" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="nTimeout"/>
+        <Parameter name="RHS" value="toR(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Timeout&quot;, 0)))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="36"/>
+      </ExitPaths>
+    </Step>
+    <Step id="36" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iMaxTries" notes="Test(toI(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;MaxTries&quot;, 0))) &gt; 0, toI(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;MaxTries&quot;, 0))), 1)" left="620" top="726" right="731" bottom="815" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iMaxTries"/>
+        <Parameter name="RHS" value="Test(toI(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;MaxTries&quot;, 0))) &gt; 0, toI(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;MaxTries&quot;, 0))), 1)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="37"/>
+      </ExitPaths>
+    </Step>
+    <Step id="37" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iTry = 0" notes="" left="782" top="725" right="890" bottom="814" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iTry"/>
+        <Parameter name="RHS" value="0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="18"/>
+      </ExitPaths>
+    </Step>
+    <Step id="38" type="Tool" creatorModule="" creatorName="Selection" creatorVersion="" label="Selection" notes="" left="1274" top="724" right="1484" bottom="871" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="sResult = &quot;Success&quot;" returnValue="-1" targetStepID="54"/>
+        <ExitPath label="sResult = &quot;Timeout&quot;" returnValue="-1" targetStepID="45"/>
+        <ExitPath label="sResult = &quot;InvalidInput&quot;" returnValue="-1" targetStepID="45"/>
+        <ExitPath label="Default" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="39" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iTry + 1" notes="" left="1972" top="924" right="2074" bottom="1013" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iTry"/>
+        <Parameter name="RHS" value="iTry + 1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="40"/>
+      </ExitPaths>
+    </Step>
+    <Step id="40" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="iTry &lt; iMaxTries" notes="" left="2111" top="924" right="2260" bottom="1025" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="iTry &lt; iMaxTries"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="18"/>
+        <ExitPath label="False" returnValue="0" targetStepID="59"/>
+      </ExitPaths>
+    </Step>
+    <Step id="41" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_NextStep = NextStep_X" notes="" left="1786" top="724" right="1981" bottom="813" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_&quot; &amp; sDigits, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="44" type="Tool" creatorModule="" creatorName="InsertAtHead" creatorVersion="" label="RetryPrompt -&gt; lsMenuPrompts" notes="Test(sResult = &quot;Timeout&quot;, GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NoChoicePrompt&quot;, 0)), GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;InvalidChoicePrompt&quot;, 0)))" left="1685" top="924" right="1914" bottom="1013" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsMenuPrompts"/>
+        <Parameter name="Value" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NoChoicePrompt&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="39"/>
+      </ExitPaths>
+    </Step>
+    <Step id="45" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="iTry = 0" notes="" left="1532" top="924" right="1632" bottom="1025" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="iTry = 0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="44"/>
+        <ExitPath label="False" returnValue="0" targetStepID="48"/>
+      </ExitPaths>
+    </Step>
+    <Step id="46" type="Tool" creatorModule="DsLookup" creatorName="Sort Lists" creatorVersion="" label="p_lsAttrNames" notes="" left="727" top="67" right="878" bottom="156" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="true" defaultValIsVar="False" defaultValIsBlankStr="False" label="Sort in Ascending Order?" value="true" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of strings to be processed" value="p_lsAttrNames" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parallel list" value="p_lsAttrValues" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parallel list" value="p_lsAttrValues" index="3"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parallel list" value="p_lsAttrValues" index="4"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parallel list" value="p_lsAttrValues" index="5"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="27"/>
+      </ExitPaths>
+    </Step>
+    <Step id="47" type="Tool" creatorModule="" creatorName="Notify Debugger" creatorVersion="" label="After Menu" notes="" left="1107" top="724" right="1234" bottom="813" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="38"/>
+      </ExitPaths>
+    </Step>
+    <Step id="48" type="Tool" creatorModule="" creatorName="SetAt" creatorVersion="" label="Replace RetryPrompt -&gt; lsMenuPrompts" notes="" left="1662" top="1035" right="1914" bottom="1124" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsMenuPrompts"/>
+        <Parameter name="Value" value="Test(sResult = &quot;Timeout&quot;, GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NoChoicePrompt&quot;, 0)), GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;InvalidChoicePrompt&quot;, 0)))"/>
+        <Parameter name="Index" value="0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="39"/>
+      </ExitPaths>
+    </Step>
+    <Step id="49" type="Subroutine" creatorModule="" creatorName="NAllo_RTDS_Play" creatorVersion="" label="NAllo_RTDS_Play" notes="" left="3162" top="928" right="3304" bottom="1017" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Interaction Id" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Prompts" value="lsMenuPrompts" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="&quot;&quot;" defaultValIsVar="False" defaultValIsBlankStr="True" label="Valid Keys" value="&quot;&quot;" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="&quot;&quot;" defaultValIsVar="False" defaultValIsBlankStr="True" label="Escape Keys" value="&quot;&quot;" index="3"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="&quot;&quot;" defaultValIsVar="False" defaultValIsBlankStr="True" label="Termination Keys" value="&quot;&quot;" index="4"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="32" defaultValIsVar="False" defaultValIsBlankStr="False" label="Maximum Number of Keys" value="0" index="5"/>
+        <Parameter required="True" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="True" defaultVal="0.0" defaultValIsVar="False" defaultValIsBlankStr="False" label="Timeout (seconds)" value="0.0" index="6"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="sDigits" defaultValIsVar="True" defaultValIsBlankStr="False" label="Keys" value="sDigits" index="7"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="sResult" defaultValIsVar="True" defaultValIsBlankStr="False" label="Result" value="sResult" index="8"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="false" defaultValIsVar="False" defaultValIsBlankStr="False" label="Stop Play at Invalid Input" value="false" index="9"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1"/>
+      </ExitPaths>
+    </Step>
+    <Step id="50" type="Tool" creatorModule="" creatorName="RemoveAll" creatorVersion="" label="lsMenuPrompts" notes="" left="2796" top="928" right="2932" bottom="1017" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsMenuPrompts"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="51"/>
+      </ExitPaths>
+    </Step>
+    <Step id="51" type="Tool" creatorModule="" creatorName="InsertAtHead" creatorVersion="" label="MaxTriesPrompt" notes="" left="2974" top="928" right="3114" bottom="1017" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsMenuPrompts"/>
+        <Parameter name="Value" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;MaxTriesPrompt&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="49"/>
+      </ExitPaths>
+    </Step>
+    <Step id="52" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="MaxTriesPrompt exists?" notes="" left="2558" top="928" right="2744" bottom="1029" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="StrLen(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;MaxTriesPrompt&quot;, 0))) &gt; 0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="50"/>
+        <ExitPath label="False" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="53" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="sStaticPrompt -&gt; lsMenuPrompts" notes="" left="1457" top="54" right="1675" bottom="143" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="sStaticPrompt" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;|&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsMenuPrompts" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="29"/>
+      </ExitPaths>
+    </Step>
+    <Step id="54" type="Subroutine" creatorModule="" creatorName="NAllo_RTDS_IVRLogging" creatorVersion="" label="sDigits" notes="" left="1582" top="724" right="1748" bottom="813" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Interaction Id" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Action" value="&quot;ExtraLog&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parameter" value="sDigits" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="41"/>
+      </ExitPaths>
+    </Step>
+    <Step id="57" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="Active = Yes?" notes="not StrEqlNoCase(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Active&quot;, 0)), &quot;No&quot;)" left="462" top="66" right="602" bottom="167" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="not StrEqlNoCase(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Active&quot;, 0)), &quot;0&quot;)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="46"/>
+        <ExitPath label="False" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="58" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="NextStep_DefaultChoice" notes="GetAt(p_lsAttrNames, iIndex) = &quot;NextStep_DefaultChoice&quot;" left="635" top="373" right="743" bottom="474" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="GetAt(p_lsAttrNames, iIndex) = &quot;NextStep_DefaultChoice&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="23"/>
+        <ExitPath label="False" returnValue="0" targetStepID="25"/>
+      </ExitPaths>
+    </Step>
+    <Step id="59" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_NextStep = NextStep_DefaultChoice" notes="" left="2322" top="936" right="2503" bottom="1025" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_DefaultChoice&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="52"/>
+      </ExitPaths>
+    </Step>
+  </Steps>
+  <Variables>
+    <Variable name="Interaction1" initialValue="" boundGlobalVarID="" typeModule="Telephony" typeName="CallId" typeLabel="Call ID"/>
+    <Variable name="bStaticPrompt" initialValue="false" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="iIndex" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iMaxTries" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="iTry" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="lsMenuPrompts" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="nTimeout" initialValue="" boundGlobalVarID="" typeModule="" typeName="Numeric" typeLabel="Numeric"/>
+    <Variable name="p_lsAttrNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_lsAttrValues" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_sNextStep" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sDigits" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sDynamicPrompt" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sResult" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sStaticPrompt" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sValidKeys" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+  </Variables>
+</Handler>

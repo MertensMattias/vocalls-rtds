@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Handler name="NAllo_RTDS_CallbackTimeSlot" description="" version="2.0" category="NAllo RTDS">
+  <Steps>
+    <Step id="0" isInitiator="True" type="Initiator" creatorModule="" creatorName="Subroutine" creatorVersion="" label="NAllo_Callback_Request" notes="" left="90" top="80" right="190" bottom="169" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter label="Interaction1" name="" defaultValue="Interaction1" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="Telephony" typeName="CallId" typeLabel="Call ID" value="Interaction1" index="0"/>
+        <Parameter label="Timeslot Choice" name="" defaultValue="" defaultValueIsVariable="False" defaultValueIsBlankString="False" input="False" typeModule="" typeName="Integer" typeLabel="Integer" value="p_iTimeslotChosen" index="1"/>
+        <Parameter label="CbRequestResult" name="" defaultValue="" defaultValueIsVariable="False" defaultValueIsBlankString="False" input="False" typeModule="" typeName="String" typeLabel="String" value="p_sCbRequestResult" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Start" returnValue="1" targetStepID="22"/>
+      </ExitPaths>
+    </Step>
+    <Step id="1" type="Tool" creatorModule="Telephony" creatorName="Get Attributes" creatorVersion="" label="Get Attributes" notes="&quot;ATTR_TimeslotList_CHOICE,ATTR_TimeslotList_ENDTIME,ATTR_TimeslotList_PROMPT,ATTR_TimeslotList_STARTTIME&quot;" left="830" top="80" right="940" bottom="169" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Names" value="lsAttrNames" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Values" value="lsAttrValues" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="5"/>
+      </ExitPaths>
+    </Step>
+    <Step id="2" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="lsAttrNames" notes="" left="630" top="80" right="760" bottom="169" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="sAttrNames" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;,&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsAttrNames" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="1"/>
+      </ExitPaths>
+    </Step>
+    <Step id="3" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sAttrNames = &quot;ATTR_TimeslotList_CHOICE,ATTR_TimeslotList_ENDTIME,ATTR_TimeslotList_PROMPT,ATTR_TimeslotList_STARTTIME&quot;" notes="&quot;ATTR_TimeslotList_CHOICE,ATTR_TimeslotList_ENDTIME,ATTR_TimeslotList_PROMPT,ATTR_TimeslotList_STARTTIME&quot;" left="450" top="80" right="550" bottom="169" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sAttrNames"/>
+        <Parameter name="RHS" value="&quot;ATTR_TimeslotList_CHOICE,ATTR_TimeslotList_ENDTIME,ATTR_TimeslotList_PROMPT,ATTR_TimeslotList_STARTTIME&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="2"/>
+      </ExitPaths>
+    </Step>
+    <Step id="4" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="GetAt(lsTimeslotList_CHOICE, 0) &lt;&gt; &quot;&quot;" notes="" left="1190" top="80" right="1290" bottom="181" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="GetAt(lsTimeslotList_CHOICE, 0) &lt;&gt; &quot;&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="7"/>
+        <ExitPath label="False" returnValue="0" targetStepID="23"/>
+      </ExitPaths>
+    </Step>
+    <Step id="5" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="lsAttrNames" notes="" left="1000" top="80" right="1130" bottom="169" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="GetAt(lsAttrValues, 0)" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;|&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsTimeslotList_CHOICE" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="4"/>
+      </ExitPaths>
+    </Step>
+    <Step id="6" type="Tool" creatorModule="" creatorName="Notify Debugger" creatorVersion="" label="no timeslots available" notes="" left="1671" top="90" right="1830" bottom="179" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1"/>
+      </ExitPaths>
+    </Step>
+    <Step id="7" type="Tool" creatorModule="" creatorName="Notify Debugger" creatorVersion="" label="timeslots available" notes="" left="81" top="340" right="231" bottom="429" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="8"/>
+      </ExitPaths>
+    </Step>
+    <Step id="8" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="lsAttrNames" notes="" left="313" top="344" right="441" bottom="433" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="GetAt(lsAttrValues, 1)" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;|&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsTimeslotList_ENDTIME" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="9"/>
+      </ExitPaths>
+    </Step>
+    <Step id="9" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="lsAttrNames" notes="" left="530" top="350" right="660" bottom="439" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="GetAt(lsAttrValues, 2)" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;|&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsTimeslotList_PROMPT" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="10"/>
+      </ExitPaths>
+    </Step>
+    <Step id="10" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="lsAttrNames" notes="" left="730" top="350" right="853" bottom="439" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="GetAt(lsAttrValues, 3)" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;|&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsTimeslotList_STARTTIME" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="15"/>
+      </ExitPaths>
+    </Step>
+    <Step id="15" type="Subroutine" creatorModule="" creatorName="NAllo_CallbackChooseTimeslot" creatorVersion="" label="NAllo_CallbackChooseTimeslot" notes="" left="930" top="350" right="1113" bottom="439" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Interaction1" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="TimeslotList_CHOICE" value="lsTimeslotList_CHOICE" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="TimeslotList_ENDTIME" value="lsTimeslotList_ENDTIME" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="TimeslotList_PROMPT" value="lsTimeslotList_PROMPT" index="3"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="TimeslotList_STARTTIME" value="lsTimeslotList_STARTTIME" index="4"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Choosen index" value="iTimeslotChosen" index="5"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="TimeslotResult" value="sTimeslotResult" index="6"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="20"/>
+      </ExitPaths>
+    </Step>
+    <Step id="18" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_iTimeslotChosen = iTimeslotChosen" notes="" left="1570" top="260" right="1674" bottom="349" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_iTimeslotChosen"/>
+        <Parameter name="RHS" value="iTimeslotChosen"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="20" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="sTimeslotResult = &quot;success&quot;" notes="" left="1200" top="340" right="1300" bottom="441" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="sTimeslotResult = &quot;success&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="24"/>
+        <ExitPath label="False" returnValue="0" targetStepID="21"/>
+      </ExitPaths>
+    </Step>
+    <Step id="21" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sCbRequestResult = &quot;failed&quot;" notes="" left="1390" top="380" right="1500" bottom="469" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sCbRequestResult"/>
+        <Parameter name="RHS" value="&quot;failed&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="22" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sCbRequestResult = &quot;failed&quot;" notes="" left="260" top="80" right="364" bottom="169" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sCbRequestResult"/>
+        <Parameter name="RHS" value="&quot;failed&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="3"/>
+      </ExitPaths>
+    </Step>
+    <Step id="23" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sCbRequestResult = &quot;success&quot;" notes="" left="1382" top="84" right="1592" bottom="173" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sCbRequestResult"/>
+        <Parameter name="RHS" value="&quot;success&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="6"/>
+      </ExitPaths>
+    </Step>
+    <Step id="24" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sCbRequestResult = &quot;success&quot;" notes="" left="1390" top="260" right="1494" bottom="349" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sCbRequestResult"/>
+        <Parameter name="RHS" value="&quot;success&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="18"/>
+      </ExitPaths>
+    </Step>
+  </Steps>
+  <Variables>
+    <Variable name="Interaction1" initialValue="" boundGlobalVarID="" typeModule="Telephony" typeName="CallId" typeLabel="Call ID"/>
+    <Variable name="iTimeslotChosen" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="lsAttrNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsAttrValues" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsTimeslotList_CHOICE" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsTimeslotList_ENDTIME" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsTimeslotList_PROMPT" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsTimeslotList_STARTTIME" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_iTimeslotChosen" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="p_sCbRequestResult" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sAttrNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sTimeslotResult" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+  </Variables>
+</Handler>

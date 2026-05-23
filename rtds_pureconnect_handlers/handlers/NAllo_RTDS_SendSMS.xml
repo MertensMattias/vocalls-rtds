@@ -1,0 +1,537 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Handler name="NAllo_RTDS_SendSMS" description="" version="2.0" category="NAllo RTDS">
+  <Steps>
+    <Step id="0" isInitiator="True" type="Initiator" creatorModule="" creatorName="Subroutine" creatorVersion="" label="NAllo_RTDS_SendSMS" notes="" left="30" top="70" right="220" bottom="159" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter label="Interaction Id" name="" defaultValue="Interaction1" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="Telephony" typeName="CallId" typeLabel="Call ID" value="Interaction1" index="0"/>
+        <Parameter label="Attribute Names" name="" defaultValue="lsAttrNames" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttrNames" index="1"/>
+        <Parameter label="Attribute Values" name="" defaultValue="lsAttrValues" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttrValues" index="2"/>
+        <Parameter label="Next Step" name="" defaultValue="sNextStep" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="False" typeModule="" typeName="String" typeLabel="String" value="p_sNextStep" index="3"/>
+        <Parameter label="NextStep Forced" name="" defaultValue="p_bNextStepForced" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="False" typeModule="" typeName="Boolean" typeLabel="Boolean" value="p_bNextStepForced" index="4"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Start" returnValue="1" targetStepID="7"/>
+      </ExitPaths>
+    </Step>
+    <Step id="7" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_NextStep" notes="" left="300" top="70" right="420" bottom="159" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="113"/>
+      </ExitPaths>
+    </Step>
+    <Step id="57" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="Active = Yes?" notes="not StrEqlNoCase(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Active&quot;, 0)), &quot;0&quot;) or not StrEqlNoCase(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Active&quot;, 0)), &quot;False&quot;)" left="750" top="60" right="890" bottom="161" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="not StrEqlNoCase(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Active&quot;, 0)), &quot;0&quot;) or not StrEqlNoCase(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Active&quot;, 0)), &quot;False&quot;)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="150"/>
+        <ExitPath label="False" returnValue="0" targetStepID="116"/>
+      </ExitPaths>
+    </Step>
+    <Step id="86" type="Tool" creatorModule="DsLookup" creatorName="ReplaceAttributes" creatorVersion="" label="sSMSRouting" notes="" left="1500" top="60" right="1700" bottom="161" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="InteractionID" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="Next" defaultValIsVar="False" defaultValIsBlankStr="False" label="Format String" value="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Routing&quot;, 0)))" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Result String" value="sSMSRouting" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="94"/>
+        <ExitPath label="Failure" returnValue="-2" targetStepID="94"/>
+      </ExitPaths>
+    </Step>
+    <Step id="88" type="Tool" creatorModule="DsLookup" creatorName="ReplaceAttributes" creatorVersion="" label="sSMSFrom" notes="" left="2230" top="50" right="2430" bottom="151" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="InteractionID" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="Next" defaultValIsVar="False" defaultValIsBlankStr="False" label="Format String" value="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;From&quot;, 0)))" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Result String" value="sSMSFrom" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="95"/>
+        <ExitPath label="Failure" returnValue="-2" targetStepID="95"/>
+      </ExitPaths>
+    </Step>
+    <Step id="89" type="Tool" creatorModule="DsLookup" creatorName="ReplaceAttributes" creatorVersion="" label="sSMSTo" notes="" left="2970" top="40" right="3170" bottom="141" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="InteractionID" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="Next" defaultValIsVar="False" defaultValIsBlankStr="False" label="Format String" value="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;To&quot;, 0)))" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Result String" value="sSMSTo" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="96"/>
+        <ExitPath label="Failure" returnValue="-2" targetStepID="96"/>
+      </ExitPaths>
+    </Step>
+    <Step id="90" type="Tool" creatorModule="DsLookup" creatorName="ReplaceAttributes" creatorVersion="" label="sSMSBody" notes="" left="4870" top="82" right="5070" bottom="183" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="InteractionID" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="Next" defaultValIsVar="False" defaultValIsBlankStr="False" label="Format String" value="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Body&quot;, 0)))" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Result String" value="sSMSBody" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="97"/>
+        <ExitPath label="Failure" returnValue="-2" targetStepID="97"/>
+      </ExitPaths>
+    </Step>
+    <Step id="94" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sSMSRouting" notes="Test(StrLeft(sSMSRouting, 2) = &quot;$(&quot;, GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Routing&quot;, 0), sSMSrouting)
+
+
+Test(StrLen(sSubject) &gt; 0, sSMSRouting, GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Routing&quot;, 0)))" left="1780" top="60" right="1920" bottom="149" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sSMSRouting"/>
+        <Parameter name="RHS" value="Test(StrLeft(sSMSRouting, 2) = &quot;$(&quot;, GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Routing&quot;, 0)), sSMSRouting)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="171"/>
+      </ExitPaths>
+    </Step>
+    <Step id="95" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sSMSFrom" notes="Test(StrLeft(sSMSFrom, 2) = &quot;$(&quot;, GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;From&quot;, 0), sSMFrom)" left="2530" top="50" right="2670" bottom="139" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sSMSFrom"/>
+        <Parameter name="RHS" value="Test(StrLeft(sSMSFrom, 2) = &quot;$(&quot;, GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;From&quot;, 0)), sSMSFrom)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="172"/>
+      </ExitPaths>
+    </Step>
+    <Step id="96" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sSMSTo" notes="Test(StrLeft(sSMSTo, 2) = &quot;$(&quot;, GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;To&quot;, 0), sSMTo)" left="3235" top="41" right="3375" bottom="130" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sSMSTo"/>
+        <Parameter name="RHS" value="Test(StrLeft(sSMSTo, 2) = &quot;$(&quot;, GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;To&quot;, 0)), sSMSTo)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="179"/>
+      </ExitPaths>
+    </Step>
+    <Step id="97" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sSMSBody" notes="Test(StrLeft(sSMSBody, 2) = &quot;$(&quot;, GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Body&quot;, 0), sSMSBody)" left="5161" top="82" right="5301" bottom="171" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sSMSBody"/>
+        <Parameter name="RHS" value="Test(StrLeft(sSMSBody, 2) = &quot;$(&quot;, GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Body&quot;, 0)), sSMSBody)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="174"/>
+      </ExitPaths>
+    </Step>
+    <Step id="113" type="Tool" creatorModule="TelephonyToolA" creatorName="ConvertCallIdToString" creatorVersion="" label="Convert Call Id to String" notes="" left="510" top="70" right="670" bottom="159" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Interaction Id" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String" value="sInteraction1" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="57"/>
+      </ExitPaths>
+    </Step>
+    <Step id="116" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :RTDS - Inactive&quot;" notes="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :RTDS - Inactive&quot;" left="707" top="240" right="1077" bottom="329" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :RTDS - Inactive&quot;" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1"/>
+      </ExitPaths>
+    </Step>
+    <Step id="150" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_bNextStepForced" notes="" left="980" top="60" right="1140" bottom="149" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_bNextStepForced"/>
+        <Parameter name="RHS" value="true"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="170"/>
+      </ExitPaths>
+    </Step>
+    <Step id="151" type="Tool" creatorModule="" creatorName="Notify Debugger" creatorVersion="" label="Debug: REST Send" notes="" left="60" top="520" right="270" bottom="609" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="177"/>
+      </ExitPaths>
+    </Step>
+    <Step id="157" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="NextStep_Failure" notes="" left="1980" top="840" right="2200" bottom="929" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;'NextStep_Failure&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="158" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Unknown Host" notes="c_sTraceTag &amp; &quot;REST HTTP Request - Unknown Host; URL=&quot; &amp; c_sURLAPI" left="1610" top="510" right="1760" bottom="599" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="c_sTraceTag &amp; &quot;REST HTTP Request - Unknown Host; URL=&quot; &amp; c_sURLAPI" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="157"/>
+      </ExitPaths>
+    </Step>
+    <Step id="159" type="Tool" creatorModule="I3_RESTTools" creatorName="RESTHTTPRequest2" creatorVersion="" label="REST HTTP Request" notes="https://guardmodule-api.n-allo.dvp
+
+
+c_sURLGuardAPI &amp; c_sGetAllCurrentActive &amp; GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;ConfigId&quot;, 0))
+
+
+c_sURLGuardAPI &amp; &quot;/api/Guards/GetAllCurrentActiveGuardsByGuardConfig/&quot; &amp; GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;ConfigId&quot;, 0))" left="1210" top="480" right="1400" bottom="650" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="URL" value="c_sURLAPI" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Proxy Uri" value="?" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="HTTP Method" value="&quot;POST&quot;" index="2"/>
+        <Parameter required="False" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Additional HTTP Headers" value="?" index="3"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Bearer Token" value="?" index="4"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="application/json" defaultValIsVar="False" defaultValIsBlankStr="False" label="Content Type" value="&quot;application/json&quot;" index="5"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Raw Request Body" value="sJSONstring1" index="6"/>
+        <Parameter required="True" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="True" defaultVal="20.0" defaultValIsVar="False" defaultValIsBlankStr="False" label="Request Timeout [s]" value="toR(Test(toI(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Timeout&quot;, 0))) &gt; 0, toI(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Timeout&quot;, 0))), 10))" index="7"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Client SSL Certificate" value="?" index="8"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="TRUE" defaultValIsVar="False" defaultValIsBlankStr="False" label="Ignore Unknown SSL Certificate Authority" value="true" index="9"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="TRUE" defaultValIsVar="False" defaultValIsBlankStr="False" label="Ignore Wrong SSL Certificate Usage" value="true" index="10"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="TRUE" defaultValIsVar="False" defaultValIsBlankStr="False" label="Ignore SSL Certificate Name Mismatch" value="true" index="11"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="TRUE" defaultValIsVar="False" defaultValIsBlankStr="False" label="Ignore Invalid SSL Certificate Date (expired certificate)" value="true" index="12"/>
+        <Parameter required="True" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="False" defaultVal="nStatusCode1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Status Code" value="nStatusCode" index="13"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="sStatusText1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Status Text" value="sStatusText" index="14"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="lsResponseHeaders1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Response Headers" value="lsResponseHeaders" index="15"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="sResponseBody1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Response Body" value="sResponseBody" index="16"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="160"/>
+        <ExitPath label="Unknown Host" returnValue="2" targetStepID="158"/>
+        <ExitPath label="Timeout" returnValue="3" targetStepID="161"/>
+        <ExitPath label="Connection Failure" returnValue="4" targetStepID="162"/>
+        <ExitPath label="Failure" returnValue="0" targetStepID="163"/>
+      </ExitPaths>
+    </Step>
+    <Step id="160" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Success" notes="" left="1620" top="400" right="1770" bottom="489" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="c_sTraceTag &amp; &quot;REST HTTP Request - Success&quot;" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="61" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="178"/>
+      </ExitPaths>
+    </Step>
+    <Step id="161" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Timeout" notes="c_sTraceTag &amp; &quot;REST HTTP Request - Timeout&quot;
+
+
+c_sTraceTag &amp; &quot;REST HTTP Request - Timeout; URL=&quot; &amp; c_sURLAPI" left="1610" top="610" right="1760" bottom="699" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="c_sTraceTag &amp; &quot;REST HTTP Request - Timeout; URL=&quot; &amp; c_sURLAPI" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="157"/>
+      </ExitPaths>
+    </Step>
+    <Step id="162" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Connection Failure" notes="c_sTraceTag &amp; &quot;REST HTTP Request - Connection Failure; URL=&quot; &amp; c_sURLAPI" left="1600" top="720" right="1750" bottom="809" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="c_sTraceTag &amp; &quot;REST HTTP Request - Connection Failure; URL=&quot; &amp; c_sURLAPI" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="157"/>
+      </ExitPaths>
+    </Step>
+    <Step id="163" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Connection Failure" notes="c_sTraceTag &amp; &quot;REST HTTP Request - Failure; URL=&quot; &amp; c_sURLAPI" left="1600" top="820" right="1750" bottom="909" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="c_sTraceTag &amp; &quot;REST HTTP Request - Failure; URL=&quot; &amp; c_sURLAPI" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="157"/>
+      </ExitPaths>
+    </Step>
+    <Step id="167" type="Tool" creatorModule="I3_RESTTools" creatorName="JSONBuilder" creatorVersion="" label="JSON Builder" notes="" left="880" top="490" right="1110" bottom="660" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Names List" value="lsSendJSONValueNames" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Values List" value="lsSendJSONValues" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Value Type List" value="lsSendJSONValueType" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="sJSONstring1" defaultValIsVar="True" defaultValIsBlankStr="False" label="JSON string" value="sJSONstring1" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="159"/>
+        <ExitPath label="Failure" returnValue="0" targetStepID="159"/>
+        <ExitPath label="List Length Not Equal" returnValue="2" targetStepID="159"/>
+        <ExitPath label="Value Type Mismatch" returnValue="3" targetStepID="159"/>
+        <ExitPath label="Invalid Value Type" returnValue="4" targetStepID="159"/>
+      </ExitPaths>
+    </Step>
+    <Step id="170" type="Tool" creatorModule="DsLookup" creatorName="Update Data Pair Values" creatorVersion="" label="Set &quot;smsAccountId&quot;" notes="" left="1230" top="60" right="1400" bottom="149" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Data Name" value="&quot;smsAccountId&quot;" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Data Value" value="StrTrimW(GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;ConfigId&quot;, 0)))" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Name List" value="lsSendJSONValueNames" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Value List" value="lsSendJSONValues" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="86"/>
+      </ExitPaths>
+    </Step>
+    <Step id="171" type="Tool" creatorModule="DsLookup" creatorName="Update Data Pair Values" creatorVersion="" label="Set &quot;routing&quot;" notes="" left="1990" top="60" right="2160" bottom="149" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Data Name" value="&quot;routing&quot;" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Data Value" value="sSMSRouting" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Name List" value="lsSendJSONValueNames" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Value List" value="lsSendJSONValues" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="88"/>
+      </ExitPaths>
+    </Step>
+    <Step id="172" type="Tool" creatorModule="DsLookup" creatorName="Update Data Pair Values" creatorVersion="" label="Set &quot;from&quot;" notes="" left="2730" top="50" right="2900" bottom="139" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Data Name" value="&quot;from&quot;" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Data Value" value="sSMSFrom" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Name List" value="lsSendJSONValueNames" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Value List" value="lsSendJSONValues" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="89"/>
+      </ExitPaths>
+    </Step>
+    <Step id="173" type="Tool" creatorModule="DsLookup" creatorName="Update Data Pair Values" creatorVersion="" label="Set &quot;to&quot;" notes="" left="4630" top="92" right="4800" bottom="181" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Data Name" value="&quot;to&quot;" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Data Value" value="sSMSTo" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Name List" value="lsSendJSONValueNames" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Value List" value="lsSendJSONValues" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="90"/>
+      </ExitPaths>
+    </Step>
+    <Step id="174" type="Tool" creatorModule="DsLookup" creatorName="Update Data Pair Values" creatorVersion="" label="Set &quot;body&quot;" notes="" left="5600" top="85" right="5770" bottom="174" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Data Name" value="&quot;content&quot;" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Data Value" value="sSMSBody" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Name List" value="lsSendJSONValueNames" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Value List" value="lsSendJSONValues" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="175"/>
+      </ExitPaths>
+    </Step>
+    <Step id="175" type="Tool" creatorModule="DsLookup" creatorName="Update Data Pair Values" creatorVersion="" label="Set &quot;channel&quot;" notes="" left="5840" top="95" right="6010" bottom="184" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Data Name" value="&quot;channel&quot;" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Data Value" value="&quot;SMS&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Name List" value="lsSendJSONValueNames" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Value List" value="lsSendJSONValues" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="183"/>
+      </ExitPaths>
+    </Step>
+    <Step id="177" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="Parse String" notes="" left="360" top="520" right="480" bottom="609" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="&quot;double|string|string|string|string|string&quot;" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;|&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsSendJSONValueType" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="167"/>
+      </ExitPaths>
+    </Step>
+    <Step id="178" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="NextStep_Success" notes="" left="1890" top="400" right="2110" bottom="489" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;'NextStep_Success&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="179" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="StrLen(sSMSTo) &gt; 0" notes="" left="3450" top="40" right="3550" bottom="141" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="StrLen(sSMSTo) &gt; 0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="191"/>
+        <ExitPath label="False" returnValue="0" targetStepID="180"/>
+      </ExitPaths>
+    </Step>
+    <Step id="180" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :RTDS - 'To' field empty&quot;" notes="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :RTDS - 'To' field empty&quot;" left="3505" top="183" right="3625" bottom="272" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="c_sTraceTag &amp; &quot; &quot; &amp; c_sHandlerName &amp; &quot; :RTDS - 'To' field empty&quot;" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="21" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="181"/>
+      </ExitPaths>
+    </Step>
+    <Step id="181" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="NextStep_Failure" notes="" left="3724" top="191" right="3944" bottom="280" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;'NextStep_Failure&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="182" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Cannot Find Parameter" notes="&quot;Get Structured Parameter - Cannot Find Parameter; SendSMS API URL&quot;" left="6510" top="135" right="6670" bottom="224" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="&quot;Get Structured Parameter - Cannot Find Parameter; SendSMS API URL&quot;" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="185"/>
+      </ExitPaths>
+    </Step>
+    <Step id="183" type="Tool" creatorModule="DsLookup" creatorName="GetStructuredParameter" creatorVersion="" label="&quot;SendSMS API URL&quot;" notes="" left="6090" top="65" right="6300" bottom="189" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parameter Group" value="&quot;RTDS&quot;" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parameter Name" value="&quot;SendSMS API URL&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parameter Value" value="c_sURLAPI" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="151"/>
+        <ExitPath label="Cannot Find Parameter" returnValue="1" targetStepID="182"/>
+        <ExitPath label="Error" returnValue="-1" targetStepID="184"/>
+      </ExitPaths>
+    </Step>
+    <Step id="184" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Error" notes="&quot;Get Structured Parameter - Error; SendSMS API URL&quot;" left="5884" top="222" right="6044" bottom="311" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="&quot;Get Structured Parameter - Error; SendSMS API URL&quot;" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="185"/>
+      </ExitPaths>
+    </Step>
+    <Step id="185" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="NextStep_Failure" notes="" left="6810" top="135" right="7030" bottom="224" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;'NextStep_Failure&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="191" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sPhoneClassification" notes="&quot;Mobile&quot;" left="3706" top="51" right="3846" bottom="140" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sPhoneClassification"/>
+        <Parameter name="RHS" value="&quot;Mobile|Benelux&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="192"/>
+      </ExitPaths>
+    </Step>
+    <Step id="192" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="lsPhoneClassificationRules" notes="" left="3951" top="64" right="4131" bottom="153" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="sPhoneClassification" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;|&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsPhoneClassificationRules" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="193"/>
+      </ExitPaths>
+    </Step>
+    <Step id="193" type="Tool" creatorModule="I3_PhoneNumber" creatorName="DescribePhoneNumber2" creatorVersion="2.4" label="Describe Phone Number" notes="" left="4193" top="55" right="4333" bottom="144" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Input Phone Number" value="sSMSTo" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Location Filter" value="&quot;&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="dialGroups" defaultValIsVar="True" defaultValIsBlankStr="False" label="Dial Groups" value="dialGroups" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="dialStrings" defaultValIsVar="True" defaultValIsBlankStr="False" label="Dial Strings" value="dialStrings" index="3"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="classifications" defaultValIsVar="True" defaultValIsBlankStr="False" label="Classifications" value="classifications" index="4"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="classificationCategories" defaultValIsVar="True" defaultValIsBlankStr="False" label="Classification Categories" value="classificationCategories" index="5"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="patternName" defaultValIsVar="True" defaultValIsBlankStr="False" label="Pattern Name" value="patternName" index="6"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="displayString" defaultValIsVar="True" defaultValIsBlankStr="False" label="Display String" value="displayString" index="7"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="defaultDialString" defaultValIsVar="True" defaultValIsBlankStr="False" label="Default Dial String" value="defaultDialString" index="8"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="defaultClassification" defaultValIsVar="True" defaultValIsBlankStr="False" label="Default Classification" value="defaultClassification" index="9"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="defaultClassificationCategory" defaultValIsVar="True" defaultValIsBlankStr="False" label="Default Classification Category" value="defaultClassificationCategory" index="10"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="False" defaultVal="countryCode" defaultValIsVar="True" defaultValIsBlankStr="False" label="Country Code" value="countryCode" index="11"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="standardizedNumber" defaultValIsVar="True" defaultValIsBlankStr="False" label="Standardized Number" value="standardizedNumber" index="12"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="False" defaultVal="accountCodeRequired" defaultValIsVar="True" defaultValIsBlankStr="False" label="Account Code Required" value="accountCodeRequired" index="13"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="logicalComponents" defaultValIsVar="True" defaultValIsBlankStr="False" label="Logical Components" value="logicalComponents" index="14"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="logicalComponentNames" defaultValIsVar="True" defaultValIsBlankStr="False" label="Logical Component Names" value="logicalComponentNames" index="15"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="userData" defaultValIsVar="True" defaultValIsBlankStr="False" label="User Data" value="userData" index="16"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="194"/>
+      </ExitPaths>
+    </Step>
+    <Step id="194" type="Tool" creatorModule="" creatorName="Find" creatorVersion="" label="Find" notes="" left="4412" top="58" right="4542" bottom="159" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsPhoneClassificationRules"/>
+        <Parameter name="Index" value="0"/>
+        <Parameter name="Value" value="defaultClassification"/>
+        <Parameter name="OutputVariable" value="iMatchIndex"/>
+        <Parameter name="StringMatch" value="Full"/>
+        <Parameter name="CaseSensitive" value="false"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Found" returnValue="1" targetStepID="173"/>
+        <ExitPath label="Not Found" returnValue="-1"/>
+      </ExitPaths>
+    </Step>
+  </Steps>
+  <Variables>
+    <Variable name="Interaction1" initialValue="" boundGlobalVarID="" typeModule="Telephony" typeName="CallId" typeLabel="Call ID"/>
+    <Variable name="accountCodeRequired" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="c_sHandlerName" initialValue="$HandlerName" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="c_sTraceTag" initialValue="[SendSMS]" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="c_sURLAPI" initialValue="https://smsapi.n-allo.be/api/Send" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="classificationCategories" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="classifications" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="countryCode" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="defaultClassification" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="defaultClassificationCategory" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="defaultDialString" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="dialGroups" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="dialStrings" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="displayString" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="iMatchIndex" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="logicalComponentNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="logicalComponents" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsArrayValueList1" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsArrayValueTypeList1" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsPhoneClassificationRules" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsResponseHeaders" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsSendJSONValueNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsSendJSONValueType" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsSendJSONValues" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="nStatusCode" initialValue="" boundGlobalVarID="" typeModule="" typeName="Numeric" typeLabel="Numeric"/>
+    <Variable name="p_bNextStepForced" initialValue="true" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="p_lsAttrNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_lsAttrValues" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_sNextStep" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="patternName" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sBody" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sInteraction1" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sJSONstring1" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sPhoneClassification" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sResponseBody" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sSMSBody" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sSMSFrom" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sSMSRemoteNumber" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sSMSRouting" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sSMSTo" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sStatusText" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sTo" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="standardizedNumber" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="userData" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+  </Variables>
+</Handler>

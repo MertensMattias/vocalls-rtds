@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Handler name="NAllo_RTDS_Scheduler" description="" version="2.0" category="NAllo RTDS">
+  <Steps>
+    <Step id="0" isInitiator="True" type="Initiator" creatorModule="" creatorName="Subroutine" creatorVersion="" label="NAllo_RTDS_Scheduler" notes="" left="70" top="100" right="260" bottom="189" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter label="Interaction Id" name="" defaultValue="Interaction1" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="Telephony" typeName="CallId" typeLabel="Call ID" value="Interaction1" index="0"/>
+        <Parameter label="Attribute Names" name="" defaultValue="lsAttrNames" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttrNames" index="1"/>
+        <Parameter label="Attribute Values" name="" defaultValue="lsAttrValues" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttrValues" index="2"/>
+        <Parameter label="Next Step" name="" defaultValue="sNextStep" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="False" typeModule="" typeName="String" typeLabel="String" value="p_sNextStep" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Start" returnValue="1" targetStepID="1"/>
+      </ExitPaths>
+    </Step>
+    <Step id="1" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_NextStep" notes="" left="300" top="100" right="420" bottom="189" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="40"/>
+      </ExitPaths>
+    </Step>
+    <Step id="25" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_NextStep = &quot;NextStep_Disconnect&quot;" notes="" left="1550" top="150" right="1810" bottom="239" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_Disconnect&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="39" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_NextStep = &quot;NextStep_Open&quot;" notes="" left="1580" top="40" right="1810" bottom="129" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;NextStep_Open&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="40" type="Tool" creatorModule="" creatorName="Selection" creatorVersion="" label="Version" notes="" left="460" top="100" right="990" bottom="247" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Version&quot;, 0)) = &quot;0&quot;" returnValue="-1" targetStepID="43"/>
+        <ExitPath label="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Version&quot;, 0)) = &quot;1&quot;" returnValue="-1"/>
+        <ExitPath label="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;Version&quot;, 0)) = &quot;2&quot;" returnValue="-1"/>
+        <ExitPath label="Default" returnValue="0" targetStepID="98"/>
+      </ExitPaths>
+    </Step>
+    <Step id="41" type="Subroutine" creatorModule="" creatorName="359_Scheduler" creatorVersion="" label="359_Scheduler" notes="" left="1220" top="100" right="1350" bottom="189" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="lsParameters" defaultValIsVar="True" defaultValIsBlankStr="False" label="List with Parameters" value="lsParameters" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Open ?" value="bOpen" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="44"/>
+      </ExitPaths>
+    </Step>
+    <Step id="43" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="Parse String" notes="" left="1080" top="100" right="1190" bottom="189" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;ScheduleID&quot;, 0))" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;|&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsParameters" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="41"/>
+      </ExitPaths>
+    </Step>
+    <Step id="44" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="Open?" notes="" left="1390" top="100" right="1490" bottom="201" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="bOpen"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="39"/>
+        <ExitPath label="False" returnValue="0" targetStepID="25"/>
+      </ExitPaths>
+    </Step>
+    <Step id="46" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Connection Failure" notes="" left="540" top="900" right="690" bottom="989" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="c_sTraceTag &amp; &quot;REST HTTP Request - Connection Failure; URL=&quot; &amp; sURL" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="53"/>
+      </ExitPaths>
+    </Step>
+    <Step id="47" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Failure" notes="" left="510" top="1000" right="670" bottom="1089" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="c_sTraceTag &amp; &quot;REST HTTP Request - Failure. StatusCode=&quot; &amp; toS(toI(nStatusCode)) &amp; &quot; &quot; &amp; sStatusText &amp; &quot;; Request Posted: &quot; &amp; sJSONbody" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="53"/>
+      </ExitPaths>
+    </Step>
+    <Step id="48" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Unknown Host" notes="" left="590" top="690" right="740" bottom="779" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="c_sTraceTag &amp; &quot;REST HTTP Request - Unknown Host; URL=&quot; &amp; sURL" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="53"/>
+      </ExitPaths>
+    </Step>
+    <Step id="49" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Timeout" notes="" left="570" top="790" right="720" bottom="879" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="c_sTraceTag &amp; &quot;REST HTTP Request - Timeout&quot;" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="53"/>
+      </ExitPaths>
+    </Step>
+    <Step id="50" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Success" notes="" left="620" top="540" right="780" bottom="629" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="c_sTraceTag &amp; &quot;REST HTTP Request - Success&quot;" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="61" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="54"/>
+      </ExitPaths>
+    </Step>
+    <Step id="53" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sAction = Failure" notes="" left="1090" top="1110" right="1220" bottom="1199" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sAction"/>
+        <Parameter name="RHS" value="&quot;Failure&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="63"/>
+      </ExitPaths>
+    </Step>
+    <Step id="54" type="Tool" creatorModule="I3_RESTTools" creatorName="JSONParser" creatorVersion="" label="JSON Parser" notes="" left="884" top="530" right="1054" bottom="654" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="JSON string" value="sResponseBody" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="lsNamesList1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Names List" value="lsJsonNames" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="lsValuesList1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Values List" value="lsJsonValues" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="lsValueTypeList1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Value Type List" value="lsJsonValueTypes" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="55"/>
+        <ExitPath label="Failure" returnValue="0"/>
+        <ExitPath label="JSON Parse Failure" returnValue="2"/>
+      </ExitPaths>
+    </Step>
+    <Step id="55" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sAction" notes="" left="1150" top="525" right="1260" bottom="614" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sAction"/>
+        <Parameter name="RHS" value="GetAt(lsJsonValues, Find(lsJsonNames, &quot;action&quot;, 0))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="70"/>
+      </ExitPaths>
+    </Step>
+    <Step id="56" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_NextStep = &quot;NextStep_X&quot;" notes="GetAt(p_lsAttrValues, Test(Find(p_lsAttrNames, &quot;NextStep_&quot; &amp; sAction, 0) &gt;= 0, Find(p_lsAttrNames, &quot;NextStep_&quot; &amp; sAction, 0), Find(p_lsAttrNames, &quot;NextStep&quot;, 0)))" left="1500" top="1110" right="1690" bottom="1199" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, Test(Find(p_lsAttrNames, &quot;NextStep_&quot; &amp; sAction, 0) &gt;= 0, Find(p_lsAttrNames, &quot;NextStep_&quot; &amp; sAction, 0), Find(p_lsAttrNames, &quot;NextStep&quot;, 0)))"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="58" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="ActionPlayPrompt = True" notes="" left="2155" top="490" right="2325" bottom="591" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="GetAt(lsJsonValues, Find(lsJsonNames, &quot;actionPlayPrompt&quot;, 0)) = &quot;true&quot; or GetAt(lsJsonValues, Find(lsJsonNames, &quot;actionPlayPrompt&quot;, 0)) = &quot;1&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="102"/>
+        <ExitPath label="False" returnValue="0" targetStepID="63"/>
+      </ExitPaths>
+    </Step>
+    <Step id="59" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="lsPrompts" notes="" left="2815" top="507" right="2935" bottom="596" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="GetAt(lsJsonValues, Find(lsJsonNames, &quot;actionPromptName&quot;, 0))" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;|&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsPrompts" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="62"/>
+      </ExitPaths>
+    </Step>
+    <Step id="60" type="Subroutine" creatorModule="" creatorName="NAllo_RTDS_Play" creatorVersion="" label="NAllo_RTDS_Play" notes="" left="3446" top="517" right="3586" bottom="606" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Interaction Id" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Prompts" value="lsPrompts" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="&quot;&quot;" defaultValIsVar="False" defaultValIsBlankStr="True" label="Valid Keys" value="&quot;&quot;" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="&quot;&quot;" defaultValIsVar="False" defaultValIsBlankStr="True" label="Escape Keys" value="sEscapeKey" index="3"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="&quot;&quot;" defaultValIsVar="False" defaultValIsBlankStr="True" label="Termination Keys" value="&quot;&quot;" index="4"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="32" defaultValIsVar="False" defaultValIsBlankStr="False" label="Maximum Number of Keys" value="32" index="5"/>
+        <Parameter required="True" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="True" defaultVal="0.0" defaultValIsVar="False" defaultValIsBlankStr="False" label="Timeout (seconds)" value="0.0" index="6"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="sDigits" defaultValIsVar="True" defaultValIsBlankStr="False" label="Keys" value="sDigits" index="7"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="sResult" defaultValIsVar="True" defaultValIsBlankStr="False" label="Result" value="sResult" index="8"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="false" defaultValIsVar="False" defaultValIsBlankStr="False" label="Stop Play at Invalid Input" value="false" index="9"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="63"/>
+      </ExitPaths>
+    </Step>
+    <Step id="61" type="Tool" creatorModule="Telephony" creatorName="Get Attribute" creatorVersion="" label="RTDS_EscapeKey" notes="" left="3215" top="410" right="3365" bottom="499" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;RTDS_EscapeKey&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="sEscapeKey" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="60"/>
+      </ExitPaths>
+    </Step>
+    <Step id="62" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="p_bInQueue" notes="" left="3005" top="507" right="3145" bottom="608" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="p_bInQueue"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="61"/>
+        <ExitPath label="False" returnValue="0" targetStepID="60"/>
+      </ExitPaths>
+    </Step>
+    <Step id="63" type="Subroutine" creatorModule="" creatorName="NAllo_RTDS_IVRLogging" creatorVersion="" label="sAction" notes="" left="1300" top="1110" right="1470" bottom="1199" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Interaction Id" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Action" value="&quot;ExtraLog&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parameter" value="sAction" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="56"/>
+      </ExitPaths>
+    </Step>
+    <Step id="66" type="Tool" creatorModule="DsLookup" creatorName="GetStructuredParameter" creatorVersion="" label="Scheduler API URL" notes="" left="50" top="540" right="240" bottom="664" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parameter Group" value="&quot;RTDS&quot;" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parameter Name" value="&quot;Scheduler API URL&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Parameter Value" value="sBaseURL" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="0" targetStepID="71"/>
+        <ExitPath label="Cannot Find Parameter" returnValue="1" targetStepID="67"/>
+        <ExitPath label="Error" returnValue="-1"/>
+      </ExitPaths>
+    </Step>
+    <Step id="67" type="Tool" creatorModule="TraceMessageTools" creatorName="Write Trace Message" creatorVersion="2.0" label="Error" notes="" left="270" top="1110" right="420" bottom="1199" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Message" value="c_sTraceTag &amp; &quot;Error getting RTDS config data from Structured Parameter&quot;" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="41" defaultValIsVar="False" defaultValIsBlankStr="False" label="Trace Level
+  1-20 = Error
+  21-40 = Warning
+  41-100 = Note" value="20" index="1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="53"/>
+      </ExitPaths>
+    </Step>
+    <Step id="68" type="Tool" creatorModule="Telephony" creatorName="Set Attribute" creatorVersion="" label="SchedulerExternalNumber" notes="" left="1905" top="305" right="2095" bottom="394" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;SchedulerExternalNumber&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="GetAt(lsJsonValues, Find(lsJsonNames, &quot;actionDetail&quot;, 0))" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="58"/>
+      </ExitPaths>
+    </Step>
+    <Step id="69" type="Tool" creatorModule="Telephony" creatorName="Set Attribute" creatorVersion="" label="SchedulerWorkgroup" notes="" left="1925" top="415" right="2095" bottom="504" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;SchedulerWorkgroup&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="GetAt(lsJsonValues, Find(lsJsonNames, &quot;actionTransferWorkgroup&quot;, 0))" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="58"/>
+      </ExitPaths>
+    </Step>
+    <Step id="70" type="Tool" creatorModule="" creatorName="Selection" creatorVersion="" label="Selection" notes="" left="1300" top="530" right="1650" bottom="677" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="StrEqlNoCase(sAction, &quot;Transfer&quot;)" returnValue="-1" targetStepID="68"/>
+        <ExitPath label="StrEqlNoCase(sAction, &quot;ExternalTransfer&quot;)" returnValue="-1" targetStepID="68"/>
+        <ExitPath label="StrEqlNoCase(sAction, &quot;WorkgroupTransfer&quot;)" returnValue="-1" targetStepID="69"/>
+        <ExitPath label="Default" returnValue="0" targetStepID="58"/>
+      </ExitPaths>
+    </Step>
+    <Step id="71" type="Tool" creatorModule="I3_RESTTools" creatorName="RESTHTTPRequest2" creatorVersion="" label="REST HTTP Request" notes="" left="310" top="540" right="490" bottom="710" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="URL" value="sBaseURL &amp; &quot;/api/schedule/&quot; &amp; GetAt(p_lsAttrValues, Find(p_lsAttrNames, &quot;ScheduleID&quot;, 0)) &amp; &quot;/status&quot;" index="0"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Proxy Uri" value="?" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="HTTP Method" value="&quot;GET&quot;" index="2"/>
+        <Parameter required="False" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Additional HTTP Headers" value="?" index="3"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Bearer Token" value="?" index="4"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="application/json" defaultValIsVar="False" defaultValIsBlankStr="False" label="Content Type" value="&quot;text/plain&quot;" index="5"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Raw Request Body" value="&quot;&quot;" index="6"/>
+        <Parameter required="True" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="True" defaultVal="20.0" defaultValIsVar="False" defaultValIsBlankStr="False" label="Request Timeout [s]" value="10.0" index="7"/>
+        <Parameter required="False" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Client SSL Certificate" value="?" index="8"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="TRUE" defaultValIsVar="False" defaultValIsBlankStr="False" label="Ignore Unknown SSL Certificate Authority" value="true" index="9"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="TRUE" defaultValIsVar="False" defaultValIsBlankStr="False" label="Ignore Wrong SSL Certificate Usage" value="true" index="10"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="TRUE" defaultValIsVar="False" defaultValIsBlankStr="False" label="Ignore SSL Certificate Name Mismatch" value="true" index="11"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="TRUE" defaultValIsVar="False" defaultValIsBlankStr="False" label="Ignore Invalid SSL Certificate Date (expired certificate)" value="true" index="12"/>
+        <Parameter required="True" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="False" defaultVal="nStatusCode1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Status Code" value="nStatusCode" index="13"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="sStatusText1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Status Text" value="sStatusText" index="14"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="lsResponseHeaders1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Response Headers" value="lsResponseHeaders" index="15"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="sResponseBody1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Response Body" value="sResponseBody" index="16"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Success" returnValue="1" targetStepID="50"/>
+        <ExitPath label="Unknown Host" returnValue="2" targetStepID="48"/>
+        <ExitPath label="Timeout" returnValue="3" targetStepID="49"/>
+        <ExitPath label="Connection Failure" returnValue="4" targetStepID="46"/>
+        <ExitPath label="Failure" returnValue="0" targetStepID="47"/>
+      </ExitPaths>
+    </Step>
+    <Step id="98" type="Tool" creatorModule="Telephony" creatorName="Get Attribute" creatorVersion="" label="GENIVR_DEBUG" notes="" left="72" top="340" right="212" bottom="429" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;GENIVR_DEBUG&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="sDebug" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="99"/>
+      </ExitPaths>
+    </Step>
+    <Step id="99" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="sDebug = 1" notes="" left="271" top="337" right="411" bottom="438" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="sDebug = &quot;1&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="100"/>
+        <ExitPath label="False" returnValue="0" targetStepID="66"/>
+      </ExitPaths>
+    </Step>
+    <Step id="100" type="Tool" creatorModule="" creatorName="Notify Debugger" creatorVersion="" label="Start" notes="" left="501" top="347" right="621" bottom="436" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="66"/>
+      </ExitPaths>
+    </Step>
+    <Step id="102" type="Tool" creatorModule="Telephony" creatorName="Log Message" creatorVersion="" label="Play" notes="" left="2453" top="474" right="2553" bottom="563" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="CallLog" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Log Identifier" value="&quot;CallLog&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Text of log message" value="&quot;Play: &quot; &amp; GetAt(lsJsonValues, Find(lsJsonNames, &quot;actionPromptName&quot;, 0))" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="59"/>
+      </ExitPaths>
+    </Step>
+  </Steps>
+  <Variables>
+    <Variable name="Interaction1" initialValue="" boundGlobalVarID="" typeModule="Telephony" typeName="CallId" typeLabel="Call ID"/>
+    <Variable name="bOpen" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="c_sTraceTag" initialValue="[SchedulerAPI] " boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="lsAttrNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsAttrValues" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsJsonNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsJsonValueTypes" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsJsonValues" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsParameters" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsPrompts" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsResponseHeaders" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="nStatusCode" initialValue="" boundGlobalVarID="" typeModule="" typeName="Numeric" typeLabel="Numeric"/>
+    <Variable name="p_bInQueue" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="p_lsAttrNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_lsAttrValues" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_sNextStep" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sAction" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sBaseURL" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sDebug" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sDigits" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sEscapeKey" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sJSONbody" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sResponseBody" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sResult" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sStatusText" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sURL" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+  </Variables>
+</Handler>

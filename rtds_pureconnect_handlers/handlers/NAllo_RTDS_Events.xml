@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Handler name="NAllo_RTDS_Events" description="" version="2.0">
+  <Steps>
+    <Step id="0" isInitiator="True" type="Initiator" creatorModule="DsLookup" creatorName="Custom Notification_13" creatorVersion="" label="NAllo_RTDS_Events" notes="SendCustomNotification RTDS Update SourceId=&lt;sourceId&gt;" left="30" top="30" right="183" bottom="119" isParameterCollectionAvailable="True" objectID="RTDS" event="">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="CustomObjectId" defaultValIsVar="True" defaultValIsBlankStr="False" label="Custom Object Identifier" value="sCustomObjectId" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="CustomEventId" defaultValIsVar="True" defaultValIsBlankStr="False" label="Custom Event Identifier" value="sCustomEventId" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="CustomDataList" defaultValIsVar="True" defaultValIsBlankStr="False" label="Custom Notification Data" value="lsCustomData" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Start" returnValue="1" targetStepID="1"/>
+      </ExitPaths>
+    </Step>
+    <Step id="1" type="Tool" creatorModule="" creatorName="Selection" creatorVersion="" label="Event Id" notes="" left="211" top="30" right="960" bottom="131" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="(StrEqlNoCase(sCustomEventId, &quot;Update&quot;) or StrEqlNoCase(sCustomEventId, &quot;Delete&quot;)) and StrEqlNoCase(StrLeft(GetAt(lsCustomData, 0), 8), &quot;SourceId&quot;)" returnValue="-1" targetStepID="2"/>
+        <ExitPath label="Default" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="2" type="Subroutine" creatorModule="" creatorName="NAllo_RTDS_UpdateSourceId" creatorVersion="" label="NAllo_RTDS_UpdateSourceId" notes="StrTrimW(SubstStr(SubstStr(GetAt(lsCustomData, 0), &quot;SourceId&quot;, &quot;&quot;), &quot;=&quot;, &quot;&quot;))" left="1040" top="30" right="1242" bottom="119" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Action" value="sCustomEventId" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Result" value="sResult" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Source Id" value="StrTrimW(SubstStr(SubstStr(GetAt(lsCustomData, 0), &quot;SourceId&quot;, &quot;&quot;), &quot;=&quot;, &quot;&quot;))" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="8"/>
+      </ExitPaths>
+    </Step>
+    <Step id="5" type="Tool" creatorModule="DsLookup" creatorName="Send Custom Notification_13" creatorVersion="" label="RTDS_response" notes="" left="1441" top="31" right="1604" bottom="120" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Custom Object Identifier" value="&quot;RTDS_response&quot;" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Custom Event Identifier" value="sCustomEventId" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Custom Notification Data" value="lsReturnData" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="8" type="Tool" creatorModule="DsLookup" creatorName="Parse String" creatorVersion="" label="lsReturnData" notes="" left="1290" top="30" right="1392" bottom="119" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="String to Parse" value="sResult" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="|" defaultValIsVar="False" defaultValIsBlankStr="False" label="Delimiter Charater(s)" value="&quot;|&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Parsed Strings" value="lsReturnData" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="5"/>
+      </ExitPaths>
+    </Step>
+  </Steps>
+  <Variables>
+    <Variable name="InitiatorEventName" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="InitiatorObjectName" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="InitiatorObjectTypeName" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="Interaction1" initialValue="" boundGlobalVarID="" typeModule="Telephony" typeName="CallId" typeLabel="Call ID"/>
+    <Variable name="lsCustomData" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="lsReturnData" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="sCustomEventId" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sCustomObjectId" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sResult" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+  </Variables>
+</Handler>

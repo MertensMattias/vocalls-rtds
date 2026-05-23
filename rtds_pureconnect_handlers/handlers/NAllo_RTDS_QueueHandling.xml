@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Handler name="NAllo_RTDS_QueueHandling" description="Customization Points called from within this handler: 
+* None 
+
+Warning: this computer program is protected by copyright law and
+international treaties. Unauthorized reproduction or distribution of this
+program, or any portion of it, may result in severe civil and criminal
+penalties, and will be prosecuted to the maximum extent under the
+law. (c) 2003
+
+Join us at community.inin.com! 
+" version="2.0" category="NAllo RTDS">
+  <Steps>
+    <Step id="0" isInitiator="True" type="Initiator" creatorModule="" creatorName="Subroutine" creatorVersion="" label="NAlllo_RTDS_QueueHandling" notes="Customization Points called from within this handler: 
+* None 
+
+Warning: this computer program is protected by copyright law and
+international treaties. Unauthorized reproduction or distribution of this
+program, or any portion of it, may result in severe civil and criminal
+penalties, and will be prosecuted to the maximum extent under the
+law. (c) 2003
+
+Join us at community.inin.com! " left="6" top="36" right="201" bottom="125" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter label="Call Identifier" name="" defaultValue="Interaction1" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="Telephony" typeName="CallId" typeLabel="Call ID" value="Interaction1" index="0"/>
+        <Parameter label="Workgroup Queue Identifier" name="" defaultValue="" defaultValueIsVariable="False" defaultValueIsBlankString="False" input="True" typeModule="" typeName="String" typeLabel="String" value="p_sQueueId" index="1"/>
+        <Parameter label="Transferred?" name="" defaultValue="" defaultValueIsVariable="False" defaultValueIsBlankString="False" input="False" typeModule="" typeName="Boolean" typeLabel="Boolean" value="p_bTransferred" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Start" targetStepID="249"/>
+      </ExitPaths>
+    </Step>
+    <Step id="1" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_bTransferred = false" notes="" left="255" top="33" right="421" bottom="122" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_bTransferred"/>
+        <Parameter name="RHS" value="false"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="2"/>
+      </ExitPaths>
+    </Step>
+    <Step id="2" type="Tool" creatorModule="Telephony" creatorName="Get Attribute" creatorVersion="" label="RTDS_Path" notes="" left="471" top="37" right="580" bottom="126" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;RTDS_Path&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="sRTDSpath" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="75"/>
+      </ExitPaths>
+    </Step>
+    <Step id="6" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_bTransferred = true" notes="" left="1893" top="88" right="2058" bottom="177" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_bTransferred"/>
+        <Parameter name="RHS" value="true"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="75" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="StrLen(sQueueStep) &gt; 0" notes="" left="620" top="37" right="798" bottom="138" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="StrLen(sRTDSpath) &gt; 0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="246"/>
+        <ExitPath label="False" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="245" type="Subroutine" creatorModule="" creatorName="NAllo_RTDS" creatorVersion="" label="NAllo_RTDS" notes="" left="1545" top="181" right="1677" bottom="270" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Interaction Id" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Handler Name" value="$HandlerName" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Dial String" value="&quot;&quot;" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Active" value="bResult" index="3"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Transferred" value="p_bTransferred" index="4"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="6"/>
+      </ExitPaths>
+    </Step>
+    <Step id="246" type="Tool" creatorModule="Telephony" creatorName="Get Attribute" creatorVersion="" label="RTDS_InQueue" notes="" left="842" top="48" right="988" bottom="137" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;RTDS_InQueue&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="sInQueue" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="247"/>
+      </ExitPaths>
+    </Step>
+    <Step id="247" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="sInQueue = p_sQueueId" notes="" left="1045" top="37" right="1264" bottom="138" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="sInQueue = p_sQueueId"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="6"/>
+        <ExitPath label="False" returnValue="0" targetStepID="248"/>
+      </ExitPaths>
+    </Step>
+    <Step id="248" type="Tool" creatorModule="Telephony" creatorName="Set Attribute" creatorVersion="" label="RTDS_InQueue" notes="" left="1311" top="180" right="1460" bottom="269" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;RTDS_InQueue&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="p_sQueueId" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="245"/>
+      </ExitPaths>
+    </Step>
+    <Step id="249" type="Tool" creatorModule="Telephony" creatorName="Get Attribute" creatorVersion="" label="&quot;GENIVR_DEBUG&quot;" notes="Eic_RemoteAddress:0470747519" left="126" top="207" right="246" bottom="296" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;GENIVR_DEBUG&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="sDebug" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="250"/>
+      </ExitPaths>
+    </Step>
+    <Step id="250" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="Condition" notes="" left="312" top="208" right="412" bottom="309" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="sDebug = &quot;1&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="251"/>
+        <ExitPath label="False" returnValue="0" targetStepID="1"/>
+      </ExitPaths>
+    </Step>
+    <Step id="251" type="Tool" creatorModule="" creatorName="Notify Debugger" creatorVersion="" label="DEBUG = 1" notes="" left="533" top="228" right="635" bottom="317" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="1"/>
+      </ExitPaths>
+    </Step>
+  </Steps>
+  <Variables>
+    <Variable name="Interaction1" initialValue="" boundGlobalVarID="" typeModule="Telephony" typeName="CallId" typeLabel="Call ID"/>
+    <Variable name="bResult" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="p_bTransferred" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="p_sQueueId" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sDebug" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sInQueue" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sRTDSpath" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+  </Variables>
+</Handler>

@@ -92,35 +92,8 @@ Edges: `28` (0→7), `30` (7→29), `38` (29→6). All bare orthogonal
 (`edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;`).
 No `entryX/entryY` overrides. No `startArrow`, `startFill`, or `strokeColor`.
 
-**The anchor-free style is a privilege reserved for these three
-canonical edges.** Every additional edge added in composite mode
-(§4a) — i.e. any edge replacing `38` (29→6), and every branch edge
-from a primitive child — **must** pin both `exit*` (source side) and
-`entry*` (target side). The three pairings (vertical trunk, rightward
-side branch, leftward / loop-back) live in [node_types.md §Universal
-rule 10](node_types.md). Pinning both ends keeps Designer from
-auto-routing into mid-edges, which is the visual giveaway of a
-generated component.
-
 Use style aliases only (`transientNode`, `scriptNode`) — never the long
 inline rounded-rect style.
-
-**Layout pass.** Don't hand-pick coordinates for primitive nodes added
-in composite mode (§4a). After the XML is on disk, run the deterministic
-layout script:
-
-```bash
-python .claude/skills/vocalls-component-builder/scripts/layout_component.py \
-  rtds_vocalls_operations/components/<componentName>.js
-```
-
-It centres the trunk (input → init → script → primitives → output) on
-x=317.5 and stacks them vertically with a 40px gap. Off-trunk branch
-destinations (anything a `dtmf` choice / `recognize` reactionGroup /
-`case` expression edges to that isn't itself on the trunk) get placed
-in a right column next to the branching primitive. The script only
-edits the `<mxGeometry>` lines — quotes, encoding, and the rest of
-the file are byte-preserved. See SKILL.md Step 6b.
 
 ### 1.7 Output node
 
@@ -145,33 +118,17 @@ No per-Param declarations. No per-Param logs. No `__rt<Key>` splay. The init
 log is `debug` (not `info`) because config dump is verbose and only useful
 when you're already drilling in.
 
-### 2.1 `${name}` placeholders — runtime resolution against globals
+### 2.1 `${name}` placeholders in `__configJSON`
 
-`${name}` is a **runtime substitution mechanism** that resolves a bare
-identifier against the `global` scope at the moment the carrying string
-is read. In a Style A component this fires in two places:
-
-1. **At init time, in `__setupConfig`**, against every value in
-   `__configJSON`. The init node runs `__setupConfig` which calls
-   `String.replace` over each Param value, looking up matched names in
-   `global`. The resolved values land in `__rtParams`. This is the most
-   common use.
-2. **At engine read time**, against primitive attributes whose semantics
-   support it — most notably `redirect.Destination`. When the engine
-   actually consumes the attribute (the moment the call is transferred),
-   it resolves `${name}` against `global` the same way `__setupConfig`
-   does — so a `Destination="${rtTransferNumber}"` works whether
-   `rtTransferNumber` was set in the main flow or in an earlier
-   component.
-
-Both whole-string and partial substitution are supported. Pattern is
-`${\w+}` — bare identifiers only.
+`__setupConfig` substitutes `${name}` placeholders in any Param value
+against the `global` scope before assigning `__rtParams`. Both whole-string
+and partial substitution are supported:
 
 ```jsonc
 {
-    "To":   "${rtSmsTo}",                                  // whole string -> String(global.rtSmsTo)
-    "Body": "Hello ${callerName}, your ref is ${ref}",     // partial -> "Hello Alice, your ref is 42"
-    "From": "8850"                                         // no placeholder -> "8850"
+    "To":      "${rtSmsTo}",                       // whole string -> String(global.rtSmsTo)
+    "Body":    "Hello ${callerName}, your ref is ${ref}",  // partial -> "Hello Alice, your ref is 42"
+    "From":    "8850"                              // no placeholder -> "8850"
 }
 ```
 
@@ -188,24 +145,18 @@ Both whole-string and partial substitution are supported. Pattern is
 - ❌ **No JS templates** — the Vocalls runtime disables string-eval
   (`new Function`, `eval`). `__setupConfig` uses `String.replace`, not
   template-literal evaluation. If you need an expression, compute it in
-  a script node and write to `global` first.
-- ❌ **Not the same as `{name}`** — `{name}` (no `$`, curly braces only)
-  is the engine's TTS-time markup for `say.Text` / `say.AltTexts` /
-  `Translations` values. The two are different mechanisms with
-  different evaluation times and different scopes. See
-  [primitive_examples.md §5](primitive_examples.md) for the side-by-side.
+  the work node and write to `global` first.
 
-**Unresolved placeholders** — if `global` doesn't carry a `name`,
-`__setupConfig` leaves the placeholder raw (`"${name}"` survives into
-`__rtParams`) and a `Logger.warn` records the key + placeholder name.
-The component continues; downstream `getValue` sees the literal text.
-This is intentional — silently substituting `""` for missing variables
-creates silent bugs.
+**Unresolved placeholders** — if `global` doesn't carry a `name`, the
+placeholder is left raw (`"${name}"` survives into `__rtParams`) and a
+`Logger.warn` records the key + placeholder name. The component continues;
+downstream `getValue` will see the literal text. This is intentional —
+silently substituting `""` for missing variables creates silent bugs.
 
-**`Active` is never substituted** — `__setupConfig` coerces it to
-Boolean directly. A `${someToggle}` value in `Active` becomes
-`Boolean("${someToggle}")` which is `true`, almost certainly not what
-you wanted. Keep `Active` literal.
+**Active is never substituted** — `__setupConfig` coerces it to Boolean
+directly. A `${someToggle}` value in `Active` becomes `Boolean("${someToggle}")`
+which is `true`, almost certainly not what you wanted. Keep `Active`
+literal.
 
 ---
 
@@ -292,50 +243,6 @@ See [operation_bodies/INDEX.md](operation_bodies/INDEX.md) for the decision
 tree. Each pattern file carries the skeleton, its rationale, variants, and a
 worked example with Logger calls already wired in.
 
-### 4a. Composite components — primitives between Script and output
-
-The canonical 4-node graph (§1.6) is the **floor**, not the ceiling. A
-component may host one or more Vocalls Designer primitive nodes (`say`,
-`recognize`, `dtmf`, `case`, `counter`, `number`, `redirect`, `pause`,
-`setvar`) **between the Script (id=29) and the output (id=6)**, provided:
-
-- The four canonical ids (`0`, `7`, `29`, `6`) and their geometry are
-  unchanged. The init and output node bodies are unchanged.
-- The Script body is selected from one of the five Script-body patterns
-  (§4) and **emitted unchanged**. No `__makeLocalNodeId('<primitive-id>')`
-  calls; no primitive ids returned as exit keys. The runtime handles the
-  handoff into the primitive chain — the component just defines the
-  topology.
-- Every primitive branch reaches the output node (id=6) directly or
-  transitively. The output's `OnEnter` log fires once on the way out.
-- Primitive, child, and edge ids are **freely-allocated unique
-  integers** within the file. Earlier docs imposed a rigid "primitives
-  ≥ 100, children ≥ 200" rule; that does not match production
-  components. The only fixed numbering is the canonical quartet
-  (`0`/`7`/`29`/`6`) and the canonical pre-Script edges `28` (0→7) and
-  `30` (7→29). Edge `38` (29→6) is replaced by a chain that ends at
-  id=6. Chrome row ids are conventionally `parent_id + 1`.
-- Per-Type attribute reference is [node_types.md](node_types.md).
-  Composition rules and worked examples are
-  [operation_bodies/composite.md](operation_bodies/composite.md).
-
-**Edge contract (load-bearing — failures here produce orphan branches
-in Designer):**
-
-- Routing is by **explicit `<mxCell edge="1">` sourced from each
-  non-chrome child id** — not by `DynamicNextId` alone. Every
-  reaction-group, choice, expression, default, noInput, and
-  notRecognized child carries `DynamicNextId=""` and is paired with an
-  explicit edge cell whose `parent="baselayer"`, `source="<child-id>"`,
-  `target="<dest-id>"`.
-- Edges never source from the parent id of a branching Type, and never
-  from the `*InnerNode` chrome.
-- Linear-flow Types (`say`, `setvar`, `pause`) edge from the parent's
-  own id; they have no children.
-- **Branching-Type children's `<mxCell>` use
-  `parent="<parent-primitive-id>"`**, not `parent="baselayer"`. Only
-  the primitive's own `<mxCell>` and edge cells sit on `baselayer`.
-
 ---
 
 ## 5. JS conventions
@@ -374,30 +281,6 @@ in Designer):**
   string-eval is what gives you "Eval of strings is disabled in this
   runtime". For `${var}` substitution use `String.replace` (see §2.1);
   for everything else, compute in plain JS.
-
-### 5a. Primitive node attributes — what is and isn't JS
-
-Vocalls Designer primitive nodes (`say`, `recognize`, `dtmf`, `case`,
-`counter`, `number`, `redirect`, `pause`, `setvar`; see [node_types.md](node_types.md))
-do not have a `Code` attribute. Their behaviour comes from string-valued
-*configuration attributes* the engine reads directly:
-
-| Attribute              | Content                                                                                                                                       |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Text`, `AltTexts`     | Spoken text. Plain string; `${var}` markup is resolved by the engine, **not** by `__setupConfig`. No JS expressions.                          |
-| `Expression`           | Engine-evaluated expression on `case` / `counter` / `expressionNode` children. The engine — not the component — interprets it.                |
-| `VariableName`         | Bare identifier resolved against the engine scope. No `__` prefix; not JS.                                                                    |
-| `VariableValue`        | Engine-evaluated expression. Single-quoted string literals for string values (`'someValue'`).                                                  |
-| `Destination`, `Grammar`, `Keywords`, `Sentences`, `HintKeywords`, `HintGrammar` | Plain string content. No JS.                                                                |
-| `Key`, `Timeout`, `MinTimeout`, `Interval`, `SubmitCode`, `Priority`, `SimilarityTreshold`, `NoiseDistance` | Scalar string-encoded values. No JS.                                |
-| `DynamicNextId`        | Id string of the target node. Resolved by the engine, not by component code.                                                                  |
-| `OnEnter`, `OnLeave`   | **JS** run by the engine on entry / leave. The `__` prefix rule (§5) applies to every `var`-declared local **inside** these blocks.            |
-
-So: primitive *attribute values* are not JS and are not subject to the
-`__` prefix rule (`Text="Welcome"`, `VariableName="myVar"`,
-`Expression="name == 'value'"` all stay as-is). Anything inside `OnEnter`
-or `OnLeave` **is** JS and follows §5 — every `var`-declared local
-carries `__`, JSDoc applies if you declare a function, etc.
 
 ---
 
@@ -446,21 +329,3 @@ Indent inside JS with 4 spaces. Encode JS-string single quotes as `&apos;`.
   `getValue` is case-insensitive on the read side; `walk` and
   `applyDefaults` preserve casing on the write side. That asymmetry is
   intentional — the operator's chosen key casing is the output contract.
-- **Don't inline the long rounded-rect style** on a Vocalls primitive
-  node. Use the style alias (`sayNode`, `recognizeNode`, `dtmfInnerNode`,
-  …). See [node_types.md](node_types.md).
-- **Don't make a `*InnerNode` an edge endpoint.** Inner header nodes
-  (`recognizeInnerNode`, `dtmfInnerNode`, `caseInnerNode`,
-  `counterInnerNode`, `numberInnerNode`, `redirectInnerNode`) are visual
-  chrome only. Edges on branching primitives source from the non-chrome
-  child ids (`reactionGroupNode`, `choiceNode`, `expressionNode`,
-  `defaultNode`, `noInputNode`, `notRecognizedNode`).
-- **Don't connect a primitive branch back into the Script (id=29) or
-  the init node (id=7).** Composite-mode primitives flow forward toward
-  the output (id=6). Retry loops route between primitives, never back
-  through the Script. See [operation_bodies/composite.md](operation_bodies/composite.md).
-- **Don't try to substitute `${name}` placeholders in primitive
-  attributes via `__setupConfig`.** Primitive attributes are read by the
-  engine, not by component JS. `${name}` resolution inside `Text`,
-  `Expression`, `VariableValue`, etc. is the engine's job (when it does
-  it at all) — not `__setupConfig`'s.

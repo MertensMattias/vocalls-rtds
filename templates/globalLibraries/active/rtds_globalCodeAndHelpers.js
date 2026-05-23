@@ -94,118 +94,6 @@ function isValidObject(input) {
 }
 
 /**
- * Returns the value of `key` from `obj`, or `defaultValue` if the key is
- * absent. Case-insensitive lookup: matches whichever own property name
- * lowercases to the same string as `key`. Mirrors the PureConnect
- * `GetAt(values, Find(names, key, 0))` idiom with a default fallback.
- *
- * @param {Object} obj          – Source object.
- * @param {string} key          – Property name to look up (case-insensitive).
- * @param {*}      defaultValue – Value to return when the key is absent.
- * @returns {*}                   Resolved value or `defaultValue`.
- */
-function getValue(obj, key, defaultValue) {
-  if (!obj || !key) return defaultValue;
-  var lowerKey = String(key).toLowerCase();
-  for (var propertyName in obj) {
-    if (
-      obj.hasOwnProperty(propertyName) &&
-      String(propertyName).toLowerCase() === lowerKey
-    ) {
-      return obj[propertyName];
-    }
-  }
-  return defaultValue;
-}
-
-/**
- * Like `getValue`, but also treats `""`, `null`, `0`, and `false` as "missing"
- * and falls back to `defaultValue`. Same case-insensitive matching rule.
- *
- * @param {Object} obj          – Source object.
- * @param {string} key          – Property name to look up (case-insensitive).
- * @param {*}      defaultValue – Value to return when the key is absent or falsy.
- * @returns {*}                   Resolved truthy value or `defaultValue`.
- */
-function getValueOrFalsy(obj, key, defaultValue) {
-  var v = getValue(obj, key);
-  return v || defaultValue;
-}
-
-/**
- * Case-insensitive existence check. Returns `true` when any own property of
- * `obj` lowercases to the same string as `key`.
- *
- * @param {Object} obj – Source object.
- * @param {string} key – Property name to test (case-insensitive).
- * @returns {boolean}    `true` when the key exists.
- */
-function hasKey(obj, key) {
-  if (!obj || !key) return false;
-  var lowerKey = String(key).toLowerCase();
-  for (var propertyName in obj) {
-    if (
-      obj.hasOwnProperty(propertyName) &&
-      String(propertyName).toLowerCase() === lowerKey
-    ) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * Returns the first own-property key in `obj` for which
- * `predicate(key, value)` is truthy, or `null` if none match.
- *
- * @param {Object}   obj       – Source object.
- * @param {Function} predicate – `function (key, value) -> boolean`.
- * @returns {?string}            Matching key or `null`.
- */
-function findKey(obj, predicate) {
-  if (!obj) return null;
-  for (var key in obj) {
-    if (obj.hasOwnProperty(key) && predicate(key, obj[key])) return key;
-  }
-  return null;
-}
-
-/**
- * Iterates own properties of `obj`, calling `fn(key, value)` for each.
- * Returning `false` from `fn` stops the walk. Preserves original key casing
- * (this is a write-side helper; the operator's chosen casing is the contract).
- *
- * @param {Object}   obj – Source object.
- * @param {Function} fn  – `function (key, value) -> any`. Return `false` to stop.
- * @returns {void}
- */
-function walk(obj, fn) {
-  if (!obj) return;
-  for (var key in obj) {
-    if (!obj.hasOwnProperty(key)) continue;
-    if (fn(key, obj[key]) === false) return;
-  }
-}
-
-/**
- * Copies own properties of `src` into `dst` for keys `dst` does not already
- * have. Preserves original casing (write-side helper). Returns `dst`.
- *
- * @param {Object} dst – Destination object (mutated).
- * @param {Object} src – Source object.
- * @returns {Object}     `dst`.
- */
-function applyDefaults(dst, src) {
-  if (!dst || !src) return dst;
-  for (var key in src) {
-    if (src.hasOwnProperty(key) && !dst.hasOwnProperty(key)) {
-      dst[key] = src[key];
-    }
-  }
-  return dst;
-}
-
-/**
  * Retrieves a nested property using dot notation without throwing on invalid
  * paths.  Similar to `getPath` but implemented inline for performance.
  *
@@ -221,60 +109,6 @@ function getNestedValue(obj, path) {
       (acc, part) => (acc && acc[part] !== undefined ? acc[part] : undefined),
       obj,
     );
-}
-
-// ============================================================================
-// varObj schema
-// ============================================================================
-
-function constVarObj() {
-  return {
-    // ============================================================================
-    // CORE CONTEXT
-    // ============================================================================
-
-    environment: getOrDefault("environment", "acc", true),
-    routingId: "TEST_TEST_PROJECT",
-    callIdKey: getOrDefault("callIdKey", context.callInfo.callGuid, true),
-    interactionStartTime: getOrDefault(
-      "interactionStartTime",
-      new Date().toISOString(),
-      true,
-    ),
-    customerName: "TEST",
-    customerProject: "TEST_PROJECT",
-
-    language: context.language.substring(0, 2).toUpperCase(),
-
-    // ============================================================================
-    // CALL DATA
-    // ============================================================================
-    ani: getOrDefault("ani", null, true), // caller number
-    dnis: getOrDefault("dnis", null, true), // dialed number
-    debugCall: false, // derived from devNumbers or debug flag
-
-    // ============================================================================
-    // DEBUG CONFIG
-    // ============================================================================
-    debugConfig: {
-      devNumbers: [], // array of phone numbers triggering debugCall
-    },
-
-    // ============================================================================
-    // LOGGING FLAGS
-    // ============================================================================
-    logVarActive: true,
-
-    // ============================================================================
-    // FLOW CONTROL
-    // ============================================================================
-    redirect: false, // used for session restore / redirect logic
-
-    // ============================================================================
-    // SESSION METADATA
-    // ============================================================================
-    _storedTimestamp: 0, // used for session restore comparison
-  };
 }
 
 // ============================================================================
@@ -546,10 +380,8 @@ Logger = {
     };
   },
 
-  postEventToAPI: function (eventObj) {
-    if (!this.config.enabled) {
-      return this.resolvedPromise({ success: true, skipped: true });
-    }
+  _sendEventsToAPI: function (events, retryAttempt) {
+    retryAttempt = retryAttempt || 0;
     var vo = typeof varObj !== "undefined" ? varObj : null;
     var env =
       (vo && vo.environment) ||
@@ -559,22 +391,159 @@ Logger = {
     var requestBody = {
       callIdKey: this.getCallIdKey(),
       routingId: this.getRoutingId(),
-      events: [eventObj],
+      events: events,
     };
     var self = this;
+    log_debug(
+      "[Logger] _sendEventsToAPI request | url: " +
+        apiUrl +
+        " | body: " +
+        self.sanitizeForLog(requestBody),
+    );
     return jsonHttpRequest(apiUrl, { method: "POST" }, _headers, requestBody)
       .withTimeout(this.config.timeout)
       .then(
         function (result) {
-          return { success: true, response: result };
+          log_debug(
+            "[Logger] _sendEventsToAPI response | " +
+              self.sanitizeForLog(result),
+          );
+          return {
+            success: true,
+            error: null,
+            retriesExceeded: false,
+            retryAttempt: retryAttempt,
+            response: result,
+          };
         },
         function (error) {
           log_debug(
-            "[Logger] postEventToAPI error | " + self.sanitizeForLog(error),
+            "[Logger] _sendEventsToAPI error | " + self.sanitizeForLog(error),
           );
-          return { success: false, error: error };
+          if (retryAttempt < self.config.flushRetryCount) {
+            return self._sendEventsToAPI(events, retryAttempt + 1);
+          }
+          return {
+            success: false,
+            error: error,
+            retriesExceeded: true,
+            retryAttempt: retryAttempt,
+          };
         },
       );
+  },
+
+  postEventToAPI: function (eventObj) {
+    if (!this.config.enabled) {
+      return this.resolvedPromise({ success: true, skipped: true });
+    }
+    var hasContext =
+      typeof context !== "undefined" &&
+      context.session &&
+      context.session.variables;
+    var effectiveBufferEnabled = this.config.bufferEnabled && hasContext;
+    if (!effectiveBufferEnabled) {
+      return this._sendEventsToAPI([eventObj], 0);
+    }
+    var severity = eventObj.severity || "";
+    var isError = severity === "ERROR";
+    if (isError && this.config.bufferFlushOnError) {
+      this.addToBuffer(eventObj);
+      return this.flushBuffer();
+    }
+    this.addToBuffer(eventObj);
+    return this.resolvedPromise({
+      success: true,
+      buffered: true,
+      bufferSize: this.getBufferSize(),
+    });
+  },
+
+  getBuffer: function () {
+    if (
+      typeof context !== "undefined" &&
+      context.session &&
+      context.session.variables
+    ) {
+      if (!context.session.variables._loggerBuffer) {
+        context.session.variables._loggerBuffer = [];
+      }
+      return context.session.variables._loggerBuffer;
+    }
+    return null;
+  },
+
+  clearBuffer: function () {
+    if (
+      typeof context !== "undefined" &&
+      context.session &&
+      context.session.variables
+    ) {
+      context.session.variables._loggerBuffer = [];
+    }
+  },
+
+  getBufferSize: function () {
+    var buffer = this.getBuffer();
+    return buffer ? buffer.length : 0;
+  },
+
+  addToBuffer: function (eventObj) {
+    if (!this.config.bufferEnabled) {
+      return false;
+    }
+    var buffer = this.getBuffer();
+    if (!buffer || !Array.isArray(buffer)) {
+      return false;
+    }
+    buffer.push(eventObj);
+    if (buffer.length >= this.config.bufferMaxSize) {
+      this.flushBuffer();
+    }
+    return true;
+  },
+
+  flushBuffer: function () {
+    var buffer = this.getBuffer();
+    if (!buffer || buffer.length === 0) {
+      return this.resolvedPromise({
+        success: true,
+        skipped: true,
+        message: "Buffer empty",
+      });
+    }
+    if (!this.config.enabled) {
+      this.clearBuffer();
+      return this.resolvedPromise({
+        success: true,
+        skipped: true,
+        message: "Logger disabled",
+      });
+    }
+    var eventsToSend = [];
+    for (var i = 0; i < buffer.length; i++) {
+      eventsToSend.push(buffer[i]);
+    }
+    this.clearBuffer();
+    if (this.config.activeLevel === "DEBUG") {
+      this.debug("Logger: Flushing buffer", {
+        bufferSize: eventsToSend.length,
+      });
+    }
+    var self = this;
+    return this._sendEventsToAPI(eventsToSend, 0).then(function (result) {
+      if (
+        !result.success &&
+        result.retriesExceeded &&
+        self.config.activeLevel === "DEBUG"
+      ) {
+        self.debug("Logger: Buffer flush failed after all retries", {
+          eventsCount: eventsToSend.length,
+          retryAttempt: result.retryAttempt,
+        });
+      }
+      return result;
+    });
   },
 
   /**
@@ -751,6 +720,18 @@ Logger = {
             );
             value = "INFO";
           }
+        } else if (key === "bufferMaxSize" || key === "flushRetryCount") {
+          if (typeof value !== "number" || value < 0) {
+            log_debug(
+              "[Logger] Invalid number for " +
+                key +
+                ": " +
+                value +
+                ", keeping current: " +
+                this.config[key],
+            );
+            isValid = false;
+          }
         } else if (key === "timeout" || key === "maxBodySize") {
           if (typeof value !== "number" || value <= 0) {
             log_debug(
@@ -763,7 +744,13 @@ Logger = {
             );
             isValid = false;
           }
-        } else if (key === "enabled" || key === "logAllApiCalls") {
+        } else if (
+          key === "enabled" ||
+          key === "logAllApiCalls" ||
+          key === "bufferEnabled" ||
+          key === "bufferFlushOnError" ||
+          key === "bufferFlushOnCallEnd"
+        ) {
           if (typeof value !== "boolean") {
             log_debug(
               "[Logger] Invalid boolean for " +
@@ -955,6 +942,10 @@ function storeSessionVariables() {
     context.session.variables = {};
   }
 
+  if (cdbLog) {
+    resolveCdbDicId(cdbLog);
+  }
+
   varObj._storedTimestamp = timestamp;
   varObj.redirect = true;
 
@@ -963,405 +954,4 @@ function storeSessionVariables() {
   Logger.info(
     "storeSessionVariables: stored varObj to session (ts: " + timestamp + ")",
   );
-}
-
-// ===========================================================================
-// RTDS RUNTIME — DISPATCH TABLES AND HANDLERS
-// ===========================================================================
-
-RTDS_OPERATIONS = new Map([
-    ['SetAttributes', executeSetAttributes]
-    // Future: ['Emergency', executeEmergency], ['Schedule', executeSchedule], ...
-]);
-
-// GUI-exit types: write params to session, return exit key string to Vocalls.
-RTDS_EXIT_KEYS = new Map([
-    ['WorkgroupTransfer', 'workgroup_transfer'],
-    ['ExternalTransfer', 'external_transfer'],
-    ['Menu', 'menu'],
-    ['LanguageMenu', 'language_menu'],
-    ['PlayPrompt', 'play_prompt'],
-    ['PlayAudio', 'play_audio'],
-    ['Disconnect', 'disconnect'],
-    ['GuardRouting', 'guard_routing'],
-    ['GuardTUI', 'guard_tui'],
-    ['Callback', 'callback'],
-    ['SendSMS', 'send_sms'],
-    ['SendEmail', 'send_email']
-]);
-
-// Prefix written to session before every GUI handoff.
-OP_VAR_PREFIX = 'RTDS_OP_';
-
-
-// ---------------------------------------------------------------------------
-// getRtdsGlobalScope()
-//    Returns the active global scope object. In real Vocalls this is the
-//    IVR's operational variable scope; in Node VM sandbox it's globalThis.
-//    Returns null if neither is reachable, in which case callers fall back
-//    to (new Function(...))-based assignment.
-// ---------------------------------------------------------------------------
-
-function getRtdsGlobalScope() {
-    if (typeof global !== 'undefined') {
-        return global;
-    }
-    if (typeof globalThis !== 'undefined') {
-        return globalThis;
-    }
-    return null;
-}
-
-
-// ---------------------------------------------------------------------------
-// buildOpIndex(operations)
-//    Turns the Operations array into a Map keyed by Id so any
-//    operation can be looked up in O(1) by its Id string.
-// ---------------------------------------------------------------------------
-
-function buildOpIndex(operations) {
-    var index = new Map();
-    for (var i = 0; i < operations.length; i++) {
-        var op = operations[i];
-        if (!op.Id) {
-            log_error(`[RTDS] buildOpIndex: operation at index ${i} has no Id — skipped`);
-            continue;
-        }
-        index.set(op.Id, op);
-    }
-    return index;
-}
-
-
-// ---------------------------------------------------------------------------
-// parseFlow(json)
-//    Validates and splits the API response.
-//    Writes header fields and the opIndex into context.session.variables.
-//    Returns the firstOp object, or null on error.
-// ---------------------------------------------------------------------------
-
-function parseFlow(json) {
-    if (!json || typeof json !== 'object') {
-        log_error('[RTDS] parseFlow: json is null or not an object');
-        context.session.variables.RTDS_error = 'RTDS_PARSE_ERROR';
-        return null;
-    }
-
-    if (!Array.isArray(json.Operations) || json.Operations.length === 0) {
-        log_error('[RTDS] parseFlow: Operations array is missing or empty');
-        context.session.variables.RTDS_error = 'RTDS_PARSE_ERROR';
-        return null;
-    }
-
-    // Store header fields individually — plain strings, safe across nodes.
-    context.session.variables.RTDS_sourceId = json.SourceId;
-    context.session.variables.RTDS_name = json.Name;
-    context.session.variables.RTDS_project = json.Project;
-    context.session.variables.RTDS_promptLibrary = json.PromptLibrary;
-    context.session.variables.RTDS_supportedLanguages = json.SupportedLanguages;
-
-    // Build and store the operation index.
-    var opIndex = buildOpIndex(json.Operations);
-    context.session.variables.RTDS_opIndex = opIndex;
-
-    // Find and return the first operation.
-    var firstOp = getFirstOperation(json.Operations);
-    if (!firstOp) {
-        context.session.variables.RTDS_error = 'RTDS_NO_ENTRY_POINT';
-        return null;
-    }
-
-    log_debug('[RTDS] Flow parsed. SourceId=' + json.SourceId + ' EntryPoint=' + firstOp.Id + ' (' + firstOp.Name + ')');
-    return firstOp;
-}
-
-
-// ---------------------------------------------------------------------------
-// getFirstOperation(operations)
-//    Returns the entry-point operation from the Operations array.
-//    If multiple have IsFirstOperation === true, returns the one with the
-//    lexicographically lowest Id (zero-padded IDs sort correctly this way).
-// ---------------------------------------------------------------------------
-
-function getFirstOperation(operations) {
-    var candidates = [];
-
-    for (var i = 0; i < operations.length; i++) {
-        if (operations[i].IsFirstOperation === true) {
-            candidates.push(operations[i]);
-        }
-    }
-
-    if (candidates.length === 0) {
-        log_error('[RTDS] getFirstOperation: no operation has IsFirstOperation === true');
-        return null;
-    }
-
-    // Sort lexicographically by Id — safe for zero-padded numeric strings.
-    candidates.sort(function (a, b) {
-        if (a.Id < b.Id) return -1;
-        if (a.Id > b.Id) return 1;
-        return 0;
-    });
-
-    return candidates[0];
-}
-
-
-// ---------------------------------------------------------------------------
-// getParam(op, name, fallback)
-//    Reads a typed param value from op.Params, unwrapping the array form
-//    [value, ...flags]. Flags (isDisplayed, isEditable) are GUI-builder
-//    metadata and are ignored at runtime — only v[0] is used.
-//    Type is preserved as-is (number stays number, string stays string).
-// ---------------------------------------------------------------------------
-
-function getParam(op, name, fallback) {
-    if (fallback === undefined) { fallback = null; }
-    if (!op.Params) { return fallback; }
-
-    var raw = op.Params[name];
-    if (raw === undefined || raw === null) { return fallback; }
-
-    // Unwrap array form [value, ...flags].
-    var value = Array.isArray(raw) ? raw[0] : raw;
-
-    // Preserve the native type: number, boolean, or string.
-    if (typeof value === 'number') { return value; }
-    if (typeof value === 'boolean') { return value; }
-    if (value === '' || value === null || value === undefined) { return fallback; }
-    return value;
-}
-
-
-// ---------------------------------------------------------------------------
-// setGlobal(name, value)
-//     Writes a resolved param value to the operational scope.
-//     Uses getRtdsGlobalScope() when reachable; falls back to a Function-based
-//     assignment so the runtime works inside Node VM sandboxes that don't
-//     expose `global`. Type is whatever JSON.parse produced — no coercion.
-// ---------------------------------------------------------------------------
-
-function setGlobal(name, value) {
-    if (value === null || value === undefined) { return; }
-    var scope = getRtdsGlobalScope();
-    if (scope) {
-        scope[name] = value;
-        return;
-    }
-    (new Function('v', name + ' = v'))(value);
-}
-
-
-// ---------------------------------------------------------------------------
-// resolveTokens(value)
-//    Replaces $(ATTR_NAME) tokens in a string with the current value.
-//    Lookup order: context.session.variables first, then global directly.
-//    Non-string values pass through unchanged.
-// ---------------------------------------------------------------------------
-
-function resolveTokens(value) {
-    if (typeof value !== 'string') { return value; }
-
-    return value.replace(/\$\(([^)]+)\)/g, function (match, name) {
-        // Check engine / session scope first (RTDS_ keys and any session-level vars).
-        var sessionVal = context.session.variables[name];
-        if (sessionVal !== undefined && sessionVal !== null) {
-            return String(sessionVal);
-        }
-        // Fall back to global scope.
-        var scope = getRtdsGlobalScope();
-        var globalVal = scope ? scope[name] : undefined;
-        if (globalVal === undefined) {
-            try {
-                globalVal = (new Function('return typeof ' + name + ' !== "undefined" ? ' + name + ' : undefined;'))();
-            } catch (ignore) {
-                globalVal = undefined;
-            }
-        }
-        if (globalVal !== undefined && globalVal !== null) {
-            return String(globalVal);
-        }
-        return '';
-    });
-}
-
-
-// ---------------------------------------------------------------------------
-// resolveNextStep(op, resultKey)
-//    Returns the next operation Id string.
-//    Checks resultKey param first (e.g. "NextStep_Open"), falls back to "NextStep".
-//    Returns null if neither is present.
-// ---------------------------------------------------------------------------
-
-function resolveNextStep(op, resultKey) {
-    if (resultKey) {
-        var specific = getParam(op, resultKey, null);
-        if (specific) { return String(specific); }
-    }
-
-    var fallback = getParam(op, 'NextStep', null);
-    if (fallback) { return String(fallback); }
-
-    return null;
-}
-
-
-// ---------------------------------------------------------------------------
-// executeSetAttributes(op)
-//    Writes Params into global via setGlobal (operational scope).
-//    Handles LogAttributes as a log side-effect (not stored).
-//    NextStep is never stored — it controls flow only.
-//    Returns { nextStepId }.
-// ---------------------------------------------------------------------------
-
-function executeSetAttributes(op) {
-    var params = op.Params;
-    if (!params) {
-        return { nextStepId: null };
-    }
-
-    var keys = Object.keys(params);
-    for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
-
-        // Flow control only — not stored.
-        if (key === 'NextStep') { continue; }
-
-        // LogAttributes: pipe-delimited list of attribute names to log.
-        if (key === 'LogAttributes') {
-            var attrNames = String(params[key]).split('|');
-            var parts = [];
-            for (var j = 0; j < attrNames.length; j++) {
-                var attrName = attrNames[j].replace(/^\s+|\s+$/g, ''); // trim
-                if (attrName) {
-                    // Check session scope first, fall back to global scope.
-                    var attrVal = context.session.variables[attrName];
-                    if (attrVal === undefined || attrVal === null) {
-                        var scope = getRtdsGlobalScope();
-                        attrVal = scope ? scope[attrName] : undefined;
-                    }
-                    parts.push(attrName + '=' + (attrVal !== undefined && attrVal !== null ? attrVal : ''));
-                }
-            }
-            log_debug('[RTDS] LogAttributes: ' + parts.join(' | '));
-            continue;
-        }
-
-        // All other params: resolve tokens and write to operational scope.
-        var value = resolveTokens(getParam(op, key, null));
-        setGlobal(key, value);
-    }
-
-    var nextStepId = resolveNextStep(op, null);
-    log_debug('[RTDS] SetAttributes "' + op.Name + '" done. NextStep=' + (nextStepId ? nextStepId : '(none)'));
-    return { nextStepId: nextStepId };
-}
-
-
-// ---------------------------------------------------------------------------
-// prepareGuiHandoff(op)
-//    Writes prefixed param values to context.session.variables before handing
-//    off to a GUI node. The GUI node reads RTDS_OP_* to configure itself.
-// ---------------------------------------------------------------------------
-
-function prepareGuiHandoff(op) {
-    var params = op.Params;
-    if (params) {
-        var keys = Object.keys(params);
-        for (var i = 0; i < keys.length; i++) {
-            var key = keys[i];
-            var value = resolveTokens(getParam(op, key, null));
-            context.session.variables[OP_VAR_PREFIX + key] = value;
-        }
-    }
-
-    context.session.variables.RTDS_currentOpId = op.Id;
-    context.session.variables.RTDS_currentOpType = op.Type;
-
-    // Pre-populate RTDS_nextStepId with the default NextStep.
-    // The GUI node overwrites this with its branching outcome.
-    var defaultNext = resolveNextStep(op, null);
-    if (defaultNext) {
-        context.session.variables.RTDS_nextStepId = defaultNext;
-    }
-}
-
-
-// ---------------------------------------------------------------------------
-// runStep(startOpId)
-//    Core dispatch loop. Reads startOpId from context.session.variables.RTDS_opIndex.
-//    Loops through JS-handled operations internally.
-//    Returns an exit key string when a GUI-exit type is reached.
-// ---------------------------------------------------------------------------
-
-function runStep(startOpId) {
-    var opIndex = context.session.variables.RTDS_opIndex;
-    var currentId = startOpId;
-
-    while (currentId) {
-        var current = opIndex.get(currentId);
-
-        if (!current) {
-            log_warn(`[RTDS] runStep: step "${currentId}" not found in opIndex`);
-            context.session.variables.RTDS_error = 'Unknown step: ' + currentId;
-            return 'disconnect';
-        }
-
-        var type = current.Type;
-        log_debug(`[RTDS] Step ${current.Id} | Type: ${type} | Name: ${current.Name}`);
-
-        // ---- JS-handled operation ----
-        if (RTDS_OPERATIONS.has(type)) {
-            var result;
-            try {
-                result = RTDS_OPERATIONS.get(type)(current);
-            } catch (err) {
-                log_error(`[RTDS] ERROR in ${type} step ${current.Id}: ${err.message}`);
-                context.session.variables.RTDS_error = err.message;
-                return 'disconnect';
-            }
-
-            var nextStepId = result.nextStepId;
-
-            if (!nextStepId) {
-                log_debug(`[RTDS] No NextStep after step ${current.Id} — end of flow.`);
-                return 'disconnect';
-            }
-
-            currentId = nextStepId;
-            continue;
-        }
-
-        // ---- GUI-exit operation ----
-        if (RTDS_EXIT_KEYS.has(type)) {
-            var exitKey = RTDS_EXIT_KEYS.get(type);
-            prepareGuiHandoff(current);
-            log_debug(`[RTDS] GUI handoff step ${current.Id} (${type}) -> exit key: "${exitKey}"`);
-            return exitKey;
-        }
-
-        // ---- Unknown type ----
-        log_warn(`[RTDS] Unhandled operation type "${type}" at step ${current.Id}`);
-        context.session.variables.RTDS_error = 'Unhandled operation type: ' + type;
-        return 'disconnect';
-    }
-
-    return 'disconnect';
-}
-
-
-// ---------------------------------------------------------------------------
-// resumeFrom(nextStepId)
-//     Re-entry point after a GUI node completes.
-//     Reads RTDS_nextStepId from context.session.variables, then continues
-//     the runStep loop. opIndex is already in context.session.variables.
-// ---------------------------------------------------------------------------
-
-function resumeFrom(nextStepId) {
-    if (!nextStepId) {
-        log_warn('[RTDS] resumeFrom: no nextStepId — end of flow.');
-        return 'disconnect';
-    }
-    return runStep(nextStepId);
 }

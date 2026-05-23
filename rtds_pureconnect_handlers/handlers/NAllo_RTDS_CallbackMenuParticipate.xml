@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Handler name="NAllo_RTDS_CallbackMenuParticipate" description="" version="2.0" category="NAllo RTDS">
+  <Steps>
+    <Step id="0" isInitiator="True" type="Initiator" creatorModule="" creatorName="Subroutine" creatorVersion="" label="Subroutine" notes="" left="61" top="140" right="185" bottom="229" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter label="Call Identifier" name="" defaultValue="Interaction1" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="Telephony" typeName="CallId" typeLabel="Call ID" value="Interaction1" index="0"/>
+        <Parameter label="Result" name="" defaultValue="" defaultValueIsVariable="False" defaultValueIsBlankString="False" input="False" typeModule="" typeName="Boolean" typeLabel="Boolean" value="p_bResult" index="1"/>
+        <Parameter label="Escape Callback?" name="" defaultValue="bEscapeCallback" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="" typeName="Boolean" typeLabel="Boolean" value="bEscapeCallback" index="2"/>
+        <Parameter label="Attribute Names" name="" defaultValue="p_lsAttrNames" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttrNames" index="3"/>
+        <Parameter label="Attribute Values" name="" defaultValue="p_lsAttrNames" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttrValues" index="4"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Start" returnValue="1" targetStepID="36"/>
+      </ExitPaths>
+    </Step>
+    <Step id="5" type="Tool" creatorModule="" creatorName="Selection" creatorVersion="" label="Selection" notes="" left="1939" top="135" right="2089" bottom="259" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="sDigits = &quot;1&quot;" returnValue="-1" targetStepID="6"/>
+        <ExitPath label="sDigits = &quot;2&quot;" returnValue="-1" targetStepID="7"/>
+        <ExitPath label="Default" returnValue="0" targetStepID="7"/>
+      </ExitPaths>
+    </Step>
+    <Step id="6" type="Tool" creatorModule="Telephony" creatorName="Set Attribute" creatorVersion="" label="ATTR_IsParticipate = true" notes="" left="2249" top="85" right="2419" bottom="174" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;ATTR_IsParticipate&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="&quot;true&quot;" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="8"/>
+      </ExitPaths>
+    </Step>
+    <Step id="7" type="Tool" creatorModule="Telephony" creatorName="Set Attribute" creatorVersion="" label="ATTR_IsParticipate = false" notes="" left="1933" top="325" right="2109" bottom="414" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;ATTR_IsParticipate&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="&quot;false&quot;" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="9"/>
+      </ExitPaths>
+    </Step>
+    <Step id="8" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_bResult = true" notes="" left="2519" top="85" right="2649" bottom="174" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_bResult"/>
+        <Parameter name="RHS" value="true"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="9" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_bResult = false" notes="" left="2209" top="315" right="2329" bottom="404" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_bResult"/>
+        <Parameter name="RHS" value="false"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="18" type="Tool" creatorModule="" creatorName="InsertAtTail" creatorVersion="" label="CB_Offer.wav" notes="p_sPromptSource &amp; &quot;\\&quot; &amp; &quot;CB_Offer.wav&quot;" left="1042" top="173" right="1172" bottom="262" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="List" value="lsPromptCBOffer"/>
+        <Parameter name="Value" value="&quot;CB_Offer.wav&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="33"/>
+      </ExitPaths>
+    </Step>
+    <Step id="31" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="sResult = &quot;Success&quot;" notes="" left="1729" top="245" right="1829" bottom="346" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="sResult = &quot;Success&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="5"/>
+        <ExitPath label="False" returnValue="0" targetStepID="7"/>
+      </ExitPaths>
+    </Step>
+    <Step id="33" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="bEscapeCallback = true" notes="" left="1279" top="175" right="1409" bottom="276" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="bEscapeCallback"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="34"/>
+        <ExitPath label="False" returnValue="0" targetStepID="35"/>
+      </ExitPaths>
+    </Step>
+    <Step id="34" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="sDigits = &quot;1&quot;" notes="" left="1503" top="85" right="1639" bottom="174" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="sDigits"/>
+        <Parameter name="RHS" value="&quot;1&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="6"/>
+      </ExitPaths>
+    </Step>
+    <Step id="35" type="Subroutine" creatorModule="" creatorName="NAllo_RTDS_Play" creatorVersion="" label="NAllo_RTDS_Play" notes="" left="1499" top="245" right="1639" bottom="334" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Interaction Id" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="List of String" typeLabel="List of String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="List of Prompts" value="lsPromptCBOffer" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="&quot;&quot;" defaultValIsVar="False" defaultValIsBlankStr="True" label="Valid Keys" value="&quot;12&quot;" index="2"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="&quot;&quot;" defaultValIsVar="False" defaultValIsBlankStr="True" label="Escape Keys" value="&quot;*&quot;" index="3"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="&quot;&quot;" defaultValIsVar="False" defaultValIsBlankStr="True" label="Termination Keys" value="&quot;#&quot;" index="4"/>
+        <Parameter required="True" isCustom="False" typeName="Integer" typeLabel="Integer" moduleName="" isInput="True" defaultVal="32" defaultValIsVar="False" defaultValIsBlankStr="False" label="Maximum Number of Keys" value="1" index="5"/>
+        <Parameter required="True" isCustom="False" typeName="Numeric" typeLabel="Numeric" moduleName="" isInput="True" defaultVal="0.0" defaultValIsVar="False" defaultValIsBlankStr="False" label="Timeout (seconds)" value="5.0" index="6"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="sDigits" defaultValIsVar="True" defaultValIsBlankStr="False" label="Keys" value="sDigits" index="7"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="sResult" defaultValIsVar="True" defaultValIsBlankStr="False" label="Result" value="sResult" index="8"/>
+        <Parameter required="True" isCustom="False" typeName="Boolean" typeLabel="Boolean" moduleName="" isInput="True" defaultVal="false" defaultValIsVar="False" defaultValIsBlankStr="False" label="Stop Play at Invalid Input" value="false" index="9"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="1" targetStepID="31"/>
+      </ExitPaths>
+    </Step>
+    <Step id="36" type="Tool" creatorModule="Telephony" creatorName="Get Attribute" creatorVersion="" label="Get &quot;ATTR_IsParticipate&quot;" notes="" left="254" top="144" right="468" bottom="233" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;ATTR_IsParticipate&quot;" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="False" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="sIsParticipate" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="37"/>
+      </ExitPaths>
+    </Step>
+    <Step id="37" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="StrEqlNoCase(sIsParticipate, &quot;true&quot;)" notes="" left="617" top="141" right="864" bottom="242" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="StrEqlNoCase(sIsParticipate, &quot;true&quot;)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="34"/>
+        <ExitPath label="False" returnValue="0" targetStepID="18"/>
+      </ExitPaths>
+    </Step>
+  </Steps>
+  <Variables>
+    <Variable name="Interaction1" initialValue="" boundGlobalVarID="" typeModule="Telephony" typeName="CallId" typeLabel="Call ID"/>
+    <Variable name="bEscapeCallback" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="lsPromptCBOffer" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_bResult" initialValue="" boundGlobalVarID="" typeModule="" typeName="Boolean" typeLabel="Boolean"/>
+    <Variable name="p_lsAttrNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_lsAttrValues" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="sDigits" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sIsParticipate" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+    <Variable name="sResult" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+  </Variables>
+</Handler>

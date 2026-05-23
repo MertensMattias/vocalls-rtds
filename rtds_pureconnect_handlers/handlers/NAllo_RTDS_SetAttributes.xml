@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Handler name="NAllo_RTDS_SetAttributes" description="" version="2.0" category="NAllo RTDS">
+  <Steps>
+    <Step id="0" isInitiator="True" type="Initiator" creatorModule="" creatorName="Subroutine" creatorVersion="" label="NAllo_RTDS_SetAttributes" notes="" left="82" top="70" right="270" bottom="159" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter label="Interaction Id" name="" defaultValue="Interaction1" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="Telephony" typeName="CallId" typeLabel="Call ID" value="Interaction1" index="0"/>
+        <Parameter label="Attribute Names" name="" defaultValue="lsAttrNames" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttrNames" index="1"/>
+        <Parameter label="Attribute Values" name="" defaultValue="lsAttrValues" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="True" typeModule="" typeName="List of String" typeLabel="List of String" value="p_lsAttrValues" index="2"/>
+        <Parameter label="Next Step" name="" defaultValue="sNextStep" defaultValueIsVariable="True" defaultValueIsBlankString="False" input="False" typeModule="" typeName="String" typeLabel="String" value="p_sNextStep" index="3"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Start" returnValue="1" targetStepID="7"/>
+      </ExitPaths>
+    </Step>
+    <Step id="1" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iIndex = 0" notes="" left="465" top="70" right="566" bottom="159" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iIndex"/>
+        <Parameter name="RHS" value="0"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="2"/>
+      </ExitPaths>
+    </Step>
+    <Step id="2" type="Tool" creatorModule="" creatorName="Condition" creatorVersion="" label="iIndex &lt; GetCount(p_lsAttrValues)" notes="" left="621" top="70" right="850" bottom="171" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="Condition" value="iIndex &lt; GetCount(p_lsAttrValues)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="True" returnValue="1" targetStepID="4"/>
+        <ExitPath label="False" returnValue="0"/>
+      </ExitPaths>
+    </Step>
+    <Step id="3" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="iIndex + 1" notes="" left="2140" top="180" right="2240" bottom="269" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="iIndex"/>
+        <Parameter name="RHS" value="iIndex + 1"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="2"/>
+      </ExitPaths>
+    </Step>
+    <Step id="4" type="Tool" creatorModule="" creatorName="Selection" creatorVersion="" label="Selection" notes="" left="890" top="70" right="1340" bottom="332" isParameterCollectionAvailable="False">
+      <ExitPaths>
+        <ExitPath label="StrEqlNoCase(GetAt(p_lsAttrNames, iIndex), &quot;Type&quot;)" returnValue="-1" targetStepID="3"/>
+        <ExitPath label="StrEqlNoCase(GetAt(p_lsAttrNames, iIndex), &quot;snCreated&quot;)" returnValue="-1" targetStepID="3"/>
+        <ExitPath label="StrEqlNoCase(GetAt(p_lsAttrNames, iIndex), &quot;snModified&quot;)" returnValue="-1" targetStepID="3"/>
+        <ExitPath label="StrEqlNoCase(GetAt(p_lsAttrNames, iIndex), &quot;NextStep&quot;)" returnValue="-1" targetStepID="5"/>
+        <ExitPath label="InStr(StrLower(&quot;Eic_&quot;), StrLower(GetAt(p_lsAttrNames, iIndex)))" returnValue="-1" targetStepID="10"/>
+        <ExitPath label="InStr(StrLower(&quot;RTDS_&quot;), StrLower(GetAt(p_lsAttrNames, iIndex)))" returnValue="-1" targetStepID="10"/>
+        <ExitPath label="InStr(StrLower(&quot;Custom_&quot;), StrLower(GetAt(p_lsAttrNames, iIndex)))" returnValue="-1" targetStepID="10"/>
+        <ExitPath label="InStr(StrLower(&quot;ATTR_&quot;), StrLower(GetAt(p_lsAttrNames, iIndex)))" returnValue="-1" targetStepID="10"/>
+        <ExitPath label="Default" returnValue="0" targetStepID="6"/>
+      </ExitPaths>
+    </Step>
+    <Step id="5" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_sNextStep" notes="" left="1790" top="170" right="1900" bottom="259" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="GetAt(p_lsAttrValues, iIndex)"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="3"/>
+      </ExitPaths>
+    </Step>
+    <Step id="6" type="Tool" creatorModule="Telephony" creatorName="Set Attribute" creatorVersion="" label="&quot;ATTR_&quot; &amp; GetAt(p_lsAttrNames, iIndex) = GetAt(p_lsAttrValues, iIndex)" notes="" left="1411" top="560" right="1821" bottom="649" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="&quot;ATTR_&quot; &amp; GetAt(p_lsAttrNames, iIndex)" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="GetAt(p_lsAttrValues, iIndex)" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="3"/>
+      </ExitPaths>
+    </Step>
+    <Step id="7" type="Tool" creatorModule="" creatorName="Assignment" creatorVersion="" label="p_NextStep = &quot;&quot;" notes="" left="301" top="70" right="432" bottom="159" isParameterCollectionAvailable="False">
+      <Parameters>
+        <Parameter name="LHS" value="p_sNextStep"/>
+        <Parameter name="RHS" value="&quot;&quot;"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="1"/>
+      </ExitPaths>
+    </Step>
+    <Step id="10" type="Tool" creatorModule="Telephony" creatorName="Set Attribute" creatorVersion="" label="GetAt(p_lsAttrNames, iIndex) = GetAt(p_lsAttrValues, iIndex)" notes="GetAt(p_lsAttrNames, iIndex)" left="1444" top="431" right="1854" bottom="520" isParameterCollectionAvailable="True">
+      <Parameters>
+        <Parameter required="True" isCustom="False" typeName="CallId" typeLabel="Call ID" moduleName="Telephony" isInput="True" defaultVal="Interaction1" defaultValIsVar="True" defaultValIsBlankStr="False" label="Call Identifier" value="Interaction1" index="0"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Name" value="GetAt(p_lsAttrNames, iIndex)" index="1"/>
+        <Parameter required="True" isCustom="False" typeName="String" typeLabel="String" moduleName="" isInput="True" defaultVal="" defaultValIsVar="False" defaultValIsBlankStr="False" label="Call Attribute Value" value="GetAt(p_lsAttrValues, iIndex)" index="2"/>
+      </Parameters>
+      <ExitPaths>
+        <ExitPath label="Next" returnValue="0" targetStepID="3"/>
+      </ExitPaths>
+    </Step>
+  </Steps>
+  <Variables>
+    <Variable name="Interaction1" initialValue="" boundGlobalVarID="" typeModule="Telephony" typeName="CallId" typeLabel="Call ID"/>
+    <Variable name="attributeNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="attributeValues" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="iIndex" initialValue="" boundGlobalVarID="" typeModule="" typeName="Integer" typeLabel="Integer"/>
+    <Variable name="p_lsAttrNames" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_lsAttrValues" initialValue="" boundGlobalVarID="" typeModule="" typeName="List of String" typeLabel="List of String"/>
+    <Variable name="p_sNextStep" initialValue="" boundGlobalVarID="" typeModule="" typeName="String" typeLabel="String"/>
+  </Variables>
+</Handler>

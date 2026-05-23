@@ -1,0 +1,293 @@
+# Operation Spec — guardRouting (GuardRouting)
+
+| Field              | Value                                                          |
+| ------------------ | -------------------------------------------------------------- |
+| Operation Type     | `GuardRouting`                                                 |
+| Component name     | `guardRouting`                                                 |
+| Pattern            | `http_call` + in-component dial loop (mocks telephony primitives) — see [operation_bodies/http_call.md](.claude/skills/vocalls-component-builder/references/operation_bodies/http_call.md) and [RTDS_runtime_spec.md](.claude/skills/vocalls-component-builder/references/RTDS_runtime_spec.md) |
+| Source handler     | `rtds_pureconnect_handlers/handlers/NAllo_RTDS_GuardRouting.xml` |
+| Target file        | `rtds_vocalls_operations/components/guardRouting.js`            |
+
+## Business purpose
+
+Route an inbound call to the on-call guard rota. The component fetches the active guard list from the Guard Module API, dials each guard in sequence until one accepts the call, optionally records a voicemail when nobody accepts, and prepares SMS/email notification content in shared session variables for downstream `sendSms` / `sendEmail` operations to consume. Almost all of the orchestration runs in JavaScript inside this component — only the four telephony primitives that JavaScript cannot perform (place an outbound leg, play a TTS prompt to a leg, capture DTMF on a leg, record audio from the inbound leg) are deferred to host-supplied runtime helpers.
+
+### Inputs (Params)
+
+| Param name           | Type    | Required | Default                                                  | Description                                                                                                       |
+| -------------------- | ------- | -------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `Active`             | boolean | no       | `false`                                                  | If falsy, the operation logs a skip and exits to `NextStep`. Universal across operations.                         |
+| `ConfigId`           | number  | yes      | —                                                        | ID of the guard configuration to fetch from the Guard Module API; determines which guard group is dialed.         |
+| `ConfigName`         | string  | yes      | —                                                        | Display name of the guard group; written as the header line in the SMS and email notification bodies.             |
+| `DialGuard`          | boolean | yes      | —                                                        | If true, the dial loop runs. If false, dialing is skipped and only the notification-prep stage runs.              |
+| `OutboundAni`        | string  | no       | `''`                                                     | Caller ID presented to guards on outbound legs; empty falls back to the line default.                             |
+| `Diversion`          | number  | no       | —                                                        | Optional SIP diversion header value applied to outbound legs for network-level routing on specific trunks.        |
+| `OnHoldAudioUrl`     | string  | no       | `https://audio-${environment}.n-allo.be/on-hold.wav`     | URL of the audio file played to the inbound caller while each guard is being dialed.                              |
+| `Timeout`            | number  | no       | `15`                                                     | Ring timeout per guard in seconds; if the guard does not answer in time, the next guard is tried.                 |
+| `RecordVoicemail`    | boolean | no       | `false`                                                  | If true and no guard accepts, the inbound caller is offered the option to leave a voicemail (max 60s, min 5s).    |
+| `AcceptCallMenu`     | boolean | no       | `false`                                                  | If true, the answering guard must press 1 to accept; otherwise the result is treated as declined.                 |
+| `AcceptCallMessage`  | string  | no       | —                                                        | TTS message played to the guard when `AcceptCallMenu` is true; required if `AcceptCallMenu` is true.              |
+| `SendSms`            | boolean | no       | `false`                                                  | If true, the component populates `rtSmsTo` / `rtSmsBody` after the dial loop for a downstream `sendSms`.          |
+| `SendMail`           | boolean | no       | `false`                                                  | If true, the component populates `rtEmailTo` / `rtEmailBody` after the dial loop for a downstream `sendEmail`.    |
+| `GuardApiUrl`        | string  | no       | `https://guardmoduleapi-${environment}.n-allo.be`        | Base URL of the Guard Module API; the guard-list path is appended at runtime.                                     |
+
+### Outputs
+
+| Branch key         | Taken when                                                                                                | Fallback |
+| ------------------ | --------------------------------------------------------------------------------------------------------- | -------- |
+| `NextStep`         | Operation is inactive — skipped. Also the default when all guards are tried without acceptance.            | `-1`     |
+| `NextStep_Failure` | Guard API call failed (network or non-200) or the active-guard list came back empty for the configured group. | `-1`     |
+| `NextStep_Success` | A guard accepted the inbound call (and pressed 1 when `AcceptCallMenu` was true).                          | `-1`     |
+
+If a guard accepts, the inbound call is transferred onto that guard's leg before the component returns — the `NextStep_Success` outcome fires only after the transfer is in place. When all guards fail to answer (or `DialGuard` is false), the component proceeds to the optional voicemail stage and notification-prep stage, then returns `NextStep`.
+
+### Shared session variables written
+
+The component reads existing values from `context.session.variables` and appends to them, so multiple guard groups can chain into a single SMS/email batch. The downstream `sendSms` / `sendEmail` operations consume these as-is.
+
+| Variable            | Written when                                                       | Description                                                                                                 |
+| ------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `rtSmsTo`           | `SendSms` is true                                                  | Semicolon-separated mobile numbers. The guard who accepted (if any) is excluded.                            |
+| `rtSmsBody`         | `SendSms` is true                                                  | SMS body: header line on the first leg, then one entry per dial attempt.                                    |
+| `rtEmailTo`         | `SendMail` is true                                                 | Semicolon-separated email addresses. All guards from `__rtGuards` are included regardless of outcome.       |
+| `rtEmailBody`       | `SendMail` is true                                                 | Email body, same structure as the SMS body.                                                                 |
+| `rtEmailAttachment` | `RecordVoicemail` is true and the recorded audio exceeded 5s.       | Path or reference to the voicemail recording for the downstream `sendEmail` to attach.                      |
+
+### External call
+
+| Field        | Value                                                                                |
+| ------------ | ------------------------------------------------------------------------------------ |
+| Base URL var | `getValue(__rtParams, 'GuardApiUrl', 'https://guardmoduleapi-${environment}.n-allo.be')` |
+| Endpoint     | `/api/Guards/GetAllCurrentActiveGuardsByGuardConfig/{ConfigId}`                       |
+| Method       | `GET`                                                                                |
+| Timeout      | 10000 ms                                                                             |
+
+Expected response — array of guard objects:
+
+```json
+[
+  {
+    "id": 109,
+    "name": "Mattias Mertens",
+    "phone": "0478306999",
+    "email": "mattias.mertens@n-allo.be",
+    "active": 1,
+    "activeFlag": true,
+    "dateActivated": "2026-03-26T17:06:51.177",
+    "dateDeactivated": "2026-03-26T15:14:24.5"
+  }
+]
+```
+
+Only `name`, `phone`, and `email` are used downstream. An empty array branches to `NextStep_Failure`.
+
+### Runtime primitives mocked by the host
+
+These four functions cannot be implemented in pure JavaScript inside the Script node — they are wrappers around platform telephony APIs that the Vocalls runtime injects. The component calls them as if they returned task objects (same `.then()` shape as `httpRequest`).
+
+| Helper                                              | Returns                                                                              | Purpose                                                                                                         |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| `dialGuard(phone, opts)`                            | task → `{ result: 'answered' \| 'no_answer' \| 'canceled' \| 'error', leg: <legId> }` | Place an outbound leg to `phone` with `{ ani, diversion, timeoutSec, onHoldAudioUrl }`. While the leg rings, `onHoldAudioUrl` plays to the inbound caller. Resolves once the leg either answers, times out, the inbound caller hangs up, or a SIP error occurs. |
+| `playTtsToLeg(legId, text)`                         | task → `{ done: true }`                                                              | Speak `text` to the guard leg (used for `AcceptCallMessage`).                                                   |
+| `awaitDtmfOnLeg(legId, digit, timeoutSec)`          | task → `{ pressed: true \| false }`                                                  | Wait for the guard to press `digit` (always `'1'`) within `timeoutSec`. Resolves false on timeout.              |
+| `recordVoicemailFromInbound(maxSec, minSec)`        | task → `{ recorded: boolean, ref: <string\|null> }`                                  | Offer the voicemail prompt to the inbound caller and record up to `maxSec`. `recorded` is true iff the audio exceeded `minSec`. |
+| `transferInboundToLeg(legId)`                       | task → `{ done: true }`                                                              | Bridge the inbound caller to the answered guard leg. After this resolves, the inbound caller is talking to the guard. |
+
+The component code below assumes these helpers exist. The component-builder skill will stub them as `function dialGuard(){ return { then: function(cb){ cb({ result: 'no_answer' }); } }; }` for local simulation, and the production Vocalls deploy wires them to the real telephony layer.
+
+### Work-body sketch
+
+Pattern: `http_call` for the Guard API fetch, then an in-JS dial loop (the loop walks the guard list serially via chained `.then()` calls — no `async`/`await` because the sandbox forbids it), then a `recordVoicemailFromInbound` task, then synchronous body assembly, then return.
+
+```js
+var __nextStep = getValue(__rtParams, 'NextStep', -1);
+if (!getValue(__rtParams, 'Active', false)) {
+    log_debug('[guardRouting] skipped — inactive (nextStep=' + __nextStep + ')');
+    context.session.variables.RTDS_nextStepId = __nextStep;
+    return 'guard_routing';
+}
+
+var __failureStep = getValue(__rtParams, 'NextStep_Failure', __nextStep);
+var __successStep = getValue(__rtParams, 'NextStep_Success', __nextStep);
+var __configName  = getValue(__rtParams, 'ConfigName', '');
+var __configId    = getValue(__rtParams, 'ConfigId');
+var __apiBase     = getValue(__rtParams, 'GuardApiUrl', 'https://guardmoduleapi-' + environment + '.n-allo.be');
+var __apiUrl      = __apiBase + '/api/Guards/GetAllCurrentActiveGuardsByGuardConfig/' + __configId;
+
+return httpRequest(__apiUrl, { method: 'GET', timeout: 10000 }).then(function (response) {
+    if (!response || response.statusCode !== 200) {
+        log_error('[guardRouting] guard API error (status=' + (response && response.statusCode) + ')');
+        context.session.variables.RTDS_nextStepId = __failureStep;
+        return 'guard_routing';
+    }
+
+    var __guards = JSON.parse(response.body);
+    if (!__guards || __guards.length === 0) {
+        log_warn('[guardRouting] no active guards found');
+        context.session.variables.RTDS_nextStepId = __failureStep;
+        return 'guard_routing';
+    }
+
+    var __guardLog = [];
+    var __answeringIndex = -1;
+
+    // Dial the guards one by one. Built as a chain of .then() calls
+    // because the sandbox has no async/await.
+    var __dialNext = function (__i) {
+        if (!getValue(__rtParams, 'DialGuard', false) || __i >= __guards.length) {
+            return { then: function (__cb) { __cb(); } };
+        }
+        var __g = __guards[__i];
+        return dialGuard(__g.phone, {
+            ani:            getValue(__rtParams, 'OutboundAni', ''),
+            diversion:      getValue(__rtParams, 'Diversion'),
+            timeoutSec:     getValue(__rtParams, 'Timeout', 15),
+            onHoldAudioUrl: getValue(__rtParams, 'OnHoldAudioUrl', 'https://audio-' + environment + '.n-allo.be/on-hold.wav')
+        }).then(function (__dial) {
+            var __outcome = __dial.result;
+            var __maybeAccept = { then: function (__cb) { __cb(__outcome); } };
+            if (__outcome === 'answered' && getValue(__rtParams, 'AcceptCallMenu', false)) {
+                __maybeAccept = playTtsToLeg(__dial.leg, getValue(__rtParams, 'AcceptCallMessage', '')).then(function () {
+                    return awaitDtmfOnLeg(__dial.leg, '1', getValue(__rtParams, 'Timeout', 15));
+                }).then(function (__dtmf) {
+                    return __dtmf && __dtmf.pressed ? 'answered' : 'declined';
+                });
+            }
+            return __maybeAccept.then(function (__finalOutcome) {
+                __guardLog.push({
+                    name:   __g.name,
+                    phone:  __g.phone,
+                    email:  __g.email,
+                    time:   nowUTC(),
+                    result: __finalOutcome
+                });
+                if (__finalOutcome === 'answered') {
+                    __answeringIndex = __i;
+                    return transferInboundToLeg(__dial.leg);
+                }
+                if (__finalOutcome === 'canceled') {
+                    // Inbound caller hung up — abandon further dialing.
+                    return { then: function (__cb) { __cb(); } };
+                }
+                return __dialNext(__i + 1);
+            });
+        });
+    };
+
+    return __dialNext(0).then(function () {
+        // Decide the post-loop branch.
+        if (__answeringIndex >= 0) {
+            log_debug('[guardRouting] guard accepted (nextStep=' + __successStep + ')');
+            context.session.variables.RTDS_nextStepId = __successStep;
+        } else {
+            log_debug('[guardRouting] all guards tried (nextStep=' + __nextStep + ')');
+            context.session.variables.RTDS_nextStepId = __nextStep;
+        }
+
+        // Voicemail stage — only when nobody accepted.
+        var __voicemail = { then: function (__cb) { __cb({ recorded: false, ref: null }); } };
+        if (getValue(__rtParams, 'RecordVoicemail', false) && __answeringIndex < 0) {
+            __voicemail = recordVoicemailFromInbound(60, 5);
+        }
+
+        return __voicemail.then(function (__vm) {
+            if (__vm.recorded) {
+                context.session.variables.rtEmailAttachment = __vm.ref;
+                log_debug('[guardRouting] voicemail recorded');
+            } else if (getValue(__rtParams, 'RecordVoicemail', false)) {
+                log_debug('[guardRouting] voicemail not recorded');
+            }
+
+            // Notification prep — pure synchronous string assembly.
+            if (getValue(__rtParams, 'SendSms', false)) {
+                __prepareSms(__guards, __guardLog, __answeringIndex, __configName, __vm.recorded);
+                log_debug('[guardRouting] SMS prepared');
+            }
+            if (getValue(__rtParams, 'SendMail', false)) {
+                __prepareEmail(__guards, __guardLog, __configName, __vm.recorded);
+                log_debug('[guardRouting] email prepared');
+            }
+
+            return 'guard_routing';
+        });
+    });
+}, function (__err) {
+    log_error('[guardRouting] guard API request error: ' + (__err && __err.message));
+    context.session.variables.RTDS_nextStepId = __failureStep;
+    return 'guard_routing';
+});
+```
+
+#### Helper: `__prepareSms`
+
+```js
+function __prepareSms(__guards, __guardLog, __answeringIndex, __configName, __vmRecorded) {
+    var __existingTo   = context.session.variables.rtSmsTo   || '';
+    var __existingBody = context.session.variables.rtSmsBody || '';
+    var __delta = '';
+
+    if (__existingBody === '') {
+        __delta += __configName + ' — inbound from ' + (context.session.variables.ani || '') + '\n\n';
+    }
+    for (var __i = 0; __i < __guardLog.length; __i++) {
+        var __e = __guardLog[__i];
+        __delta += 'To: '     + __e.name  + ' on mobile number: ' + __e.phone + '\n';
+        __delta += 'Time: '   + __e.time  + '\n';
+        __delta += 'Reason: ' + __e.result + '\n\n';
+    }
+    if (getValue(__rtParams, 'RecordVoicemail', false)) {
+        __delta += __vmRecorded
+            ? 'The caller recorded a voicemail, this is sent by mail.\n'
+            : 'The caller didn't record a voicemail.\n';
+    }
+
+    var __recipients = [];
+    for (var __j = 0; __j < __guards.length; __j++) {
+        if (__j !== __answeringIndex) { __recipients.push(__guards[__j].phone); }
+    }
+    var __joined = __recipients.join(';');
+
+    context.session.variables.rtSmsTo   = __existingTo   === '' ? __joined : __existingTo + ';' + __joined;
+    context.session.variables.rtSmsBody = __existingBody + __delta;
+}
+```
+
+#### Helper: `__prepareEmail`
+
+```js
+function __prepareEmail(__guards, __guardLog, __configName, __vmRecorded) {
+    var __existingTo   = context.session.variables.rtEmailTo   || '';
+    var __existingBody = context.session.variables.rtEmailBody || '';
+    var __delta = '';
+
+    if (__existingBody === '') {
+        __delta += __configName + ' — inbound from ' + (context.session.variables.ani || '') + '\n\n';
+    }
+    for (var __i = 0; __i < __guardLog.length; __i++) {
+        var __e = __guardLog[__i];
+        __delta += 'To: '     + __e.name  + ' on mobile number: ' + __e.phone + '\n';
+        __delta += 'Time: '   + __e.time  + '\n';
+        __delta += 'Reason: ' + __e.result + '\n\n';
+    }
+    if (getValue(__rtParams, 'RecordVoicemail', false)) {
+        __delta += __vmRecorded
+            ? 'The caller recorded a voicemail, you'll find the attachment below.\n'
+            : 'The caller didn't record a voicemail.\n';
+    }
+
+    var __recipients = [];
+    for (var __j = 0; __j < __guards.length; __j++) { __recipients.push(__guards[__j].email); }
+    var __joined = __recipients.join(';');
+
+    context.session.variables.rtEmailTo   = __existingTo   === '' ? __joined : __existingTo + ';' + __joined;
+    context.session.variables.rtEmailBody = __existingBody + __delta;
+}
+```
+
+### Open questions
+
+- The five mocked telephony helpers (`dialGuard`, `playTtsToLeg`, `awaitDtmfOnLeg`, `recordVoicemailFromInbound`, `transferInboundToLeg`) are presumed to be host-injected. Confirm the Vocalls Script-node runtime exposes these (or equivalents), and confirm the exact shape of each helper's task result. Where the names differ, rename in the component to match.
+- The `canceled` outcome from `dialGuard` indicates the inbound caller hung up mid-ring. The component currently abandons the loop and proceeds to the post-loop branch logic. Confirm this is desired — alternative is to short-circuit the entire return path because there's no caller left to route.
+- The component uses the call's ANI via `context.session.variables.ani` when seeding the notification header. Confirm that is the canonical source on this runtime — the in-repo memory note records `varObj.ani` as the live value, which may be exposed differently inside Script nodes.
+- The `Diversion` Param is passed into `dialGuard` opts as-is. If `null`, the helper must treat it as "omit the header" rather than as a literal value. Confirm.
+- This file currently lives at the repo root. The conventional location is `rtds_vocalls_operations/specs/guardRouting.spec.md` — move once that folder is created.
