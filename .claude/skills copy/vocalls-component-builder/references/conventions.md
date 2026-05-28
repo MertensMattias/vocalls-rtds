@@ -276,11 +276,12 @@ worked example with Logger calls already wired in.
 - **String quotes**: single quotes in JS source; encoded as `&apos;` in the
   XML attribute.
 - **Locals use `var`** — never `let`/`const`. The runtime is ES5.1.
-- **No arrow functions, no template literals** in component code. The
-  runtime is ES5.1 and additionally disables `new Function`/`eval` —
-  string-eval is what gives you "Eval of strings is disabled in this
-  runtime". For `${var}` substitution use `String.replace` (see §2.1);
-  for everything else, compute in plain JS.
+- **No arrow functions** in component code. **Template literals are allowed**
+  for string building (e.g. flow-variable endpoint paths in `main.js`).
+  The runtime disables `new Function`/`eval` — string-eval is what gives
+  you "Eval of strings is disabled in this runtime". For `${name}` Param
+  placeholders in `__configJSON`, use `String.replace` (see §2.1); that is
+  separate from JS template literals.
 
 ---
 
