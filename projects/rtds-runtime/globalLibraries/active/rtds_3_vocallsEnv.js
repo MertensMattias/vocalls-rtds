@@ -740,6 +740,42 @@ Logger = {
       );
     }
   },
+
+  /**
+   * Diagnostic dump of the env-layer config: the call-scoped varObj, the
+   * Logger's own config, the DEFAULT_LOGGED_KEYS list, and the three
+   * varObj.config.* sub-trees (routing / session / debug). Output goes
+   * through Logger.debug, so it only prints when activeLevel is DEBUG —
+   * call Logger.configure({ activeLevel: 'DEBUG' }) first if needed.
+   *
+   * Call from a Script node AFTER initializeCallFlowContext has run, or
+   * varObj is still the pre-init value. RTDS dispatch state is dumped
+   * separately by dumpRtdsState (rtds_2_runtime.js).
+   *
+   * @returns {void}
+   */
+  dumpConfig: function () {
+    if (!this.shouldLog("DEBUG")) return;
+    var vo = typeof varObj !== "undefined" ? varObj : null;
+    this.debug("[config] varObj | " + this.sanitizeForLog(vo, 10000));
+    this.debug(
+      "[config] Logger.config | " + this.sanitizeForLog(this.config, 10000),
+    );
+    var keys =
+      typeof DEFAULT_LOGGED_KEYS !== "undefined" ? DEFAULT_LOGGED_KEYS : null;
+    this.debug(
+      "[config] DEFAULT_LOGGED_KEYS | " + this.sanitizeForLog(keys, 2000),
+    );
+    this.debug(
+      "[config] routing | " + this.sanitizeForLog(getRoutingConfig(vo), 4000),
+    );
+    this.debug(
+      "[config] session | " + this.sanitizeForLog(getSessionConfig(vo), 4000),
+    );
+    this.debug(
+      "[config] debug | " + this.sanitizeForLog(getDebugConfig(vo), 4000),
+    );
+  },
 };
 
 // ============================================================================

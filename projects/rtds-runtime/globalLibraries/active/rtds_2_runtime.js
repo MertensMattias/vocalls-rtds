@@ -99,6 +99,67 @@ function getRtdsRegistry() {
   return out;
 }
 
+/**
+ * Diagnostic dump of the RTDS dispatch layer: the routing-table header
+ * fields parseFlow scattered onto context.session.variables, the registry
+ * snapshot, the live dispatcher/handoff state vars, the endpoint globals
+ * the runtime POSTs to, and the full operations list expanded out of the
+ * RTDS_opIndex Map (which JSON.stringify cannot serialise on its own).
+ *
+ * Output goes through Logger.debug, so it only prints when activeLevel is
+ * DEBUG. Call from a Script node AFTER fetchAndStart has resolved (the
+ * RTDS_* vars and opIndex only exist post-parseFlow); the handoff vars
+ * (RTDS_currentOpId / RTDS_nextStepId) only populate once runStep reaches a
+ * GUI op. Env-layer config (varObj, Logger.config) is dumped separately by
+ * Logger.dumpConfig (rtds_3_vocallsEnv.js).
+ *
+ * @returns {void}
+ */
+function dumpRtdsState() {
+  if (!Logger.shouldLog("DEBUG")) return;
+  var v = context.session.variables || {};
+
+  Logger.debug("[rtds] routing table", {
+    sourceId: v.RTDS_sourceId || null,
+    name: v.RTDS_name || null,
+    project: v.RTDS_project || null,
+    promptLibrary: v.RTDS_promptLibrary || null,
+    supportedLanguages: v.RTDS_supportedLanguages || null,
+  });
+
+  Logger.debug(
+    "[rtds] registry | " + Logger.sanitizeForLog(getRtdsRegistry(), 4000),
+  );
+
+  Logger.debug("[rtds] dispatcher state", {
+    currentOpId: v.RTDS_currentOpId || null,
+    currentOpType: v.RTDS_currentOpType || null,
+    nextStepId: v.RTDS_nextStepId || null,
+    error: v.RTDS_error || null,
+  });
+
+  Logger.debug("[rtds] endpoints", {
+    baseUrl: typeof _rtBaseUrl !== "undefined" ? _rtBaseUrl : null,
+    getSourceId:
+      typeof _rtGetSourceIdEndpoint !== "undefined"
+        ? _rtGetSourceIdEndpoint
+        : null,
+    sms: typeof _rtSmsEndpoint !== "undefined" ? _rtSmsEndpoint : null,
+    mail: typeof _rtMailEndpoint !== "undefined" ? _rtMailEndpoint : null,
+  });
+
+  var idx = v.RTDS_opIndex;
+  if (idx && typeof idx.forEach === "function") {
+    var ops = [];
+    idx.forEach(function (op) {
+      ops.push(op);
+    });
+    Logger.debug("[rtds] operations | " + Logger.sanitizeForLog(ops, 10000));
+  } else {
+    Logger.debug("[rtds] operations | (opIndex not built yet)");
+  }
+}
+
 // ===========================================================================
 // buildOpIndex(operations)
 //   Turns the Operations array into a Map keyed by Id so any operation can
@@ -165,6 +226,23 @@ function parseFlow(json) {
     entryPoint: firstOp.id + " (" + firstOp.name + ")",
     opCount: json.operations.length,
   });
+
+  // DEBUG-only init dump: the full routing table as received, the operation
+  // count, and the resolved first step. Logger.debug early-returns when
+  // activeLevel isn't DEBUG, so the full-table serialisation cost is skipped
+  // (and the trace stays quiet) in normal runs — guard before sanitising.
+  if (Logger.shouldLog("DEBUG")) {
+    Logger.debug(
+      "[RTDS] init | opCount=" +
+        json.operations.length +
+        " firstStep=" +
+        firstOp.id +
+        " (" +
+        firstOp.name +
+        ")",
+    );
+    Logger.debug("[RTDS] init | full table | " + Logger.sanitizeForLog(json, 20000));
+  }
   return firstOp;
 }
 
@@ -453,6 +531,22 @@ function runStep(startOpId) {
       name: current.name,
       kind: entry ? entry.kind : "unregistered",
     });
+
+    // DEBUG-only per-cycle dump of the operation's full params object. The
+    // INFO line above is the always-on summary; this adds the raw config the
+    // handler will read. Logger.debug early-returns when activeLevel isn't
+    // DEBUG, so this is silent (and the sanitize cost is skipped) in normal
+    // runs — see the shouldLog guard before paying for serialisation.
+    if (Logger.shouldLog("DEBUG")) {
+      Logger.debug(
+        "[RTDS] step params | id=" +
+          current.id +
+          " type=" +
+          type +
+          " | " +
+          Logger.sanitizeForLog(current.params, 10000),
+      );
+    }
 
     // Unregistered type — no real handler exists for this Type yet. Rather
     // than fail the leg, skip to the op's NextStep with a warning so the

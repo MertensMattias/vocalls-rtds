@@ -86,12 +86,13 @@
     <object
       label=""
       Type="dial"
-      OnEnter=""
+      OnEnter="Logger.debug(&#39;[rtds] result object: &#39; + JSON.stringify(result))"
       OnLeave=""
       MaxEntryCount=""
       MaxEntryNodeId=""
       DynamicNextId=""
       id="100"
+      DynamicNextTabGuid=""
     >
       <mxCell
         style="dialNode;strokeColor=#D1B73D;"
@@ -344,7 +345,7 @@
         parent="baselayer"
         vertex="1"
       >
-        <mxGeometry x="33" y="-1600" width="168" height="80" as="geometry" />
+        <mxGeometry x="33.5" y="-1630" width="168" height="80" as="geometry" />
       </mxCell>
     </object>
     <mxCell
@@ -1727,7 +1728,7 @@
         parent="baselayer"
         vertex="1"
       >
-        <mxGeometry x="780" y="-1440" width="188" height="96" as="geometry" />
+        <mxGeometry x="750" y="-1440" width="188" height="96" as="geometry" />
       </mxCell>
     </object>
     <object id="459">
@@ -1765,7 +1766,7 @@
       id="366"
     >
       <mxCell style="globalLibraryNode;" parent="baselayer" vertex="1">
-        <mxGeometry x="-270" y="-2250" width="180" height="60" as="geometry" />
+        <mxGeometry x="-340" y="-2400" width="180" height="60" as="geometry" />
       </mxCell>
     </object>
     <object label="rtds_1_globalConfig" id="367">
@@ -1782,7 +1783,7 @@
       id="368"
     >
       <mxCell style="globalLibraryNode;" parent="baselayer" vertex="1">
-        <mxGeometry x="-270" y="-2160" width="180" height="60" as="geometry" />
+        <mxGeometry x="-340" y="-2310" width="180" height="60" as="geometry" />
       </mxCell>
     </object>
     <object label="rtds_2_runtime" id="369">
@@ -1799,7 +1800,7 @@
       id="370"
     >
       <mxCell style="globalLibraryNode;" parent="baselayer" vertex="1">
-        <mxGeometry x="-270" y="-2070" width="180" height="60" as="geometry" />
+        <mxGeometry x="-340" y="-2220" width="180" height="60" as="geometry" />
       </mxCell>
     </object>
     <object label="rtds_3_vocallsEnv" id="371">
