@@ -123,10 +123,10 @@ describe('rtds-runtime main.js', function () {
                 delete sb.varObj.TestKey;
                 delete sb.TestKey;
                 sb.executeSetAttributes({
-                    Id: 'unit-1',
-                    Name: 'unit-setattrs',
-                    Type: 'SetAttributes',
-                    Params: { TestKey: 'TestValue', NextStep: '00001' }
+                    id: 'unit-1',
+                    name: 'unit-setattrs',
+                    type: 'SetAttributes',
+                    params: { TestKey: 'TestValue', NextStep: '00001' }
                 });
                 expect(sb.varObj.TestKey).toBe('TestValue');
                 expect(sb.TestKey).toBeUndefined();
@@ -286,7 +286,7 @@ describe('rtds-runtime main.js', function () {
                 sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
                 sb.registerRtdsOperation('AsyncProbe', function (op) {
                     return Promise.resolve({ nextStepId: '2' });
-                }, { isMock: false });
+                });
 
                 var ret = sb.runStep('1');
                 expect(typeof ret.then).toBe('function');
@@ -309,6 +309,53 @@ describe('rtds-runtime main.js', function () {
                 delete sb.varObj.scopedProbe;
                 expect(sb.getScoped('scopedProbe', null)).toBe('fromGlobal');
                 delete sb.scopedProbe;
+            });
+    });
+
+    it('runStep skips an unregistered op type to its NextStep with a warning', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                // Unregistered type 'Condition' (mock removed) → must skip to
+                // NextStep '2' (a GUI-exit op) rather than hard-disconnect.
+                var ops = [
+                    { id: '1', type: 'Condition', name: 'c', isFirstOperation: true, params: { NextStep: '2' } },
+                    { id: '2', type: 'PlayPrompt', name: 'p', params: {} }
+                ];
+                sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
+                expect(sb.RTDS_REGISTRY.has('Condition')).toBe(false);
+                expect(sb.runStep('1')).toBe('play_prompt');
+            });
+    });
+
+    it('runStep disconnects when an unregistered op has no NextStep', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                var ops = [
+                    { id: '1', type: 'Condition', name: 'c', isFirstOperation: true, params: {} }
+                ];
+                sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
+                expect(sb.runStep('1')).toBe('disconnect');
+            });
+    });
+
+    it('runStep breaks a cyclic NextStep chain among unregistered ops (no hang)', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                // 1 → 2 → 1 among unregistered types. Without the visited-set
+                // guard this would loop forever; it must disconnect instead.
+                var ops = [
+                    { id: '1', type: 'Condition', name: 'c1', isFirstOperation: true, params: { NextStep: '2' } },
+                    { id: '2', type: 'Schedule', name: 's1', params: { NextStep: '1' } }
+                ];
+                sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
+                expect(sb.runStep('1')).toBe('disconnect');
+                expect(sb.context.session.variables.RTDS_error).toBe('RTDS_CYCLE_DETECTED');
             });
     });
 });

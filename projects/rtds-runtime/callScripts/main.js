@@ -185,8 +185,6 @@ if (__isRepoRuntime && context && context.session) {
  *   'language_menu'      | LanguageMenu        | Vocalls `dtmf` primitive
  *   'workgroup_transfer' | WorkgroupTransfer   | built-in routing
  *   'external_transfer'  | ExternalTransfer    | Vocalls `redirect` primitive
- *   'send_sms'           | SendSMS             | components/sendSms.js
- *   'send_email'         | SendEmail           | components/sendMail.js
  *   'guard_routing'      | GuardRouting        | (TBD — production component)
  *   'guard_tui'          | GuardTUI            | components/guardTui.js
  *   'callback'           | Callback            | built-in scheduler
@@ -278,8 +276,10 @@ if (__isRepoRuntime && context && context.session) {
  *
  *   1. In rtds_2_runtime.js: add an executeXxx function above the
  *      registration block (returns { nextStepId }).
- *   2. Replace the type's mock registration with the real one:
- *          registerRtdsOperation('NewType', executeNewType, { isMock: false });
+ *   2. Register it:
+ *          registerRtdsOperation('NewType', executeNewType);
+ *      (An unregistered Type is skipped to its NextStep with a warning until
+ *      its handler is added.)
  *   3. No Designer changes — JS-handled types never reach the canvas.
  *
  * ============================================================================

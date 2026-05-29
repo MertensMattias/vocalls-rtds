@@ -14,7 +14,7 @@
  * Public surface (everything declared without var/let/const becomes global):
  *   - Object helpers: getOrDefault, isValidObject, getValue, getValueOrFalsy,
  *                     hasKey, findKey, walk, applyDefaults, getNestedValue,
- *                     nowUTC
+ *                     getScoped, nowUTC
  *   - varObj-shape readers: getRoutingConfig, getSessionConfig, getDebugConfig
  *   - Logger: Logger.debug / info / warn / error / API / configure
  *   - Lifecycle: initializeCallFlowContext(mode), storeSessionVariables()
@@ -203,6 +203,39 @@ function getNestedValue(obj, path) {
     }
   }
   return acc;
+}
+
+/**
+ * Reads operator-set call-scoped data with the RTDS scope contract:
+ * prefers varObj[key] (case-insensitive), falls back to exact-case
+ * global[key], then returns defaultValue. This is the single read path for
+ * attributes that SetAttributes / components write — see conventions/storage.md.
+ *
+ * @param {string} key
+ * @param {*}      defaultValue
+ * @returns {*}
+ */
+function getScoped(key, defaultValue) {
+  if (defaultValue === undefined) {
+    defaultValue = null;
+  }
+  if (!key) {
+    return defaultValue;
+  }
+  var vo = typeof varObj !== "undefined" ? varObj : null;
+  if (vo && hasKey(vo, key)) {
+    return getValue(vo, key, defaultValue);
+  }
+  var scope = null;
+  if (typeof global !== "undefined") {
+    scope = global;
+  } else if (typeof globalThis !== "undefined") {
+    scope = globalThis;
+  }
+  if (scope && scope[key] !== undefined && scope[key] !== null) {
+    return scope[key];
+  }
+  return defaultValue;
 }
 
 // ============================================================================

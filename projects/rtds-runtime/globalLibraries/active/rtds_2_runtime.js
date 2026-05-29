@@ -29,9 +29,9 @@
  *
  * Required platform globals (provided by rtds_3_vocallsEnv.js + Vocalls):
  *   log_debug, log_warn, log_error, jsonHttpRequest, _headers,
- *   _rtBaseUrl, _rtRoutingTableEndpoint
+ *   _rtBaseUrl, _rtGetSourceIdEndpoint
  *
- * ES5.1 — no let/const, no arrow functions, no template literals.
+ * ES5.1 — no let/const, no arrow functions. Template literals allowed.
  */
 
 // ===========================================================================
@@ -40,17 +40,14 @@
 //
 // Every operation Type in the catalogue is registered here, either as:
 //   - 'js'  kind: a JS handler that runs inline and returns { nextStepId }.
-//           Set isMock=true for fallback handlers that just advance the
-//           loop; isMock=false for real implementations.
+//           Only real implementations are registered — there are no mock
+//           advancers. A Type with no real handler yet stays unregistered,
+//           and runStep skips it to its NextStep with a warning.
 //   - 'gui' kind: a Vocalls GUI component reached via the matching exitKey.
 //           The runtime stops at these and hands the call off to the canvas.
 //
-// To plug in a new real handler, replace its mock with one line:
-//     registerRtdsOperation('Emergency', executeEmergency, { isMock: false });
-//
-// The runtime loop in runStep() does not branch on "real vs mock" —
-// everything dispatches uniformly. The isMock flag only drives a small
-// info-log so traces show when a leg walked through unimplemented terrain.
+// To plug in a new handler, add one line:
+//     registerRtdsOperation('NewType', executeNewType);
 //
 // RTDS_OPERATIONS and RTDS_EXIT_KEYS below are kept as **read-only views**
 // over RTDS_REGISTRY for back-compat with code that consulted them directly.
@@ -59,22 +56,15 @@ RTDS_REGISTRY = new Map();
 RTDS_OPERATIONS = new Map();
 RTDS_EXIT_KEYS = new Map();
 
-// Prefix used when mirroring op.params into context.session.variables before
-// handing off to a GUI-exit component.
-OP_VAR_PREFIX = "RTDS_OP_";
-
 /**
  * Registers a JS-handled operation Type. Replaces any existing registration.
  *
  * @param {string}   type    - Operation Type string (e.g. 'Emergency').
  * @param {Function} handler - function (op) -> { nextStepId: ?string }.
- * @param {Object}   [opts]
- * @param {boolean}  [opts.isMock=false] - True if this is a fallback advancer.
  * @returns {void}
  */
-function registerRtdsOperation(type, handler, opts) {
-  var isMock = !!(opts && opts.isMock);
-  RTDS_REGISTRY.set(type, { kind: "js", handler: handler, isMock: isMock });
+function registerRtdsOperation(type, handler) {
+  RTDS_REGISTRY.set(type, { kind: "js", handler: handler });
   RTDS_OPERATIONS.set(type, handler);
   RTDS_EXIT_KEYS.delete(type);
 }
@@ -89,7 +79,7 @@ function registerRtdsOperation(type, handler, opts) {
  * @returns {void}
  */
 function registerRtdsExit(type, exitKey) {
-  RTDS_REGISTRY.set(type, { kind: "gui", exitKey: exitKey, isMock: false });
+  RTDS_REGISTRY.set(type, { kind: "gui", exitKey: exitKey });
   RTDS_EXIT_KEYS.set(type, exitKey);
   RTDS_OPERATIONS.delete(type);
 }
@@ -103,60 +93,10 @@ function getRtdsRegistry() {
   RTDS_REGISTRY.forEach(function (entry, type) {
     out[type] = {
       kind: entry.kind,
-      isMock: entry.isMock,
       exitKey: entry.exitKey || null,
     };
   });
   return out;
-}
-
-/**
- * Factory for a JS mock handler. The returned function tries the supplied
- * branch keys in order (typically the "least disruptive" outcome first)
- * and falls back to 'NextStep'. Records the mock hit on
- * context.session.variables.RTDS_mockOpsHit.
- *
- * @param {string}        type        - The op Type the mock stands in for.
- * @param {Array<string>} branchKeys  - Ordered list of NextStep_* keys to try.
- * @returns {Function} A handler matching the executeXxx contract.
- */
-function __makeMockJsHandler(type, branchKeys) {
-  return function (op) {
-    var nextStepId = null;
-    for (var i = 0; i < branchKeys.length; i++) {
-      nextStepId = resolveNextStep(op, branchKeys[i]);
-      if (nextStepId) {
-        break;
-      }
-    }
-    if (!nextStepId) {
-      nextStepId = resolveNextStep(op, null);
-    }
-
-    Logger.info("[RTDS] mock " + type, {
-      opId: op.id,
-      chosenBranch: branchKeys[0] || "NextStep",
-      nextStep: nextStepId,
-    });
-    return { nextStepId: nextStepId };
-  };
-}
-
-// ===========================================================================
-// getRtdsGlobalScope()
-//   Returns the active global scope object. In real Vocalls this is the IVR's
-//   operational variable scope; in Node VM sandbox it's globalThis. Returns
-//   null if neither is reachable, in which case setGlobal falls back to a
-//   Function-based assignment.
-// ===========================================================================
-
-/**
- * @returns {?Object} Global scope object or null.
- */
-function getRtdsGlobalScope() {
-  if (typeof global !== "undefined") return global;
-  if (typeof globalThis !== "undefined") return globalThis;
-  return null;
 }
 
 // ===========================================================================
@@ -313,37 +253,11 @@ function getParam(op, name, fallback) {
 }
 
 // ===========================================================================
-// setGlobal(name, value)
-//   Writes a resolved param value to the operational global scope. Uses
-//   getRtdsGlobalScope() when reachable; falls back to a Function-based
-//   assignment so the runtime works inside Node VM sandboxes that don't
-//   expose `global`. Type is whatever JSON.parse produced — no coercion.
-// ===========================================================================
-
-/**
- * @param {string} name
- * @param {*}      value
- * @returns {void}
- */
-function setGlobal(name, value) {
-  if (value === null || value === undefined) {
-    return;
-  }
-  var scope = getRtdsGlobalScope();
-  if (scope) {
-    scope[name] = value;
-    return;
-  }
-  log_warn(
-    '[RTDS] setGlobal: no global scope available — "' + name + '" not set',
-  );
-}
-
-// ===========================================================================
 // resolveTokens(value)
-//   Replaces $(ATTR_NAME) tokens in a string with the current value. Lookup
-//   order: context.session.variables first, then global scope. Non-string
-//   values pass through unchanged. Unresolved tokens become empty string.
+//   Replaces $(ATTR_NAME) tokens in a string with the current value. Operator
+//   attributes resolve through getScoped (varObj → global); an RTDS_* token
+//   falls back to context.session.variables (the dispatcher namespace).
+//   Non-string values pass through unchanged. Unresolved tokens become "".
 // ===========================================================================
 
 /**
@@ -356,14 +270,25 @@ function resolveTokens(value) {
   }
 
   return value.replace(/\$\(([^)]+)\)/g, function (match, name) {
+    // RTDS_* tokens belong to the dispatcher namespace on
+    // context.session.variables (see conventions/storage.md). Resolve them
+    // there first so an operator-set varObj/global key of the same name can't
+    // shadow them. All other tokens resolve operator data via getScoped.
+    if (String(name).indexOf("RTDS_") === 0) {
+      var rtdsVal = context.session.variables[name];
+      if (rtdsVal !== undefined && rtdsVal !== null) {
+        return String(rtdsVal);
+      }
+      return "";
+    }
+
+    var scoped = getScoped(name, null);
+    if (scoped !== undefined && scoped !== null) {
+      return String(scoped);
+    }
     var sessionVal = context.session.variables[name];
     if (sessionVal !== undefined && sessionVal !== null) {
       return String(sessionVal);
-    }
-    var scope = getRtdsGlobalScope();
-    var globalVal = scope ? scope[name] : undefined;
-    if (globalVal !== undefined && globalVal !== null) {
-      return String(globalVal);
     }
     return "";
   });
@@ -396,9 +321,10 @@ function resolveNextStep(op, resultKey) {
 
 // ===========================================================================
 // executeSetAttributes(op)
-//   JS-handled operation. Writes Params into global via setGlobal. Handles
-//   LogAttributes as a debug side-effect (not stored). NextStep controls
-//   flow only and is never stored. Returns { nextStepId }.
+//   JS-handled operation. Writes each Param onto varObj (the call-scoped
+//   store — see conventions/storage.md). Handles LogAttributes as a debug
+//   side-effect (not stored), reading values through the getScoped contract.
+//   NextStep controls flow only and is never stored. Returns { nextStepId }.
 // ===========================================================================
 
 /**
@@ -425,44 +351,39 @@ function executeSetAttributes(op) {
       for (var j = 0; j < attrNames.length; j++) {
         var attrName = attrNames[j].replace(/^\s+|\s+$/g, "");
         if (attrName) {
-          var attrVal = context.session.variables[attrName];
-          if (attrVal === undefined || attrVal === null) {
-            var scope = getRtdsGlobalScope();
-            attrVal = scope ? scope[attrName] : undefined;
-          }
-          parts.push(
-            attrName +
-              "=" +
-              (attrVal !== undefined && attrVal !== null ? attrVal : ""),
-          );
+          var attrVal = getScoped(attrName, "");
+          parts.push(attrName + "=" + attrVal);
         }
       }
-      log_debug("[RTDS] LogAttributes: " + parts.join(" | "));
+      Logger.debug("[RTDS] LogAttributes", { attributes: parts.join(" | ") });
       continue;
     }
 
     var value = resolveTokens(getParam(op, key, null));
-    setGlobal(key, value);
+    if (value !== null && value !== undefined) {
+      varObj[key] = value;
+    }
   }
 
   var nextStepId = resolveNextStep(op, null);
-  log_debug(
-    '[RTDS] SetAttributes "' +
-      op.name +
-      '" done. NextStep=' +
-      (nextStepId ? nextStepId : "(none)"),
-  );
+  Logger.debug("[RTDS] SetAttributes done", {
+    opName: op.name,
+    nextStep: nextStepId ? nextStepId : "(none)",
+  });
   return { nextStepId: nextStepId };
 }
 
 // ===========================================================================
 // prepareGuiHandoff(op)
-//   Writes RTDS_OP_<Key> mirrors of op.params to context.session.variables so
-//   the matching GUI-exit component can read its config. Sets
-//   RTDS_currentOpId / RTDS_currentOpType. Pre-populates RTDS_nextStepId with
-//   the default NextStep; the component overwrites this with its chosen
-//   branching outcome before re-entry. Old RTDS_OP_* keys from a prior step
-//   are wiped first so a missing Param doesn't leak through.
+//   Sets the dispatcher handoff state on context.session.variables:
+//   RTDS_currentOpId / RTDS_currentOpType, and pre-populates RTDS_nextStepId
+//   with the default NextStep (the component overwrites it with its chosen
+//   branching outcome before re-entry).
+//
+//   The runtime does NOT mirror op.params into session variables. Each GUI
+//   component is the source of truth for its own config (Style A components
+//   parse their __configJSON via __setupConfig). See the GUI DISPATCH PLAYBOOK
+//   in callScripts/main.js §6.
 // ===========================================================================
 
 /**
@@ -471,21 +392,6 @@ function executeSetAttributes(op) {
  */
 function prepareGuiHandoff(op) {
   var vars = context.session.variables;
-
-  var oldKeys = Object.keys(vars);
-  for (var k = 0; k < oldKeys.length; k++) {
-    if (oldKeys[k].indexOf(OP_VAR_PREFIX) === 0) {
-      delete vars[oldKeys[k]];
-    }
-  }
-
-  if (op.params) {
-    var keys = Object.keys(op.params);
-    for (var i = 0; i < keys.length; i++) {
-      var key = keys[i];
-      vars[OP_VAR_PREFIX + key] = resolveTokens(getParam(op, key, null));
-    }
-  }
 
   vars.RTDS_currentOpId = op.id;
   vars.RTDS_currentOpType = op.type;
@@ -517,7 +423,20 @@ function runStep(startOpId) {
 
   var currentId = startOpId ? String(startOpId) : null;
 
+  // Guards the synchronous dispatch loop against cyclic NextStep chains
+  // (e.g. an unimplemented step whose NextStep points back at itself or forms
+  // a loop among unregistered/registered steps). Without this a cycle spins
+  // forever and hangs the call leg with no disconnect.
+  var visited = {};
+
   while (currentId) {
+    if (visited[currentId]) {
+      log_error("[RTDS] runStep: cycle detected at step " + currentId);
+      context.session.variables.RTDS_error = "RTDS_CYCLE_DETECTED";
+      return "disconnect";
+    }
+    visited[currentId] = true;
+
     var current = opIndex.get(currentId);
 
     if (!current) {
@@ -533,24 +452,28 @@ function runStep(startOpId) {
       type: type,
       name: current.name,
       kind: entry ? entry.kind : "unregistered",
-      isMock: entry ? entry.isMock : false,
     });
 
-    // Unregistered type — should be impossible if the registration block
-    // at the bottom of this file covers the catalogue. Treat as an error.
+    // Unregistered type — no real handler exists for this Type yet. Rather
+    // than fail the leg, skip to the op's NextStep with a warning so the
+    // flow keeps moving. When the type's handler is later implemented and
+    // registered, this branch stops being taken.
     if (!entry) {
-      log_error(
-        '[RTDS] runStep: type "' +
-          type +
-          '" not in RTDS_REGISTRY at step ' +
-          current.id,
-      );
-      context.session.variables.RTDS_error =
-        "Unregistered operation type: " + type;
-      return "disconnect";
+      var skipTo = resolveNextStep(current, null);
+      Logger.warn("[RTDS] unimplemented operation type — skipping", {
+        type: type,
+        step: current.id,
+        nextStep: skipTo,
+      });
+      if (!skipTo) {
+        Logger.info("[RTDS] end of flow", { lastStep: current.id });
+        return "disconnect";
+      }
+      currentId = String(skipTo);
+      continue;
     }
 
-    // JS-handled operation (real or mock).
+    // JS-handled operation.
     if (entry.kind === "js") {
       var result;
       try {
@@ -662,22 +585,10 @@ function resumeFrom(nextStepId) {
 // fetchAndStart(sourceId)
 //   Entry A — fetches the routing table for sourceId, parses it, and routes
 //   to the entry-point operation. Used by the initial Script node on every
-//   call. Endpoint shape: _rtBaseUrl + _rtRoutingTableEndpoint + sourceId.
+//   call. Endpoint shape: _rtBaseUrl + _rtGetSourceIdEndpoint + sourceId.
 //   Both globals must be set by the platform-init layer before this runs.
 // ===========================================================================
 
-/**
- * @param {string} sourceId
- * @returns {Promise<string>|string} Exit key (or a promise resolving to one).
- */
-/**
- * @param {string} sourceId
- * @returns {Promise<string>|string} Exit key (or a promise resolving to one).
- */
-/**
- * @param {string} sourceId
- * @returns {Promise<string>|string} Exit key (or a promise resolving to one).
- */
 /**
  * @param {string} sourceId
  * @returns {Promise<string>|string} Exit key (or a promise resolving to one).
@@ -756,192 +667,15 @@ function fetchAndStart(sourceId) {
 }
 
 // ===========================================================================
-// executeCondition(op)
-//   JS-handled. Evaluates a numeric predicate against a per-workgroup stat
-//   table. Reads Statistic, Workgroup, Operator, Value. Branches via
-//   NextStep_True / NextStep_False.
-//
-//   Live source in production: queue-stat API (CallsWaiting, AgentsLoggedIn).
-//   In this example: the dev-only global _devStatistics[Workgroup][Statistic]
-//   stands in. Returning the same { nextStepId } shape keeps the swap point
-//   confined to the stat lookup.
+// Condition / Emergency / Schedule / FlowJump
+//   Not implemented yet. These previously shipped as mock handlers that read
+//   dev-fixture globals (_devStatistics, _devEmergencyOutcomes,
+//   _devScheduleStates, _devFixtures) and picked a defensible branch. The
+//   mocks and their fixture-reading bodies have been removed; until each has
+//   a real data source wired in, the Type stays unregistered and runStep
+//   skips it to NextStep with a warning. Re-add an executeXxx here (returning
+//   { nextStepId }) plus a registerRtdsOperation line below when implementing.
 // ===========================================================================
-
-/**
- * @param {Object} op
- * @returns {{ nextStepId: ?string }}
- */
-function executeCondition(op) {
-  var statistic = getParam(op, "Statistic", "");
-  var workgroup = getParam(op, "Workgroup", "");
-  var operator = String(getParam(op, "Operator", "eq")).toLowerCase();
-  var rawValue = getParam(op, "Value", 0);
-  var threshold = Number(rawValue);
-
-  var liveValue = null;
-  var stats = typeof _devStatistics !== "undefined" ? _devStatistics : null;
-  if (stats && stats[workgroup] && stats[workgroup][statistic] !== undefined) {
-    liveValue = Number(stats[workgroup][statistic]);
-  }
-
-  var predicate = false;
-  if (liveValue === null || isNaN(liveValue) || isNaN(threshold)) {
-    log_warn(
-      "[RTDS] Condition: missing stat value | workgroup=" +
-        workgroup +
-        " statistic=" +
-        statistic,
-    );
-  } else {
-    if (operator === "gt") predicate = liveValue > threshold;
-    else if (operator === "lt") predicate = liveValue < threshold;
-    else if (operator === "ge") predicate = liveValue >= threshold;
-    else if (operator === "le") predicate = liveValue <= threshold;
-    else if (operator === "eq") predicate = liveValue === threshold;
-    else if (operator === "ne") predicate = liveValue !== threshold;
-    else {
-      log_warn(
-        '[RTDS] Condition: unknown operator "' +
-          operator +
-          '" — treating as false',
-      );
-    }
-  }
-
-  var nextStepId = resolveNextStep(
-    op,
-    predicate ? "NextStep_True" : "NextStep_False",
-  );
-  Logger.info("[RTDS] Condition", {
-    workgroup: workgroup,
-    statistic: statistic,
-    operator: operator,
-    threshold: threshold,
-    live: liveValue,
-    predicate: predicate,
-    nextStep: nextStepId,
-  });
-  return { nextStepId: nextStepId };
-}
-
-// ===========================================================================
-// executeEmergency(op)
-//   JS-handled. Reads EmergencyId, consults the outcome table for that id,
-//   branches via NextStep_<outcome> where outcome is one of:
-//     Transfer | Disconnect | Continue | Failure
-//   Default outcome when no entry is present: 'Continue' (least disruptive).
-//
-//   Live source in production: emergency-config API. In this example:
-//   _devEmergencyOutcomes[EmergencyId].
-// ===========================================================================
-
-/**
- * @param {Object} op
- * @returns {{ nextStepId: ?string }}
- */
-function executeEmergency(op) {
-  if (!getParam(op, "Active", false)) {
-    var skipNext = resolveNextStep(op, null);
-    Logger.info("[RTDS] Emergency skipped — inactive", { nextStep: skipNext });
-    return { nextStepId: skipNext };
-  }
-
-  var emergencyId = getParam(op, "EmergencyId", "");
-  var outcomes =
-    typeof _devEmergencyOutcomes !== "undefined" ? _devEmergencyOutcomes : {};
-  var outcome = outcomes[emergencyId] || "Continue";
-
-  var nextStepId = resolveNextStep(op, "NextStep_" + outcome);
-  if (!nextStepId) {
-    nextStepId = resolveNextStep(op, null);
-  }
-
-  Logger.info("[RTDS] Emergency", {
-    emergencyId: emergencyId,
-    outcome: outcome,
-    nextStep: nextStepId,
-  });
-  return { nextStepId: nextStepId };
-}
-
-// ===========================================================================
-// executeSchedule(op)
-//   JS-handled. Reads ScheduleID, consults the state table, branches via
-//   NextStep_<state> where state is operator-defined (Open, Closed,
-//   Guard_ICT, Transfer, …). Falls back to NextStep on unknown state.
-//
-//   Live source in production: scheduler API. In this example:
-//   _devScheduleStates[ScheduleID].
-// ===========================================================================
-
-/**
- * @param {Object} op
- * @returns {{ nextStepId: ?string }}
- */
-function executeSchedule(op) {
-  var scheduleId = String(getParam(op, "ScheduleID", ""));
-  var states =
-    typeof _devScheduleStates !== "undefined" ? _devScheduleStates : {};
-  var state = states[scheduleId] || "";
-
-  var branchKey = state ? "NextStep_" + state : null;
-  var nextStepId = branchKey ? resolveNextStep(op, branchKey) : null;
-  if (!nextStepId) {
-    nextStepId = resolveNextStep(op, "NextStep_Failure");
-  }
-  if (!nextStepId) {
-    nextStepId = resolveNextStep(op, null);
-  }
-
-  Logger.info("[RTDS] Schedule", {
-    scheduleId: scheduleId,
-    state: state || "(no fixture)",
-    nextStep: nextStepId,
-  });
-  return { nextStepId: nextStepId };
-}
-
-// ===========================================================================
-// executeFlowJump(op)
-//   JS-handled. Replaces the current op index with the routing table for a
-//   different SourceId, then returns the first op of the new flow so the
-//   outer runStep loop continues seamlessly into it.
-//
-//   Live source in production: fetchAndStart(sourceId) → parseFlow. In this
-//   example: _devFixtures[sourceId] holds the routing-table JSON. When no
-//   fixture is registered, the handler returns null (runStep treats that as
-//   end-of-flow and routes the call to disconnect).
-// ===========================================================================
-
-/**
- * @param {Object} op
- * @returns {{ nextStepId: ?string }}
- */
-function executeFlowJump(op) {
-  var sourceId = getParam(op, "SourceId", "");
-  if (!sourceId) {
-    log_error("[RTDS] FlowJump: missing SourceId");
-    return { nextStepId: null };
-  }
-
-  var fixtures = typeof _devFixtures !== "undefined" ? _devFixtures : null;
-  var nextFlow = fixtures ? fixtures[sourceId] : null;
-  if (!nextFlow) {
-    log_warn(
-      "[RTDS] FlowJump: no fixture for sourceId " + sourceId + " — ending leg",
-    );
-    context.session.variables.RTDS_error =
-      "RTDS_FLOWJUMP_NO_FIXTURE_" + sourceId;
-    return { nextStepId: null };
-  }
-
-  Logger.info("[RTDS] FlowJump", { sourceId: sourceId });
-  var firstOp = parseFlow(nextFlow);
-  if (!firstOp) {
-    return { nextStepId: null };
-  }
-  return { nextStepId: firstOp.id };
-}
 
 // ===========================================================================
 // executeSendSms(op)  /  executeSendEmail(op)
@@ -1062,6 +796,13 @@ function executeSendSms(op) {
   var failureNext = resolveNextStep(op, "NextStep_Failure") || skipNext;
   var successNext = resolveNextStep(op, "NextStep_Success") || skipNext;
 
+  if (typeof _rtSmsEndpoint === "undefined" || !_rtSmsEndpoint) {
+    Logger.error("[RTDS] SendSMS endpoint not configured", {
+      nextStep: failureNext,
+    });
+    return { nextStepId: failureNext };
+  }
+
   var url = _rtBaseUrl + _rtSmsEndpoint;
   var timeout = Number(getParam(op, "Timeout", 10000)) || 10000;
   var payload = {
@@ -1075,9 +816,12 @@ function executeSendSms(op) {
 
   if (typeof _headers === "undefined" || !_headers) _headers = {};
 
-  return jsonHttpRequest(url, { method: "POST", timeout: timeout }, _headers, payload)
-    .withTimeout(timeout)
-    .then(
+  return jsonHttpRequest(
+    url,
+    { method: "POST", timeout: timeout },
+    _headers,
+    payload,
+  ).then(
       function (result) {
         if (result && result.success === true) {
           Logger.info("[RTDS] SendSMS success", { nextStep: successNext });
@@ -1090,7 +834,11 @@ function executeSendSms(op) {
         return { nextStepId: failureNext };
       },
       function (err) {
-        Logger.error("[RTDS] SendSMS request error", { nextStep: failureNext }, err);
+        Logger.error(
+          "[RTDS] SendSMS request error",
+          { nextStep: failureNext },
+          err,
+        );
         return { nextStepId: failureNext };
       },
     );
@@ -1125,6 +873,13 @@ function executeSendEmail(op) {
   var failureNext = resolveNextStep(op, "NextStep_Failure") || skipNext;
   var successNext = resolveNextStep(op, "NextStep_Success") || skipNext;
 
+  if (typeof _rtMailEndpoint === "undefined" || !_rtMailEndpoint) {
+    Logger.error("[RTDS] SendEmail endpoint not configured", {
+      nextStep: failureNext,
+    });
+    return { nextStepId: failureNext };
+  }
+
   var priority = Number(getParam(op, "Priority", 2));
   if (priority !== 1 && priority !== 2 && priority !== 3) priority = 2;
 
@@ -1147,10 +902,9 @@ function executeSendEmail(op) {
     getParam(op, "AttachmentData", ""),
   );
   if (attachments.length) payload.attachments = attachments;
-  var customerKey = String(resolveTokens(getParam(op, "CustomerKey", ""))).replace(
-    /^\s+|\s+$/g,
-    "",
-  );
+  var customerKey = String(
+    resolveTokens(getParam(op, "CustomerKey", "")),
+  ).replace(/^\s+|\s+$/g, "");
   if (customerKey) payload.customerKey = customerKey;
 
   var url = _rtBaseUrl + _rtMailEndpoint;
@@ -1158,9 +912,12 @@ function executeSendEmail(op) {
 
   if (typeof _headers === "undefined" || !_headers) _headers = {};
 
-  return jsonHttpRequest(url, { method: "POST", timeout: timeout }, _headers, payload)
-    .withTimeout(timeout)
-    .then(
+  return jsonHttpRequest(
+    url,
+    { method: "POST", timeout: timeout },
+    _headers,
+    payload,
+  ).then(
       function (result) {
         if (result && result.success === true) {
           Logger.info("[RTDS] SendEmail success", { nextStep: successNext });
@@ -1173,7 +930,11 @@ function executeSendEmail(op) {
         return { nextStepId: failureNext };
       },
       function (err) {
-        Logger.error("[RTDS] SendEmail request error", { nextStep: failureNext }, err);
+        Logger.error(
+          "[RTDS] SendEmail request error",
+          { nextStep: failureNext },
+          err,
+        );
         return { nextStepId: failureNext };
       },
     );
@@ -1182,55 +943,24 @@ function executeSendEmail(op) {
 // ===========================================================================
 // REGISTRATION — wires every catalogue Type into RTDS_REGISTRY.
 //
-// Real handlers (defined above) register with isMock=false. Mocks use
-// __makeMockJsHandler with an ordered list of NextStep_* keys to try.
-// To promote a mock to a real handler:
+// Only real handlers are registered. A Type with no real handler yet is left
+// unregistered; runStep skips it to its NextStep with a warning (see the
+// "unimplemented operation type" branch in runStep). To add one:
 //   1. Implement executeXxx above (returns { nextStepId }).
-//   2. Replace its registerRtdsOperation line below with the real handler
-//      and { isMock: false }.
+//   2. Add a registerRtdsOperation('Type', executeXxx) line below.
 // The runtime loop is untouched in either case.
 // ===========================================================================
 
 // --- Real JS handlers ---
-// SetAttributes is the only fully production-implemented handler in this
-// project. The other four (Condition / Emergency / Schedule / FlowJump)
-// have function bodies defined further up the file, but they read from
-// dev-fixture globals (_devStatistics etc.) which only exist in the
-// development project. Until each one has a real data-source wired in,
-// they ship as MOCKS — promoting one is a single-line edit below.
-registerRtdsOperation("SetAttributes", executeSetAttributes, { isMock: false });
-
-// SendSMS / SendEmail run inline as async JS handlers (POST to the RTDS
-// gateway, branch on the response). They were previously GUI-exit types that
-// handed off to the canvas components in rtds_vocalls_operations/components/;
-// the function versions keep the same payload + branch contract.
-registerRtdsOperation("SendSMS", executeSendSms, { isMock: false });
-registerRtdsOperation("SendEmail", executeSendEmail, { isMock: false });
-
-// --- JS-side mocks ---
-// Each mock picks the most defensible NextStep_<key> branch so the loop
-// keeps advancing. Promote any of these to a real handler by editing its
-// line to reference the executeXxx function above with { isMock: false }.
-registerRtdsOperation(
-  "Emergency",
-  __makeMockJsHandler("Emergency", ["NextStep_Continue"]),
-  { isMock: true },
-);
-registerRtdsOperation(
-  "Schedule",
-  __makeMockJsHandler("Schedule", ["NextStep_Open"]),
-  { isMock: true },
-);
-registerRtdsOperation(
-  "Condition",
-  __makeMockJsHandler("Condition", ["NextStep_True"]),
-  { isMock: true },
-);
-registerRtdsOperation(
-  "FlowJump",
-  __makeMockJsHandler("FlowJump", []), // no NextStep_* keys — ends the leg
-  { isMock: true },
-);
+// SetAttributes writes operator attributes onto varObj. SendSMS / SendEmail
+// run inline as async JS handlers (POST to the RTDS gateway, branch on the
+// response) — same payload + branch contract as the canvas components in
+// rtds_vocalls_operations/components/. Condition / Emergency / Schedule /
+// FlowJump are NOT registered yet: they need real data sources wired in and
+// will be added back with correct implementations.
+registerRtdsOperation("SetAttributes", executeSetAttributes);
+registerRtdsOperation("SendSMS", executeSendSms);
+registerRtdsOperation("SendEmail", executeSendEmail);
 
 // --- GUI-exit Types — handled by Vocalls components on the canvas ---
 registerRtdsExit("WorkgroupTransfer", "workgroup_transfer");
@@ -1246,17 +976,10 @@ registerRtdsExit("Callback", "callback");
 
 Logger.info("[RTDS] registry initialised", {
   types: RTDS_REGISTRY.size,
-  jsReal: (function () {
+  js: (function () {
     var n = 0;
     RTDS_REGISTRY.forEach(function (e) {
-      if (e.kind === "js" && !e.isMock) n++;
-    });
-    return n;
-  })(),
-  jsMock: (function () {
-    var n = 0;
-    RTDS_REGISTRY.forEach(function (e) {
-      if (e.kind === "js" && e.isMock) n++;
+      if (e.kind === "js") n++;
     });
     return n;
   })(),
