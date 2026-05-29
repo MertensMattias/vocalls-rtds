@@ -42,7 +42,7 @@ Self-service guard administration line. A guard calls in, the operation checks w
 
 ### External calls
 
-This component makes **three** HTTP calls in sequence:
+This component makes up to **four** HTTP calls in sequence (two up-front, then one of activate/deactivate per menu pick):
 
 | Step             | Method | URL shape                                                                | Purpose                                                                |
 | ---------------- | ------ | ------------------------------------------------------------------------ | ---------------------------------------------------------------------- |

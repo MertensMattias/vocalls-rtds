@@ -1,0 +1,16 @@
+# Test patterns
+
+**Scope:** [Test] · **Answers:** *How do I seed routing-table data? What does runScript return? How do I assert on varObj?*
+
+- Tests live next to their target: `projects/<name>/tests/main.test.js`.
+- Use the harness in [core/testHelpers.js](../core/testHelpers.js) (`runScript`, `runAction`).
+- Routing-table stubs use **camelCase** matching the API contract: `id`, `type`, `params`, `isFirstOperation`. See [casing.md](casing.md).
+- Sandbox assertions check the same shape: `result.sandbox.varObj.X`, not `result.sandbox.X`, for any RTDS-set value. See [storage.md](storage.md).
+- For unit-level checks of JS handlers, call the handler directly on the returned sandbox: `result.sandbox.executeSetAttributes({ id, type, params, ... })` — same camelCase.
+- Map identity uses duck-typing (`typeof m.get === 'function'`), not `instanceof Map` (cross-realm Maps).
+
+## Reflect on
+
+- **[grep]** Does the test seed routing-table data in camelCase?
+- **[grep]** Does it assert on `varObj.X` rather than top-level sandbox?
+- **[grep]** Are op fixtures using `id`/`type`/`params` (camelCase) and Param keys in PascalCase?

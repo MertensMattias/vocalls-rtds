@@ -1,0 +1,29 @@
+# ES5.1 sandbox constraints
+
+**Scope:** [All] · **Answers:** *What JS syntax can I use? What's forbidden? Why?*
+
+The Vocalls runtime is ES5.1, with two extras explicitly enabled by project policy.
+
+## Allowed
+
+- `var`, function declarations, function expressions.
+- Regular expressions.
+- **Template literals** (enabled by the May 2026 update — see CLAUDE.md conventions section).
+
+## Forbidden
+
+- `let`, `const`, arrow functions, classes.
+- `async` / `await`, generators, `for...of`.
+- Destructuring, spread / rest, default args.
+- `Promise.all` — use native `.then` chains instead.
+
+## Forbidden — string-eval
+
+- `new Function(...)`, `eval(...)`. The runtime disables these. Use `String.replace` for substitution.
+
+This applies to **everything** — runtime libraries, components (the JS inside XML attributes), test helpers. ES5.1 is the floor.
+
+## Reflect on
+
+- **[grep]** Any `let` / `const` / `=>` / `async` / `await` / `...` / `{ a, b } = obj`?
+- **[grep]** Any `new Function(...)` or `eval(...)`?

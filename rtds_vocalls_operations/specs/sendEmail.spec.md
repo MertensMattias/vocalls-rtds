@@ -79,15 +79,53 @@ if (!_headers) { _headers = {}; }
 Logger.debug('[sendMail] config resolved', { params: __rtParams });
 ```
 
-`script` (work body) — see the existing component at `rtds_vocalls_operations/components/sendMail.js` line 85. The body:
+`script` (work body):
 
-1. Pre-assigns `NextStep` as the skip outcome.
-2. Skips on inactive.
-3. Validates `From` is non-empty and `To` parses into a non-empty list (both → log warn + return on `NextStep`).
-4. Pre-assigns `NextStep_Failure` before the network call.
-5. Builds Cc / Bcc / Files / Attachments / CustomerKey conditionally — only adds the key to the payload when non-empty.
-6. Coerces `Priority` to `1|2|3`, defaulting invalid values to `2`.
-7. Issues `jsonHttpRequest`. Success branch on `result.success === true`; otherwise `Logger.warn` + leave the failure default; transport error → `Logger.error`.
+```js
+global[_rtNextStep] = getValue(__rtParams, 'NextStep', -1);
+
+if (!getValue(__rtParams, 'Active', false)) {
+    Logger.info('[sendMail] skipped — inactive', { nextStep: global[_rtNextStep] });
+    return;
+}
+
+var __from = String(getValue(__rtParams, 'From', '')).trim();
+var __to = __splitSemicolonList(getValue(__rtParams, 'To', ''));
+if (!__from || __to.length === 0) {
+    Logger.warn('[sendMail] missing From or To', { from: __from, toCount: __to.length, nextStep: global[_rtNextStep] });
+    return;
+}
+
+global[_rtNextStep] = getValue(__rtParams, 'NextStep_Failure', -1);
+
+var __priority = Number(getValue(__rtParams, 'Priority', 2));
+if (__priority !== 1 && __priority !== 2 && __priority !== 3) __priority = 2;
+
+var __payload = { from: __from, subject: getValue(__rtParams, 'Subject', ''), to: __to, body: getValue(__rtParams, 'Body', ''), priority: __priority };
+var __cc          = __splitSemicolonList(getValue(__rtParams, 'Cc', ''));          if (__cc.length)          __payload.cc          = __cc;
+var __bcc         = __splitSemicolonList(getValue(__rtParams, 'Bcc', ''));         if (__bcc.length)         __payload.bcc         = __bcc;
+var __files       = __resolveFilesList(getValue(__rtParams, 'Files', ''));         if (__files.length)       __payload.files       = __files;
+var __attachments = __buildAttachments(getValue(__rtParams, 'AttachmentNames', ''), getValue(__rtParams, 'AttachmentData', ''));
+if (__attachments.length) __payload.attachments = __attachments;
+var __customerKey = String(getValue(__rtParams, 'CustomerKey', '')).trim();        if (__customerKey)        __payload.customerKey = __customerKey;
+
+var __url = __rtBaseUrl + __rtEndpoint;
+var __timeout = getValue(__rtParams, 'Timeout', 10000);
+
+return jsonHttpRequest(__url, { method: 'POST', "timeout": __timeout }, _headers, __payload).then(
+    function (result) {
+        if (result && result.success === true) {
+            global[_rtNextStep] = getValue(__rtParams, 'NextStep_Success', -1);
+            Logger.info('[sendMail] success', { nextStep: global[_rtNextStep] });
+            return;
+        }
+        Logger.warn('[sendMail] gateway failure', { statusCode: result && result.statusCode, nextStep: global[_rtNextStep] });
+    },
+    function (err) {
+        Logger.error('[sendMail] request error', { nextStep: global[_rtNextStep] }, err);
+    }
+);
+```
 
 `output`:
 

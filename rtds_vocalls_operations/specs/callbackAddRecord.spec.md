@@ -8,6 +8,8 @@
 | Source handler | `rtds_pureconnect_handlers/handlers/NAllo_RTDS_CallbackAddRecord.xml`  |
 | Target file    | n/a — do not generate as a standalone component                        |
 
+> **Sub-operation contract — not a standalone operation.** This spec deviates from the regular Inputs / Outputs / Component-structure shape because `Active` and `NextStep_*` are owned by the parent `callback` component. The tables below document the signal-based contract between this node and its parent.
+
 ## Business purpose
 
 Persist a confirmed callback record to the Callback API. In PureConnect this is a separate subroutine because the orchestrator (`NAllo_RTDS_Callback`) and the per-context entry points (`CallbackInputPhoneNumber`, `CallbackTimeSlot`) all needed to call it from different code paths. In Vocalls this collapses into the `callback` component's final HTTP call.
@@ -19,8 +21,8 @@ This spec documents the API contract and Param surface so that the `callback` co
 | Param name           | Source                                  | Description                                                                                  |
 | -------------------- | --------------------------------------- | -------------------------------------------------------------------------------------------- |
 | `ConfigId`           | parent `callback` Param                 | Callback service ID — drives the API URL.                                                     |
-| `PhoneNumber`        | session var (`global.cbPhoneNumber`)    | Customer phone number to call back. Set earlier in the flow by the input/confirm node.       |
-| `ChosenTimeslot`     | session var (`global.cbChosenTimeslot`) | Timeslot identifier picked by the caller.                                                     |
+| `PhoneNumber`        | session var (`varObj.cbPhoneNumber`)    | Customer phone number to call back. Set earlier in the flow by the input/confirm node.       |
+| `ChosenTimeslot`     | session var (`varObj.cbChosenTimeslot`) | Timeslot identifier picked by the caller.                                                     |
 | `Description`        | session var (operator-supplied or `''`) | Free-text description of the callback (reason / context).                                     |
 | `InheritSkills`      | parent `callback` Param                 | If true, copy the inbound interaction's ACD skills onto the outbound callback.               |
 | `InheritPriority`    | parent `callback` Param                 | If true, copy the inbound interaction's ACD priority onto the outbound callback.             |
@@ -59,7 +61,7 @@ Expected response: `{ "success": true | false, "statusCode": <number>, ... }`. S
 
 ```js
 var __url = __rtBaseUrl + __rtCallbackEndpoint + '/' + encodeURIComponent(getValue(__rtParams, 'ConfigId', '')) + '/record';
-var __payload = __buildCallbackPayload(global.cbPhoneNumber, global.cbChosenTimeslot, __rtParams);
+var __payload = __buildCallbackPayload(getScoped('cbPhoneNumber', ''), getScoped('cbChosenTimeslot', ''), __rtParams);
 
 return jsonHttpRequest(__url, { method: 'POST', "timeout": getValue(__rtParams, 'Timeout', 10000) }, _headers, __payload).then(
     function (result) {
@@ -68,11 +70,11 @@ return jsonHttpRequest(__url, { method: 'POST', "timeout": getValue(__rtParams, 
             Logger.info('[callback] created', { nextStep: global[_rtNextStep] });
             return;
         }
-        global[_rtNextStep] = getValue(__rtParams, 'NextStep_Error', -1);
+        global[_rtNextStep] = getValue(__rtParams, 'NextStep_Failure', -1);
         Logger.warn('[callback] create failed', { statusCode: result && result.statusCode, nextStep: global[_rtNextStep] });
     },
     function (err) {
-        global[_rtNextStep] = getValue(__rtParams, 'NextStep_Error', -1);
+        global[_rtNextStep] = getValue(__rtParams, 'NextStep_Failure', -1);
         Logger.error('[callback] create error', { nextStep: global[_rtNextStep] }, err);
     }
 );

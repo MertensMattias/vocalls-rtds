@@ -59,7 +59,7 @@ RTDS_REGISTRY = new Map();
 RTDS_OPERATIONS = new Map();
 RTDS_EXIT_KEYS = new Map();
 
-// Prefix used when mirroring op.Params into context.session.variables before
+// Prefix used when mirroring op.params into context.session.variables before
 // handing off to a GUI-exit component.
 OP_VAR_PREFIX = "RTDS_OP_";
 
@@ -80,7 +80,7 @@ function registerRtdsOperation(type, handler, opts) {
 }
 
 /**
- * Registers a GUI-exit Type. The runtime mirrors op.Params to
+ * Registers a GUI-exit Type. The runtime mirrors op.params to
  * RTDS_OP_<Key> session variables, sets RTDS_currentOpId/Type, and returns
  * exitKey to Vocalls so the call routes to the matching component.
  *
@@ -134,7 +134,7 @@ function __makeMockJsHandler(type, branchKeys) {
     }
 
     Logger.info("[RTDS] mock " + type, {
-      opId: op.Id,
+      opId: op.id,
       chosenBranch: branchKeys[0] || "NextStep",
       nextStep: nextStepId,
     });
@@ -173,13 +173,13 @@ function buildOpIndex(operations) {
   var index = new Map();
   for (var i = 0; i < operations.length; i++) {
     var op = operations[i];
-    if (!op || !op.Id) {
+    if (!op || !op.id) {
       log_error(
-        "[RTDS] buildOpIndex: operation at index " + i + " has no Id — skipped",
+        "[RTDS] buildOpIndex: operation at index " + i + " has no id — skipped",
       );
       continue;
     }
-    index.set(String(op.Id), op);
+    index.set(String(op.id), op);
   }
   return index;
 }
@@ -200,30 +200,30 @@ function parseFlow(json) {
     context.session.variables.RTDS_error = "RTDS_PARSE_ERROR";
     return null;
   }
-  if (!Array.isArray(json.Operations) || json.Operations.length === 0) {
-    log_error("[RTDS] parseFlow: Operations array is missing or empty");
+  if (!Array.isArray(json.operations) || json.operations.length === 0) {
+    log_error("[RTDS] parseFlow: operations array is missing or empty");
     context.session.variables.RTDS_error = "RTDS_PARSE_ERROR";
     return null;
   }
 
-  context.session.variables.RTDS_sourceId = json.SourceId;
-  context.session.variables.RTDS_name = json.Name;
-  context.session.variables.RTDS_project = json.Project;
-  context.session.variables.RTDS_promptLibrary = json.PromptLibrary;
-  context.session.variables.RTDS_supportedLanguages = json.SupportedLanguages;
-  context.session.variables.RTDS_opIndex = buildOpIndex(json.Operations);
+  context.session.variables.RTDS_sourceId = json.sourceId;
+  context.session.variables.RTDS_name = json.name;
+  context.session.variables.RTDS_project = json.project;
+  context.session.variables.RTDS_promptLibrary = json.promptLibrary;
+  context.session.variables.RTDS_supportedLanguages = json.supportedLanguages;
+  context.session.variables.RTDS_opIndex = buildOpIndex(json.operations);
 
-  var firstOp = getFirstOperation(json.Operations);
+  var firstOp = getFirstOperation(json.operations);
   if (!firstOp) {
     context.session.variables.RTDS_error = "RTDS_NO_ENTRY_POINT";
     return null;
   }
 
   Logger.info("[RTDS] flow parsed", {
-    sourceId: json.SourceId,
-    name: json.Name,
-    entryPoint: firstOp.Id + " (" + firstOp.Name + ")",
-    opCount: json.Operations.length,
+    sourceId: json.sourceId,
+    name: json.name,
+    entryPoint: firstOp.id + " (" + firstOp.name + ")",
+    opCount: json.operations.length,
   });
   return firstOp;
 }
@@ -242,19 +242,19 @@ function parseFlow(json) {
 function getFirstOperation(operations) {
   var candidates = [];
   for (var i = 0; i < operations.length; i++) {
-    if (operations[i] && operations[i].IsFirstOperation === true) {
+    if (operations[i] && operations[i].isFirstOperation === true) {
       candidates.push(operations[i]);
     }
   }
   if (candidates.length === 0) {
     log_error(
-      "[RTDS] getFirstOperation: no operation has IsFirstOperation === true",
+      "[RTDS] getFirstOperation: no operation has isFirstOperation === true",
     );
     return null;
   }
   candidates.sort(function (a, b) {
-    if (a.Id < b.Id) return -1;
-    if (a.Id > b.Id) return 1;
+    if (a.id < b.id) return -1;
+    if (a.id > b.id) return 1;
     return 0;
   });
   return candidates[0];
@@ -262,7 +262,7 @@ function getFirstOperation(operations) {
 
 // ===========================================================================
 // getParam(op, name, fallback)
-//   Reads a single typed param value from op.Params, unwrapping the array
+//   Reads a single typed param value from op.params, unwrapping the array
 //   form [value, ...flags]. GUI-builder flags (isDisplayed, isEditable) are
 //   irrelevant at runtime — only v[0] is used. Native types preserved.
 // ===========================================================================
@@ -277,11 +277,24 @@ function getParam(op, name, fallback) {
   if (fallback === undefined) {
     fallback = null;
   }
-  if (!op || !op.Params) {
+  if (!op || !op.params) {
     return fallback;
   }
 
-  var raw = op.Params[name];
+  var params = op.params;
+  var raw = params[name];
+
+  if (raw === undefined) {
+    var lower = String(name).toLowerCase();
+    var keys = Object.keys(params);
+    for (var i = 0; i < keys.length; i++) {
+      if (keys[i].toLowerCase() === lower) {
+        raw = params[keys[i]];
+        break;
+      }
+    }
+  }
+
   if (raw === undefined || raw === null) {
     return fallback;
   }
@@ -321,7 +334,9 @@ function setGlobal(name, value) {
     scope[name] = value;
     return;
   }
-  new Function("v", name + " = v")(value);
+  log_warn(
+    '[RTDS] setGlobal: no global scope available — "' + name + '" not set',
+  );
 }
 
 // ===========================================================================
@@ -347,19 +362,6 @@ function resolveTokens(value) {
     }
     var scope = getRtdsGlobalScope();
     var globalVal = scope ? scope[name] : undefined;
-    if (globalVal === undefined) {
-      try {
-        globalVal = new Function(
-          "return typeof " +
-            name +
-            ' !== "undefined" ? ' +
-            name +
-            " : undefined;",
-        )();
-      } catch (ignore) {
-        globalVal = undefined;
-      }
-    }
     if (globalVal !== undefined && globalVal !== null) {
       return String(globalVal);
     }
@@ -404,7 +406,7 @@ function resolveNextStep(op, resultKey) {
  * @returns {{ nextStepId: ?string }}
  */
 function executeSetAttributes(op) {
-  var params = op.Params;
+  var params = op.params;
   if (!params) {
     return { nextStepId: null };
   }
@@ -446,7 +448,7 @@ function executeSetAttributes(op) {
   var nextStepId = resolveNextStep(op, null);
   log_debug(
     '[RTDS] SetAttributes "' +
-      op.Name +
+      op.name +
       '" done. NextStep=' +
       (nextStepId ? nextStepId : "(none)"),
   );
@@ -455,7 +457,7 @@ function executeSetAttributes(op) {
 
 // ===========================================================================
 // prepareGuiHandoff(op)
-//   Writes RTDS_OP_<Key> mirrors of op.Params to context.session.variables so
+//   Writes RTDS_OP_<Key> mirrors of op.params to context.session.variables so
 //   the matching GUI-exit component can read its config. Sets
 //   RTDS_currentOpId / RTDS_currentOpType. Pre-populates RTDS_nextStepId with
 //   the default NextStep; the component overwrites this with its chosen
@@ -477,16 +479,16 @@ function prepareGuiHandoff(op) {
     }
   }
 
-  if (op.Params) {
-    var keys = Object.keys(op.Params);
+  if (op.params) {
+    var keys = Object.keys(op.params);
     for (var i = 0; i < keys.length; i++) {
       var key = keys[i];
       vars[OP_VAR_PREFIX + key] = resolveTokens(getParam(op, key, null));
     }
   }
 
-  vars.RTDS_currentOpId = op.Id;
-  vars.RTDS_currentOpType = op.Type;
+  vars.RTDS_currentOpId = op.id;
+  vars.RTDS_currentOpType = op.type;
 
   var defaultNext = resolveNextStep(op, null);
   if (defaultNext) {
@@ -524,12 +526,12 @@ function runStep(startOpId) {
       return "disconnect";
     }
 
-    var type = current.Type;
+    var type = current.type;
     var entry = RTDS_REGISTRY.get(type);
     Logger.info("[RTDS] step", {
-      id: current.Id,
+      id: current.id,
       type: type,
-      name: current.Name,
+      name: current.name,
       kind: entry ? entry.kind : "unregistered",
       isMock: entry ? entry.isMock : false,
     });
@@ -541,7 +543,7 @@ function runStep(startOpId) {
         '[RTDS] runStep: type "' +
           type +
           '" not in RTDS_REGISTRY at step ' +
-          current.Id,
+          current.id,
       );
       context.session.variables.RTDS_error =
         "Unregistered operation type: " + type;
@@ -558,7 +560,7 @@ function runStep(startOpId) {
           "[RTDS] ERROR in " +
             type +
             " step " +
-            current.Id +
+            current.id +
             ": " +
             (err && err.message),
         );
@@ -566,9 +568,38 @@ function runStep(startOpId) {
         return "disconnect";
       }
 
+      // Async handler — returns a thenable resolving to { nextStepId }.
+      // Chain off it and resume the loop from the resolved step. The whole
+      // call to runStep then resolves to a promise of the exit key, exactly
+      // like fetchAndStart does. Synchronous handlers fall through unchanged.
+      if (result && typeof result.then === "function") {
+        return result.then(
+          function (resolved) {
+            var asyncNext = resolved && resolved.nextStepId;
+            if (!asyncNext) {
+              Logger.info("[RTDS] end of flow", { lastStep: current.id });
+              return "disconnect";
+            }
+            return runStep(String(asyncNext));
+          },
+          function (err) {
+            log_error(
+              "[RTDS] ERROR in async " +
+                type +
+                " step " +
+                current.id +
+                ": " +
+                (err && err.message),
+            );
+            context.session.variables.RTDS_error = err && err.message;
+            return "disconnect";
+          },
+        );
+      }
+
       var nextStepId = result && result.nextStepId;
       if (!nextStepId) {
-        Logger.info("[RTDS] end of flow", { lastStep: current.Id });
+        Logger.info("[RTDS] end of flow", { lastStep: current.id });
         return "disconnect";
       }
       currentId = String(nextStepId);
@@ -579,7 +610,7 @@ function runStep(startOpId) {
     if (entry.kind === "gui") {
       prepareGuiHandoff(current);
       Logger.info("[RTDS] GUI handoff", {
-        step: current.Id,
+        step: current.id,
         type: type,
         exitKey: entry.exitKey,
       });
@@ -591,7 +622,9 @@ function runStep(startOpId) {
       '[RTDS] runStep: registry entry for "' +
         type +
         '" has invalid kind=' +
-        entry.kind,
+        entry.kind +
+        " at step " +
+        current.id,
     );
     context.session.variables.RTDS_error = "Corrupted registry entry: " + type;
     return "disconnect";
@@ -649,13 +682,9 @@ function resumeFrom(nextStepId) {
  * @param {string} sourceId
  * @returns {Promise<string>|string} Exit key (or a promise resolving to one).
  */
-/**
- * @param {string} sourceId
- * @returns {Promise<string>|string} Exit key (or a promise resolving to one).
- */
 function fetchAndStart(sourceId) {
   if (!sourceId) {
-    Logger.error("[RTDS] fetchAndStart: sourceId is empty");
+    log_error("[RTDS] fetchAndStart: sourceId is empty");
     context.session.variables.RTDS_error = "RTDS_NO_SOURCE_ID";
     return "disconnect";
   }
@@ -664,7 +693,7 @@ function fetchAndStart(sourceId) {
     _rtGetSourceIdEndpoint +
     "?sourceId=" +
     encodeURIComponent(sourceId);
-  Logger.API("[RTDS] fetching routing table", { sourceId: sourceId, url: url });
+  Logger.info("[RTDS] fetching routing table", { sourceId: sourceId });
   return jsonHttpRequest(url, { method: "GET" }, _headers)
     .withTimeout(10000)
     .then(
@@ -674,10 +703,10 @@ function fetchAndStart(sourceId) {
           try {
             result = JSON.parse(result);
           } catch (parseErr) {
-            Logger.error("[RTDS] fetchAndStart: envelope parse failed", {
-              error: parseErr.message,
-              raw: rawResult,
-            });
+            log_error(
+              "[RTDS] fetchAndStart: envelope parse failed | " +
+                parseErr.message,
+            );
             context.session.variables.RTDS_error = "RTDS_RESULT_PARSE_ERROR";
             return "disconnect";
           }
@@ -685,13 +714,7 @@ function fetchAndStart(sourceId) {
 
         if (!result || result.success !== true || result.statusCode !== 200) {
           var status = result && result.statusCode;
-          Logger.error("[RTDS] fetchAndStart: API failure", {
-            sourceId: sourceId,
-            status: status,
-          });
-          Logger.debug("[RTDS] fetchAndStart: failure result", {
-            result: result,
-          });
+          log_error("[RTDS] fetchAndStart: API failure | status=" + status);
           context.session.variables.RTDS_error =
             "RTDS_API_ERROR_" + (status || "UNKNOWN");
           return "disconnect";
@@ -702,39 +725,30 @@ function fetchAndStart(sourceId) {
           try {
             body = JSON.parse(body);
           } catch (parseErr) {
-            Logger.error("[RTDS] fetchAndStart: body parse failed", {
-              error: parseErr.message,
-              raw: result.response,
-            });
+            log_error(
+              "[RTDS] fetchAndStart: body parse failed | " + parseErr.message,
+            );
             context.session.variables.RTDS_error = "RTDS_PARSE_ERROR";
             return "disconnect";
           }
         }
 
-        Logger.API("[RTDS] routing table received", {
+        Logger.info("[RTDS] routing table received", {
           sourceId: sourceId,
-          status: result.statusCode,
           name: body && body.name,
         });
-        Logger.debug("[RTDS] fetchAndStart: success body", { body: body });
 
         var firstOp = parseFlow(body);
         if (!firstOp) {
-          Logger.error("[RTDS] fetchAndStart: no entry operation", {
-            sourceId: sourceId,
-          });
+          log_error("[RTDS] fetchAndStart: no entry operation");
           context.session.variables.RTDS_error = "RTDS_NO_ENTRY_POINT";
           return "disconnect";
         }
-        return runStep(firstOp.Id);
+        return runStep(firstOp.id);
       },
       function (err) {
         var errMsg = err && err.message ? err.message : String(err);
-        Logger.error("[RTDS] fetchAndStart: request rejected", {
-          sourceId: sourceId,
-          url: url,
-          error: errMsg,
-        });
+        log_error("[RTDS] fetchAndStart: request rejected | " + errMsg);
         context.session.variables.RTDS_error = "RTDS_REQUEST_ERROR";
         return "disconnect";
       },
@@ -926,7 +940,243 @@ function executeFlowJump(op) {
   if (!firstOp) {
     return { nextStepId: null };
   }
-  return { nextStepId: firstOp.Id };
+  return { nextStepId: firstOp.id };
+}
+
+// ===========================================================================
+// executeSendSms(op)  /  executeSendEmail(op)
+//   Async JS handlers. Each POSTs to the RTDS gateway and resolves to
+//   { nextStepId } once the gateway responds, so runStep can branch on the
+//   real outcome (Success / Failure). Ported from the GUI components
+//   rtds_vocalls_operations/components/sendSms.js and sendMail.js — same
+//   payload shape, same branch semantics, same Timeout default (10000 ms).
+//
+//   Branch contract (both):
+//     - inactive / invalid input   -> NextStep        (skip)
+//     - gateway success === true   -> NextStep_Success
+//     - any non-success or reject  -> NextStep_Failure
+//
+//   Endpoint globals (set by the platform-init layer / callScripts/main.js):
+//     _rtBaseUrl, _rtSmsEndpoint, _rtMailEndpoint, _headers.
+// ===========================================================================
+
+/**
+ * Validates that a string is a plausible mobile phone number. Strips
+ * spaces/dashes/parens/dots and rewrites a leading 00 as +. Accepts E.164
+ * and bare national (7-15 digits).
+ *
+ * @param {string} phone
+ * @returns {boolean}
+ */
+function isMobileNumber(phone) {
+  if (phone == null || phone === "") return false;
+  var normalized = String(phone).replace(/[\s\-().]/g, "");
+  if (normalized.indexOf("00") === 0) normalized = "+" + normalized.slice(2);
+  var intl = /^\+[1-9]\d{6,14}$/;
+  var national = /^[1-9]\d{6,14}$/;
+  return intl.test(normalized) || national.test(normalized);
+}
+
+/**
+ * Splits a ';'-separated list into a trimmed, non-empty array (never null).
+ *
+ * @param {string} raw
+ * @returns {Array<string>}
+ */
+function splitSemicolonList(raw) {
+  var out = [];
+  if (!raw || String(raw).trim() === "") return out;
+  var parts = String(raw).split(";");
+  for (var i = 0; i < parts.length; i++) {
+    var t = parts[i].replace(/^\s+|\s+$/g, "");
+    if (t) out.push(t);
+  }
+  return out;
+}
+
+/**
+ * Zips ';'-separated filenames and base64 payloads into a
+ * [{ fileName, fileData }] array. Pairs missing either half are dropped.
+ *
+ * @param {string} rawNames
+ * @param {string} rawData
+ * @returns {Array<Object>}
+ */
+function buildAttachments(rawNames, rawData) {
+  var out = [];
+  if (!rawNames || !rawData) return out;
+  var names = String(rawNames).split(";");
+  var datas = String(rawData).split(";");
+  var len = names.length < datas.length ? names.length : datas.length;
+  for (var i = 0; i < len; i++) {
+    var name = names[i].replace(/^\s+|\s+$/g, "");
+    var data = datas[i].replace(/^\s+|\s+$/g, "");
+    if (name && data) out.push({ fileName: name, fileData: data });
+  }
+  return out;
+}
+
+/**
+ * Splits a ';'-separated list of file paths, keeping only those that
+ * fileExists confirms. Returns [] when fileExists is unavailable.
+ *
+ * @param {string} raw
+ * @returns {Array<string>}
+ */
+function resolveFilesList(raw) {
+  var out = [];
+  if (!raw || String(raw).trim() === "") return out;
+  if (typeof fileExists !== "function") return out;
+  var parts = String(raw).split(";");
+  for (var i = 0; i < parts.length; i++) {
+    var p = parts[i].replace(/^\s+|\s+$/g, "");
+    if (!p) continue;
+    try {
+      if (fileExists(p)) out.push(p);
+    } catch (e) {}
+  }
+  return out;
+}
+
+/**
+ * @param {Object} op
+ * @returns {{ nextStepId: ?string }|Promise<{ nextStepId: ?string }>}
+ */
+function executeSendSms(op) {
+  var skipNext = resolveNextStep(op, null);
+
+  if (!getParam(op, "Active", false)) {
+    Logger.info("[RTDS] SendSMS skipped — inactive", { nextStep: skipNext });
+    return { nextStepId: skipNext };
+  }
+
+  var to = String(resolveTokens(getParam(op, "To", "")));
+  if (!to || !isMobileNumber(to)) {
+    Logger.warn("[RTDS] SendSMS invalid phone number", {
+      to: to,
+      nextStep: skipNext,
+    });
+    return { nextStepId: skipNext };
+  }
+
+  var failureNext = resolveNextStep(op, "NextStep_Failure") || skipNext;
+  var successNext = resolveNextStep(op, "NextStep_Success") || skipNext;
+
+  var url = _rtBaseUrl + _rtSmsEndpoint;
+  var timeout = Number(getParam(op, "Timeout", 10000)) || 10000;
+  var payload = {
+    smsAccountId: Number(getParam(op, "SmsAccountId", -1)),
+    routing: resolveTokens(getParam(op, "Routing", "")),
+    from: resolveTokens(getParam(op, "From", "")),
+    to: to,
+    content: resolveTokens(getParam(op, "Body", "")),
+    plannedTime: nowUTC(),
+  };
+
+  if (typeof _headers === "undefined" || !_headers) _headers = {};
+
+  return jsonHttpRequest(url, { method: "POST", timeout: timeout }, _headers, payload)
+    .withTimeout(timeout)
+    .then(
+      function (result) {
+        if (result && result.success === true) {
+          Logger.info("[RTDS] SendSMS success", { nextStep: successNext });
+          return { nextStepId: successNext };
+        }
+        Logger.warn("[RTDS] SendSMS gateway failure", {
+          statusCode: result && result.statusCode,
+          nextStep: failureNext,
+        });
+        return { nextStepId: failureNext };
+      },
+      function (err) {
+        Logger.error("[RTDS] SendSMS request error", { nextStep: failureNext }, err);
+        return { nextStepId: failureNext };
+      },
+    );
+}
+
+/**
+ * @param {Object} op
+ * @returns {{ nextStepId: ?string }|Promise<{ nextStepId: ?string }>}
+ */
+function executeSendEmail(op) {
+  var skipNext = resolveNextStep(op, null);
+
+  if (!getParam(op, "Active", false)) {
+    Logger.info("[RTDS] SendEmail skipped — inactive", { nextStep: skipNext });
+    return { nextStepId: skipNext };
+  }
+
+  var from = String(resolveTokens(getParam(op, "From", ""))).replace(
+    /^\s+|\s+$/g,
+    "",
+  );
+  var to = splitSemicolonList(resolveTokens(getParam(op, "To", "")));
+  if (!from || to.length === 0) {
+    Logger.warn("[RTDS] SendEmail missing From or To", {
+      from: from,
+      toCount: to.length,
+      nextStep: skipNext,
+    });
+    return { nextStepId: skipNext };
+  }
+
+  var failureNext = resolveNextStep(op, "NextStep_Failure") || skipNext;
+  var successNext = resolveNextStep(op, "NextStep_Success") || skipNext;
+
+  var priority = Number(getParam(op, "Priority", 2));
+  if (priority !== 1 && priority !== 2 && priority !== 3) priority = 2;
+
+  var payload = {
+    from: from,
+    subject: resolveTokens(getParam(op, "Subject", "")),
+    to: to,
+    body: resolveTokens(getParam(op, "Body", "")),
+    priority: priority,
+  };
+
+  var cc = splitSemicolonList(resolveTokens(getParam(op, "Cc", "")));
+  if (cc.length) payload.cc = cc;
+  var bcc = splitSemicolonList(resolveTokens(getParam(op, "Bcc", "")));
+  if (bcc.length) payload.bcc = bcc;
+  var files = resolveFilesList(resolveTokens(getParam(op, "Files", "")));
+  if (files.length) payload.files = files;
+  var attachments = buildAttachments(
+    getParam(op, "AttachmentNames", ""),
+    getParam(op, "AttachmentData", ""),
+  );
+  if (attachments.length) payload.attachments = attachments;
+  var customerKey = String(resolveTokens(getParam(op, "CustomerKey", ""))).replace(
+    /^\s+|\s+$/g,
+    "",
+  );
+  if (customerKey) payload.customerKey = customerKey;
+
+  var url = _rtBaseUrl + _rtMailEndpoint;
+  var timeout = Number(getParam(op, "Timeout", 10000)) || 10000;
+
+  if (typeof _headers === "undefined" || !_headers) _headers = {};
+
+  return jsonHttpRequest(url, { method: "POST", timeout: timeout }, _headers, payload)
+    .withTimeout(timeout)
+    .then(
+      function (result) {
+        if (result && result.success === true) {
+          Logger.info("[RTDS] SendEmail success", { nextStep: successNext });
+          return { nextStepId: successNext };
+        }
+        Logger.warn("[RTDS] SendEmail gateway failure", {
+          statusCode: result && result.statusCode,
+          nextStep: failureNext,
+        });
+        return { nextStepId: failureNext };
+      },
+      function (err) {
+        Logger.error("[RTDS] SendEmail request error", { nextStep: failureNext }, err);
+        return { nextStepId: failureNext };
+      },
+    );
 }
 
 // ===========================================================================
@@ -949,6 +1199,13 @@ function executeFlowJump(op) {
 // development project. Until each one has a real data-source wired in,
 // they ship as MOCKS — promoting one is a single-line edit below.
 registerRtdsOperation("SetAttributes", executeSetAttributes, { isMock: false });
+
+// SendSMS / SendEmail run inline as async JS handlers (POST to the RTDS
+// gateway, branch on the response). They were previously GUI-exit types that
+// handed off to the canvas components in rtds_vocalls_operations/components/;
+// the function versions keep the same payload + branch contract.
+registerRtdsOperation("SendSMS", executeSendSms, { isMock: false });
+registerRtdsOperation("SendEmail", executeSendEmail, { isMock: false });
 
 // --- JS-side mocks ---
 // Each mock picks the most defensible NextStep_<key> branch so the loop
@@ -986,8 +1243,6 @@ registerRtdsExit("Disconnect", "disconnect");
 registerRtdsExit("GuardRouting", "guard_routing");
 registerRtdsExit("GuardTUI", "guard_tui");
 registerRtdsExit("Callback", "callback");
-registerRtdsExit("SendSMS", "send_sms");
-registerRtdsExit("SendEmail", "send_email");
 
 Logger.info("[RTDS] registry initialised", {
   types: RTDS_REGISTRY.size,

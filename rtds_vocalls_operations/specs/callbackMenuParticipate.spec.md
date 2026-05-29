@@ -8,6 +8,8 @@
 | Source handler | `rtds_pureconnect_handlers/handlers/NAllo_RTDS_CallbackMenuParticipate.xml` |
 | Target file    | n/a — do not generate as a standalone component                             |
 
+> **Sub-operation contract — not a standalone operation.** This spec deviates from the regular Inputs / Outputs / Component-structure shape because `Active` and `NextStep_*` are owned by the parent `callback` component. The tables below document the signal-based contract between this node and its parent.
+
 ## Business purpose
 
 The "Would you like a callback?" menu. Plays the offer prompt, collects a single DTMF key, and signals the orchestrator whether the caller wants in (`1`) or out (`2`). In the source repo this is its own subroutine so the orchestrator and any custom entry point can invoke it; in Vocalls it is one of the multi-node steps inside `callback`.
@@ -38,7 +40,7 @@ Three nodes in series:
 
 ```js
 __cbParticipate = (__cbDigit === '1' || __cbEscape === true);
-Logger.info('[callback] participation', { participate: __cbParticipate });
+Logger.info('[callback] participation', { participate: __cbParticipate, nextStep: __rtNextStep });
 ```
 
 ### Open questions

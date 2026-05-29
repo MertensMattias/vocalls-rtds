@@ -30,14 +30,14 @@ In Vocalls this is the single externally-visible Callback operation — the four
 | `ManualInputRetries`   | number                        | no       | `3`     | Max attempts for the manual phone number entry sub-flow.                                                                              |
 | `Timeout`              | number (ms)                   | no       | `10000` | HTTP timeout for the Callback API calls.                                                                                              |
 | `NextStep`             | string (step ID)              | yes      | —       | Continuation when the operation is inactive, or when the callback was offered but the caller declined or the record was persisted and the call should be released cleanly. |
-| `NextStep_Error`       | string (step ID)              | yes      | —       | Continuation on Callback API error or invalid configuration.                                                                          |
+| `NextStep_Failure`       | string (step ID)              | yes      | —       | Continuation on Callback API error or invalid configuration.                                                                          |
 
 ### Outputs
 
 | Branch key       | Taken when                                                                                | Fallback |
 | ---------------- | ----------------------------------------------------------------------------------------- | -------- |
 | `NextStep`       | Operation inactive, caller declined, callback record successfully persisted, or no slots were available. | `-1`    |
-| `NextStep_Error` | Callback API failed, schedule fetch failed, or required Params were missing.              | `-1`     |
+| `NextStep_Failure` | Callback API failed, schedule fetch failed, or required Params were missing.              | `-1`     |
 
 ### External calls
 
@@ -67,11 +67,11 @@ Logger.debug('[callback] config resolved', { params: __rtParams });
 
 Body sequence (each is a separate node):
 
-1. **fetchSchedule** (work script) — eligibility + schedule lookup. On error → `NextStep_Error`. On no slots → `NextStep`.
+1. **fetchSchedule** (work script) — eligibility + schedule lookup. On error → `NextStep_Failure`. On no slots → `NextStep`.
 2. **offerParticipation** (say + dtmf + case) — "press 1 to confirm, 2 to decline". On `2` → `NextStep`. On `1` → continue.
 3. **inputPhoneNumber** (case + collect loop) — if `CallbackOnANI` and ANI passes classification, skip; otherwise loop up to `ManualInputRetries` collecting + confirming a number. On exhausted retries → `NextStep`.
 4. **pickTimeslot** (say + dtmf + case) — read out up to `NumberOfSlots` slots; collect choice; loop on retry. On no choice → `NextStep`.
-5. **createRecord** (work script — `http_call`) — POST the callback. On success → `Logger.info('[callback] created')` + `NextStep`. On error → `NextStep_Error`.
+5. **createRecord** (work script — `http_call`) — POST the callback. On success → `Logger.info('[callback] created')` + `NextStep`. On error → `NextStep_Failure`.
 
 `output`:
 

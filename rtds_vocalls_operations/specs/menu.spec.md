@@ -37,9 +37,24 @@ Present a DTMF menu to the caller: play one or more prompts (optionally prefixed
 
 ### Component structure
 
-Multi-node component (mirrors `guardTui` shape — work script + dtmf node + case routing + retry-prompt say nodes).
+Multi-node composite component (mirrors `guardTui` shape — work script + Vocalls primitive nodes).
 
-- **input** → **init** → **prepare** (work script) → **prompt** (say) → **collect** (dtmf) → **route** (case) → **say** nodes per retry/fallback → **output**.
+### Node graph
+
+| id (canonical) | label     | Type          | Role                                                                                   |
+| -------------- | --------- | ------------- | -------------------------------------------------------------------------------------- |
+| `0`            | `input`   | `transient`   | Component entry.                                                                       |
+| `7`            | `init`    | `script`      | Canonical config-resolution init body.                                                 |
+| `29`           | `prepare` | `script`      | Active guard + `NextStep` pre-assign + valid-key set derivation.                       |
+| (≥100)         | `prompt`  | `say`         | Plays `StaticPrompt` (or per-choice `Prompt_<digit>` set when StaticPrompt is empty).  |
+| (≥100)         | `collect` | `dtmf`        | Collects a single digit; valid set = `__menuValidKeys`; timeout = `Timeout` Param.     |
+| (≥100)         | `route`   | `case`        | Branches on `__menuDigit` (valid digit / exhausted-retries / retry).                   |
+| (≥100)         | `retryNI` | `say`         | Plays `NoChoicePrompt` then back-edges to `collect`. (Conditional on retries remaining.)|
+| (≥100)         | `retryIC` | `say`         | Plays `InvalidChoicePrompt` then back-edges to `collect`. (Conditional.)               |
+| (≥100)         | `maxTries`| `say`         | Plays `MaxTriesPrompt` once before falling through to `NextStep_DefaultChoice`.        |
+| `6`            | `output`  | `transient`   | OnEnter exit log.                                                                       |
+
+Edges (high level): `0 → 7 → 29 → prompt → collect → route`; `route → <chosen digit>` (assigns `NextStep_<digit>`), `route → maxTries → 6`, `route → retryNI → collect`, `route → retryIC → collect`.
 
 `init`:
 

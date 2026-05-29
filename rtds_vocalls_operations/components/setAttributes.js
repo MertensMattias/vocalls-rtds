@@ -82,7 +82,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code='if (!getValue(__rtParams, &apos;Active&apos;, false)) {&#xa;    Logger.info(&apos;[setAttributes] skipped — inactive&apos;, { nextStep: __rtNextStep });&#xa;    return;&#xa;}&#xa;&#xa;var __CONTROL_KEYS = { Active: 1, NextStep: 1, LogAttributes: 1 };&#xa;var __written = 0;&#xa;&#xa;walk(__rtParams, function (key, value) {&#xa;    if (__CONTROL_KEYS[key]) return;&#xa;    global[key] = value;&#xa;    __written++;&#xa;});&#xa;&#xa;global[_rtNextStep] = getValue(__rtParams, &apos;NextStep&apos;, -1);&#xa;Logger.info(&apos;[setAttributes] wrote attributes&apos;, { count: __written, nextStep: global[_rtNextStep] });'
+      Code='if (!getValue(__rtParams, &apos;Active&apos;, false)) {&#xa;    Logger.info(&apos;[setAttributes] skipped — inactive&apos;, { nextStep: __rtNextStep });&#xa;    return;&#xa;}&#xa;&#xa;var __CONTROL_KEYS = { Active: 1, NextStep: 1, LogAttributes: 1 };&#xa;var __written = 0;&#xa;&#xa;walk(__rtParams, function (key, value) {&#xa;    if (__CONTROL_KEYS[key]) return;&#xa;    varObj[key] = value;&#xa;    __written++;&#xa;});&#xa;&#xa;global[_rtNextStep] = getValue(__rtParams, &apos;NextStep&apos;, -1);&#xa;Logger.info(&apos;[setAttributes] wrote attributes&apos;, { count: __written, nextStep: global[_rtNextStep] });'
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""

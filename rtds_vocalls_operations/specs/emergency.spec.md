@@ -103,10 +103,17 @@ return jsonHttpRequest(__url, { method: 'GET', "timeout": __timeout }, _headers,
             return;
         }
         var __action = String(result.body.action || '');
-        if (__action === 'Continue')   global[_rtNextStep] = getValue(__rtParams, 'NextStep_Continue', -1);
-        else if (__action === 'Transfer')   { global[_rtNextStep] = getValue(__rtParams, 'NextStep_Transfer', -1); global.PhoneNumber = result.body.phoneNumber || getValue(__rtParams, 'PhoneNumber', ''); }
-        else if (__action === 'Disconnect') global[_rtNextStep] = getValue(__rtParams, 'NextStep_Disconnect', -1);
-        else { Logger.warn('[emergency] unknown action', { action: __action, nextStep: global[_rtNextStep] }); return; }
+        if (__action === 'Continue') {
+            global[_rtNextStep] = getValue(__rtParams, 'NextStep_Continue', -1);
+        } else if (__action === 'Transfer') {
+            global[_rtNextStep] = getValue(__rtParams, 'NextStep_Transfer', -1);
+            varObj.PhoneNumber = result.body.phoneNumber || getValue(__rtParams, 'PhoneNumber', '');
+        } else if (__action === 'Disconnect') {
+            global[_rtNextStep] = getValue(__rtParams, 'NextStep_Disconnect', -1);
+        } else {
+            Logger.warn('[emergency] unknown action', { action: __action, nextStep: global[_rtNextStep] });
+            return;
+        }
         Logger.info('[emergency] action', { action: __action, nextStep: global[_rtNextStep] });
     },
     function (err) { Logger.error('[emergency] request error', { nextStep: global[_rtNextStep] }, err); }
@@ -122,6 +129,6 @@ OnEnter: Logger.info('[emergency] exit', { nextStep: __rtNextStep });
 ### Open questions
 
 - The source handler also handles "RTDS Compatibility Check" for an older response shape that used a single boolean field. Confirm that the modern API always returns `{ action, ... }` and the compatibility branch can be dropped.
-- On `Transfer`, the source handler picks up an external phone number from the response. Modelling here is to set `global.PhoneNumber` so a downstream `ExternalTransfer` operation can pick it up. Confirm whether the operator wants a dedicated `OutputAttribute` Param instead.
+- On `Transfer`, the source handler picks up an external phone number from the response. Modelling here is to set `varObj.PhoneNumber` (call-scoped) so a downstream `ExternalTransfer` operation can pick it up via `getScoped('PhoneNumber')`. Confirm whether the operator wants a dedicated `OutputAttribute` Param instead.
 - The source handler plays an emergency prompt before acting, via `NAllo_RTDS_Play`. The Vocalls flow models prompt-playing as a separate `PlayPrompt` upstream — confirm the flow author will model "announce, then act" as two operations.
 - The source has a `NAllo_SelectAnonymousTrunk` helper for outbound-line selection. That's PureConnect telephony concern — confirm Vocalls handles trunk selection internally.

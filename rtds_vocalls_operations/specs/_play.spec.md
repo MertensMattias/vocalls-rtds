@@ -6,7 +6,7 @@
 | Component name | n/a                                                            |
 | Pattern        | n/a                                                            |
 | Source handler | `rtds_pureconnect_handlers/handlers/NAllo_RTDS_Play.xml`       |
-| Target file    | n/a                                                            |
+| Target file    | n/a — do not generate as a Vocalls component                   |
 
 ## What this handler does (PureConnect side)
 

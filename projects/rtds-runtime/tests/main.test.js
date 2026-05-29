@@ -113,4 +113,202 @@ describe('rtds-runtime main.js', function () {
                 expect(typeof vo.dnis).toBe('string');
             });
     });
+
+    it('executeSetAttributes writes Params to varObj, not global', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                // Clean slate on both stores before invoking the handler
+                delete sb.varObj.TestKey;
+                delete sb.TestKey;
+                sb.executeSetAttributes({
+                    Id: 'unit-1',
+                    Name: 'unit-setattrs',
+                    Type: 'SetAttributes',
+                    Params: { TestKey: 'TestValue', NextStep: '00001' }
+                });
+                expect(sb.varObj.TestKey).toBe('TestValue');
+                expect(sb.TestKey).toBeUndefined();
+            });
+    });
+
+    it('registers SendSMS / SendEmail as real JS handlers (not GUI-exit)', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                expect(sb.RTDS_OPERATIONS.has('SendSMS')).toBe(true);
+                expect(sb.RTDS_OPERATIONS.has('SendEmail')).toBe(true);
+                expect(sb.RTDS_EXIT_KEYS.has('SendSMS')).toBe(false);
+                expect(sb.RTDS_EXIT_KEYS.has('SendEmail')).toBe(false);
+                expect(typeof sb.executeSendSms).toBe('function');
+                expect(typeof sb.executeSendEmail).toBe('function');
+            });
+    });
+
+    // Injects a Vocalls-shaped jsonHttpRequest (the test harness default
+    // resolves to a fetch Response, which would never expose success:true).
+    function withGateway(sb, gatewayResult, capture) {
+        sb._rtBaseUrl = 'https://api.example';
+        sb._rtSmsEndpoint = '/sms';
+        sb._rtMailEndpoint = '/mail';
+        sb._headers = {};
+        sb.jsonHttpRequest = function (url, opts, headers, body) {
+            if (capture) { capture.url = url; capture.body = body; }
+            var promise = {
+                withTimeout: function () { return promise; },
+                then: function (onOk) { return Promise.resolve(onOk(gatewayResult)); }
+            };
+            return promise;
+        };
+    }
+
+    it('executeSendSms branches to NextStep_Success on gateway success', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                var capture = {};
+                withGateway(sb, { success: true, statusCode: 200 }, capture);
+                return sb.executeSendSms({
+                    id: 'sms-1', type: 'SendSMS', name: 'sms',
+                    params: {
+                        Active: true, To: '+32478306999', From: '8850', Routing: 'LPA_DEV',
+                        Body: 'hi', SmsAccountId: 47,
+                        NextStep: '00012', NextStep_Success: '00011', NextStep_Failure: '00099'
+                    }
+                }).then(function (out) {
+                    expect(out.nextStepId).toBe('00011');
+                    expect(capture.url).toBe('https://api.example/sms');
+                    expect(capture.body.to).toBe('+32478306999');
+                    expect(capture.body.smsAccountId).toBe(47);
+                });
+            });
+    });
+
+    it('executeSendSms branches to NextStep_Failure on gateway non-success', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                withGateway(sb, { success: false, statusCode: 502 });
+                return sb.executeSendSms({
+                    id: 'sms-2', type: 'SendSMS', name: 'sms',
+                    params: {
+                        Active: true, To: '+32478306999', From: '8850', Routing: 'LPA_DEV',
+                        Body: 'hi', SmsAccountId: 47,
+                        NextStep: '00012', NextStep_Success: '00011', NextStep_Failure: '00099'
+                    }
+                }).then(function (out) {
+                    expect(out.nextStepId).toBe('00099');
+                });
+            });
+    });
+
+    it('executeSendSms skips to NextStep when inactive (sync, no HTTP)', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                var called = false;
+                sb.jsonHttpRequest = function () { called = true; throw new Error('should not POST'); };
+                var out = sb.executeSendSms({
+                    id: 'sms-3', type: 'SendSMS', name: 'sms',
+                    params: { Active: false, To: '+32478306999', NextStep: '00012' }
+                });
+                expect(out.nextStepId).toBe('00012');
+                expect(called).toBe(false);
+            });
+    });
+
+    it('executeSendSms skips to NextStep on invalid phone number', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                var out = sb.executeSendSms({
+                    id: 'sms-4', type: 'SendSMS', name: 'sms',
+                    params: { Active: true, To: 'not-a-number', NextStep: '00012' }
+                });
+                expect(out.nextStepId).toBe('00012');
+            });
+    });
+
+    it('executeSendEmail builds a recipient list and branches on success', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                var capture = {};
+                withGateway(sb, { success: true, statusCode: 200 }, capture);
+                return sb.executeSendEmail({
+                    id: 'mail-1', type: 'SendEmail', name: 'mail',
+                    params: {
+                        Active: true, From: 'noreply@n-allo.be',
+                        To: 'a@x.be; b@x.be', Cc: '', Subject: 'Hi', Body: 'Body', Priority: 9,
+                        NextStep: '00022', NextStep_Success: '00021', NextStep_Failure: '00099'
+                    }
+                }).then(function (out) {
+                    expect(out.nextStepId).toBe('00021');
+                    expect(capture.url).toBe('https://api.example/mail');
+                    expect(capture.body.to).toEqual(['a@x.be', 'b@x.be']);
+                    expect(capture.body.priority).toBe(2); // out-of-range coerced
+                    expect(capture.body.hasOwnProperty('cc')).toBe(false); // empty dropped
+                });
+            });
+    });
+
+    it('executeSendEmail skips to NextStep when To is empty', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                var out = sb.executeSendEmail({
+                    id: 'mail-2', type: 'SendEmail', name: 'mail',
+                    params: { Active: true, From: 'noreply@n-allo.be', To: '', NextStep: '00022' }
+                });
+                expect(out.nextStepId).toBe('00022');
+            });
+    });
+
+    it('runStep chains through an async handler and resolves to the exit key', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                // Two-op flow: an async op that resolves to step 2, then a
+                // GUI-exit op. runStep must await the promise and return the key.
+                var ops = [
+                    { id: '1', type: 'AsyncProbe', name: 'a', isFirstOperation: true, params: { NextStep: '2' } },
+                    { id: '2', type: 'PlayPrompt', name: 'p', params: {} }
+                ];
+                sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
+                sb.registerRtdsOperation('AsyncProbe', function (op) {
+                    return Promise.resolve({ nextStepId: '2' });
+                }, { isMock: false });
+
+                var ret = sb.runStep('1');
+                expect(typeof ret.then).toBe('function');
+                return ret.then(function (exitKey) {
+                    expect(exitKey).toBe('play_prompt');
+                });
+            });
+    });
+
+    it('exposes getScoped with varObj-first / global-fallback semantics', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                expect(typeof sb.getScoped).toBe('function');
+                expect(sb.getScoped('missingKey', 'fallback')).toBe('fallback');
+                sb.varObj.scopedProbe = 'fromVarObj';
+                sb.scopedProbe = 'fromGlobal';
+                expect(sb.getScoped('scopedProbe', null)).toBe('fromVarObj');
+                delete sb.varObj.scopedProbe;
+                expect(sb.getScoped('scopedProbe', null)).toBe('fromGlobal');
+                delete sb.scopedProbe;
+            });
+    });
 });

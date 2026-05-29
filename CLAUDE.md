@@ -25,5 +25,20 @@ Vocalls **development environment** repo (simulate / validate / export). Not the
 
 ## Conventions
 
+[**PROJECT_CONVENTIONS.md**](PROJECT_CONVENTIONS.md) is the source of truth. Detailed rules live in [`conventions/`](conventions/). Read PROJECT_CONVENTIONS.md end-to-end (it's a short routing doc); load a specific `conventions/<topic>.md` only when the task needs it.
+
+### The five rules every file must satisfy
+
+1. **Storage** — call-scoped user data goes on `varObj`. New runtime globals carry the `_rt*` prefix. See [conventions/storage.md](conventions/storage.md).
+2. **Logging** — always `Logger.{debug,info,warn,error,API}` with structured context. Never bare `log_*` outside the Logger implementation. See [conventions/logging.md](conventions/logging.md).
+3. **Casing** — routing-table envelope keys are camelCase exact-match (`op.id`, `op.params`); Param names are PascalCase by convention but read case-insensitively via `getValue` / `getParam` / `hasKey`. See [conventions/casing.md](conventions/casing.md).
+4. **Reads** — operator data via `getScoped(key, default)` (varObj → global → default). Bare `global[key]` reads for user data are wrong. See [conventions/storage.md](conventions/storage.md).
+5. **ES5.1** — no `let`/`const`/arrow/async/spread/destructuring/string-eval. Template literals allowed. See [conventions/es5.md](conventions/es5.md).
+
+### Other rules
+
 - Minimum change scope; match existing ES5-style patterns in call scripts.
 - `projects/*/.vocalls/` is gitignored (local state only).
+- When the conventions doc and a file in the repo disagree, **one of them is wrong** — flag it and resolve it before continuing.
+
+[**AGENTS.md**](AGENTS.md) is the cross-vendor sibling of this file with identical content.

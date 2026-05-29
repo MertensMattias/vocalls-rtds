@@ -31,7 +31,7 @@ Prompt the caller to key in a numeric value (PIN, customer ID, callback number, 
 | `ReadbackMenu`          | string                        | no       | `''`    | Prompt asking "press 1 to confirm, 2 to re-enter".                                                                                       |
 | `ReadbackMenuOptionOK`  | string (digit)                | no       | `'1'`   | DTMF key that confirms the entry.                                                                                                       |
 | `ReadbackMenuOptionNOK` | string (digit)                | no       | `'2'`   | DTMF key that rejects the entry and restarts the collection loop.                                                                       |
-| `OutputAttribute`       | string                        | yes      | —       | Name of the session variable that receives the collected digits.                                                                        |
+| `OutputAttribute`       | string                        | yes      | —       | Name of the call-scoped key on `varObj` that receives the collected digits.                                                            |
 | `NextStep`              | string (step ID)              | yes      | —       | Continuation after a successful entry (and confirmed readback, if enabled).                                                             |
 | `NextStep_Failure`      | string (step ID)              | no       | `-1`    | Continuation when retries are exhausted or readback was rejected on the last attempt.                                                   |
 
@@ -44,7 +44,28 @@ Prompt the caller to key in a numeric value (PIN, customer ID, callback number, 
 
 ### Component structure
 
-Multi-node component (work script + say node + dtmf node + case routing + retry-prompt say nodes + optional readback dtmf/case sub-loop).
+Multi-node composite component (work script + Vocalls primitive nodes + optional readback sub-loop).
+
+### Node graph
+
+| id (canonical) | label             | Type        | Role                                                                                            |
+| -------------- | ----------------- | ----------- | ----------------------------------------------------------------------------------------------- |
+| `0`            | `input`           | `transient` | Component entry.                                                                                 |
+| `7`            | `init`            | `script`    | Canonical config-resolution init body + reset `__cdeTry` / `__cdeDigits`.                       |
+| `29`           | `prepare`         | `script`    | Active guard + pre-assign `NextStep_Failure` as the in-flight default.                          |
+| (≥100)         | `prompt`          | `say`       | Plays `Prompt` (and the per-retry `NoInputPrompt` / `InvalidInputPrompt` on back-edges).        |
+| (≥100)         | `collect`         | `dtmf`      | Collects digits; `min/max` from `InputLengthMin/Max`; `termination` from `TerminationCharacter`. |
+| (≥100)         | `validate`        | `case`      | If length ≥ `InputLengthMin`, write `varObj[OutputAttribute]` and set `NextStep`. Else retry.   |
+| (≥100)         | `retryNI`         | `say`       | `NoInputPrompt` then back-edge to `collect`. (Conditional.)                                     |
+| (≥100)         | `retryIC`         | `say`       | `InvalidInputPrompt` then back-edge to `collect`. (Conditional.)                                |
+| (≥100)         | `maxTries`        | `say`       | `MaxTriesPrompt` once before falling through with `NextStep_Failure`.                           |
+| (≥100)         | `readbackPrompt`  | `say`       | (Optional) plays `ReadbackPrompt` then digit-by-digit readback of `__cdeDigits`.                |
+| (≥100)         | `readbackMenu`    | `say`       | (Optional) plays `ReadbackMenu` ("1 to confirm, 2 to re-enter").                                |
+| (≥100)         | `readbackCollect` | `dtmf`      | (Optional) collects single digit from `{ReadbackMenuOptionOK, ReadbackMenuOptionNOK}`.          |
+| (≥100)         | `readbackRoute`   | `case`      | (Optional) OK → fall through to `output`; NOK → reset `__cdeDigits` and back-edge to `collect`. |
+| `6`            | `output`          | `transient` | OnEnter exit log.                                                                                |
+
+Edges (high level): `0 → 7 → 29 → prompt → collect → validate`; on success: `validate → [readback*] → 6`; on retry: `validate → retryNI/retryIC → collect`; on exhaustion: `validate → maxTries → 6`.
 
 `init`:
 
@@ -73,7 +94,7 @@ if (!getValue(__rtParams, 'Active', false)) {
 ```js
 var __min = Number(getValue(__rtParams, 'InputLengthMin', 1));
 if (__cdeDigits.length >= __min) {
-    global[getValue(__rtParams, 'OutputAttribute', 'CallerData')] = __cdeDigits;
+    varObj[getValue(__rtParams, 'OutputAttribute', 'CallerData')] = __cdeDigits;
     global[_rtNextStep] = getValue(__rtParams, 'NextStep', -1);
     Logger.info('[callerDataEntry] collected', { length: __cdeDigits.length, nextStep: global[_rtNextStep] });
 }

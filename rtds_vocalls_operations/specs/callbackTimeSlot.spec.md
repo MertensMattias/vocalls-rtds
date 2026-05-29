@@ -8,6 +8,8 @@
 | Source handler | `rtds_pureconnect_handlers/handlers/NAllo_RTDS_CallbackTimeSlot.xml` |
 | Target file    | n/a — do not generate as a standalone component                      |
 
+> **Sub-operation contract — not a standalone operation.** This spec deviates from the regular Inputs / Outputs / Component-structure shape because `Active` and `NextStep_*` are owned by the parent `callback` component. The tables below document the signal-based contract between this node and its parent.
+
 ## Business purpose
 
 Read out the available callback timeslots one by one and let the caller pick one by DTMF. Returns the chosen index (1-based) and a success/failed status. In the source repo this is a subroutine so the orchestrator can invoke it after the schedule lookup; in Vocalls it is one of the multi-node steps inside `callback`.
@@ -43,18 +45,18 @@ for (var __i = 0; __i < __cbTimeslots.length; __i++) {
 }
 if (__slot) {
     __cbChosenSlot = __pick;
-    global.cbChosenTimeslot = __slot.choice;
-    global.cbChosenStart = __slot.startTime;
-    global.cbChosenEnd = __slot.endTime;
-    Logger.info('[callback] slot picked', { slot: __slot.choice });
+    varObj.cbChosenTimeslot = __slot.choice;
+    varObj.cbChosenStart = __slot.startTime;
+    varObj.cbChosenEnd = __slot.endTime;
+    Logger.info('[callback] slot picked', { slot: __slot.choice, nextStep: __rtNextStep });
 } else {
     __cbChosenSlot = -1;
-    Logger.info('[callback] no slot picked');
+    Logger.info('[callback] no slot picked', { nextStep: __rtNextStep });
 }
 ```
 
 ### Open questions
 
-- The source handler reads its inputs from pipe-delimited call-attribute strings (`ATTR_TimeslotList_CHOICE`, `_STARTTIME`, `_ENDTIME`, `_PROMPT`). The Vocalls version expects the parent `callback` component to materialise these into `__cbTimeslots[]` as objects. Confirm the parsing happens once (in `callback`'s `fetchSchedule` node) rather than on every entry.
+- The source handler reads its inputs from pipe-delimited call-attribute strings (the original PureConnect attribute names). The Vocalls version expects the parent `callback` component to materialise these into `__cbTimeslots[]` as objects. Confirm the parsing happens once (in `callback`'s `fetchSchedule` node) rather than on every entry.
 - The source handler has retry logic when an invalid digit is pressed. The spec above assumes the parent's case node handles retries — confirm the retry budget should live on the parent `callback` (`SlotRetries` Param?) rather than here.
 - Confirm whether the slot count cap (`NumberOfSlots`) is a hard maximum (silently truncate) or whether the caller should be told "<extra> slots were not played".

@@ -1,0 +1,41 @@
+# Anti-patterns — things to avoid
+
+**Scope:** [Component] · **Answers:** *What are the load-bearing wrong moves? Which v1 patterns are retired?*
+
+Each row is a thing that has bitten the project before. When you spot one in a diff, the fix is to switch to the alternative — not to rationalise the deviation.
+
+## v1 → v2 migration
+
+These were valid in v1 and are retired in v2. If you see them in a freshly-generated component, the generator is out of date.
+
+- **No `__rt<Key>` / `__rt<TypePrefix><Key>` splay in master `Code`.** Use `__rtParams` + `getValue(__rtParams, '<Key>', default)` instead. The splay produced one master-`Code` const per Param; v2 collapses them into a single dictionary read by `__setupConfig`. See [component-v2.md §3](component-v2.md).
+- **No `__init` helper in master `Code`.** Gone in v2. The init-node body does the work directly — see [component-v2.md §6](component-v2.md).
+- **No `__outputVar` PropertyDefinition.** Gone in v2. The work body assigns to `global[_rtNextStep]` directly. See [component-v2.md §5](component-v2.md).
+- **Don't copy from `handler_source_file/` or legacy `component_source_file/`.** Those are retired reference directories. The live canonical examples are `sendSms.js` / `sendMail.js` (v2 skill-generated) and `voicemaildetector.js` (hand-built composite).
+
+## Routing-table contract
+
+- **Don't invent endpoint URLs, RTDS Params keys, or exit keys.** Derive them from `RTDS_runtime_spec.md` and the per-Type file in [.claude/skills/vocalls-component-builder/references/operation_bodies/](../.claude/skills/vocalls-component-builder/references/operation_bodies/).
+
+## XML / structural
+
+- **Don't add XML comments or banner separators inside attribute values.** Component XML is consumed by Designer's mxGraph parser, not a JS toolchain — comments inside encoded attribute strings show up verbatim in the canvas. See [encoding.md](encoding.md).
+- **Don't inline the long rounded-rect style on a primitive node.** Use the style alias (`sayNode`, `recognizeNode`, `dtmfInnerNode`, …). See [.claude/skills/vocalls-component-builder/references/node_types.md](../.claude/skills/vocalls-component-builder/references/node_types.md).
+- **Don't make a `*InnerNode` an edge endpoint.** Inner header nodes (`recognizeInnerNode`, `dtmfInnerNode`, `caseInnerNode`, `counterInnerNode`, `numberInnerNode`, `redirectInnerNode`) are visual chrome only. Edges on branching primitives source from the non-chrome child ids (`reactionGroupNode`, `choiceNode`, `expressionNode`, `defaultNode`, `noInputNode`, `notRecognizedNode`). See [component-mxgraph.md §5](component-mxgraph.md).
+- **Don't connect a primitive branch back into the Script (id=29) or the init node (id=7).** Composite-mode primitives flow forward toward the output (id=6). Retry loops route between primitives, never back through the Script. See [.claude/skills/vocalls-component-builder/references/operation_bodies/composite.md](../.claude/skills/vocalls-component-builder/references/operation_bodies/composite.md).
+
+## JS / runtime
+
+- **Don't omit the error callback on `.then(...)`.** Always pair success and error. The missing error path is the most common cause of silent broken flows on a 5xx. See [component-v2.md §7](component-v2.md).
+- **Don't use bare `log_debug` / `log_warn` / `log_error` in component code.** Use `Logger.{debug,info,warn,error}`. Bare calls bypass severity filtering and don't POST warns/errors to the EventLog API. See [logging.md](logging.md).
+- **Don't omit the `nextStep` field from terminal log lines.** It's what stitches a trace together across components. See [logging.md](logging.md).
+- **Don't introduce case-normalisation passes between read and write.** `getValue` is case-insensitive on the read side; `walk` and `applyDefaults` preserve casing on the write side. That asymmetry is intentional — the operator's chosen key casing is the output contract. See [casing.md](casing.md).
+- **Don't try to substitute `${name}` placeholders in primitive attributes via `__setupConfig`.** Primitive attributes are read by the engine, not by component JS. `${name}` resolution inside `Text`, `Expression`, `VariableValue`, etc. is the engine's job (when it does it at all). See [params.md](params.md) and [component-mxgraph.md §8](component-mxgraph.md).
+- **Don't use `function name(...) {}` declarations for component-scoped helpers.** Use `name = function (...) { ... };` (bare globals). Function declarations don't survive cross-node visibility the same way. Exception: the env library `rtds_3_vocallsEnv.js` uses `function name() {}` because it's loaded at runtime startup. See [naming.md](naming.md).
+
+## Reflect on
+
+- **[judgment]** Does the file carry any v1 splay (`__rt<Key>` per-Param), `__init`, or `__outputVar`?
+- **[grep]** Any `function name() {}` declarations inside component XML attribute values?
+- **[judgment]** Any `.then(success)` without a paired error callback?
+- **[grep]** Any explicit case-normalisation between a read and a write?

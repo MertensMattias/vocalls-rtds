@@ -22,7 +22,7 @@ Offer the caller a choice of languages via a DTMF menu, store the picked languag
 | `DynamicPrompt` | string                        | no       | `''`          | Per-choice prompt template. Used when `StaticPrompt` is empty — runtime substitutes the language code into the prompt name. |
 | `Timeout`       | number (seconds)              | no       | `5.0`         | Inter-digit timeout.                                                                                                  |
 | `MaxTries`      | number                        | no       | `1`           | Maximum collection attempts.                                                                                          |
-| `OutputAttribute` | string                      | no       | `'ChosenLanguage'` | Name of the session variable that receives the selected language code.                                            |
+| `OutputAttribute` | string                      | no       | `'ChosenLanguage'` | Name of the call-scoped key on `varObj` that receives the selected language code.                                |
 | `NextStep`      | string (step ID)              | yes      | —             | Continuation step after the language has been recorded (or after the auto-select).                                   |
 
 ### Outputs
@@ -31,11 +31,25 @@ Offer the caller a choice of languages via a DTMF menu, store the picked languag
 | ---------- | ------------------------------------------------------------------------------------------------ | -------- |
 | `NextStep` | Operation is inactive, the language list is single-entry (auto-selected), or the caller picked a valid choice. | `-1`     |
 
-The chosen language code is written to `global[OutputAttribute]` (default `ChosenLanguage`); downstream prompts read it implicitly through the runtime's language resolver. Branch selection is single-target — the language *value* changes session state, not the next-step ID.
+The chosen language code is written to `varObj[OutputAttribute]` (default `ChosenLanguage`); downstream prompts read it implicitly through the runtime's language resolver (`getScoped`). Branch selection is single-target — the language *value* changes session state, not the next-step ID.
 
 ### Component structure
 
-Multi-node component (mirrors `menu`).
+Multi-node composite component (mirrors `menu`).
+
+### Node graph
+
+| id (canonical) | label       | Type        | Role                                                                                       |
+| -------------- | ----------- | ----------- | ------------------------------------------------------------------------------------------ |
+| `0`            | `input`     | `transient` | Component entry.                                                                            |
+| `7`            | `init`      | `script`    | Config-resolution + split `Languages` into `__lmLanguages`.                                 |
+| `29`           | `prepare`   | `script`    | Active guard + `NextStep` pre-assign + single-language auto-select short-circuit.           |
+| (≥100)         | `prompt`    | `say`       | Plays `StaticPrompt`, or per-language `DynamicPrompt` template substituted from `__lmLanguages`. |
+| (≥100)         | `collect`   | `dtmf`      | Collects a single digit; valid set = `1..__lmLanguages.length`; timeout = `Timeout` Param.  |
+| (≥100)         | `route`     | `case`      | Maps `__lmDigit` → array index → writes `varObj[OutputAttribute]`.                          |
+| `6`            | `output`    | `transient` | OnEnter exit log.                                                                            |
+
+Edges: `0 → 7 → 29 → prompt → collect → route → 6`. The case node assigns `varObj[OutputAttribute]` as a side-effect; routing remains single-target (`NextStep`).
 
 `init`:
 
@@ -60,7 +74,7 @@ if (!getValue(__rtParams, 'Active', false)) {
 if (__lmLanguages.length <= 1) {
     var __auto = (__lmLanguages[0] || '').trim();
     if (__auto) {
-        global[getValue(__rtParams, 'OutputAttribute', 'ChosenLanguage')] = __auto;
+        varObj[getValue(__rtParams, 'OutputAttribute', 'ChosenLanguage')] = __auto;
         Logger.info('[languageMenu] auto-selected', { language: __auto, nextStep: global[_rtNextStep] });
     }
     return;
@@ -72,7 +86,7 @@ The case node after the dtmf collect assigns:
 ```js
 var __idx = Number(__lmDigit) - 1;
 if (__idx >= 0 && __idx < __lmLanguages.length) {
-    global[getValue(__rtParams, 'OutputAttribute', 'ChosenLanguage')] = __lmLanguages[__idx].trim();
+    varObj[getValue(__rtParams, 'OutputAttribute', 'ChosenLanguage')] = __lmLanguages[__idx].trim();
 }
 ```
 

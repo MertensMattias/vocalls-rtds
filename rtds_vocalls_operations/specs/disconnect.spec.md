@@ -14,9 +14,10 @@ Hang up the call. Used as the terminal hand-off at the end of any flow that shou
 
 ### Inputs (Params)
 
-| Param name | Type    | Required | Default | Description                                                                                |
-| ---------- | ------- | -------- | ------- | ------------------------------------------------------------------------------------------ |
-| `Active`   | boolean | no       | `false` | If falsy, the operation logs a skip and exits to `NextStep`. Universal across operations.  |
+| Param name | Type             | Required | Default | Description                                                                                                                          |
+| ---------- | ---------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `Active`   | boolean          | no       | `false` | If falsy, the operation logs a skip and exits to `NextStep`. Universal across operations.                                            |
+| `NextStep` | string (step ID) | yes      | —       | Continuation when the operation is inactive. (When active, the call is released by the Vocalls Disconnect GUI node — see Outputs.)   |
 
 ### Outputs
 

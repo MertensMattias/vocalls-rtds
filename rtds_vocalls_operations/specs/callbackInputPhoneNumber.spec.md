@@ -8,6 +8,8 @@
 | Source handler | `rtds_pureconnect_handlers/handlers/Nallo_RTDS_CallbackInputPhoneNumber.xml` |
 | Target file    | n/a — do not generate as a standalone component                             |
 
+> **Sub-operation contract — not a standalone operation.** This spec deviates from the regular Inputs / Outputs / Component-structure shape because `Active` and `NextStep_*` are owned by the parent `callback` component. The tables below document the signal-based contract between this node and its parent.
+
 ## Business purpose
 
 Resolve the callback target phone number. Two paths:

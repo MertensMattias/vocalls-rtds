@@ -19,7 +19,8 @@ Play one or more TTS prompts to the caller and continue to the next step. Used f
 | `Active`        | boolean                       | no       | `false` | If falsy, the operation logs a skip and exits to `NextStep`. Universal across operations.                                    |
 | `Prompt`        | string (pipe-delimited list)  | yes      | —       | One or more prompt IDs/strings to play, joined with `|`. Resolved against the prompt library by the runtime.                 |
 | `TimeInterval`  | string (`HHMM-HHMM`)          | no       | `''`    | Active time window. If set, the operation only plays the prompt when current time is inside the window; otherwise skipped.   |
-| `InQueue`       | boolean                       | no       | `false` | If true, the runtime listens for the configured queue-escape DTMF key during playback.                                       |
+| `InQueue`       | boolean                       | no       | `false` | If true, the downstream PlayPrompt GUI node listens for the configured queue-escape DTMF key during playback.                |
+| `NextStep`      | string (step ID)              | yes      | —       | Continuation after playback (or skip). Universal across operations.                                                           |
 
 ### Outputs
 

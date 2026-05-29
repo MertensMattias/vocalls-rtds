@@ -14,12 +14,13 @@ Play a pre-recorded audio file (hold music, a recorded announcement, a notificat
 
 ### Inputs (Params)
 
-| Param name    | Type    | Required | Default | Description                                                                                                                |
-| ------------- | ------- | -------- | ------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `Active`      | boolean | no       | `false` | If falsy, the operation logs a skip and exits to `NextStep`. Universal across operations.                                  |
-| `AudioSource` | string  | yes      | —       | Audio asset identifier resolved by the runtime (e.g. a `.wav` filename or library key).                                    |
-| `Timeout`     | number  | no       | `0`     | Maximum playback duration in seconds. `0` plays the file to completion.                                                    |
-| `InQueue`     | boolean | no       | `false` | If true, the runtime listens for the configured queue-escape DTMF key during playback.                                     |
+| Param name    | Type             | Required | Default | Description                                                                                                                |
+| ------------- | ---------------- | -------- | ------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `Active`      | boolean          | no       | `false` | If falsy, the operation logs a skip and exits to `NextStep`. Universal across operations.                                  |
+| `AudioSource` | string           | yes      | —       | Audio asset identifier resolved by the runtime (e.g. a `.wav` filename or library key).                                    |
+| `Timeout`     | number           | no       | `0`     | Maximum playback duration in seconds. `0` plays the file to completion. Projected to the downstream PlayAudio GUI node.    |
+| `InQueue`     | boolean          | no       | `false` | If true, the downstream PlayAudio GUI node listens for the configured queue-escape DTMF key during playback.               |
+| `NextStep`    | string (step ID) | yes      | —       | Continuation after playback (or skip). Universal across operations.                                                         |
 
 ### Outputs
 

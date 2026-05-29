@@ -19,7 +19,7 @@ Write one or more session variables in a single hop. Used to thread state throug
 | `Active`         | boolean          | no       | `false` | If falsy, the operation logs a skip and exits to `NextStep`. Universal across operations.                                            |
 | `NextStep`       | string (step ID) | yes      | —       | Continuation after the writes (always taken in active mode).                                                                          |
 | `LogAttributes`  | boolean          | no       | `false` | If true, the per-attribute write is logged at info level. If false (default), only the summary count is logged. Reserved for sensitive data. |
-| `<any other key>`| any              | yes (≥1) | —       | Every other Param is written verbatim: `global[<Key>] = <Value>`. Control keys (`Active`, `NextStep`, `LogAttributes`) are excluded.   |
+| `<any other key>`| any              | yes (≥1) | —       | Every other Param is written verbatim to the call-scoped store: `varObj[<Key>] = <Value>`. Control keys (`Active`, `NextStep`, `LogAttributes`) are excluded. Downstream reads should use `getScoped(<Key>, default)` so legacy globals still resolve while flows migrate. |
 
 ### Outputs
 
@@ -52,7 +52,7 @@ var __written = 0;
 
 walk(__rtParams, function (key, value) {
     if (__CONTROL_KEYS[key]) return;
-    global[key] = value;
+    varObj[key] = value;
     __written++;
 });
 
@@ -74,3 +74,4 @@ None — this spec captures the existing reference component verbatim.
 
 - The source handler also filters out PureConnect-specific prefixes (`Type`, `snCreated`, `snModified`, `Eic_*`, `RTDS_*`, `Custom_*`, `ATTR_*`). The Vocalls version writes everything not in `__CONTROL_KEYS` directly. Any operator-side filtering needs to be done by *not configuring* those keys on the operation's Params, not by the component.
 - `LogAttributes` is in the contract but is *not* currently wired up in the reference component. If the operator wants per-write logging, extend the `walk` callback to emit `Logger.info('[setAttributes] wrote', { key, value })` when `LogAttributes` is true. Flag as a known divergence.
+- **Storage contract**: all RTDS-set call data lives on `varObj`. The only writes to `global` from `SetAttributes` are the flow-control plumbing line `global[_rtNextStep] = NextStep`. Platform-managed globals — `_headers`, `environment`, `language`, `_rtBaseUrl`, `_rtConfig`, plus `RTDS_*` keys on `context.session.variables` — are owned by the runtime and outside the SetAttributes contract. Cross-store reads in other components should use `getScoped(key, default)` (defined in `rtds_3_vocallsEnv.js`), which prefers `varObj` and falls back to `global` so legacy flows keep working during migration.
