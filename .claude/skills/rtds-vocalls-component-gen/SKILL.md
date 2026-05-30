@@ -13,6 +13,11 @@ Produces one **v2 RTDS operation component** — a Vocalls Designer `<mxGraphMod
 **Not for:** PureConnect handler XML, v1 components (`__rt<Key>` splay), or retired
 `handler_source_file/` trees.
 
+> **Vocabulary:** "v2" (this skill, `conventions/`) and "Style A" (the
+> `node_types.md` / `primitive_examples.md` reference files) name the **same**
+> sendSms-shaped component. "Style B" = the multi-output native-composite shape —
+> out of scope here.
+
 ---
 
 ## Start here

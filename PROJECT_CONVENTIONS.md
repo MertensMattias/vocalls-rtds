@@ -106,7 +106,7 @@ This is the source of truth for forward-looking conventions. Other docs inherit:
 
 - **[CLAUDE.md](CLAUDE.md)** — repo-root quick reference. Mentions PROJECT_CONVENTIONS.md and the top-five rules, but defers detail here.
 - **[AGENTS.md](AGENTS.md)** — sibling of CLAUDE.md using the cross-vendor agent-config convention. Same content.
-- **[.claude/skills/vocalls-component-builder/references/conventions.md](.claude/skills/vocalls-component-builder/references/conventions.md)** — component-shape detail for the skill that generates components. When the skill's conventions disagree with this doc, **this doc wins** and the skill ref gets a fix.
+- **[.claude/skills/rtds-vocalls-component-gen/](.claude/skills/rtds-vocalls-component-gen/SKILL.md)** — the component-generator skill; its bundled `conventions/` tree is a portable copy of the rules below. When the skill's conventions disagree with this doc, **this doc wins** and the skill copy gets a fix.
 - **`rtds_vocalls_operations/specs/<componentName>.spec.md`** — per-operation business spec (purpose, inputs, outputs, branches). Inherits storage / logging / casing from this doc.
 - **`docs/solutions/`** — postmortems and durable learnings from solved problems. Managed by `/ce-compound`.
 

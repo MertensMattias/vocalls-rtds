@@ -23,7 +23,7 @@ This file is the cross-vendor agent-config entry point. [CLAUDE.md](CLAUDE.md) i
 - `templates/` — copied by `npm run init`
 - `projects/<name>/` — runtime workspace (not committed by default)
 - `references/rtds/` — RTDS spec, runtime JS, swagger, handler/component XML (read-only reference)
-- `.claude/skills/vocalls-component-builder/` — skill for generating Vocalls Designer components
+- `.claude/skills/rtds-vocalls-component-gen/` — skill for generating Vocalls Designer components
 
 ## Conventions
 

@@ -6,7 +6,7 @@ when anything looks off — it is the structural source of truth.
 
 ## Master layer
 
-- [ ] Master-layer attribute order matches §1.1 of [component-v2.md](../conventions/component-v2.md) exactly.
+- [ ] Master-layer attribute order matches §2 of [component-v2.md](../conventions/component-v2.md) exactly.
 - [ ] `id` is `vocalls-master-layer`.
 - [ ] `Languages` contains the project default (`nl-BE`, `isDefault: true`).
 - [ ] `BackgroundNoise="true"`, `BreathInEffect="true"`,
@@ -35,7 +35,7 @@ when anything looks off — it is the structural source of truth.
 - [ ] HTTP operations declare `__rtBaseUrl = _rtBaseUrl;` and
       `__rtEndpoint = _rt<TypePrefix>Endpoint;`.
 - [ ] `__rtNextStep &= _rtNextStep;` (binding operator, not a typo — see
-      conventions §1.4).
+      component-v2.md §4).
 
 ## Master `PropertiesDefinition`
 
@@ -49,7 +49,7 @@ when anything looks off — it is the structural source of truth.
 
 - [ ] Four objects (`input`, `init`, `script`, `output`) with ids
       `0`, `7`, `29`, `6` respectively (bare numeric strings).
-- [ ] Geometry matches §1.6 of [component-v2.md](../conventions/component-v2.md) exactly.
+- [ ] Geometry matches §1 of [component-v2.md](../conventions/component-v2.md) exactly.
 - [ ] Style aliases used: `transientNode`, `scriptNode`.
 - [ ] No long inline `rounded=1;arcSize=8;strokeWidth=1;...` styles on any
       node.
@@ -57,7 +57,7 @@ when anything looks off — it is the structural source of truth.
 ## Edges
 
 - [ ] Three edges: `28` (0→7), `30` (7→29), `38` (29→6).
-- [ ] Each edge uses the bare orthogonal style string from §1.6.
+- [ ] Each edge uses the bare orthogonal style string from §1.
 - [ ] No `startArrow`, `startFill`, or `strokeColor` overrides.
 - [ ] No `entryX/entryY` overrides.
 
@@ -135,7 +135,7 @@ primitives were emitted between the Script (id=29) and the output (id=6),
 skip this section.
 
 - [ ] The four canonical ids (`0`, `7`, `29`, `6`) and their geometry are
-      unchanged from §1.6 of [component-v2.md](../conventions/component-v2.md).
+      unchanged from §1 of [component-v2.md](../conventions/component-v2.md).
 - [ ] The two canonical pre-Script edges are present: `28` (0→7) and
       `30` (7→29). Edge `38` (29→6) is replaced by a chain that ends at
       id=6.

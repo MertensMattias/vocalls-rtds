@@ -398,54 +398,45 @@ function resolveNextStep(op, resultKey) {
 }
 
 // ===========================================================================
-// executeSetAttributes(op)
-//   JS-handled operation. Writes each Param onto varObj (the call-scoped
-//   store — see conventions/storage.md). Handles LogAttributes as a debug
-//   side-effect (not stored), reading values through the getScoped contract.
-//   NextStep controls flow only and is never stored. Returns { nextStepId }.
+// executeSetVariables(op)
+//   JS-handled operation (supersedes SetAttributes). Writes each non-control
+//   Param to its dot-path target via setVariable — a bare key lands on varObj
+//   (the call-scoped store, see conventions/storage.md), a dotted key targets
+//   varObj/globalThis/a named reachable object. Values keep their native JSON
+//   type; only strings are token-resolved. Control keys (Active, NextStep) are
+//   never stored. NextStep controls flow only. Returns { nextStepId }.
 // ===========================================================================
 
 /**
  * @param {Object} op
  * @returns {{ nextStepId: ?string }}
  */
-function executeSetAttributes(op) {
+function executeSetVariables(op) {
   var params = op.params;
   if (!params) {
     return { nextStepId: null };
   }
 
+  var CONTROL = { active: 1, nextstep: 1 };
+
   var keys = Object.keys(params);
+  var written = 0;
   for (var i = 0; i < keys.length; i++) {
     var key = keys[i];
-
-    if (key === "NextStep") {
+    if (CONTROL[String(key).toLowerCase()]) {
       continue;
     }
 
-    if (key === "LogAttributes") {
-      var attrNames = String(params[key]).split("|");
-      var parts = [];
-      for (var j = 0; j < attrNames.length; j++) {
-        var attrName = attrNames[j].replace(/^\s+|\s+$/g, "");
-        if (attrName) {
-          var attrVal = getScoped(attrName, "");
-          parts.push(attrName + "=" + attrVal);
-        }
-      }
-      Logger.debug("[RTDS] LogAttributes", { attributes: parts.join(" | ") });
-      continue;
-    }
-
-    var value = resolveTokens(getParam(op, key, null));
-    if (value !== null && value !== undefined) {
-      varObj[key] = value;
-    }
+    var raw = getParam(op, key, null); // unwrap array form, keep native type
+    var value = typeof raw === "string" ? resolveTokens(raw) : raw; // strings only
+    setVariable(key, value); // dot-path write; varObj by default
+    written++;
   }
 
   var nextStepId = resolveNextStep(op, null);
-  Logger.debug("[RTDS] SetAttributes done", {
+  Logger.debug("[RTDS] SetVariables done", {
     opName: op.name,
+    count: written,
     nextStep: nextStepId ? nextStepId : "(none)",
   });
   return { nextStepId: nextStepId };
@@ -454,14 +445,10 @@ function executeSetAttributes(op) {
 // ===========================================================================
 // prepareGuiHandoff(op)
 //   Sets the dispatcher handoff state on context.session.variables:
-//   RTDS_currentOpId / RTDS_currentOpType, and pre-populates RTDS_nextStepId
-//   with the default NextStep (the component overwrites it with its chosen
-//   branching outcome before re-entry).
-//
-//   The runtime does NOT mirror op.params into session variables. Each GUI
-//   component is the source of truth for its own config (Style A components
-//   parse their __configJSON via __setupConfig). See the GUI DISPATCH PLAYBOOK
-//   in callScripts/main.js §6.
+//   RTDS_currentOpId / RTDS_currentOpType, RTDS_currentOpConfig (op.params
+//   delivered to the component), and pre-populates RTDS_nextStepId with the
+//   default NextStep (the component overwrites it with its chosen branching
+//   outcome before re-entry).
 // ===========================================================================
 
 /**
@@ -473,6 +460,7 @@ function prepareGuiHandoff(op) {
 
   vars.RTDS_currentOpId = op.id;
   vars.RTDS_currentOpType = op.type;
+  vars.RTDS_currentOpConfig = op.params || {};
 
   var defaultNext = resolveNextStep(op, null);
   if (defaultNext) {
@@ -1046,13 +1034,16 @@ function executeSendEmail(op) {
 // ===========================================================================
 
 // --- Real JS handlers ---
-// SetAttributes writes operator attributes onto varObj. SendSMS / SendEmail
+// SetVariables writes operator variables to dot-path targets (varObj by
+// default). It supersedes the old SetAttributes Type via a hard cut — the
+// SetAttributes alias is intentionally NOT registered (see
+// specs/setVariables.spec.md Migration / Open questions). SendSMS / SendEmail
 // run inline as async JS handlers (POST to the RTDS gateway, branch on the
 // response) — same payload + branch contract as the canvas components in
 // rtds_vocalls_operations/components/. Condition / Emergency / Schedule /
 // FlowJump are NOT registered yet: they need real data sources wired in and
 // will be added back with correct implementations.
-registerRtdsOperation("SetAttributes", executeSetAttributes);
+registerRtdsOperation("SetVariables", executeSetVariables);
 registerRtdsOperation("SendSMS", executeSendSms);
 registerRtdsOperation("SendEmail", executeSendEmail);
 

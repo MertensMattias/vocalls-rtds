@@ -24,7 +24,7 @@ references/             read-only reference material (RTDS spec, runtime, XML, s
 env.config.json         project registry and active project
 ```
 
-See `references/rtds/README.md` for the RTDS reference index (spec, runtime JS, swagger, example call scripts, handler/component XML) and `references/vocalls-component-builder/` for the Vocalls Designer component-builder skill.
+See `references/rtds/README.md` for the RTDS reference index (spec, runtime JS, swagger, example call scripts, handler/component XML) and `.claude/skills/rtds-vocalls-component-gen/` for the Vocalls Designer component-generator skill.
 
 ## Commands
 

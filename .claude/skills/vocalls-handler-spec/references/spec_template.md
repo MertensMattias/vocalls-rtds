@@ -16,7 +16,7 @@ Section budgets (in lines) are noted next to each heading.
 | ------------------ | ------------------------------------------------------- |
 | Operation Type     | `<OperationType>`                                        |
 | Component name     | `<componentName>` (camelCase)                            |
-| Pattern            | `<http_call \| gui_exit \| set_attributes \| condition \| flow_jump>` (per [operation_bodies/INDEX.md](../../vocalls-component-builder/references/operation_bodies/INDEX.md)) |
+| Pattern            | `<http_call \| gui_exit \| set_attributes \| condition \| flow_jump>` (per [operation_bodies/INDEX.md](../../rtds-vocalls-component-gen/references/operation_bodies/INDEX.md)) |
 | Source handler     | `rtds_pureconnect_handlers/handlers/NAllo_RTDS_<X>.xml`  |
 | Target file        | `rtds_vocalls_operations/components/<componentName>.js`  |
 ```
@@ -52,7 +52,7 @@ Routing attribute, then …" (this is the XML, not the purpose).
 | `Active`          | boolean                       | no       | `false`      | If falsy, the operation logs a skip and exits to `NextStep`. Universal across all operations.              |
 | `Routing`         | string                        | yes      | —            | SMS gateway routing token (provider-specific).                                                              |
 | `From`            | string (E.164 or sender name) | yes      | —            | Sender identifier.                                                                                          |
-| `To`              | string (E.164)                | yes      | —            | Recipient number. Validated against `__isMobileNumber` (see [http_call.md](../../vocalls-component-builder/references/operation_bodies/http_call.md)). |
+| `To`              | string (E.164)                | yes      | —            | Recipient number. Validated against `__isMobileNumber` (see [http_call.md](../../rtds-vocalls-component-gen/references/operation_bodies/http_call.md)). |
 | `Body`            | string (max 1600 chars)       | yes      | —            | Message body. Token resolution (`$(...)`) is applied by the runtime.                                        |
 | `Reference`       | string                        | no       | `''`         | Optional operator-supplied reference, echoed in the gateway response.                                       |
 ```
@@ -150,7 +150,7 @@ State the pattern (one line) and a tight JS sketch in Vocalls style:
 ```markdown
 ### Work-body sketch
 
-Pattern: `http_call` (see [operation_bodies/http_call.md](../../vocalls-component-builder/references/operation_bodies/http_call.md)).
+Pattern: `http_call` (see [operation_bodies/http_call.md](../../rtds-vocalls-component-gen/references/operation_bodies/http_call.md)).
 
 \`\`\`js
 // Pre-assign the "skipped" default outcome.

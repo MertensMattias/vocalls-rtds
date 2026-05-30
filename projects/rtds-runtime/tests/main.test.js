@@ -23,7 +23,7 @@ var LOGGER_STUB_URL = 'https://api.n-allo.be/ivrapi-acc/api/EventLog';
 var ROUTING_TABLE_URL =
     'https://api.n-allo.be/routingtablesapi-acc/api/routing-table/source?sourceId=080012345';
 
-// Minimal routing-table response — one SetAttributes op, no NextStep so the
+// Minimal routing-table response — one SetVariables op, no NextStep so the
 // loop ends cleanly with 'disconnect'. Keeps the test fast and avoids a
 // second stub for any GUI-exit path.
 var ROUTING_TABLE_STUB = {
@@ -38,7 +38,7 @@ var ROUTING_TABLE_STUB = {
         operations: [
             {
                 id: '00000',
-                type: 'SetAttributes',
+                type: 'SetVariables',
                 name: 'Init',
                 isFirstOperation: true,
                 params: { TestKey: 'TestValue' }
@@ -90,7 +90,9 @@ describe('rtds-runtime main.js', function () {
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
             .then(function (result) {
                 expect(typeof result.sandbox.RTDS_OPERATIONS.get).toBe('function');
-                expect(result.sandbox.RTDS_OPERATIONS.has('SetAttributes')).toBe(true);
+                expect(result.sandbox.RTDS_OPERATIONS.has('SetVariables')).toBe(true);
+                // SetAttributes was hard-cut (superseded by SetVariables).
+                expect(result.sandbox.RTDS_OPERATIONS.has('SetAttributes')).toBe(false);
                 expect(typeof result.sandbox.RTDS_EXIT_KEYS.get).toBe('function');
                 expect(result.sandbox.RTDS_EXIT_KEYS.get('PlayPrompt')).toBe('play_prompt');
                 expect(result.sandbox.OP_VAR_PREFIX).toBeUndefined();
@@ -114,7 +116,7 @@ describe('rtds-runtime main.js', function () {
             });
     });
 
-    it('executeSetAttributes writes Params to varObj, not global', function () {
+    it('executeSetVariables writes a bare key to varObj, not global', function () {
         return helpers
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
             .then(function (result) {
@@ -122,14 +124,47 @@ describe('rtds-runtime main.js', function () {
                 // Clean slate on both stores before invoking the handler
                 delete sb.varObj.TestKey;
                 delete sb.TestKey;
-                sb.executeSetAttributes({
+                var out = sb.executeSetVariables({
                     id: 'unit-1',
-                    name: 'unit-setattrs',
-                    type: 'SetAttributes',
+                    name: 'unit-setvars',
+                    type: 'SetVariables',
                     params: { TestKey: 'TestValue', NextStep: '00001' }
                 });
                 expect(sb.varObj.TestKey).toBe('TestValue');
                 expect(sb.TestKey).toBeUndefined();
+                expect(out.nextStepId).toBe('00001');
+            });
+    });
+
+    it('executeSetVariables preserves native JSON types and writes dot-paths', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                delete sb.varObj.IVREvent;
+                delete sb.varObj.IsHelpdeskCall;
+                delete sb.varObj.auth;
+                delete sb.debugCall;
+                sb.executeSetVariables({
+                    id: 'unit-2', name: 'unit-setvars-2', type: 'SetVariables',
+                    params: {
+                        IVREvent: 9999,
+                        IsHelpdeskCall: true,
+                        StrDigits: '123456',
+                        'auth.verified': true,
+                        'auth.method': 'pin',
+                        'globalThis.debugCall': true,
+                        NextStep: '00002'
+                    }
+                });
+                expect(sb.varObj.IVREvent).toBe(9999);
+                expect(typeof sb.varObj.IVREvent).toBe('number');
+                expect(sb.varObj.IsHelpdeskCall).toBe(true);
+                expect(sb.varObj.StrDigits).toBe('123456');
+                expect(typeof sb.varObj.StrDigits).toBe('string');
+                expect(sb.varObj.auth).toEqual({ verified: true, method: 'pin' });
+                expect(sb.debugCall).toBe(true);
+                expect('NextStep' in sb.varObj).toBe(false);
             });
     });
 

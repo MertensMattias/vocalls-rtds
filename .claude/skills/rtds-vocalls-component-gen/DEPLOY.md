@@ -20,7 +20,7 @@ cp projects/rtds-runtime/globalLibraries/active/rtds_{3_vocallsEnv,1_globalConfi
 python "$SKILL/scripts/bundle_paths.py"
 ```
 
-Re-copy `operation_bodies/`, `checklist.md`, etc. from `vocalls-component-builder` when those change.
+`operation_bodies/`, `checklist.md`, `node_types.md`, and `primitive_examples.md` are now maintained here directly — this skill is their canonical home. (They were originally seeded from the deprecated `vocalls-component-builder` skill.)
 
 ## Package zip
 

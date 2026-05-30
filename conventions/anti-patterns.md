@@ -15,14 +15,14 @@ These were valid in v1 and are retired in v2. If you see them in a freshly-gener
 
 ## Routing-table contract
 
-- **Don't invent endpoint URLs, RTDS Params keys, or exit keys.** Derive them from `RTDS_runtime_spec.md` and the per-Type file in [.claude/skills/vocalls-component-builder/references/operation_bodies/](../.claude/skills/vocalls-component-builder/references/operation_bodies/).
+- **Don't invent endpoint URLs, RTDS Params keys, or exit keys.** Derive them from `RTDS_runtime_spec.md` and the per-Type file in [.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/](../.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/).
 
 ## XML / structural
 
 - **Don't add XML comments or banner separators inside attribute values.** Component XML is consumed by Designer's mxGraph parser, not a JS toolchain — comments inside encoded attribute strings show up verbatim in the canvas. See [encoding.md](encoding.md).
-- **Don't inline the long rounded-rect style on a primitive node.** Use the style alias (`sayNode`, `recognizeNode`, `dtmfInnerNode`, …). See [.claude/skills/vocalls-component-builder/references/node_types.md](../.claude/skills/vocalls-component-builder/references/node_types.md).
+- **Don't inline the long rounded-rect style on a primitive node.** Use the style alias (`sayNode`, `recognizeNode`, `dtmfInnerNode`, …). See [.claude/skills/rtds-vocalls-component-gen/references/node_types.md](../.claude/skills/rtds-vocalls-component-gen/references/node_types.md).
 - **Don't make a `*InnerNode` an edge endpoint.** Inner header nodes (`recognizeInnerNode`, `dtmfInnerNode`, `caseInnerNode`, `counterInnerNode`, `numberInnerNode`, `redirectInnerNode`) are visual chrome only. Edges on branching primitives source from the non-chrome child ids (`reactionGroupNode`, `choiceNode`, `expressionNode`, `defaultNode`, `noInputNode`, `notRecognizedNode`). See [component-mxgraph.md §5](component-mxgraph.md).
-- **Don't connect a primitive branch back into the Script (id=29) or the init node (id=7).** Composite-mode primitives flow forward toward the output (id=6). Retry loops route between primitives, never back through the Script. See [.claude/skills/vocalls-component-builder/references/operation_bodies/composite.md](../.claude/skills/vocalls-component-builder/references/operation_bodies/composite.md).
+- **Don't connect a primitive branch back into the Script (id=29) or the init node (id=7).** Composite-mode primitives flow forward toward the output (id=6). Retry loops route between primitives, never back through the Script. See [.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/composite.md](../.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/composite.md).
 
 ## JS / runtime
 

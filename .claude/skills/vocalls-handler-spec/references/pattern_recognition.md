@@ -49,7 +49,7 @@ if (!getValue(__rtParams, 'Active', false)) {
 
 The default-outcome (`global[_rtNextStep] = getValue(__rtParams,
 'NextStep', -1)`) is pre-assigned **before** the guard. See
-[http_call.md](../../vocalls-component-builder/references/operation_bodies/http_call.md).
+[http_call.md](../../rtds-vocalls-component-gen/references/operation_bodies/http_call.md).
 
 ## 3. The `$(TOKEN)` round-trip
 
@@ -71,7 +71,7 @@ Step B: Assignment
 `$(`, fall back to the raw Param value; otherwise use the resolved value."
 This was needed in PureConnect because token resolution happened in a
 separate step. In Vocalls the runtime resolves tokens during the read
-(see [RTDS_runtime_spec.md §4.5 `resolveTokens`](../../vocalls-component-builder/references/RTDS_runtime_spec.md)).
+(see [RTDS_runtime_spec.md §4.5 `resolveTokens`](../../rtds-vocalls-component-gen/references/RTDS_runtime_spec.md)).
 
 **Spec equivalent:** drop the round-trip, document the value as a single
 Param read.
@@ -89,7 +89,7 @@ Step: DsLookup/Parse String
 
 **Vocalls meaning:** the Param `<Key>` is a `|`-delimited list. Vocalls
 handles this with `__splitDelimitedList(getValue(__rtParams, '<Key>'),
-'|')` or similar — see [canonical_helpers.js](../../vocalls-component-builder/references/canonical_helpers.js).
+'|')` or similar — see [canonical_helpers.js](../../rtds-vocalls-component-gen/references/canonical_helpers.js).
 
 **Spec equivalent:** note the Param as `type: string (pipe-delimited
 list)` in the Inputs table. Don't show the split as a separate step.
@@ -137,7 +137,7 @@ a `try/catch` guarding a synchronous step.
 both callbacks populated and the failure branch logged with
 `Logger.warn` (handled failure — the server answered with a non-success)
 or `Logger.error` (transport-level failure / exception). See
-[conventions.md §3.3](../../vocalls-component-builder/references/conventions.md).
+[logging.md](../../rtds-vocalls-component-gen/conventions/logging.md).
 
 ## 7. The cross-handler subroutine call
 
@@ -186,7 +186,7 @@ default outcome.
 
 **Spec equivalent:** the empty default maps to the **`NextStep`** Param
 (no suffix) being used as the catch-all in
-[http_call.md §1 "Pre-assign the 'did nothing' default outcome"](../../vocalls-component-builder/references/operation_bodies/http_call.md). Note `NextStep` in the Outputs table without a special branch label.
+[http_call.md §1 "Pre-assign the 'did nothing' default outcome"](../../rtds-vocalls-component-gen/references/operation_bodies/http_call.md). Note `NextStep` in the Outputs table without a special branch label.
 
 ## How to use this file
 

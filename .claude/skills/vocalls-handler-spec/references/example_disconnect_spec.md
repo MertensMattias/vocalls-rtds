@@ -66,7 +66,7 @@ the call is terminated.
 
 ### Work-body sketch
 
-Pattern: `gui_exit` (terminal variant) — see [operation_bodies/gui_exit.md](../../vocalls-component-builder/references/operation_bodies/gui_exit.md).
+Pattern: `gui_exit` (terminal variant) — see [operation_bodies/gui_exit.md](../../rtds-vocalls-component-gen/references/operation_bodies/gui_exit.md).
 
 \`\`\`js
 global[_rtNextStep] = getValue(__rtParams, 'NextStep', -1);

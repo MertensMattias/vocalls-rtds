@@ -3,12 +3,19 @@
 This file is the **vocabulary catalogue** for the Vocalls Designer primitive
 nodes that the engine dispatches natively. The source palette is the
 right-hand block of
-[examples/available_nodes_tempalte.js](examples/available_nodes_tempalte.js).
+[examples/available_nodes_template.js](examples/available_nodes_template.js).
 
 This file is **catalogue only** — it documents shape, attributes, child
 structure, and edge contract per Type. Compositional rules (how to wire
 primitives into a v2 component) live in
 [operation_bodies/composite.md](operation_bodies/composite.md).
+
+## Contents
+
+- [Universal rules — read first](#universal-rules--read-first)
+- Linear-flow Types: [`setvar`](#type--setvar) · [`say`](#type--say) · [`pause`](#type--pause)
+- Branching Types: [`recognize`](#type--recognize) · [`case`](#type--case) · [`counter`](#type--counter) · [`number`](#type--number) · [`redirect`](#type--redirect) · [`dtmf`](#type--dtmf)
+- [Cross-reference](#cross-reference)
 
 ## Universal rules — read first
 
@@ -371,7 +378,7 @@ Branching per-key DTMF dispatcher.
 - Ground-truth XML examples for layout, parent references, and edge
   wiring: [primitive_examples.md](primitive_examples.md).
 - The palette source file:
-  [examples/available_nodes_tempalte.js](examples/available_nodes_tempalte.js).
+  [examples/available_nodes_template.js](examples/available_nodes_template.js).
 - Composition rules (how primitives sit between Script and output):
   [operation_bodies/composite.md](operation_bodies/composite.md).
 - Style aliases and master-attribute order:

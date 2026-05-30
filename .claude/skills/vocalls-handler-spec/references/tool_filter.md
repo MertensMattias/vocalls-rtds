@@ -26,7 +26,7 @@ disappear:
 | Step shape                                                                                       | Why it's overhead                                                                                                                                                              |
 | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `Set Attribute` writing `"ATTR_AttendantProfile"` (= `"RTDS"`)                                  | Marks the call as RTDS-routed. Implicit in Vocalls.                                                                                                                            |
-| `Set Attribute` writing `"RTDS_Path"`, `"RTDS_ProjectId"`, `"RTDS_ProjectName"`, `"RTDS_PromptLibrary"`, `"RTDS_SupportedLanguages"` | Header bag from `parseFlow`. Vocalls runtime already writes the equivalent (`RTDS_sourceId`, `RTDS_name`, `RTDS_project`, `RTDS_promptLibrary`, `RTDS_supportedLanguages`) per [RTDS_runtime_spec.md §3](../../vocalls-component-builder/references/RTDS_runtime_spec.md). |
+| `Set Attribute` writing `"RTDS_Path"`, `"RTDS_ProjectId"`, `"RTDS_ProjectName"`, `"RTDS_PromptLibrary"`, `"RTDS_SupportedLanguages"` | Header bag from `parseFlow`. Vocalls runtime already writes the equivalent (`RTDS_sourceId`, `RTDS_name`, `RTDS_project`, `RTDS_promptLibrary`, `RTDS_supportedLanguages`) per [RTDS_runtime_spec.md §3](../../rtds-vocalls-component-gen/references/RTDS_runtime_spec.md). |
 | Any other `Set Attribute` writing a `"RTDS_*"` or `"ATTR_*"` literal not on the component-Params list | Bookkeeping for downstream IVR. No Vocalls equivalent.                                                                                                                         |
 
 **Exception:** a `Set Attribute` whose attribute name is **not** in the
@@ -77,7 +77,7 @@ var __key = getValue(__rtParams, '<Key>');
 ```
 
 `getValue` returns the value already token-resolved by the RTDS runtime
-([RTDS_runtime_spec.md §4.5 `resolveTokens`](../../vocalls-component-builder/references/RTDS_runtime_spec.md)).
+([RTDS_runtime_spec.md §4.5 `resolveTokens`](../../rtds-vocalls-component-gen/references/RTDS_runtime_spec.md)).
 
 ## Keep — these are business logic
 

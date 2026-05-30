@@ -12,7 +12,7 @@ name is **bold**.
 
 | PureConnect handler                       | Vocalls Type            | Vocalls pattern                                                                  | Notes                                                                                                                 |
 | ----------------------------------------- | ----------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `NAllo_RTDS.xml`                          | (the runtime itself)    | n/a                                                                              | The top-level dispatcher. Vocalls equivalent is the Script-node entry points in [RTDS_runtime_spec.md §7](../../vocalls-component-builder/references/RTDS_runtime_spec.md). Don't spec this — it's not an operation. |
+| `NAllo_RTDS.xml`                          | (the runtime itself)    | n/a                                                                              | The top-level dispatcher. Vocalls equivalent is the Script-node entry points in [RTDS_runtime_spec.md §7](../../rtds-vocalls-component-gen/references/RTDS_runtime_spec.md). Don't spec this — it's not an operation. |
 | `NAllo_RTDS_Disconnect.xml`               | `Disconnect`            | `gui_exit` (terminal — no `RTDS_nextStepId`)                                     | Hangs up. Optional prompt before disconnect.                                                                          |
 | `NAllo_RTDS_SendSMS.xml`                  | `SendSMS`               | `http_call`                                                                      | Calls SMS gateway. Active/Routing/From/To/Body/Reference Params.                                                       |
 | `NAllo_RTDS_SendEmail.xml`                | `SendEmail`             | `gui_exit` (or `http_call` depending on operator deployment — confirm)            | The handler shape decides — if it issues an HTTP call, it's `http_call`; if it hands off to a downstream Email GUI node, it's `gui_exit`. |
@@ -64,8 +64,8 @@ this signal:
 Confirm a Type by the Param keys you found in the handler (the unique
 literal strings in `Find(p_lsAttrNames, "<Key>", 0)` calls). The
 authoritative list lives in
-[RTDS_runtime_spec.md §1.5](../../vocalls-component-builder/references/RTDS_runtime_spec.md) and the per-pattern files in
-[operation_bodies/](../../vocalls-component-builder/references/operation_bodies/). A quick reference:
+[RTDS_runtime_spec.md §1.5](../../rtds-vocalls-component-gen/references/RTDS_runtime_spec.md) and the per-pattern files in
+[operation_bodies/](../../rtds-vocalls-component-gen/references/operation_bodies/). A quick reference:
 
 - **All operations**: `Active`, `NextStep`.
 - **`SendSMS`**: `Routing`, `From`, `To`, `Body`, `Reference`, `NextStep_Success`, `NextStep_Failure`.

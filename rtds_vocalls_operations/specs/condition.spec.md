@@ -75,7 +75,7 @@ Logger.info('[condition] evaluated', { statistic: __stat, op: __op, lhs: __lhs, 
 OnEnter: Logger.info('[condition] exit', { nextStep: __rtNextStep });
 ```
 
-The two operation-specific helpers (`__readStatistic`, `__statTypeOf`) live in the master `Code` block alongside the canonical `__compareAttr` helper (per [operation_bodies/condition.md](../../.claude/skills/vocalls-component-builder/references/operation_bodies/condition.md)). `__statTypeOf` returns `'number'`, `'time'`, or `'date'` so `__compareAttr` knows how to parse `__rhs`.
+The two operation-specific helpers (`__readStatistic`, `__statTypeOf`) live in the master `Code` block alongside the canonical `__compareAttr` helper (per [operation_bodies/condition.md](../../.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/condition.md)). `__statTypeOf` returns `'number'`, `'time'`, or `'date'` so `__compareAttr` knows how to parse `__rhs`.
 
 ### Open questions
 

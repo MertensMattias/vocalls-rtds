@@ -207,7 +207,7 @@ if (__isRepoRuntime && context && context.session) {
  *      (e.g. Expression="exitKey == 'send_sms'"), plus a `default` child for
  *      the no-match fallback. Each expression child's outgoing edge is what
  *      routes the call to its component. See
- *      .claude/skills/vocalls-component-builder/references/primitive_examples.md
+ *      .claude/skills/rtds-vocalls-component-gen/references/primitive_examples.md
  *      §7.6 for the `case` node XML shape.
  *
  *   2. Drop the matching component / primitive for each `case` expression
@@ -270,7 +270,7 @@ if (__isRepoRuntime && context && context.session) {
  *   2. In Designer: add 'new_exit_key' as an output on every Script that
  *      could reach it, and wire each to a new NewType component.
  *   3. Build the component if it doesn't exist yet (see the
- *      vocalls-component-builder skill in .claude/skills/).
+ *      rtds-vocalls-component-gen skill in .claude/skills/).
  *
  * --- Plugging in a new JS-handled Type ------------------------------------
  *

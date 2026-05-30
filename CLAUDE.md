@@ -21,7 +21,7 @@ Vocalls **development environment** repo (simulate / validate / export). Not the
 - `templates/` — copied by `npm run init`
 - `projects/<name>/` — runtime workspace (not committed by default)
 - `references/rtds/` — RTDS spec, runtime JS, swagger, handler/component XML (read-only reference)
-- `references/vocalls-component-builder/` — skill for generating Vocalls Designer components
+- `.claude/skills/rtds-vocalls-component-gen/` — skill for generating Vocalls Designer components
 
 ## Conventions
 

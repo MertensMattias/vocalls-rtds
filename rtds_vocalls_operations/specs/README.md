@@ -2,7 +2,7 @@
 
 This folder contains a 1–3 page Vocalls-flavoured spec for every handler in `rtds_pureconnect_handlers/handlers/`. Specs are written in Vocalls vocabulary (Params, `__rtParams`, `getValue`, `_rtNextStep`) — not PureConnect (`lsAttrNames`, `GetAt`, `creatorName`).
 
-Each spec is the input contract for the [vocalls-component-builder](../../.claude/skills/vocalls-component-builder/) skill that generates the matching `rtds_vocalls_operations/components/<name>.js` mxGraph component.
+Each spec is the input contract for the [rtds-vocalls-component-gen](../../.claude/skills/rtds-vocalls-component-gen/SKILL.md) skill that generates the matching `rtds_vocalls_operations/components/<name>.js` mxGraph component.
 
 ## Inventory
 
@@ -61,7 +61,7 @@ These have no operator-facing Vocalls operation. The spec explains why and where
 
 1. Read it end-to-end (≤ 3 pages).
 2. Resolve every entry in "Open questions" with the operator.
-3. Hand the spec to the `vocalls-component-builder` skill: it will generate or refresh `rtds_vocalls_operations/components/<name>.js` to match.
+3. Hand the spec to the `rtds-vocalls-component-gen` skill: it will generate or refresh `rtds_vocalls_operations/components/<name>.js` to match.
 4. Validate the generated component via `npm run validate` and the `vocalls-prompt-validator` skill.
 
 ## Conventions

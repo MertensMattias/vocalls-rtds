@@ -107,4 +107,4 @@ OnEnter: Logger.info('[ivrLogging] exit', { nextStep: __rtNextStep });
   3. Both (write locally for the current call, also POST so the central log is live).
 - The `SetBasePath` action is meaningful only inside `FlowJump`'s scope — confirm whether the operator wants it as a separate Param-driven branch, or whether `FlowJump` should emit its own implicit log entry.
 - `Disconnect` and `FlowJump` actions look like markers that PureConnect's logger needed; in Vocalls they collapse into the corresponding operation's own `Logger.info('[disconnect] exit', ...)` / `[flowJump]` lines and may not need a separate `IVRLogging` call. Confirm whether to retain them.
-- Reference component file does not yet exist — generate from this spec via `vocalls-component-builder` once contracts are confirmed.
+- Reference component file does not yet exist — generate from this spec via `rtds-vocalls-component-gen` once contracts are confirmed.

@@ -1,7 +1,7 @@
 # Terminology — Vocalls In, PureConnect Out
 
 The spec is written in **Vocalls vocabulary** so the downstream
-[rtds-vocalls-component-builder](../../vocalls-component-builder/SKILL.md)
+[rtds-vocalls-component-gen](../../rtds-vocalls-component-gen/SKILL.md)
 skill can consume it without a translation pass. This is a quick
 substitution sheet for the Step 6 validation sweep in [SKILL.md](../SKILL.md).
 
@@ -35,13 +35,13 @@ substitution sheet for the Step 6 validation sweep in [SKILL.md](../SKILL.md).
 | `StrLen(x) > 0`                                                          | "is non-empty" (in prose); `!!x` in JS sketches                                                                   |
 | `GetHead(list)`                                                          | `list[0]` (in JS sketches)                                                                                        |
 | `StrTrimW(x)`                                                            | `x.trim()` (in JS sketches)                                                                                       |
-| Routing-table lookup (`GetDsAttrs` against `c_sDsRtPath`)                | (Gone — replaced by the Vocalls RTDS HTTP API — see [RTDS_runtime_spec.md §2](../../vocalls-component-builder/references/RTDS_runtime_spec.md)) |
+| Routing-table lookup (`GetDsAttrs` against `c_sDsRtPath`)                | (Gone — replaced by the Vocalls RTDS HTTP API — see [RTDS_runtime_spec.md §2](../../rtds-vocalls-component-gen/references/RTDS_runtime_spec.md)) |
 | "Active = Yes?" guard                                                    | "Skip if `Active` is falsy" — the universal inactive-guard at the top of every work body                          |
 
 ## Identifier discipline
 
 When the spec includes a JS work-body sketch, identifiers MUST follow
-[conventions.md §5](../../vocalls-component-builder/references/conventions.md):
+[naming.md](../../rtds-vocalls-component-gen/conventions/naming.md):
 
 | Prefix      | Use for                                                                                                                                                      |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |

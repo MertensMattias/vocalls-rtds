@@ -89,7 +89,7 @@ Logger.info('[checkAttribute] evaluated', { attribute: __name, op: __op, lhs: __
 OnEnter: Logger.info('[checkAttribute] exit', { nextStep: __rtNextStep });
 ```
 
-The canonical `__compareAttr` helper (per [operation_bodies/condition.md](../../.claude/skills/vocalls-component-builder/references/operation_bodies/condition.md)) lives in the master `Code` block: it coerces both sides per `__type`, rejects `gt/lt/ge/le` on non-numeric types (throws), and applies case-insensitive equality on strings. Attribute reads go through `getScoped` (defined in `rtds_3_vocallsEnv.js`) so `varObj` is preferred and `global` is the fallback during migration.
+The canonical `__compareAttr` helper (per [operation_bodies/condition.md](../../.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/condition.md)) lives in the master `Code` block: it coerces both sides per `__type`, rejects `gt/lt/ge/le` on non-numeric types (throws), and applies case-insensitive equality on strings. Attribute reads go through `getScoped` (defined in `rtds_3_vocallsEnv.js`) so `varObj` is preferred and `global` is the fallback during migration.
 
 ### Open questions
 

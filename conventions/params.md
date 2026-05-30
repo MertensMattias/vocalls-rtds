@@ -48,10 +48,10 @@ Both whole-string and partial substitution are supported. Pattern is `${\w+}` �
 `${name}` (with `$`) is **not** the same as `{name}` (no `$`).
 
 - `${name}` — runtime substitution against `global`. Fires inside `__setupConfig` at init time, or by the engine at read time for select primitive attributes (above).
-- `{name}` — Vocalls engine's TTS-time markup for `say.Text` / `say.AltTexts` / `Translations`. Different mechanism, different evaluation time, different scope. See the worked side-by-side in [primitive_examples.md §5](../.claude/skills/vocalls-component-builder/references/primitive_examples.md).
+- `{name}` — Vocalls engine's TTS-time markup for `say.Text` / `say.AltTexts` / `Translations`. Different mechanism, different evaluation time, different scope. See the worked side-by-side in [primitive_examples.md §5](../.claude/skills/rtds-vocalls-component-gen/references/primitive_examples.md).
 
 ## Reflect on
 
-- **[grep]** Does `__setupConfig` match the canonical one from [canonical_helpers.js](../.claude/skills/vocalls-component-builder/references/canonical_helpers.js)?
+- **[grep]** Does `__setupConfig` match the canonical one from [canonical_helpers.js](../.claude/skills/rtds-vocalls-component-gen/references/canonical_helpers.js)?
 - **[grep]** Any Param value using `${expression}` instead of `${bareName}`?
 - **[judgment]** Are unresolved placeholders silently defaulted to `""`?

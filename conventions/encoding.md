@@ -9,7 +9,7 @@ JS source embedded as XML attributes uses these entities:
 - `<` → `&lt;`, `>` → `&gt;`, `&` → `&amp;`.
 - Newlines → `&#xa;`.
 
-Indent JS with 4 spaces inside the encoded attribute. Reference encoder: [encode_for_xml_attr.py](../.claude/skills/vocalls-component-builder/scripts/encode_for_xml_attr.py).
+Indent JS with 4 spaces inside the encoded attribute. Reference encoder: [encode_for_xml_attr.py](../.claude/skills/rtds-vocalls-component-gen/scripts/encode_for_xml_attr.py).
 
 ## Reflect on
 

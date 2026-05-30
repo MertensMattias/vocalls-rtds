@@ -46,7 +46,7 @@ The default project language is **Dutch (Belgium) — `nl-BE`**, marked `isDefau
 In order, separated by blank lines:
 
 1. `__rtParams = {};` — bare declaration, no `var`.
-2. The three canonical helpers from [canonical_helpers.js](../.claude/skills/vocalls-component-builder/references/canonical_helpers.js), verbatim with JSDoc: `__makeLocalNodeId`, `__extractParams`, `__setupConfig`.
+2. The three canonical helpers from [canonical_helpers.js](../.claude/skills/rtds-vocalls-component-gen/references/canonical_helpers.js), verbatim with JSDoc: `__makeLocalNodeId`, `__extractParams`, `__setupConfig`.
 3. `typeof <name> === 'undefined'`-guarded fallbacks for `getValue`, `walk`, plus `hasKey` / `nowUTC` if the work body uses them. See [helpers.md](helpers.md) for why.
 4. Operation-specific helpers, JSDoc'd, `__` prefixed (`__isMobileNumber`, `__splitSemicolonList`, `__compareAttr`, …).
 5. **No work-function helper.** Work logic is inline in the script node body.
@@ -85,7 +85,7 @@ Logger.debug('[<componentName>] config resolved', { params: __rtParams });
 
 ## 7. Work node body — per pattern
 
-Patterns live in [.claude/skills/vocalls-component-builder/references/operation_bodies/](../.claude/skills/vocalls-component-builder/references/operation_bodies/): `http_call.md`, `gui_exit.md`, `set_attributes.md`, `condition.md`, `flow_jump.md`, plus `composite.md` modifier. The work body:
+Patterns live in [.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/](../.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/): `http_call.md`, `gui_exit.md`, `set_attributes.md`, `condition.md`, `flow_jump.md`, plus `composite.md` modifier. The work body:
 
 1. Sets default `NextStep` first: `global[_rtNextStep] = getValue(__rtParams, 'NextStep', -1);`.
 2. Active guard — early return + info-level "skipped — inactive" log if `!Active`.

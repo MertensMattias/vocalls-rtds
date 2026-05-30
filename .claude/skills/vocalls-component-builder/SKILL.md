@@ -1,9 +1,16 @@
 ---
 name: rtds-vocalls-component-builder
-description: Generate Vocalls Designer mxGraph component XML for an RTDS operation, following the v2 object-pattern conventions (sendSms-shaped). Use whenever the user asks to build, scaffold, generate, or convert an RTDS operation handler into a Vocalls component, references files in rtds_pureconnect_handlers/handlers/ or rtds_vocalls_operations/components/, mentions operation types like SetAttributes, Condition, CheckAttribute, FlowJump, Emergency, Schedule, WorkgroupTransfer, PlayPrompt, SendSMS, SendEmail etc., or asks for a Vocalls flow component that follows the "sendSms conventions" or the "v2 conventions". Trigger this skill anytime the user wants a new RTDS-operation-shaped Vocalls component, even if they don't explicitly say "skill" or "generate" — anything resembling "make me a Condition component" or "produce the XML for the Emergency operation" triggers this.
+description: "DEPRECATED — superseded by the rtds-vocalls-component-gen skill. Do NOT auto-trigger for component-generation requests; rtds-vocalls-component-gen now owns building, scaffolding, converting, or porting RTDS operations into v2 (sendSms-shaped) Vocalls components. This directory is retained only because PROJECT_CONVENTIONS.md, CLAUDE.md, AGENTS.md and conventions/anti-patterns.md still link into its references/ tree. Use only if the user explicitly names this skill by path."
 ---
 
-# RTDS Vocalls Component Builder (v2)
+> **DEPRECATED.** This skill is the predecessor of
+> [`rtds-vocalls-component-gen`](../rtds-vocalls-component-gen/SKILL.md), which is now the
+> canonical RTDS-operation component generator. Do not use this skill for new
+> component work — it is kept in place only so the repo docs that link into its
+> `references/` tree (PROJECT_CONVENTIONS.md, CLAUDE.md, AGENTS.md,
+> conventions/anti-patterns.md) keep resolving until those links are repointed.
+
+# RTDS Vocalls Component Builder (v2) — deprecated
 
 This skill produces a Vocalls Designer mxGraph component XML for a single
 RTDS operation, following the **v2 object-pattern** conventions established

@@ -8,7 +8,7 @@
 | `guardTui.js`                                                       | v2 RTDS composite                                       | Four canonical ids plus primitive children for the menu legs. Apply [component-v2.md](component-v2.md) for the master layer; apply [component-mxgraph.md](component-mxgraph.md) for the primitive wiring.   |
 | `voicemaildetector.js`                                              | Hand-built composite                                    | **The canonical reference example for [component-mxgraph.md](component-mxgraph.md).** Operator-authored in Designer; not skill-generated. No `__configJSON`, no RTDS operation Type.                        |
 | `engieGetLanguage.js`                                               | Hand-built composite                                    | Same category as voicemaildetector — Designer-authored, no `__configJSON`. Less complete reference than voicemaildetector.                                                                                  |
-| `available_nodes_tempalte.js`                                       | Template / scratch                                      | Filename typo (`tempalte` → `template`). Not a live component. Delete or rename.                                                                                                                            |
+| `available_nodes_template.js`                                       | Template / scratch                                      | Primitive-node palette template, not a live component. Source for the per-Type attribute catalogue in [../references/node_types.md](../references/node_types.md).                                            |
 
 ## Exemption rules
 

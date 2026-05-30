@@ -1,6 +1,6 @@
 ---
 name: vocalls-handler-spec
-description: Translate a PureConnect Interaction Designer handler XML (e.g. `rtds_pureconnect_handlers/handlers/NAllo_RTDS_*.xml`) into a 1–3 page Vocalls-flavoured spec that captures the handler's business intent, inputs, outputs, branches, and any external calls — using Vocalls component terminology (Type, Params, NextStep_*, GUI-exit key, __rtParams, __rtNextStep, getValue, walk, _rtBaseUrl). The output is consumable as the input to the sibling `rtds-vocalls-component-builder` skill. Trigger this skill whenever the user points at a PureConnect handler XML and asks for a spec, a summary, a "translation", an "RTDS spec", a "component spec", a "design doc", an "input for the component builder", or says "I want to port this handler to Vocalls". Also trigger on phrasings like "decode this handler", "what does this handler do", "extract the logic from this handler XML", or "give me the Vocalls version" when the source is a PureConnect handler. Do not trigger on Vocalls XML components (`rtds_vocalls_operations/components/*.js`) — those go through the component-builder skill directly.
+description: Translate a PureConnect Interaction Designer handler XML (e.g. `rtds_pureconnect_handlers/handlers/NAllo_RTDS_*.xml`) into a 1–3 page Vocalls-flavoured spec that captures the handler's business intent, inputs, outputs, branches, and any external calls — using Vocalls component terminology (Type, Params, NextStep_*, GUI-exit key, __rtParams, __rtNextStep, getValue, walk, _rtBaseUrl). The output is consumable as the input to the sibling `rtds-vocalls-component-gen` skill. Trigger this skill whenever the user points at a PureConnect handler XML and asks for a spec, a summary, a "translation", an "RTDS spec", a "component spec", a "design doc", an "input for the component builder", or says "I want to port this handler to Vocalls". Also trigger on phrasings like "decode this handler", "what does this handler do", "extract the logic from this handler XML", or "give me the Vocalls version" when the source is a PureConnect handler. Do not trigger on Vocalls XML components (`rtds_vocalls_operations/components/*.js`) — those go through the rtds-vocalls-component-gen skill directly.
 ---
 
 # Vocalls Handler Spec Generator
@@ -8,7 +8,7 @@ description: Translate a PureConnect Interaction Designer handler XML (e.g. `rtd
 This skill consumes a single PureConnect Interaction Designer handler XML
 file and emits a **1–3 page spec** that re-states the handler's purpose in
 Vocalls terminology. The spec is meant to feed the
-[rtds-vocalls-component-builder](../vocalls-component-builder/SKILL.md)
+[rtds-vocalls-component-gen](../rtds-vocalls-component-gen/SKILL.md)
 skill, so the section headings, identifier names, and concepts must already
 match what that skill expects.
 
@@ -25,14 +25,14 @@ Trigger when the user:
   spec, summary, design doc, or "translation".
 - Says "port this handler to Vocalls", "give me the Vocalls version",
   "extract the logic", "what does this handler do".
-- Wants the input artifact for `rtds-vocalls-component-builder` and starts
+- Wants the input artifact for `rtds-vocalls-component-gen` and starts
   with a PureConnect handler rather than a fresh design.
 
 Do **not** trigger when:
 
 - The source is already a Vocalls component XML (`rtds_vocalls_operations/components/*.js`) — that's the component-builder skill's input shape, not ours.
 - The user wants the actual Vocalls component XML emitted — chain to
-  `rtds-vocalls-component-builder` after the spec is approved.
+  `rtds-vocalls-component-gen` after the spec is approved.
 
 ## Reading order
 
@@ -95,7 +95,7 @@ external HTTP calls, branch comparisons, GUI handoffs, and the
 
 With the filtered steps in hand, pick one of the five Vocalls operation
 patterns from
-[`../vocalls-component-builder/references/operation_bodies/INDEX.md`](../vocalls-component-builder/references/operation_bodies/INDEX.md):
+[`../rtds-vocalls-component-gen/references/operation_bodies/INDEX.md`](../rtds-vocalls-component-gen/references/operation_bodies/INDEX.md):
 
 | If the filtered handler does this …                         | Vocalls pattern  |
 | ----------------------------------------------------------- | ---------------- |
@@ -128,7 +128,7 @@ Follow [spec_template.md](references/spec_template.md). The template is
 4. **Outputs (NextStep_* keys)** — table: branch key, when taken, default if missing. Always start with `NextStep` then `NextStep_Failure`, then the operation-specific keys.
 5. **External calls** — only if pattern is `http_call`. URL shape, method, payload skeleton, expected `result` shape. Skip section otherwise.
 6. **Pattern + work-body sketch** — name the pattern from
-   [operation_bodies/INDEX.md](../vocalls-component-builder/references/operation_bodies/INDEX.md), then a 5–15 line JS sketch in Vocalls style (`getValue(__rtParams, …)`, `global[_rtNextStep] = …`, `Logger.info('[<componentName>] …', { nextStep: … })`). This is *not* the final component code — it's enough for the component-builder skill to take it from here.
+   [operation_bodies/INDEX.md](../rtds-vocalls-component-gen/references/operation_bodies/INDEX.md), then a 5–15 line JS sketch in Vocalls style (`getValue(__rtParams, …)`, `global[_rtNextStep] = …`, `Logger.info('[<componentName>] …', { nextStep: … })`). This is *not* the final component code — it's enough for the rtds-vocalls-component-gen skill to take it from here.
 7. **Open questions / divergences from the source** — bullet list. Anything in the PureConnect handler that doesn't have a clean Vocalls equivalent, anything you skipped on purpose, anything the user needs to confirm.
 
 **Length discipline.** 1–3 pages, *not* a full handler dump. If you find
@@ -142,12 +142,12 @@ Quick check:
 
 - No mention of `lsAttrNames`, `lsAttrValues`, `GetAt`, `Find`, `StrEqlNoCase`, `Test()`, `StrLen`, `c_sDsRtPath`, `ATTR_*`, `CallLog`, `Notify Debugger`, `ReplaceAttributes`, `Parse String`, `Assignment`, `creatorModule`, `creatorName`, "Step ID", "Initiator", "Subroutine" (the PureConnect kind).
 - All identifiers carry the right Vocalls prefix per
-  [conventions.md §5](../vocalls-component-builder/references/conventions.md):
+  [naming.md](../rtds-vocalls-component-gen/conventions/naming.md):
   `__rtParams`, `__rtBaseUrl`, `__rtEndpoint`, `__rtNextStep`,
   `__configJSON`, `_rtNextStep`, `_rtBaseUrl`, `_headers`.
 - Every NextStep key is named (no "and a few other branches…").
 - Pattern matches the table in
-  [operation_bodies/INDEX.md](../vocalls-component-builder/references/operation_bodies/INDEX.md).
+  [operation_bodies/INDEX.md](../rtds-vocalls-component-gen/references/operation_bodies/INDEX.md).
 - Logger lines (if shown in the sketch) carry `{ nextStep: … }`.
 
 ## Output
@@ -159,12 +159,12 @@ Save the generated spec to the user's workspace at one of:
 
 Use camelCase `<componentName>` (e.g. `sendSms`, `disconnect`, `flowJump`)
 matching the convention from
-[conventions.md §1.7](../vocalls-component-builder/references/conventions.md).
+[naming.md](../rtds-vocalls-component-gen/conventions/naming.md).
 Ask before overwriting an existing spec.
 
 Provide a path link to the saved file. If the user asks "now build the
 component", chain to
-[rtds-vocalls-component-builder](../vocalls-component-builder/SKILL.md).
+[rtds-vocalls-component-gen](../rtds-vocalls-component-gen/SKILL.md).
 
 ## Things to avoid
 

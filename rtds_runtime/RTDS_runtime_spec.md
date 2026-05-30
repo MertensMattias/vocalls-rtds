@@ -32,7 +32,7 @@ The Vocalls Script node runs in a sandboxed JS environment. The following are co
 |---|---|
 | `var` / `let` / `const` | safe |
 | `function` declarations | safe |
-| Arrow functions `=>` | safe|
+| Arrow functions `=>` | not safe — use function expressions |
 | `for` loops with index | safe |
 | `for...of` | not safe — use indexed `for` |
 | `Map` / `Set` |  safe |
@@ -45,8 +45,8 @@ The Vocalls Script node runs in a sandboxed JS environment. The following are co
 | `module.exports` / `require` | does not exist |
 | `async` / `await` | does not exist — use `.then()` with `return` |
 | `Promise` | does not exist — use built-in task objects |
-| Logging | `log_debug()`, `log_warn()`, `log_error()` — no `console.log` |
-| HTTP | `httpRequest(url, options)` — returns a task, must be `return`ed |
+| Logging | `Logger.debug/info/warn/error(message, ctx)` from `rtds_3_vocallsEnv.js`. The raw Vocalls globals `log_debug`, `log_warn`, `log_error` are the sink used by Logger internally. |
+| HTTP | `jsonHttpRequest(url, options, headers, body).withTimeout(ms)` — returns a task, must be `return`ed. Used via `fetchAndStart()` wrapper; not called directly from Script nodes. |
 
 ### 1.3 Shared state — `context.session.variables`
 
@@ -58,26 +58,26 @@ The `context` object is otherwise read-only session info (`context.phone`, `cont
 
 ### 1.4 What the JSON looks like
 
-The RTDS API (`GET /api/routing-table/:sourceId`) returns a single object:
+The RTDS API (`GET /api/routing-table/source?sourceId=...`) returns a single object:
 
 ```json
 {
-  "SourceId": "+3233389999",
-  "Name": "DIGIPOLIS - LPA_ICT_HELPDESK",
-  "Project": "LPA ICT",
-  "PromptLibrary": "DIGIPOLIS\\LPA\\ICT_HELPDESK",
-  "SupportedLanguages": "NL",
-  "Operations": [ { "Id": "00000", "Type": "...", "Name": "...", "Params": { ... } }, ... ]
+  "sourceId": "+3233389999",
+  "name": "DIGIPOLIS - LPA_ICT_HELPDESK",
+  "project": "LPA ICT",
+  "promptLibrary": "DIGIPOLIS\\LPA\\ICT_HELPDESK",
+  "supportedLanguages": "NL",
+  "operations": [ { "id": "00000", "type": "...", "name": "...", "isFirstOperation": true, "params": { ... } }, ... ]
 }
 ```
 
 Each operation has:
-- `Id` — zero-padded string key, e.g. `"00000"`
-- `Type` — string matching a `Dic_OperationType.Name` value
-- `Name` — human-readable label
-- `IsFirstOperation` — boolean, true on the entry-point operation(s)
-- `Params` — object of typed key/value pairs; values may be scalar or array `[value, ...flags]`
-- `TtsMessages` — optional `{ "NL": "...", "FR": "..." }` map (PlayPrompt only)
+- `id` — zero-padded string key, e.g. `"00000"`
+- `type` — string matching a `Dic_OperationType.Name` value
+- `name` — human-readable label
+- `isFirstOperation` — boolean, true on the entry-point operation(s)
+- `params` — object of typed key/value pairs; values may be scalar or array `[value, ...flags]`
+- `ttsMessages` — optional `{ "NL": "...", "FR": "..." }` map (PlayPrompt only)
 
 ### 1.5 Operation types and their Vocalls mapping
 
@@ -85,20 +85,22 @@ The full RTDS operation set spans two categories:
 
 **JS-handled operations** — fully executed inside the Script node; produces a `nextStepId` and loops:
 
-| Type | What it does |
-|---|---|
-| `SetAttributes` | Write named session variables; always has `NextStep` |
-| `Emergency` | Check an emergency flag via HTTP; branches to `NextStep_Transfer`, `NextStep_Disconnect`, `NextStep_Continue`, or `NextStep_Failure` |
-| `Schedule` | Check a schedule ID via HTTP; branches to named `NextStep_*` keys |
-| `Condition` | Evaluate a queue statistic; branches `NextStep_True` / `NextStep_False` |
-| `CheckAttribute` | Compare a session variable value; branches `NextStep_True` / `NextStep_False` |
-| `FlowJump` | Replace the active SourceId and restart |
-| `IVRLogging` | Write a log record; always has `NextStep` |
-| `UpdateSourceId` | Overwrite the call's source ID; always has `NextStep` |
-| `SkillUpdate` | Update ACD skill assignments; always has `NextStep` |
-| `RESTRequest` / `RESTGet` | Make an HTTP call; branches on result |
+| Type | What it does | Status |
+|---|---|---|
+| `SetVariables` | Write named variables to dot-path targets (varObj by default); always has `NextStep` | Implemented |
+| `SendSMS` | POST to RTDS gateway; branches `NextStep_Success` / `NextStep_Failure` / `NextStep` | Implemented |
+| `SendEmail` | POST to RTDS gateway; branches `NextStep_Success` / `NextStep_Failure` / `NextStep` | Implemented |
+| `Emergency` | Check an emergency flag via HTTP; branches to `NextStep_Transfer`, `NextStep_Disconnect`, `NextStep_Continue`, or `NextStep_Failure` | Not yet implemented — runStep skips to NextStep with a warning |
+| `Schedule` | Check a schedule ID via HTTP; branches to named `NextStep_*` keys | Not yet implemented — runStep skips to NextStep with a warning |
+| `Condition` | Evaluate a queue statistic; branches `NextStep_True` / `NextStep_False` | Not yet implemented — runStep skips to NextStep with a warning |
+| `CheckAttribute` | Compare a session variable value; branches `NextStep_True` / `NextStep_False` | Not yet implemented — runStep skips to NextStep with a warning |
+| `FlowJump` | Replace the active SourceId and restart | Not yet implemented — runStep skips to NextStep with a warning |
+| `IVRLogging` | Write a log record; always has `NextStep` | Not yet implemented — runStep skips to NextStep with a warning |
+| `UpdateSourceId` | Overwrite the call's source ID; always has `NextStep` | Not yet implemented — runStep skips to NextStep with a warning |
+| `SkillUpdate` | Update ACD skill assignments; always has `NextStep` | Not yet implemented — runStep skips to NextStep with a warning |
+| `RESTRequest` / `RESTGet` | Make an HTTP call; branches on result | Not yet implemented — runStep skips to NextStep with a warning |
 
-**GUI-exit operations** — the Script node writes params to `context.session.variables`, then returns a string exit key that Vocalls uses to route to the matching GUI node:
+**GUI-exit operations** — the Script node sets dispatcher state on `context.session.variables`, then returns a string exit key that Vocalls uses to route to the matching GUI node:
 
 | Type | GUI node type | Exit key returned |
 |---|---|---|
@@ -112,8 +114,6 @@ The full RTDS operation set spans two categories:
 | `GuardRouting` | Guard/on-call routing | `"guard_routing"` |
 | `GuardTUI` | Guard TUI variant | `"guard_tui"` |
 | `Callback` | Callback scheduling | `"callback"` |
-| `SendSMS` | SMS dispatch | `"send_sms"` |
-| `SendEmail` | Email dispatch | `"send_email"` |
 
 ---
 

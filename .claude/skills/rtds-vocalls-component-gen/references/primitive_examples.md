@@ -24,7 +24,7 @@ lives here.
   not the multi-output / native-composite machinery. Anything from
   that file not shown below is intentionally excluded — see [§8 Out
   of scope](#8-out-of-scope).
-- [available_nodes_tempalte.js](examples/available_nodes_tempalte.js)
+- [available_nodes_template.js](examples/available_nodes_template.js)
   — palette template. Source for Types Engie doesn't instantiate
   (`setvar`, `pause`, `number`, `redirect`, `dtmf`) and for confirming
   attribute defaults.
@@ -156,8 +156,8 @@ Key facts you have to get right:
   [canonical_helpers.js](canonical_helpers.js).
 - `Variables` declares the per-component globals; the `&=` operator
   on `__rtNextStep` is the documented placeholder-binding form
-  (conventions §1.4). Not a typo.
-- `PropertiesDefinition` has exactly three entries (conventions §1.5).
+  ([component-v2.md](../conventions/component-v2.md) §4). Not a typo.
+- `PropertiesDefinition` has exactly three entries ([component-v2.md](../conventions/component-v2.md) §5).
 - `Translations`, `Translations_<lang>` — see §4. Style A uses these
   for prompts spoken via `{name}` markup in `say.Text`. Use them only
   if your component speaks; pure HTTP components can leave them empty.
@@ -488,8 +488,8 @@ Style B and out of scope.
 </object>
 ```
 
-`OnEnter` on the output is the single exit-trace event (conventions
-§1.7). It fires once regardless of which upstream branch reached it.
+`OnEnter` on the output is the single exit-trace event
+([component-v2.md](../conventions/component-v2.md) §8). It fires once regardless of which upstream branch reached it.
 Replace `<componentName>` with the camelCase component name.
 
 ### 7.2 `script`
@@ -1116,7 +1116,7 @@ container.
 Observed conventions (descriptive, not prescriptive):
 
 - The input node uses `id="0"`. The other canonical ids (`7`, `29`,
-  `6`) are pinned by conventions §1.6.
+  `6`) are pinned by [component-v2.md](../conventions/component-v2.md) §1.
 - All other ids are **freely-allocated unique integers** within the
   file. There is no rigid "primitives ≥ 100 / children ≥ 200" rule
   (an earlier convention that does not match production).
@@ -1139,13 +1139,13 @@ RTDS-operation component this skill builds:
 
 | Style B element                                            | Why it's out of scope |
 | ---------------------------------------------------------- | --------------------- |
-| Multi-output topology (5× `Kind="output"` transients)      | Conventions §1.6 pins exactly one output (id=6). |
+| Multi-output topology (5× `Kind="output"` transients)      | component-v2.md §1 pins exactly one output (id=6). |
 | `Type="globalIntent"`                                       | Style B unified DTMF + speech dispatcher; not in Style A primitive catalogue. |
 | `Type="component"` (embedded reusable sub-component)       | Style B composition mechanism (`ComponentGuid`, `SingleInput`/`SingleOutput`, `mlctp___*` training pairs). |
-| `AllowGlobalIntent="true"` on master                        | Style A master is always `"false"` (conventions §1.1). |
-| Master `Code=" &#xa;"` (whitespace only, no helpers)       | Style A master `Code` always carries the three canonical helpers (conventions §1.3). |
+| `AllowGlobalIntent="true"` on master                        | Style A master is always `"false"` (component-v2.md §2). |
+| Master `Code=" &#xa;"` (whitespace only, no helpers)       | Style A master `Code` always carries the three canonical helpers (component-v2.md §3). |
 | Master `Variables="__maxTries = 2;"` with no `__configJSON` | Style A always declares `__configJSON`, `__environment`, and `__rtNextStep &= _rtNextStep`. |
-| Non-canonical node ids (e.g. script id=12, no init at id=7)| Style A pins the canonical 4-node skeleton (conventions §1.6). |
+| Non-canonical node ids (e.g. script id=12, no init at id=7)| Style A pins the canonical 4-node skeleton (component-v2.md §1). |
 | Per-locale `Text_<lang>` / `AltTexts_<lang>` on `say`      | Allowed but discouraged for Style A — prefer the `Translations` + `{key}` pattern (see §4 and §7.3). |
 | Per-locale `Keywords_<lang>` etc. on `reactionGroup`        | Style B localisation. Style A uses the bare fields. |
 | `Languages` with multiple locales + mixed TTS engines      | Style A defaults to single locale `nl-BE`; add locales only if the component genuinely needs them (see §3). |
