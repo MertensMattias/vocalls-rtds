@@ -361,6 +361,13 @@ function getDebugConfig(vo) {
 // LOGGER
 // ============================================================================
 
+/**
+ * Structured logger for the Vocalls JS environment.
+ * Levels (ascending): DEBUG < INFO < WARN < ERROR.
+ * WARN and ERROR events are also POSTed to the EventLog API.
+ * DEBUG and INFO are local-only (log_debug sink).
+ * Configure via Logger.configure({ activeLevel: 'WARN' }).
+ */
 Logger = {
   config: {
     enabled: true,
@@ -389,6 +396,7 @@ Logger = {
     };
   },
 
+  /** @param {string} severity 'DEBUG'|'INFO'|'WARN'|'ERROR' @returns {boolean} */
   shouldLog: function (severity) {
     var levels = ["DEBUG", "INFO", "WARN", "ERROR"];
     var activeIndex = levels.indexOf(this.config.activeLevel);
@@ -405,6 +413,7 @@ Logger = {
     return numericStatus >= 200 && numericStatus < 300;
   },
 
+  /** @param {*} obj @param {number} [maxSize] @returns {string} */
   sanitizeForLog: function (obj, maxSize) {
     maxSize = maxSize || this.config.maxBodySize;
     if (obj === null) return "null";

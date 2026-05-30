@@ -119,9 +119,9 @@ Per-operation specs **link to this document** for storage / logging / casing rul
 A running list of conventions still being decided. Each entry is either resolved (date) or open. When resolved, fold the conclusion into the relevant conventions file and remove the entry.
 
 - **`_rtNextStep` on varObj?** The flow-control target is currently on global. **Decision: stays on global** (confirmed 2026-05-28).
-- **Per-Param scope opt-out for SetAttributes?** **Decision: no opt-out, default is varObj** (confirmed 2026-05-28).
+- **Per-Param scope target for SetVariables?** **Decision: default is varObj; an explicit dot-path (`globalThis.x`, a named object) opts a single write out.** (confirmed 2026-05-28; `SetAttributes` was hard-cut to `SetVariables`, see [setVariables.spec.md](rtds_vocalls_operations/specs/setVariables.spec.md).)
 - **Should the runtime's `fetchAndStart` use structured `Logger.error` or bare `log_error`?** Production sync downgraded structured calls to concatenated strings. Open — depends on whether the regression was intentional.
-- **`getScoped` in the env library** — currently absent (production sync). `guardTui.js` and `checkSchedule.js` call it. Open — pending re-application.
+- **`getScoped` in the env library** — **Resolved: present** in `rtds_3_vocallsEnv.js` (varObj → global → default), alongside its write-side counterpart `setVariable`.
 - **General-purpose layout pass for skill-generated components beyond the v2 trunk** — proposed approach: band-based topological layout (annotate nodes with `data-layout` lane/sequence at generation time, then deterministic geometry pass). Open — pending concrete use case the v2 trunk can't handle.
 
 ---

@@ -25,7 +25,8 @@ Each spec is the input contract for the [rtds-vocalls-component-gen](../../.clau
 | `condition`      | [condition.spec.md](condition.spec.md) | `condition.js` |
 | `condition`      | [checkAttribute.spec.md](checkAttribute.spec.md) | `checkAttribute.js` |
 | `condition`      | [manageCallCapacity.spec.md](manageCallCapacity.spec.md) | `manageCallCapacity.js` |
-| `set_attributes` | [setAttributes.spec.md](setAttributes.spec.md) | `setAttributes.js` (exists) |
+| `set_attributes` | [setVariables.spec.md](setVariables.spec.md) | `setVariables.js` |
+| `set_attributes` (superseded) | [setAttributes.spec.md](setAttributes.spec.md) — replaced by `setVariables` | `setAttributes.js` (legacy, retained for reference) |
 | `http_call` (or `set_attributes`) | [ivrLogging.spec.md](ivrLogging.spec.md) | `ivrLogging.js` |
 | `set_attributes` (variant) | [updateSourceId.spec.md](updateSourceId.spec.md) | `updateSourceId.js` |
 | `flow_jump`      | [flowJump.spec.md](flowJump.spec.md) | `flowJump.js` |

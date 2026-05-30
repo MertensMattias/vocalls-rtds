@@ -3,7 +3,7 @@
 **Document type:** Technical specification
 **Scope:** JavaScript runtime layer for RTDS routing table execution inside Vocalls
 **Related files:**
-- `RTDS_runtime.js` — implementation produced by this spec
+- `projects/rtds-runtime/globalLibraries/active/rtds_2_runtime.js` — implementation produced by this spec (with `rtds_3_vocallsEnv.js` for shared helpers)
 - `routing_table_api.md` — API that delivers the JSON this runtime consumes
 - `NALLO_APP_rtds_schema.md` — database schema reference
 - `assembleRoutingTable.js` — DB-to-JSON assembler (reference for JSON shape)
@@ -125,15 +125,19 @@ Call arrives
     v
 [Script node: entry point A]
     |
-    +-- httpRequest(RTDS API) --> .then()
+    +-- fetchAndStart(sourceId)
+    |       jsonHttpRequest(_rtBaseUrl + _rtGetSourceIdEndpoint + '?sourceId=...')
+    |       .withTimeout(10000)
     |       parse JSON
     |       parseFlow(json)
     |         --> writes header to context.session.variables
     |         --> builds opIndex, writes to context.session.variables.RTDS_opIndex
     |       getFirstOperation(operations) --> firstOp
-    |       runStep(firstOp.Id)
+    |       runStep(firstOp.id)
     |         --> JS-handled: execute, get nextStepId, loop
-    |         --> GUI-exit:   write RTDS_OP_* params, return exit key string
+    |         --> GUI-exit:   write RTDS_currentOpConfig, return exit key string
+    |         --> JS-handled: execute, get nextStepId, loop
+    |         --> GUI-exit:   write RTDS_currentOpConfig, return exit key string
     |
     v
 [GUI Node] executes (transfer, play, menu, ...)
@@ -141,9 +145,10 @@ Call arrives
     v
 [Script node: entry point B — re-entry]
     |
-    +-- resumeFrom(context.session.variables.RTDS_nextStepId)
+    +-- resumeFrom(_rtNextStep || context.session.variables.RTDS_nextStepId)
     |       opIndex already in context.session.variables
     |       runStep(nextStepId) --> loop continues
+    |       Note: _rtNextStep takes priority over GUI outcome
 ```
 
 ---
@@ -159,13 +164,12 @@ All state is stored on `context.session.variables`. No separate "context" object
 | `RTDS_project` | After parseFlow | Project name |
 | `RTDS_promptLibrary` | After parseFlow | Prompt library path |
 | `RTDS_supportedLanguages` | After parseFlow | Language codes |
-| `RTDS_opIndex` | After parseFlow | Plain object keyed by operation Id |
+| `RTDS_opIndex` | After parseFlow | Map<string, Object> keyed by operation id |
 | `RTDS_currentOpId` | Before GUI handoff | Id of the operation being handed off |
 | `RTDS_currentOpType` | Before GUI handoff | Type of the operation being handed off |
 | `RTDS_nextStepId` | Before GUI handoff | Default next step Id (GUI node overwrites this with its outcome) |
 | `RTDS_error` | On error | Error code string |
-| `RTDS_OP_*` | Before GUI handoff | Prefixed copy of each Param key/value for the GUI node to read |
-| Any SetAttributes param key | During SetAttributes | The param value, token-resolved |
+| Any SetVariables target | During SetVariables | Written to `varObj` by default (or a dotted target) via `setVariable`; native JSON type preserved, strings token-resolved |
 
 ---
 
@@ -173,85 +177,103 @@ All state is stored on `context.session.variables`. No separate "context" object
 
 ### 4.1 `buildOpIndex(operations)`
 
-Converts the `Operations` array into a plain object keyed by `Id`:
+Converts the `operations` array into a `Map` keyed by the stringified `id`:
 
 ```js
-var opIndex = {};
+var index = new Map();
 for (var i = 0; i < operations.length; i++) {
-  opIndex[operations[i].Id] = operations[i];
+  var op = operations[i];
+  if (!op || !op.id) { continue; } // logs an error and skips id-less ops
+  index.set(String(op.id), op);
 }
 ```
 
-Stored in `context.session.variables.RTDS_opIndex`. Looked up by every subsequent `runStep` call without re-fetching or re-parsing.
+Stored in `context.session.variables.RTDS_opIndex` (a `Map<string, Object>`). Looked up by every subsequent `runStep` call (`opIndex.get(currentId)`) without re-fetching or re-parsing.
 
 ### 4.2 `parseFlow(json)`
 
 Validates the JSON, writes all header fields and `RTDS_opIndex` to `context.session.variables`, then returns the first operation object (or `null` on error). Error code written to `context.session.variables.RTDS_error`.
+The function uses camelCase field names (`json.sourceId`, `json.name`, `json.project`, `json.promptLibrary`, `json.supportedLanguages`, `json.operations`) matching the API response.
 
 ### 4.3 `getFirstOperation(operations)`
 
-Scans the `Operations` array for entries where `IsFirstOperation === true`. If multiple exist (valid for FlowJump scenarios), sorts by `Id` lexicographically and returns the lowest. Returns `null` if none found.
+Scans the `operations` array for entries where `isFirstOperation === true`. If multiple exist (valid for FlowJump scenarios), sorts by `id` lexicographically and returns the lowest. Returns `null` if none found.
 
 ### 4.4 `getParam(op, name, fallback)`
 
-Reads a single typed param value, unwrapping the array form `[value, ...flags]`. The flags (`isDisplayed`, `isEditable`) are GUI-builder metadata and are irrelevant at runtime — only `v[0]` is used.
+Reads a single typed param value, unwrapping the array form `[value, ...flags]`. The flags (`isDisplayed`, `isEditable`) are GUI-builder metadata and are irrelevant at runtime — only `v[0]` is used. Performs case-insensitive fallback scan of `op.params` keys.
 
 ### 4.5 `resolveTokens(value)`
 
-Replaces `$(ATTR_NAME)` tokens in string param values with the corresponding value from `context.session.variables`. Non-string values pass through unchanged. Unresolved tokens become empty string.
+Replaces `$(ATTR_NAME)` tokens in string param values. Resolution follows the scope contract:
+- An `RTDS_*` token resolves from `context.session.variables` (the dispatcher namespace).
+- Any other token resolves operator data via `getScoped(name)` (varObj → global), then falls back to `context.session.variables`.
+
+Non-string values pass through unchanged. Unresolved tokens become empty string.
 
 ### 4.6 `resolveNextStep(op, resultKey)`
 
 Resolution order:
-1. If `resultKey` is provided and `op.Params[resultKey]` is set, return it.
-2. Fall back to `op.Params.NextStep`.
+1. If `resultKey` is provided and `op.params[resultKey]` is set, return it.
+2. Fall back to `op.params.NextStep`.
 3. Return `null` (triggers end-of-flow).
 
-### 4.7 `executeSetAttributes(op)`
+### 4.7 `executeSetVariables(op)`
 
-Iterates `op.Params`:
-- Skips `NextStep` (flow control only, not stored).
-- For `LogAttributes`: splits on `"|"`, reads each named variable from `context.session.variables`, logs with `log_debug`.
-- For all other keys: resolves tokens and writes to `context.session.variables[key]`.
+Iterates `op.params`:
+- Skips the control keys `Active` and `NextStep` (case-insensitive; flow control only, not stored).
+- For every other key: keeps the value's **native JSON type**; only string values are token-resolved (`resolveTokens`). The result is written via `setVariable(key, value)` — a bare key lands on `varObj`, a dotted key targets `varObj` / `globalThis` / a named reachable object (see §4.11).
 
 Returns `{ nextStepId }`.
 
 ### 4.8 `prepareGuiHandoff(op)`
 
-Before returning an exit key, writes all `op.Params` to `context.session.variables` with the `RTDS_OP_` prefix (tokens resolved), sets `RTDS_currentOpId`, `RTDS_currentOpType`, and pre-populates `RTDS_nextStepId` with the default `NextStep`. The GUI node reads `RTDS_OP_*` to configure itself and overwrites `RTDS_nextStepId` with its branching outcome.
+Before returning an exit key, sets the dispatcher handoff state on `context.session.variables`:
+- `RTDS_currentOpId` = `op.id`
+- `RTDS_currentOpType` = `op.type`
+- `RTDS_currentOpConfig` = `op.params` (the whole config object; the GUI node reads it to configure itself)
+- `RTDS_nextStepId` = the default `NextStep` (the GUI node overwrites this with its branching outcome before re-entry).
+
+The runtime does **not** mirror params into per-key `RTDS_OP_*` session variables — the GUI node reads `RTDS_currentOpConfig` instead.
 
 ### 4.9 `runStep(startOpId)`
 
-Core dispatch loop. Takes an operation Id string, looks it up in `context.session.variables.RTDS_opIndex`, and dispatches:
+Core dispatch loop. Takes an operation id string, looks it up in `context.session.variables.RTDS_opIndex` (`opIndex.get(currentId)`), and dispatches:
 
-- JS-handled type: calls the handler, gets `nextStepId`, advances `currentId`, continues the `while` loop.
+- JS-handled type: calls the handler, gets `nextStepId`, advances `currentId`, continues the `while` loop. (An async handler returns a thenable; `runStep` chains off it and resolves to a promise of the exit key.)
 - GUI-exit type: calls `prepareGuiHandoff`, returns the exit key string.
-- Unknown type: logs warning, writes `RTDS_error`, returns `"disconnect"`.
-- Missing step: logs warning, writes `RTDS_error`, returns `"disconnect"`.
+- **Unregistered type** (no real handler yet — e.g. `Emergency`, `Schedule`): logs a warning and **skips to the op's `NextStep`**, continuing the loop. Only when there is no `NextStep` does it end the flow (`"disconnect"`).
+- Missing step (id not in opIndex): logs warning, writes `RTDS_error`, returns `"disconnect"`.
 - No next step: returns `"disconnect"` (normal end-of-flow).
 
-Implemented as a `while` loop (not recursion) to avoid stack overflow on long JS-handled chains.
+Implemented as a `while` loop (not recursion) to avoid stack overflow on long JS-handled chains. A **visited-set cycle guard** tracks each `currentId`; revisiting one writes `RTDS_error = 'RTDS_CYCLE_DETECTED'` and returns `"disconnect"`, so a cyclic `NextStep` chain (including among unregistered types) cannot hang the call leg.
 
 ### 4.10 `resumeFrom(nextStepId)`
 
 Re-entry point after a GUI node completes. The GUI node must have written the chosen outcome Id into `context.session.variables.RTDS_nextStepId`. `resumeFrom` reads that value and calls `runStep`. The `RTDS_opIndex` is already in session — no re-fetch required.
 
+### 4.11 `setVariable(path, value)` — and `getScoped(key, default)`
+
+Defined in `rtds_3_vocallsEnv.js`; the matched write/read pair for operator data.
+
+- **`setVariable(path, value)`** — write side. A bare key (no dot) targets `varObj`, the default call-scoped store. With a dot, the first segment is the root **only when it names one** (`varObj`, `globalThis`/`global`, or an already-reachable object); otherwise the whole path nests under `varObj` (`auth.verified` → `varObj.auth.verified`). Missing intermediate objects are auto-created. The value's native type is preserved; segment casing is kept verbatim. See `specs/setVariables.spec.md`.
+- **`getScoped(key, default)`** — read side. Prefers `varObj[key]` (case-insensitive), falls back to exact-case `global[key]`, then `default`.
+
 ---
 
-## 5. SetAttributes — Detailed Behaviour
+## 5. SetVariables — Detailed Behaviour
 
-`SetAttributes` is the most common operation type. It initialises routing state before every branching decision.
+`SetVariables` is the most common operation type. It initialises routing state before every branching decision.
 
 ### 5.1 What it writes
 
 Given:
 ```json
 {
-  "Id": "00000",
-  "Type": "SetAttributes",
-  "IsFirstOperation": true,
-  "Params": {
-    "LogAttributes": "RTDS_ProjectName|Eic_RemoteId|ATTR_RoutingId",
+  "id": "00000",
+  "type": "SetVariables",
+  "isFirstOperation": true,
+  "params": {
     "CallflowId": "LPA_ICT_HELPDESK",
     "RoutingId": "LPA_ICT_HELPDESK",
     "IVREvent": "9999",
@@ -262,20 +284,19 @@ Given:
 ```
 
 The runtime:
-1. Reads `LogAttributes`, splits on `|`, logs current values from `context.session.variables` (most empty at this point).
-2. Writes to `context.session.variables`: `CallflowId`, `RoutingId`, `IVREvent`, `IVRAction`.
-3. Returns `{ nextStepId: "00001" }`.
-4. Loop advances to operation `"00001"` (type `Emergency`).
+1. Writes to `varObj` (via `setVariable`): `CallflowId`, `RoutingId`, `IVREvent`, `IVRAction` — each with its native JSON type (`IVREvent` stays a string `"9999"` because it is quoted; an unquoted `9999` would stay a number).
+2. Returns `{ nextStepId: "00001" }`.
+3. Loop advances to operation `"00001"` (type `Emergency`).
 
 ### 5.2 Token resolution
 
-Param values containing `$(ATTR_NAME)` are resolved against `context.session.variables` before being written. Example:
+String param values containing `$(ATTR_NAME)` are resolved (see §4.5) before being written. Example:
 
 ```json
 "To": "$(ATTR_EmailTo)"
 ```
 
-Becomes `context.session.variables["To"] = context.session.variables["ATTR_EmailTo"]` (or empty string if not set).
+Becomes `varObj.To = <resolved ATTR_EmailTo>` (or empty string if not set). The resolved value stays a string.
 
 ---
 
@@ -283,13 +304,13 @@ Becomes `context.session.variables["To"] = context.session.variables["ATTR_Email
 
 | Situation | Behaviour |
 |---|---|
-| RTDS API unreachable or non-200 | `log_error`, write `RTDS_error`, return `"disconnect"` |
-| JSON parse failure | `log_error`, write `RTDS_error`, return `"disconnect"` |
-| No `IsFirstOperation` operation | `log_error`, write `RTDS_error = 'RTDS_NO_ENTRY_POINT'`, return `"disconnect"` |
-| `nextStepId` not in opIndex | `log_warn`, write `RTDS_error`, return `"disconnect"` |
-| Unknown `Type` in dispatch | `log_warn`, write `RTDS_error`, return `"disconnect"` |
+| RTDS API unreachable or non-200 | `Logger.error`, write `RTDS_error`, return `"disconnect"` |
+| JSON parse failure | `Logger.error`, write `RTDS_error`, return `"disconnect"` |
+| No `isFirstOperation` operation | `Logger.error`, write `RTDS_error = 'RTDS_NO_ENTRY_POINT'`, return `"disconnect"` |
+| `nextStepId` not in opIndex | `Logger.warn`, write `RTDS_error`, return `"disconnect"` |
+| Unknown `type` in dispatch | `Logger.warn`, write `RTDS_error`, return `"disconnect"` |
 | `null` nextStepId | Return `"disconnect"` (normal end-of-flow, no error) |
-| Exception inside a handler | `log_error`, write `RTDS_error = err.message`, return `"disconnect"` |
+| Exception inside a handler | `Logger.error`, write `RTDS_error = err.message`, return `"disconnect"` |
 
 ---
 
@@ -298,20 +319,7 @@ Becomes `context.session.variables["To"] = context.session.variables["ATTR_Email
 ### Entry point A — initial call entry
 
 ```js
-return httpRequest(
-  'https://rtds-api.internal/api/routing-table/' + context.session.variables.RTDS_sourceId,
-  { method: 'GET' }
-).then(function(response) {
-  if (response.statusCode !== 200) {
-    log_error('[RTDS] API returned ' + response.statusCode);
-    context.session.variables.RTDS_error = 'API_ERROR_' + response.statusCode;
-    return 'disconnect';
-  }
-  var json = JSON.parse(response.body);
-  var firstOp = parseFlow(json);
-  if (!firstOp) { return 'disconnect'; }
-  return runStep(firstOp.Id);
-});
+return fetchAndStart(context.session.variables.RTDS_sourceId);
 ```
 
 `RTDS_sourceId` must be set in `context.session.variables` before this Script node is entered (e.g. from a prior SetVar node that maps the inbound phone number to a SourceId).
@@ -319,16 +327,16 @@ return httpRequest(
 ### Entry point B — re-entry after a GUI node
 
 ```js
-return resumeFrom(context.session.variables.RTDS_nextStepId);
+return resumeFrom(_rtNextStep || context.session.variables.RTDS_nextStepId);
 ```
 
 The GUI node must write the chosen outcome step Id into `context.session.variables.RTDS_nextStepId` before this Script node is entered.
 
 ---
 
-## 8. Out of Scope — Future Iterations
+## 8. Unimplemented Operation Types
 
-The following operation types follow the same architectural pattern as `SetAttributes` but require additional handler logic. They return `"disconnect"` via the unknown-type fallback until implemented:
+The following operation types follow the same architectural pattern as `SetVariables` but require additional handler logic. The runtime skips them (logs a warning and continues to `NextStep`) until implemented:
 
 - `Emergency` — HTTP call to check an emergency flag; multi-branch result
 - `Schedule` — HTTP call to evaluate a schedule; multi-branch result
@@ -336,3 +344,32 @@ The following operation types follow the same architectural pattern as `SetAttri
 - `CheckAttribute` — session variable comparison; `NextStep_True` / `NextStep_False`
 - `FlowJump` — replace `RTDS_sourceId`, re-fetch JSON, restart loop
 - All GUI-exit types — wiring defined in dispatch table, handoff logic implemented; GUI nodes not yet wired in the Vocalls canvas
+
+
+---
+
+## 9. Implementation File Structure
+
+The RTDS runtime is organized into two complementary files:
+
+### `rtds_3_vocallsEnv.js` (Library module)
+
+Cross-cutting platform utilities (loaded first):
+- `Logger` — wrapper around Vocalls' raw `log_debug/warn/error` globals with structured logging
+- Object-access helpers: `getValue`, `hasKey`, `walk`, `getScoped`, `setVariable`, `nowUTC`, …
+- `initializeCallFlowContext(mode)` — seeds `varObj` and syncs essential globals
+
+### `rtds_2_runtime.js` (RTDS dispatch)
+
+Contains all core functions used by the two entry points (A and B):
+- `fetchAndStart(sourceId)` — fetches the routing table over `jsonHttpRequest`, parses it, and starts dispatch
+- `parseFlow(json)` — validates and caches the routing table
+- `buildOpIndex(operations)` — creates the operation lookup `Map`
+- `getFirstOperation(operations)` — finds the entry-point operation
+- `runStep(opId)` — main dispatch loop
+- `resumeFrom(nextStepId)` — re-entry handler after GUI nodes
+- Handler functions: `executeSetVariables(op)`, `executeSendSms(op)`, `executeSendEmail(op)`
+- `prepareGuiHandoff(op)` — bridges JS and GUI layers
+- Configuration globals (`_rtBaseUrl`, `_rtGetSourceIdEndpoint`, …) are set by `callScripts/main.js`
+
+All state is stored on `context.session.variables`, enabling stateless re-entry across call transfers and node interruptions.

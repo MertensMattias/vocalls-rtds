@@ -12,7 +12,7 @@ The envelope is the **API contract** with the routing-tables service. Don't mix 
 
 ## Param names — PascalCase by convention, case-insensitive on read
 
-Param names inside `op.params` are written by operators in **PascalCase**: `Active`, `NextStep`, `NextStep_Failure`, `NextStep_Success`, `Timeout`, `ConfigId`, `LogAttributes`, plus operation-specific keys like `To`, `Body`, `RoutingId`, `ScheduleID`, `PhoneNumberVar`.
+Param names inside `op.params` are written by operators in **PascalCase**: `Active`, `NextStep`, `NextStep_Failure`, `NextStep_Success`, `Timeout`, `ConfigId`, plus operation-specific keys like `To`, `Body`, `RoutingId`, `ScheduleID`, `PhoneNumberVar`.
 
 **Reads of Param names are case-insensitive.** A Param written as `Active`, `active`, or `ACTIVE` must resolve to the same value. Casing of Param names is a stylistic preference, not a contract — readers normalise. This means:
 

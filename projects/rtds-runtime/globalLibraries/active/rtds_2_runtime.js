@@ -52,8 +52,31 @@
 // RTDS_OPERATIONS and RTDS_EXIT_KEYS below are kept as **read-only views**
 // over RTDS_REGISTRY for back-compat with code that consulted them directly.
 
+/**
+ * Unified dispatch registry. Each entry maps an operation Type string to its
+ * routing entry:
+ *   - `{ kind: 'js',  handler: Function }` for JS-handled types
+ *   - `{ kind: 'gui', exitKey: string  }` for GUI-exit types
+ *
+ * Populated by registerRtdsOperation / registerRtdsExit at library init time.
+ * Do not mutate directly — use the register* functions.
+ *
+ * @type {Map<string, {kind: string, handler?: Function, exitKey?: string}>}
+ */
 RTDS_REGISTRY = new Map();
+
+/**
+ * Read-only view over RTDS_REGISTRY filtered to JS-handled types.
+ * Maps Type string -> handler function. Kept for back-compat.
+ * @type {Map<string, Function>}
+ */
 RTDS_OPERATIONS = new Map();
+
+/**
+ * Read-only view over RTDS_REGISTRY filtered to GUI-exit types.
+ * Maps Type string -> exit-key string. Kept for back-compat.
+ * @type {Map<string, string>}
+ */
 RTDS_EXIT_KEYS = new Map();
 
 /**
@@ -162,7 +185,7 @@ function dumpRtdsState() {
 
 // ===========================================================================
 // buildOpIndex(operations)
-//   Turns the Operations array into a Map keyed by Id so any operation can
+//   Turns the operations array into a Map keyed by id so any operation can
 //   be looked up in O(1).
 // ===========================================================================
 
@@ -249,8 +272,8 @@ function parseFlow(json) {
 // ===========================================================================
 // getFirstOperation(operations)
 //   Returns the entry-point operation. If multiple carry
-//   IsFirstOperation === true (valid for FlowJump scenarios), returns the
-//   lexicographically lowest Id — zero-padded numeric Ids sort correctly.
+//   isFirstOperation === true (valid for FlowJump scenarios), returns the
+//   lexicographically lowest id — zero-padded numeric ids sort correctly.
 // ===========================================================================
 
 /**
@@ -477,7 +500,7 @@ function prepareGuiHandoff(op) {
 
 /**
  * @param {string|number} startOpId
- * @returns {string} Exit key for the GUI component, or 'disconnect' on error.
+ * @returns {string|Promise<string>} Exit key for the GUI component, or 'disconnect' on error. When a JS handler returns a thenable, returns a promise.
  */
 function runStep(startOpId) {
   var opIndex = context.session.variables.RTDS_opIndex;
@@ -640,9 +663,10 @@ function runStep(startOpId) {
 
 // ===========================================================================
 // resumeFrom(nextStepId)
-//   Re-entry point after a GUI-exit component completes. The component must
-//   have written its chosen outcome Id into RTDS_nextStepId before this
-//   Script node fires. opIndex is already on the session.
+//   Re-entry point after a GUI-exit component completes. GUI components write
+//   their chosen outcome Id to the master-layer global _rtNextStep before the
+//   Re-Entry Script fires; RTDS_nextStepId (pre-set by prepareGuiHandoff) is
+//   the safety-net fallback. opIndex is already on the session.
 // ===========================================================================
 
 /**
@@ -667,7 +691,7 @@ function resumeFrom(nextStepId) {
 // fetchAndStart(sourceId)
 //   Entry A — fetches the routing table for sourceId, parses it, and routes
 //   to the entry-point operation. Used by the initial Script node on every
-//   call. Endpoint shape: _rtBaseUrl + _rtGetSourceIdEndpoint + sourceId.
+//   call. URL: _rtBaseUrl + _rtGetSourceIdEndpoint + '?sourceId=' + encodeURIComponent(sourceId).
 //   Both globals must be set by the platform-init layer before this runs.
 // ===========================================================================
 

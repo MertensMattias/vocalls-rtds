@@ -6,7 +6,7 @@
 - Use the harness in [core/testHelpers.js](../core/testHelpers.js) (`runScript`, `runAction`).
 - Routing-table stubs use **camelCase** matching the API contract: `id`, `type`, `params`, `isFirstOperation`. See [casing.md](casing.md).
 - Sandbox assertions check the same shape: `result.sandbox.varObj.X`, not `result.sandbox.X`, for any RTDS-set value. See [storage.md](storage.md).
-- For unit-level checks of JS handlers, call the handler directly on the returned sandbox: `result.sandbox.executeSetAttributes({ id, type, params, ... })` — same camelCase.
+- For unit-level checks of JS handlers, call the handler directly on the returned sandbox: `result.sandbox.executeSetVariables({ id, type, params, ... })` — same camelCase.
 - Map identity uses duck-typing (`typeof m.get === 'function'`), not `instanceof Map` (cross-realm Maps).
 
 ## Reflect on

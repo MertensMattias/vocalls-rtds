@@ -12,7 +12,7 @@ All call-scoped data lives on `varObj`. It is the only store that:
 
 RTDS runtime state lives on a family of `_rt*`-prefixed globals. **`_rt` is the namespace marker for RTDS-runtime variables**: when adding a new runtime-owned global, prefix it with `_rt` so the family stays visually distinct from operator data on `varObj` and from per-component locals on `__`.
 
-The `_rt*` family includes — at minimum — flow-control plumbing, HTTP scaffolding, and the per-environment endpoint table. The list grows as the runtime grows; treat anything `_rt*` as runtime-owned and outside the SetAttributes / varObj contract.
+The `_rt*` family includes — at minimum — flow-control plumbing, HTTP scaffolding, and the per-environment endpoint table. The list grows as the runtime grows; treat anything `_rt*` as runtime-owned and outside the SetVariables / varObj contract.
 
 | Global                     | Role                         | Notes                                                                                                                                            |
 | -------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -28,12 +28,12 @@ Non-`_rt` platform globals also live on `global` — they pre-date the prefix co
 | ------------------------------------------------------ | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `_headers`                                             | Vocalls platform | HTTP header bag, initialised by `if (!_headers) { _headers = {}; }` in every init body.                                                                                                                                                                         |
 | `environment`, `language`                              | Vocalls platform | Synced **from** varObj at init time by `initializeCallFlowContext`; read by the platform. Components don't write these.                                                                                                                                         |
-| `context.session.variables.RTDS_*`                     | RTDS dispatcher  | `RTDS_sourceId`, `RTDS_opIndex`, `RTDS_currentOpId`, `RTDS_currentOpType`, `RTDS_nextStepId`, `RTDS_error`. Lives on `context.session.variables`, not `global`.                                                                                                 |
+| `context.session.variables.RTDS_*`                     | RTDS dispatcher  | `RTDS_sourceId`, `RTDS_opIndex`, `RTDS_currentOpId`, `RTDS_currentOpType`, `RTDS_currentOpConfig`, `RTDS_nextStepId`, `RTDS_error`. Lives on `context.session.variables`, not `global`.                                                                          |
 | `__configJSON`, `__rtParams`, `__<componentName><Key>` | Per-component    | Component-scoped state — never user data. The `__rt` prefix on a *component-scoped* var means "this is a component's local view of an RTDS global" (e.g. `__rtBaseUrl`, `__rtEndpoint`, `__rtNextStep`). Don't confuse it with the bare-`_rt*` runtime globals. |
 
 **Everything else goes on `varObj`** — operator-set attributes (`RoutingId`, `customerType`, `IVREvent`, …), cross-component scratch (`SchedulerExternalNumber`, `rtPromptList`, …), guard tokens, language overrides, anything else a downstream operation needs to read across components or session restores.
 
-## Read contract
+## Read & write contract
 
 Reads of operator-set data go through `getScoped(key, defaultValue)`:
 
@@ -41,6 +41,8 @@ Reads of operator-set data go through `getScoped(key, defaultValue)`:
 - Reads of operation Params (the operator's `__configJSON`) go through `getValue(__rtParams, 'Key', default)` — these are component-local and don't need fallback.
 
 Bare `varObj[key]` reads in components are valid only when no `global` fallback is needed (e.g. when reading a key that's guaranteed to exist on varObj at that point in the flow). When in doubt, use `getScoped`.
+
+Writes of operator data go through `setVariable(path, value)` — the write-side counterpart to `getScoped`. A bare key targets `varObj`; a dotted path targets `varObj` / `globalThis` / a named reachable object, auto-creating intermediates and preserving the value's native type. This is what `SetVariables` (and its component twin) uses. See [setVariables.spec.md](../rtds_vocalls_operations/specs/setVariables.spec.md).
 
 ## Reflect on
 

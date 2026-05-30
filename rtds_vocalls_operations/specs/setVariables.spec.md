@@ -15,8 +15,8 @@ default but generalises the **destination** to a dotted path and the **value** t
 its native JSON type. The new name reflects that it sets *variables anywhere in
 the reachable scope* — not just flat call-scoped attributes.
 
-`SetAttributes` stays registered as a back-compat alias to `executeSetVariables`
-during migration (see [Migration](#migration)).
+`SetAttributes` was a **hard cut** — only `SetVariables` is registered; there is no
+back-compat alias (see [Migration](#migration)).
 
 ## Business purpose
 
@@ -30,10 +30,9 @@ a downstream operation. The destination defaults to the call-scoped store
 
 | Param name        | Type    | Required  | Default | Description                                                                                                                                  |
 | ----------------- | ------- | --------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Active`          | boolean | no        | `false` | If falsy, the operation logs a skip and exits to `NextStep`. Universal across operations.                                                     |
+| `Active`          | boolean | no        | `false` | Boolean `true`/`false` only. If `false` (or absent), the operation logs a skip and exits to `NextStep`. Universal across operations.          |
 | `NextStep`        | string  | yes       | —       | Continuation after the writes (always taken in active mode).                                                                                  |
-| `LogAttributes`   | string  | no        | `''`    | `\|`-separated list of variable names whose resolved values are logged at debug level after the writes. Sensitive data should be omitted.      |
-| `<target path>`   | any     | yes (≥1)  | —       | Every other Param. The **key** is a write target (see [Target resolution](#target-resolution)); the **value** is written with its native JSON type (see [Value typing](#value-typing)). Control keys (`Active`, `NextStep`, `LogAttributes`) are excluded. |
+| `<target path>`   | any     | yes (≥1)  | —       | Every other Param. The **key** is a write target (see [Target resolution](#target-resolution)); the **value** is written with its native JSON type (see [Value typing](#value-typing)). Control keys (`Active`, `NextStep`) are excluded. |
 
 ### Outputs
 
@@ -46,24 +45,27 @@ a downstream operation. The destination defaults to the call-scoped store
 The Param **key** is a dot-separated path. The first segment selects the **root
 object**; the remaining segments are a nested path under that root.
 
-| Key form                | Root        | Writes                                  |
-| ----------------------- | ----------- | --------------------------------------- |
-| `customerType`          | `varObj`    | `varObj.customerType` (bare key → varObj) |
-| `varObj.customerType`   | `varObj`    | `varObj.customerType` (explicit, same)  |
-| `varObj.auth.verified`  | `varObj`    | `varObj.auth.verified` (nested)         |
-| `globalThis.debugCall`  | `globalThis`| `globalThis.debugCall`                  |
-| `someObj.a.b`           | `someObj`   | `someObj.a.b` (named reachable global)  |
+| Key form                  | Root resolved to | Writes                                            |
+| ------------------------- | ---------------- | ------------------------------------------------- |
+| `customerType`            | `varObj`         | `varObj.customerType` (bare key → varObj)         |
+| `varObj.customerType`     | `varObj`         | `varObj.customerType` (explicit, same)            |
+| `varObj.auth.verified`    | `varObj`         | `varObj.auth.verified` (nested)                   |
+| `globalThis.debugCall`    | `globalThis`     | `globalThis.debugCall`                            |
+| `someObj.a.b` (someObj reachable) | `someObj` | `someObj.a.b` (named reachable object)            |
+| `auth.verified` (no such root) | `varObj`    | `varObj.auth.verified` (unrecognised root → varObj) |
 
 Rules:
 
 1. **No dot → `varObj`.** A bare key is shorthand for `varObj.<Key>`. This is the
    default and the overwhelmingly common case — see [conventions/storage.md](../../conventions/storage.md):
    *all call-scoped data lives on `varObj`.*
-2. **First segment is the root.** `globalThis`, `varObj`, or the name of any object
-   already reachable in scope (a global). The root must already exist as an object;
-   the runtime does **not** create a new root global (that would silently mint
-   undeclared globals and bypass the `_rt*` namespace discipline). A non-existent or
-   non-object root → skip + `Logger.warn`.
+2. **First segment is the root, when it names one.** `varObj`, `globalThis`/`global`,
+   or the name of an object **already reachable** in scope. The runtime does **not**
+   create a new root global (that would silently mint undeclared globals and bypass the
+   `_rt*` namespace discipline). If the first segment names no recognised root, the
+   **whole path nests under `varObj`** — e.g. `auth.verified` → `varObj.auth.verified`.
+   The only skip-with-warning case is an explicit `globalThis`/`global` that resolves to
+   a non-object scope.
 3. **Auto-create intermediates.** Missing intermediate objects along the path are
    vivified as plain objects (lodash-`set` semantics). `varObj.a.b.c` with
    `varObj.a` undefined creates `varObj.a = {}`, `varObj.a.b = {}`, then sets `.c`.
@@ -88,16 +90,18 @@ Params object. No string coercion.
 | `["a","b"]`  | `["a","b"]` (array)         |
 | `{ "x": 1 }` | `{ x: 1 }` (object)         |
 
-Only **string** values are processed: trimmed, and `${name}` placeholders resolved
-against the scope (the same `resolveTokens` / `__setupConfig` substitution the other
-operations use). A resolved string stays a string — `"n=${count}"` → `"n=5"`, never
-the number `5`. Booleans, numbers, null, arrays, and objects pass through untouched.
+**The JSON type is authoritative.** A quoted `"123456"` is written as the **string**
+`"123456"`; an unquoted `123456` is written as the **number** `123456`. The operator
+controls the type by quoting (or not) in the Params JSON — the runtime never re-types a
+value.
 
-The legacy `ConfigId` → Number and `Timeout` → Number coercions from `__setupConfig`
-do **not** apply here (SetVariables has no such control Params); only `Active` is
-coerced to Boolean.
-Always apply this rule: "123456" = string
-123456 = number
+Only **string** values are processed: trimmed, and token placeholders resolved against
+the scope (the same `resolveTokens` substitution the other operations use). A resolved
+string **stays a string** — `"n=${count}"` → `"n=5"`, and even a fully-tokened
+`"${count}"` resolves to a string, never the number `5`. Booleans, numbers, null,
+arrays, and objects pass through untouched.
+
+`Active` is the one coercion: it is read as a strict Boolean (`true`/`false`).
 
 ## Runtime handler — `executeSetVariables(op)`
 
@@ -109,10 +113,11 @@ dispatch model is out of scope for this spec and unchanged by it).
 function executeSetVariables(op) {
   var params = op.params;
   if (!params) { return { nextStepId: null }; }
-can 1 be set as true/false boolean? 
-  var CONTROL = { active: 1, nextstep: 1, logattributes: 1 };
+
+  var CONTROL = { active: 1, nextstep: 1 };
 
   var keys = Object.keys(params);
+  var written = 0;
   for (var i = 0; i < keys.length; i++) {
     var key = keys[i];
     if (CONTROL[String(key).toLowerCase()]) { continue; }
@@ -120,35 +125,42 @@ can 1 be set as true/false boolean?
     var raw = getParam(op, key, null);          // unwrap array form, keep native type
     var value = (typeof raw === "string") ? resolveTokens(raw) : raw;  // strings only
     setVariable(key, value);                    // dot-path write (below)
+    written++;
   }
 
-  handleLogAttributes(op);                       // debug side-effect, getScoped reads
   var nextStepId = resolveNextStep(op, null);
-  Logger.debug("[RTDS] SetVariables done", { opName: op.name, nextStep: nextStepId || "(none)" });
+  Logger.debug("[RTDS] SetVariables done", { opName: op.name, written: written, nextStep: nextStepId || "(none)" });
   return { nextStepId: nextStepId };
 }
 ```
 
 ### `setVariable(path, value)` — the dot-path write helper
 
-A new helper (env library, `rtds_3_vocallsEnv.js`, next to `getScoped`):
+Lives in the env library, [rtds_3_vocallsEnv.js](../../projects/rtds-runtime/globalLibraries/active/rtds_3_vocallsEnv.js),
+next to `getScoped` (its read-side counterpart). Shipped behavior:
 
 ```
 function setVariable(path, value) {
-  if (value === null || value === undefined) { /* still written — null is a valid value */ }
   var segments = String(path).split(".");
 
-  // 1. Resolve root. No dot → varObj. Else first segment names the root.
+  // 1. Resolve root. Bare key → varObj. With a dot, the first segment is the
+  //    root ONLY when resolveRoot recognises it; otherwise the whole path
+  //    nests under varObj.
   var root, startIndex;
   if (segments.length === 1) {
     root = varObj; startIndex = 0;
   } else {
-    root = resolveRoot(segments[0]);   // varObj | globalThis | named reachable object
-    if (!root || typeof root !== "object") {
-      Logger.warn("[setVariable] unknown or non-object root — skipped", { path: path, root: segments[0] });
-      return;
+    root = resolveRoot(segments[0]);
+    if (root) {
+      startIndex = 1;
+    } else {
+      root = varObj; startIndex = 0;   // unrecognised root → nest under varObj
     }
-    startIndex = 1;
+  }
+
+  if (!root || typeof root !== "object") {
+    Logger.warn("[setVariable] unknown or non-object root — skipped", { path: path, root: segments[0] });
+    return;
   }
 
   // 2. Walk/auto-create intermediates, set leaf.
@@ -162,14 +174,15 @@ function setVariable(path, value) {
 }
 ```
 
-`resolveRoot(name)`:
+`resolveRoot(name)` returns the root object, or `null` when `name` is not a recognised
+root (which makes `setVariable` nest under `varObj`):
 - `"varObj"` → `varObj`
-- `"globalThis"` / `"global"` → the global scope object (`global` ?? `globalThis`)
-- otherwise → the named property on the global scope **only if it already exists**
-  as an object; never auto-created.
+- `"globalThis"` / `"global"` → the global scope object
+- any other name that already exists in scope as an object → that object
+- otherwise → `null` (never auto-creates a new root global)
 
-ES5.1 throughout (no `let`/`const`/arrow/`??`; the `??` above is shorthand for the
-existing `typeof global !== 'undefined' ? global : globalThis` ladder).
+ES5.1 throughout (no `let`/`const`/arrow/`??`; the global-scope pick is the existing
+`typeof global !== 'undefined' ? global : globalThis` ladder).
 
 ## Component twin — `setVariables.js`
 
@@ -186,7 +199,7 @@ if (!getValue(__rtParams, 'Active', false)) {
     return;
 }
 
-var __CONTROL_KEYS = { Active: 1, NextStep: 1, LogAttributes: 1 };
+var __CONTROL_KEYS = { Active: 1, NextStep: 1 };
 var __written = 0;
 
 walk(__rtParams, function (key, value) {
@@ -207,14 +220,16 @@ use.
 
 ## Migration
 
-- Register **both** Types to the same handler during migration:
-  `registerRtdsOperation('SetVariables', executeSetVariables)` and
-  `registerRtdsOperation('SetAttributes', executeSetVariables)`. Existing routing
-  tables using `SetAttributes` keep working unchanged (a bare flat key still writes
-  `varObj[key]`).
-- Keep `setAttributes.js` until flows are re-pointed; `setVariables.js` is the
-  forward component.
-- Remove the `SetAttributes` alias once no routing table references it.
+`SetAttributes` was a **hard cut** to `SetVariables` — there is **no back-compat
+alias**. The runtime registers `SetVariables` only:
+`registerRtdsOperation('SetVariables', executeSetVariables)`. A routing table that
+still emits `SetAttributes` hits the unregistered-type path (runStep skips it to its
+`NextStep` with a warning), so routing tables **must** be re-pointed to `SetVariables`.
+
+- Re-point every routing table from `SetAttributes` → `SetVariables` (bare flat keys
+  behave identically; the new dot-path / native-type behavior is purely additive).
+- `setVariables.js` is the forward component; the old `setAttributes.js` is retained
+  only for reference until flows are migrated.
 
 ## Examples
 
@@ -236,14 +251,13 @@ use.
 //  -> varObj.greeting = "Hello Alice"   (string; customerName resolved)
 ```
 
-## Open questions
+## Known limitations / future work
 
-- **`SetAttributes` alias lifetime** — kept until routing tables migrate; the spec
-  registers both Types to one handler. Confirm whether to alias or hard-cut.
-  // Hard CUT
-- **Array-index paths** (`list.0.id`) — not in scope; dot segments address object
-  keys only. Numeric segments would create string-keyed object properties, not array
-  slots. Flag if array targeting is ever needed. //USER: Probably
+- **Array-index paths** (`list.0.id`) are **not yet supported** — dot segments address
+  object keys only. A numeric segment today creates a string-keyed object property
+  (`list = { "0": { id: … } }`), not an array slot. Array targeting is a likely future
+  enhancement; until then, write whole arrays as a single value
+  (`"list": [{ "id": 1 }]`) rather than addressing individual slots.
 
 ## Notes
 

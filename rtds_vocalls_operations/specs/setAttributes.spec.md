@@ -1,5 +1,10 @@
 # Operation Spec — setAttributes (SetAttributes)
 
+> **Superseded.** `SetAttributes` was hard-cut to **`SetVariables`** — see
+> [setVariables.spec.md](setVariables.spec.md). The runtime registers only
+> `SetVariables`; `LogAttributes` was dropped. This spec is retained as legacy
+> reference for the old component shape.
+
 | Field          | Value                                                              |
 | -------------- | ------------------------------------------------------------------ |
 | Operation Type | `SetAttributes`                                                    |

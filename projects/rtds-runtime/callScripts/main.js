@@ -75,27 +75,42 @@ environment = "";
 language = "";
 _headers = typeof _headers === "object" && _headers !== null ? _headers : {};
 
-// RTDS-specific endpoints. fetchAndStart() composes the routing-table URL as
-// `_rtBaseUrl + _rtGetSourceIdEndpoint + '?sourceId=' + encodeURIComponent(sourceId)`.
+// Base URL for all RTDS backend APIs.
 _rtBaseUrl = "https://api.n-allo.be";
 
+// SMS dispatch endpoint. executeSendSms POSTs to _rtBaseUrl + this path.
 _rtSmsEndpoint = `/smsapi-${environment}/api/Send`;
+
+// Email dispatch endpoint. executeSendEmail POSTs to _rtBaseUrl + this path.
 _rtMailEndpoint = `/mailapi-${environment}/api/SendMail`;
 
+// Routing-table lookup endpoint. fetchAndStart GETs:
+//   _rtBaseUrl + _rtGetSourceIdEndpoint + '?sourceId=' + encodeURIComponent(sourceId)
 _rtGetSourceIdEndpoint = `/routingtablesapi-${environment}/api/routing-table/source`;
 
+// GuardTUI access-check endpoint. Used by the guardTui component.
 _rtTuiCheckAccessEndpoint = `/rtdsapi-${environment}/api/Guards/AnyGuardWithPhoneNumberAndConfig`;
+
+// GuardTUI state endpoint. Used by the guardTui component.
 _rtTuiGetStateEndpoint = `/rtdsapi-${environment}/api/Guards/GetGuardByPhoneNumberAndConfig`;
+
+// GuardTUI activate/deactivate endpoints.
 _rtTuiActivateEndpoint = `/rtdsapi-${environment}/api/Guards/Activate`;
 _rtTuiDeactivateEndpoint = `/rtdsapi-${environment}/api/Guards/Disable`;
 
+// Digipolis guard config endpoints. Used by the guardRouting component.
 _rtActiveGuardByConfigEndpoint = `/digipolisapi-${environment}/Guard/GetAllCurrentActiveGuardsByGuardConfig`;
 _rtAnyGuardWithPhoneAndConfEndpoint = `/digipolisapi-${environment}/Guard/AnyGuardWithPhoneNumberAndConfig`;
 
+// Schedule check endpoint. Used by the (future) Schedule handler.
 _rtScheduleEndpoint = `/schedulingapi-${environment}/api/schedule/`;
+
+// Phonebook lookup endpoint. Available for future use.
 _rtPhonebookEndpoint = `/phonebookapi-${environment}`;
 
-// Bound to the GUI-exit component's chosen NextStep id before resumeFrom.
+// Master-layer global. GUI components write their chosen next-op id here before
+// the Re-Entry Script fires. resumeFrom reads: _rtNextStep || RTDS_nextStepId.
+// Initialized to {} (falsy for the || fallback).
 _rtNextStep = {};
 
 // ╔══════════════════════════════════════════════════════════════════════════╗
