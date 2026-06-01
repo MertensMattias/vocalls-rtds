@@ -95,7 +95,7 @@
     <object
       label="output"
       Type="transient"
-      OnEnter="Logger.info(&#39;[checkSchedule] exit nextStep: &#39; + __rtNextStep );"
+      OnEnter="Logger.info(&#39;[checkSchedule] exit&#39;, { nextStep: __rtNextStep });"
       OnLeave=""
       MaxEntryCount=""
       MaxEntryNodeId=""
