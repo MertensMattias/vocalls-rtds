@@ -119,11 +119,11 @@ var __timeout = getValue(__rtParams, 'RequestTimeout', 10000);
 
 return jsonHttpRequest(__url, { method: 'GET', "timeout": __timeout }, _headers, null).then(
     function (result) {
-        if (!result || result.success !== true || !Array.isArray(result.body)) {
+        if (!result || result.success !== true || !Array.isArray(result.response)) {
             Logger.warn('[guardRouting] fetch failed', { statusCode: result && result.statusCode, nextStep: global[_rtNextStep] });
             return;
         }
-        __guardList = result.body;
+        __guardList = result.response;
         global[_rtNextStep] = getValue(__rtParams, 'NextStep', -1);
         Logger.info('[guardRouting] list ready', { count: __guardList.length, nextStep: global[_rtNextStep] });
     },

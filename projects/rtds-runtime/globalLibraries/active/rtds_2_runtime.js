@@ -898,7 +898,7 @@ function resolveFilesList(raw) {
 function executeSendSms(op) {
   var skipNext = resolveNextStep(op, null);
 
-  if (!getParam(op, "Active", false)) {
+  if (!isActive(getParam(op, "Active", false))) {
     Logger.info("[RTDS] SendSMS skipped — inactive", { nextStep: skipNext });
     return { nextStepId: skipNext };
   }
@@ -970,7 +970,7 @@ function executeSendSms(op) {
 function executeSendEmail(op) {
   var skipNext = resolveNextStep(op, null);
 
-  if (!getParam(op, "Active", false)) {
+  if (!isActive(getParam(op, "Active", false))) {
     Logger.info("[RTDS] SendEmail skipped — inactive", { nextStep: skipNext });
     return { nextStepId: skipNext };
   }

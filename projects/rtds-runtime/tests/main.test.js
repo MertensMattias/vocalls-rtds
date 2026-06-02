@@ -189,6 +189,24 @@ describe('rtds-runtime main.js', function () {
             });
     });
 
+    it('executeSetVariables defaults Active to true (absent Active still writes)', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                delete sb.varObj.LegacyKey;
+                // No Active key at all — legacy config. Default-true means it writes.
+                var out = sb.executeSetVariables({
+                    id: 'unit-legacy',
+                    name: 'unit-setvars-legacy',
+                    type: 'SetVariables',
+                    params: { LegacyKey: 'Written', NextStep: '00004' }
+                });
+                expect(sb.varObj.LegacyKey).toBe('Written');
+                expect(out.nextStepId).toBe('00004');
+            });
+    });
+
     it('isActive preserves the "false"-is-truthy Active contract', function () {
         return helpers
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
