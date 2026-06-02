@@ -37,17 +37,13 @@ FOOTER_SIBLING_LINE = (
 
 
 def render():
-    """Return AGENTS.md content (bytes) derived from CLAUDE.md.
+    """Return AGENTS.md content (bytes, LF) derived from CLAUDE.md.
 
-    Newline style (CRLF/LF) is whatever CLAUDE.md uses — preserved exactly by
-    reading and writing in binary and never translating line endings.
+    Newlines are normalized to LF (what git stores). The repo uses
+    core.autocrlf=true with no .gitattributes, so preserving working-tree CRLF
+    would make the generator output and the sync check nondeterministic.
     """
-    raw = SOURCE.read_bytes()
-    nl = b"\r\n" if b"\r\n" in raw else b"\n"
-    text = raw.decode("utf-8")
-    # Normalise to a single newline convention for string ops, restore at the end.
-    if nl == b"\r\n":
-        text = text.replace("\r\n", "\n")
+    text = SOURCE.read_text(encoding="utf-8").replace("\r\n", "\n")
 
     # 1. Title.
     if not text.startswith("# CLAUDE.md\n"):
@@ -70,15 +66,17 @@ def render():
         raise SystemExit("gen_agents_md: footer sibling line not found in CLAUDE.md")
     text = text.replace("\n\n" + FOOTER_SIBLING_LINE + "\n", "\n")
 
-    if nl == b"\r\n":
-        text = text.replace("\n", "\r\n")
     return text.encode("utf-8")
+
+
+def _norm(b):
+    return b.replace(b"\r\n", b"\n") if b is not None else None
 
 
 def main():
     want = render()
     have = DEST.read_bytes() if DEST.exists() else None
-    if have == want:
+    if _norm(have) == _norm(want):
         print("AGENTS.md already in sync.")
         return
     DEST.write_bytes(want)

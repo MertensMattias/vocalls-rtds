@@ -51,7 +51,7 @@ def main():
     gen_agents = _load("gen_agents_md")
     want = gen_agents.render()
     have = gen_agents.DEST.read_bytes() if gen_agents.DEST.exists() else None
-    if have != want:
+    if gen_agents._norm(have) != gen_agents._norm(want):
         drifted.append("AGENTS.md  (run: python scripts/gen_agents_md.py)")
 
     if drifted:

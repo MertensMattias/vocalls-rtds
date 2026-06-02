@@ -179,19 +179,19 @@ def render():
 
     rows = [render_row(by_op[op]) for op in ROW_ORDER]
     body = HEADER + "\n".join(rows) + "\n" + TAIL
-
-    # Match the catalog's committed newline style.
-    raw = CATALOG.read_bytes() if CATALOG.exists() else b""
-    nl = "\r\n" if b"\r\n" in raw else "\n"
-    if nl == "\r\n":
-        body = body.replace("\n", "\r\n")
+    # Emit LF (what git stores). The repo's core.autocrlf=true makes working-tree
+    # newlines nondeterministic, so a CRLF emit would churn against check_lockstep.
     return body.encode("utf-8")
+
+
+def _norm(b):
+    return b.replace(b"\r\n", b"\n") if b is not None else None
 
 
 def main():
     want = render()
     have = CATALOG.read_bytes() if CATALOG.exists() else None
-    if have == want:
+    if _norm(have) == _norm(want):
         print("operations-catalog.md already in sync.")
         return
     CATALOG.write_bytes(want)

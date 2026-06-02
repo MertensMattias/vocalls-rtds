@@ -83,31 +83,31 @@ MANIFEST.append(
 
 
 def render(src_rel, is_markdown, replacements):
-    """Return the bundled content (bytes) for one source file.
+    """Return the bundled content (bytes) for one source file, normalized to LF.
 
-    Newline style (CRLF/LF) is taken from the source file and preserved, so the
-    working tree stays internally consistent and check_skill_sync.py can compare
-    bytes directly.
+    Newlines are normalized to LF on both read and write. The repo uses
+    core.autocrlf=true with no .gitattributes, so working-tree newline style is
+    nondeterministic across checkouts; normalizing to LF (what git stores) keeps
+    the generator output and check_skill_sync.py stable regardless.
     """
-    raw = (REPO / src_rel).read_bytes()
-    nl = b"\r\n" if b"\r\n" in raw else b"\n"
-    text = raw.decode("utf-8")
-    if nl == b"\r\n":
-        text = text.replace("\r\n", "\n")
+    text = (REPO / src_rel).read_text(encoding="utf-8")
+    text = text.replace("\r\n", "\n")
     for old, new in replacements:
         text = text.replace(old, new)
     if is_markdown:
         text = BANNER + text
-    if nl == b"\r\n":
-        text = text.replace("\n", "\r\n")
     return text.encode("utf-8")
+
+
+def _norm(b):
+    return b.replace(b"\r\n", b"\n") if b is not None else None
 
 
 def build(write=True):
     """Generate the bundle. Returns list of (dest_rel, changed) tuples.
 
-    When ``write`` is False, computes the intended content and reports which
-    destinations would change — used by check_skill_sync.py.
+    Comparison is newline-insensitive (LF-normalized). When ``write`` is False,
+    reports which destinations would change — used by check_skill_sync.py.
     """
     replacements = _load_replacements()
     results = []
@@ -115,7 +115,7 @@ def build(write=True):
         want = render(src_rel, is_markdown, replacements)
         dst = SKILL / dst_rel
         have = dst.read_bytes() if dst.exists() else None
-        changed = have != want
+        changed = _norm(have) != _norm(want)
         if changed and write:
             dst.parent.mkdir(parents=True, exist_ok=True)
             dst.write_bytes(want)
