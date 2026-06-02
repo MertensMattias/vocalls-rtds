@@ -42,7 +42,7 @@ a downstream operation. The destination defaults to the call-scoped store
 
 | Param name        | Type    | Required  | Default | Description                                                                                                                                  |
 | ----------------- | ------- | --------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Active`          | boolean | no        | `false` | Boolean `true`/`false` only. If `false` (or absent), the operation logs a skip and exits to `NextStep`. Universal across operations.          |
+| `Active`          | boolean | no        | `true`  | Boolean `true`/`false` only. Defaults to `true` **for SetVariables** (legacy config rarely sets the key, and historically always wrote); only an explicit `Active: false` logs a skip and exits to `NextStep`. Other operations (Send*, guard*) default `false` — opt-in. |
 | `NextStep`        | string  | yes       | —       | Continuation after the writes (always taken in active mode).                                                                                  |
 | `<target path>`   | any     | yes (≥1)  | —       | Every other Param. The **key** is a write target (see [Target resolution](#target-resolution)); the **value** is written with its native JSON type (see [Value typing](#value-typing)). Control keys (`Active`, `NextStep`) are excluded. |
 

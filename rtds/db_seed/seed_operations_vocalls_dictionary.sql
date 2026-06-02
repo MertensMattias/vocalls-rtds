@@ -129,7 +129,13 @@ INSERT INTO @Attribute
     /* ---- SetVariables ---- (session-variable writer; replaces SetAttributes)
        The fixed control keys (Active, NextStep) PLUS the session variables this
        flow writes are catalogued so the import's UNKNOWN_PARAM check passes and
-       the values are stored. Add new variables here if a flow introduces them.  */
+       the values are stored. Add new variables here if a flow introduces them.
+       Active stays optional (IsRequired = 0) but defaults to TRUE for
+       SetVariables: legacy config rarely sets the key and historically always
+       wrote, so absent = active here. Only an explicit Active:false skips. The
+       dictionary has no default-value column, so the default lives in the
+       runtime twin (executeSetVariables, getParam(...,true)) and the component
+       (getValue(...,true)) — see rtds/specs/setVariables.spec.md.              */
     ('SetVariables_vocalls', 'Active',           'boolean', 0, 0, 1, 1),
     ('SetVariables_vocalls', 'NextStep',         'string',  1, 1, 1, 1),
     ('SetVariables_vocalls', 'RoutingId',        'string',  0, 0, 1, 1),

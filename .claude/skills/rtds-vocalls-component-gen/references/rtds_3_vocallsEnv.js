@@ -14,7 +14,7 @@
  * Public surface (everything declared without var/let/const becomes global):
  *   - Object helpers: getOrDefault, isValidObject, getValue, getValueOrFalsy,
  *                     hasKey, findKey, walk, applyDefaults, getNestedValue,
- *                     getScoped, nowUTC
+ *                     getScoped, isActive, nowUTC
  *   - varObj-shape readers: getRoutingConfig, getSessionConfig, getDebugConfig
  *   - Logger: Logger.debug / info / warn / error / API / configure
  *   - Lifecycle: initializeCallFlowContext(mode), storeSessionVariables()
@@ -110,6 +110,22 @@ function getValue(obj, key, defaultValue) {
 function getValueOrFalsy(obj, key, defaultValue) {
   var v = getValue(obj, key);
   return v || defaultValue;
+}
+
+/**
+ * Coerces an Active param value to a boolean activation decision. A real
+ * boolean passes through; anything else goes through Boolean(). This preserves
+ * the documented contract that the string "false" is truthy (Boolean("false")
+ * === true) and an unresolved "${toggle}" placeholder is truthy — see
+ * conventions/params.md. Shared by the JS twins (executeSetVariables /
+ * executeSendSms / executeSendEmail) and the GUI components so Active
+ * truthiness can never diverge between the two.
+ *
+ * @param {*} value - The resolved Active value (boolean, string, number, ...).
+ * @returns {boolean}
+ */
+function isActive(value) {
+  return typeof value === "boolean" ? value : Boolean(value);
 }
 
 /**

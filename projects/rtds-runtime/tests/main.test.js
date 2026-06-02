@@ -169,6 +169,39 @@ describe('rtds-runtime main.js', function () {
             });
     });
 
+    it('executeSetVariables skips all writes when Active is false', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                delete sb.varObj.InactiveKey;
+                delete sb.InactiveKey;
+                var out = sb.executeSetVariables({
+                    id: 'unit-inactive',
+                    name: 'unit-setvars-inactive',
+                    type: 'SetVariables',
+                    params: { Active: false, InactiveKey: 'ShouldNotWrite', NextStep: '00003' }
+                });
+                // Nothing written on either store, and the op advances on NextStep.
+                expect(sb.varObj.InactiveKey).toBeUndefined();
+                expect(sb.InactiveKey).toBeUndefined();
+                expect(out.nextStepId).toBe('00003');
+            });
+    });
+
+    it('isActive preserves the "false"-is-truthy Active contract', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                expect(sb.isActive(true)).toBe(true);
+                expect(sb.isActive(false)).toBe(false);
+                expect(sb.isActive('false')).toBe(true);   // Boolean('false') === true (documented)
+                expect(sb.isActive(0)).toBe(false);
+                expect(sb.isActive('${unresolved}')).toBe(true);
+            });
+    });
+
     it('registers SendSMS / SendEmail as real JS handlers (not GUI-exit)', function () {
         return helpers
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
