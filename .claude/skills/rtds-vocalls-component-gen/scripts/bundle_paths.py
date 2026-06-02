@@ -41,16 +41,8 @@ REPLACEMENTS = [
     ("../rtds/components/", "../references/examples/"),
     # Skill-internal cross-refs
     (
-        "../.claude/skills/vocalls-component-builder/references/",
-        "../references/",
-    ),
-    (
         "../.claude/skills/rtds-vocalls-component-gen/references/",
         "../references/",
-    ),
-    (
-        "../.claude/skills/vocalls-component-builder/scripts/",
-        "../scripts/",
     ),
     (
         "../.claude/skills/rtds-vocalls-component-gen/scripts/",

@@ -20,3 +20,5 @@ projects/*/.vocalls/slot-map.json
 # Coverage and test artifacts
 coverage/
 .nyc_output/
+__pycache__/
+*.pyc

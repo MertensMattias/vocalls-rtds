@@ -5,7 +5,6 @@
       "WebFetch(domain:help.genesys.com)",
       "mcp__context7__resolve-library-id",
       "Edit(/.claude/skills/vocalls-handler-spec/**)",
-      "Edit(/.claude/skills/vocalls-component-builder/**)",
       "Edit(/.claude/skills/rtds-vocalls-component-gen/**)"
     ]
   }

@@ -9,18 +9,24 @@ Restart the agent session.
 
 ## Refresh from vocalls-rtds (maintainers)
 
-From repo root:
+The bundled copies (`conventions/`, `PROJECT_CONVENTIONS.md`, `references/examples/`,
+and the `references/rtds_*.js` runtime snapshots) are **generated**. Do not hand-edit
+them — edit the repo source and regenerate. From the repo root:
 
 ```bash
-SKILL=.claude/skills/rtds-vocalls-component-gen
-cp -r conventions PROJECT_CONVENTIONS.md "$SKILL/"
-cp rtds/components/{sendSms,sendMail,voicemaildetector}.js "$SKILL/references/examples/"
-cp projects/demo/globalLibraries/active/rtds_globalCodeAndHelpers.js "$SKILL/references/"
-cp projects/rtds-runtime/globalLibraries/active/rtds_{3_vocallsEnv,1_globalConfig}.js "$SKILL/references/"
-python "$SKILL/scripts/bundle_paths.py"
+python scripts/build_skill_bundle.py
 ```
 
-`operation_bodies/`, `checklist.md`, `node_types.md`, and `primitive_examples.md` are now maintained here directly — this skill is their canonical home. (They were originally seeded from the deprecated `vocalls-component-builder` skill.)
+This copies the repo sources, applies the path rewrites in `scripts/bundle_paths.py`,
+and stamps a generated-file banner on each bundled markdown copy. It is idempotent.
+
+`scripts/check_skill_sync.py` (run by `npm run check` and the pre-commit hook) fails if
+a committed bundled copy differs from what the generator would produce, so drift cannot
+land silently.
+
+`operation_bodies/`, `checklist.md`, `node_types.md`, `primitive_examples.md`,
+`canonical_helpers.js`, and `runtime_pointer.md` are maintained **here** directly — this
+skill is their canonical home, and the generator does not touch them.
 
 ## Package zip
 
