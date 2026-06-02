@@ -1,3 +1,15 @@
+---
+status: spec-only
+catalog:
+  operation: "playAudio"
+  legacy: false
+  pattern: "`gui_exit`"
+  component: null
+  componentMark: "⬜"
+  runtimeCell: "GUI-exit `play_audio` (`PlayAudio_vocalls`)"
+  seed: "⬜"
+---
+
 # Operation Spec — playAudio (PlayAudio)
 
 | Field          | Value                                                            |

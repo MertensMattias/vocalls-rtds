@@ -1,3 +1,8 @@
+---
+status: non-operation
+catalog: null
+---
+
 # Reference — NAllo_RTDS_Play.xml (internal helper, not a Vocalls operation)
 
 | Field          | Value                                                          |

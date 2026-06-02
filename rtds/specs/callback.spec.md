@@ -1,3 +1,15 @@
+---
+status: spec-only
+catalog:
+  operation: "callback"
+  legacy: false
+  pattern: "`http_call` + multi-node"
+  component: null
+  componentMark: "⬜"
+  runtimeCell: "GUI-exit `callback` (`Callback_vocalls`)"
+  seed: "⬜"
+---
+
 # Operation Spec — callback (Callback)
 
 | Field          | Value                                                         |

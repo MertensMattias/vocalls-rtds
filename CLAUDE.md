@@ -43,12 +43,20 @@ Other `projects/<name>/` dirs (e.g. `demo`, or anything from `npm run init`) are
 
 ## What to update when you change X
 
-Keep these in lockstep so docs, specs, runtime, and seeds never drift:
+Keep these in lockstep so docs, specs, runtime, and seeds never drift. **`npm run check`** (and the pre-commit hook) enforces the mechanical parts — run it before committing.
 
-- **Change a component (`rtds/components/X.js`)** → update its spec `rtds/specs/X.spec.md`, the row in `rtds/docs/operations-catalog.md`, the runtime twin in `projects/rtds-runtime/globalLibraries/active/rtds_2_runtime.js` if one exists (`executeXxx` — keep payload + branch contract aligned, see [conventions/lockstep.md](conventions/lockstep.md)), the `rtds/db_seed/` SQL if Params changed, and the skill example if X is canonical (`sendSms` / `sendMail` / `voicemaildetector`).
-- **Change the runtime engine (`globalLibraries/active/rtds_*.js`)** → update `rtds/docs/runtime-architecture.md`, `rtds/docs/runtime-spec.md`, the affected `conventions/*.md`, and resync the skill's bundled runtime snapshot via [.claude/skills/rtds-vocalls-component-gen/DEPLOY.md](.claude/skills/rtds-vocalls-component-gen/DEPLOY.md) + `scripts/bundle_paths.py`.
-- **Add a new operation** → add the spec (`rtds/specs/`), the component (`rtds/components/`), seed dictionary/instance SQL (`rtds/db_seed/`), and a catalog row (`rtds/docs/operations-catalog.md`).
-- **Change a convention** → edit `PROJECT_CONVENTIONS.md` (bump its version line) and sync the skill bundle via the skill's `DEPLOY.md`.
+Several artifacts are now **generated** — edit the source, then regenerate; never hand-edit the output:
+
+| Generated output | Source | Regenerate with |
+| ---------------- | ------ | --------------- |
+| `rtds/docs/operations-catalog.md` | `catalog:` frontmatter in each `rtds/specs/*.spec.md` | `npm run gen:catalog` |
+| `AGENTS.md` | `CLAUDE.md` | `npm run gen:agents` |
+| skill bundle (`.claude/skills/rtds-vocalls-component-gen/conventions/`, `PROJECT_CONVENTIONS.md`, `references/examples/`, `references/rtds_*.js`) | repo `conventions/`, `PROJECT_CONVENTIONS.md`, `rtds/components/`, runtime libs | `npm run build:skill` |
+
+- **Change a component (`rtds/components/X.js`)** → update its spec `rtds/specs/X.spec.md` (incl. `status:` / `catalog:` frontmatter), the runtime twin in `projects/rtds-runtime/globalLibraries/active/rtds_2_runtime.js` if one exists (`executeXxx` — keep payload + branch contract aligned, see [conventions/lockstep.md](conventions/lockstep.md)), the `rtds/db_seed/` SQL if Params changed; then `npm run gen:catalog` and `npm run build:skill` if X is canonical (`sendSms` / `sendMail` / `voicemaildetector`). `npm run check:lockstep` verifies param-name parity across component/spec/seed.
+- **Change the runtime engine (`globalLibraries/active/rtds_*.js`)** → update `rtds/docs/runtime-architecture.md`, `rtds/docs/runtime-spec.md`, the affected `conventions/*.md`, and `npm run build:skill` to resync the bundled runtime snapshot.
+- **Add a new operation** → add the spec (`rtds/specs/`, with frontmatter), the component (`rtds/components/`), seed dictionary/instance SQL (`rtds/db_seed/`), a component contract test (`projects/rtds-runtime/tests/components/`), then `npm run gen:catalog`.
+- **Change a convention** → edit `conventions/<topic>.md` and/or `PROJECT_CONVENTIONS.md` (bump its version line), then `npm run build:skill` to resync the skill bundle.
 
 ## Conventions
 

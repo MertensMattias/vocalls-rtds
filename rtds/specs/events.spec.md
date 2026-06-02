@@ -1,3 +1,8 @@
+---
+status: non-operation
+catalog: null
+---
+
 # Operation Spec — events (Events — runtime event dispatcher)
 
 | Field          | Value                                                          |

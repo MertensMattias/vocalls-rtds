@@ -1,3 +1,15 @@
+---
+status: spec-only
+catalog:
+  operation: "disconnect"
+  legacy: false
+  pattern: "`gui_exit` (terminal)"
+  component: null
+  componentMark: "⬜"
+  runtimeCell: "GUI-exit `disconnect` (`Disconnect_vocalls`)"
+  seed: "✅"
+---
+
 # Operation Spec — disconnect (Disconnect)
 
 | Field          | Value                                                            |

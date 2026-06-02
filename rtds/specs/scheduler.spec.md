@@ -1,3 +1,15 @@
+---
+status: spec-only
+catalog:
+  operation: "scheduler"
+  legacy: false
+  pattern: "`http_call` (multi-branch)"
+  component: "checkSchedule.js"
+  componentMark: "✅"
+  runtimeCell: "⬜ not registered"
+  seed: "⬜"
+---
+
 # Operation Spec — checkSchedule (Schedule)
 
 | Field          | Value                                                          |

@@ -1,3 +1,8 @@
+---
+status: non-operation
+catalog: null
+---
+
 # Operation Spec — queueHandling (no Vocalls equivalent — runtime bridge)
 
 | Field          | Value                                                              |

@@ -1,3 +1,15 @@
+---
+status: spec-only
+catalog:
+  operation: "guard"
+  legacy: false
+  pattern: "`gui_exit` (dispatcher → GuardRouting)"
+  component: null
+  componentMark: "—"
+  runtimeCell: "GUI-exit `guard_routing` (`Guard_vocalls`)"
+  seed: "✅"
+---
+
 # Operation Spec — guard (Guard)
 
 | Field          | Value                                                      |

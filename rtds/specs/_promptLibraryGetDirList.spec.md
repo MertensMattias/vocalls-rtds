@@ -1,3 +1,8 @@
+---
+status: non-operation
+catalog: null
+---
+
 # Reference — NAllo_RTDS_PromptLibrary_GetDirList.xml (filesystem helper, not a Vocalls operation)
 
 | Field          | Value                                                                      |

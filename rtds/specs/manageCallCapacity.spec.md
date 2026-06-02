@@ -1,3 +1,15 @@
+---
+status: spec-only
+catalog:
+  operation: "manageCallCapacity"
+  legacy: false
+  pattern: "`condition` (counter-driven)"
+  component: null
+  componentMark: "⬜"
+  runtimeCell: "⬜ not registered"
+  seed: "⬜"
+---
+
 # Operation Spec — manageCallCapacity (ManageCallCapacity)
 
 | Field          | Value                                                                  |

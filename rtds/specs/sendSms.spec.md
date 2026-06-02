@@ -1,3 +1,15 @@
+---
+status: implemented
+catalog:
+  operation: "sendSms"
+  legacy: false
+  pattern: "`http_call`"
+  component: "sendSms.js"
+  componentMark: "✅"
+  runtimeCell: "JS twin `executeSendSms` (`SendSms_vocalls`)"
+  seed: "✅"
+---
+
 # Operation Spec — sendSms (SendSMS)
 
 | Field          | Value                                                       |

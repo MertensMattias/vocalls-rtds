@@ -1,3 +1,8 @@
+---
+status: non-operation
+catalog: null
+---
+
 # Reference — NAllo_RTDS.xml (top-level dispatcher, not a Vocalls operation)
 
 | Field          | Value                                                                |

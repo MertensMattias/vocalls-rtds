@@ -1,3 +1,15 @@
+---
+status: spec-only
+catalog:
+  operation: "workgroupTransfer"
+  legacy: false
+  pattern: "`gui_exit`"
+  component: null
+  componentMark: "⬜"
+  runtimeCell: "GUI-exit `workgroup_transfer` (`WorkgroupTransfer_vocalls`)"
+  seed: "⬜"
+---
+
 # Operation Spec — workgroupTransfer (WorkgroupTransfer)
 
 | Field          | Value                                                              |

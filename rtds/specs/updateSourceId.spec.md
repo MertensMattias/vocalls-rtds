@@ -1,3 +1,15 @@
+---
+status: spec-only
+catalog:
+  operation: "updateSourceId"
+  legacy: false
+  pattern: "`set_attributes` (variant)"
+  component: null
+  componentMark: "⬜"
+  runtimeCell: "⬜ not registered"
+  seed: "⬜"
+---
+
 # Operation Spec — updateSourceId (UpdateSourceId)
 
 | Field          | Value                                                                |

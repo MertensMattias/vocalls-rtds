@@ -1,3 +1,15 @@
+---
+status: spec-only
+catalog:
+  operation: "flowJump"
+  legacy: false
+  pattern: "`flow_jump`"
+  component: null
+  componentMark: "⬜"
+  runtimeCell: "⬜ not registered"
+  seed: "⬜"
+---
+
 # Operation Spec — flowJump (FlowJump)
 
 | Field          | Value                                                          |

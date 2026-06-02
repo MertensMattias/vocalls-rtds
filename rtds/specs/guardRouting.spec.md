@@ -1,3 +1,15 @@
+---
+status: implemented
+catalog:
+  operation: "guardRouting"
+  legacy: false
+  pattern: "`http_call` + multi-node"
+  component: "guardRouting.js"
+  componentMark: "✅"
+  runtimeCell: "GUI-exit `guard_routing` (via `Guard_vocalls`)"
+  seed: "✅"
+---
+
 # Operation Spec — guardRouting (GuardRouting)
 
 | Field          | Value                                                             |

@@ -1,3 +1,15 @@
+---
+status: spec-only
+catalog:
+  operation: "languageMenu"
+  legacy: false
+  pattern: "`gui_exit` (multi-node)"
+  component: null
+  componentMark: "⬜"
+  runtimeCell: "GUI-exit `language_menu` (`LanguageMenu_vocalls`)"
+  seed: "⬜"
+---
+
 # Operation Spec — languageMenu (LanguageMenu)
 
 | Field          | Value                                                            |

@@ -1,3 +1,15 @@
+---
+status: spec-only
+catalog:
+  operation: "externalTransfer"
+  legacy: false
+  pattern: "`gui_exit`"
+  component: null
+  componentMark: "⬜"
+  runtimeCell: "GUI-exit `external_transfer` (`ExternalTransfer_vocalls`)"
+  seed: "⬜"
+---
+
 # Operation Spec — externalTransfer (ExternalTransfer)
 
 | Field          | Value                                                              |

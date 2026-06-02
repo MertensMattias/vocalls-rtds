@@ -1,3 +1,15 @@
+---
+status: spec-only
+catalog:
+  operation: "checkAttribute"
+  legacy: false
+  pattern: "`condition`"
+  component: null
+  componentMark: "⬜"
+  runtimeCell: "⬜ not registered"
+  seed: "⬜"
+---
+
 # Operation Spec — checkAttribute (CheckAttribute)
 
 | Field          | Value                                                              |
