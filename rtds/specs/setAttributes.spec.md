@@ -4,8 +4,8 @@ catalog:
   operation: "setAttributes"
   legacy: true
   pattern: "`set_attributes`"
-  component: "setAttributes.js"
-  componentMark: "🔒"
+  component: null
+  componentMark: "🔒 component removed — use [setVariables.js](../components/setVariables.js)"
   runtimeCell: "aliased to `executeSetVariables` (`SetAttributes_vocalls`)"
   seed: "🔒"
 ---
@@ -23,7 +23,7 @@ catalog:
 | Component name | `setAttributes`                                                    |
 | Pattern        | `set_attributes`                                                   |
 | Source handler | `rtds/pureconnect_handlers/NAllo_RTDS_SetAttributes.xml`  |
-| Target file    | `rtds/components/setAttributes.js` (already exists — this spec is the reference shape) |
+| Target file    | _(removed)_ — the `rtds/components/setAttributes.js` component was deleted; use [setVariables.js](../components/setVariables.js). This spec is retained only as the legacy reference shape. |
 
 ## Business purpose
 

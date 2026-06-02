@@ -12,7 +12,8 @@
 //   _foo   — platform-supplied flow variables (_rtNextStep, _rtBaseUrl,
 //            _rtMailEndpoint, _headers).
 //   foo    — runtime/host APIs (global, environment, context, Logger,
-//            getValue, walk, hasKey, jsonHttpRequest, fileExists, nowUTC).
+//            getValue, walk, hasKey, activeFlag, jsonHttpRequest, fileExists,
+//            nowUTC).
 //
 // Function parameter names follow the API contract they implement and may
 // stay bare (e.g. getValue(obj, key, defaultValue) keeps the runtime
@@ -82,24 +83,45 @@ __extractParams = function (config) {
 
 
 /**
- * Resolves Params into a flat { Key: value } map (v2 shape — no __rt prefix).
+ * Component-local alias for the global activeFlag() (rtds_3_vocallsEnv.js) — the
+ * single Active-coercion contract: JSON boolean, number 1/0, string
+ * '1'/'0'/'true'/'false' (case-insensitive), array form [value, ...flags]
+ * unwrapped first; anything else (incl. an unresolved ${...} placeholder) is
+ * inactive. The JS twins call activeFlag() directly; the component calls it
+ * through this alias, so Active truthiness can never diverge. activeFlag is a
+ * runtime global (the env library always loads first), so this alias needs no
+ * fallback of its own.
  *
- * Rules:
- *   - Active is coerced to Boolean (never template-substituted).
- *   - Every other Param is trimmed, then ${name} placeholders are substituted
- *     against `global`. Bare names only (\w+) — no expressions, no dotted
- *     paths. Unresolved placeholders are left as the literal "${name}" and
- *     logged at warn level.
- *   - ConfigId is coerced to Number (falls back to -1 on empty/NaN).
- *   - Timeout  is coerced to Number (falls back to 10000 on empty).
+ * @param {*} value
+ * @returns {boolean}
+ */
+__activeFlag = function (value) {
+    return activeFlag(value);
+};
+
+
+/**
+ * Resolves Params into a flat { Key: value } map (v2 shape — no __rt prefix).
+ * The value's TYPE is whatever the JSON wrote — no Number coercion ('4' stays a
+ * string, 4 stays a number).
+ *
+ * Per key:
+ *   - Array-form [value, ...flags] is unwrapped to its first element (matches the
+ *     runtime twin getParam; the GUI flags isDisplayed / isEditable are
+ *     runtime-irrelevant). [] -> ''.
+ *   - Active is then coerced to a real boolean via __activeFlag (never
+ *     token-substituted). Active absent: NOT defaulted here — the read site
+ *     decides (SetVariables true, Send and guard default false).
+ *   - Every other STRING value is trimmed and has ${name} placeholders resolved
+ *     via resolveConfigTokens (varObj first, then global; bare names only;
+ *     String.replace, never new Function). Non-strings (number, boolean, null,
+ *     object) pass through with their type intact. Unresolved placeholders are
+ *     left raw and logged at warn level.
  *
  * The returned object is assigned to the per-component global `__rtParams`
  * in the init node, and read via getValue(__rtParams, 'Key', default) from
- * the work node.
- *
- * Substitution uses String.prototype.replace — no `new Function`, no `eval`.
- * The Vocalls runtime disables string-eval, which is why template-literal
- * evaluation is not an option here. See logging.md.5.
+ * the work node. A read site that needs Timeout/ConfigId as a number coerces
+ * there (e.g. Number(getValue(__rtParams, 'Timeout', 10000))).
  *
  * @param {string|object} config - Raw operation config (see __extractParams).
  * @returns {object} Map of Key -> resolved value.
@@ -107,39 +129,14 @@ __extractParams = function (config) {
 __setupConfig = function (config) {
     var __params = __extractParams(config);
     var __result = {};
-
-    __result.Active = typeof __params.Active === 'boolean'
-        ? __params.Active
-        : Boolean(__params.Active);
-
     var __keys = Object.keys(__params);
     for (var __i = 0; __i < __keys.length; __i++) {
         var __key = __keys[__i];
-        if (__key === 'Active') { continue; }
-
-        var __raw = (__params[__key] !== undefined && __params[__key] !== null)
-            ? String(__params[__key]).trim()
-            : '';
-
-        var __resolved;
-        if (__raw.indexOf('${') !== -1) {
-            __resolved = __raw.replace(/\$\{(\w+)\}/g, function (__match, __name) {
-                if (global.hasOwnProperty(__name)) { return String(global[__name]); }
-                Logger.warn('[__setupConfig] unresolved placeholder', { key: __key, placeholder: __name });
-                return __match;
-            });
-        } else {
-            __resolved = __raw;
-        }
-
-        if (__key === 'ConfigId') {
-            __resolved = Number(__resolved) || -1;
-        } else if (__key === 'Timeout') {
-            __resolved = __resolved !== '' ? Number(__resolved) : 10000;
-        }
-
-        __result[__key] = __resolved;
+        var __value = __params[__key];
+        if (Array.isArray(__value)) __value = __value.length ? __value[0] : '';
+        if (__key === 'Active') { __result.Active = __activeFlag(__value); continue; }
+        if (typeof __value === 'string') __value = resolveConfigTokens(__value.trim(), __key);
+        __result[__key] = __value;
     }
-
     return __result;
 };

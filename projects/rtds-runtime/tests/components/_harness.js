@@ -22,7 +22,87 @@
  */
 
 var path = require('path');
+var fs = require('fs');
+var vm = require('vm');
 var helpers = require(path.join(process.cwd(), 'core', 'testHelpers'));
+
+// --- component master-Code execution -------------------------------------
+// The contract tests above exercise the runtime TWIN. The helpers below let a
+// test execute a component's OWN master-layer Code (the entity-encoded JS in the
+// `vocalls-master-layer` object's Code attribute) in an isolated sandbox with NO
+// env library loaded — proving the component's inline helper fallbacks make
+// __setupConfig self-contained. See conventions/params.md + specs/_setupConfig.spec.md.
+
+function decodeEntities(s) {
+    return s
+        .replace(/&#xa;/g, '\n')
+        .replace(/&apos;/g, "'")
+        .replace(/&#39;/g, "'")
+        .replace(/&quot;/g, '"')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&');
+}
+
+// Extract and decode the FIRST Code="..." (or Code='...') attribute — the
+// master-layer block — from a component .js (mxGraph XML) file.
+function readMasterCode(componentName) {
+    var file = path.join(process.cwd(), 'rtds', 'components', componentName + '.js');
+    var raw = fs.readFileSync(file, 'utf8');
+    var k = raw.indexOf('Code=');
+    var delim = raw[k + 5];          // the quote char right after "Code="
+    var start = k + 6;
+    var end = raw.indexOf(delim, start); // JS has no unescaped delimiter inside
+    return decodeEntities(raw.slice(start, end));
+}
+
+/**
+ * Run a component's master Code in an isolated sandbox WITHOUT the env library,
+ * so only the component's own inline fallbacks are available. Returns the
+ * sandbox (exposing __setupConfig, __activeFlag, etc.).
+ *
+ * @param {string} componentName e.g. 'sendSms'
+ * @param {Object} [seed] optional { varObj, global } overrides
+ * @returns {Object} the populated sandbox
+ */
+function loadMasterCode(componentName, seed) {
+    seed = seed || {};
+    var warns = [];
+    var sb = {
+        context: { currentNode: { id: '' } },
+        Logger: {
+            debug: function () {}, info: function () {},
+            warn: function () { warns.push(Array.prototype.slice.call(arguments)); },
+            error: function () {}
+        },
+        varObj: seed.varObj || {}
+    };
+    sb.global = sb;
+    sb.globalThis = sb;
+    // The env library is intentionally absent here (we test the component's own
+    // inline fallbacks), but Active coercion is NOT a fallback — the component's
+    // __activeFlag is a thin alias to the runtime global activeFlag(), which is
+    // always loaded in production. Provide it so the alias resolves; body is the
+    // single Active contract from rtds_3_vocallsEnv.js, verbatim.
+    sb.activeFlag = function (value) {
+        if (Object.prototype.toString.call(value) === '[object Array]') {
+            value = value.length ? value[0] : false;
+        }
+        if (typeof value === 'boolean') return value;
+        if (typeof value === 'number') return value === 1;
+        var s = String(value).trim().toLowerCase();
+        return s === '1' || s === 'true';
+    };
+    if (seed.global) {
+        for (var key in seed.global) {
+            if (seed.global.hasOwnProperty(key)) sb[key] = seed.global[key];
+        }
+    }
+    vm.createContext(sb);
+    vm.runInContext(readMasterCode(componentName), sb);
+    sb.__warns = warns;
+    return sb;
+}
 
 // Minimal routing-table stub so main.js boots cleanly (one SetVariables op,
 // no NextStep -> loop ends). Mirrors main.test.js so component tests get the
@@ -126,5 +206,7 @@ function forbidGateway(sb) {
 module.exports = {
     loadRuntime: loadRuntime,
     withGateway: withGateway,
-    forbidGateway: forbidGateway
+    forbidGateway: forbidGateway,
+    loadMasterCode: loadMasterCode,
+    readMasterCode: readMasterCode
 };

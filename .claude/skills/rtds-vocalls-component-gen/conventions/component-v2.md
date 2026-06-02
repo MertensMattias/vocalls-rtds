@@ -47,8 +47,8 @@ The default project language is **Dutch (Belgium) — `nl-BE`**, marked `isDefau
 In order, separated by blank lines:
 
 1. `__rtParams = {};` — bare declaration, no `var`.
-2. The three canonical helpers from [canonical_helpers.js](../references/canonical_helpers.js), verbatim with JSDoc: `__makeLocalNodeId`, `__extractParams`, `__setupConfig`.
-3. `typeof <name> === 'undefined'`-guarded fallbacks for `getValue`, `walk`, plus `hasKey` / `nowUTC` if the work body uses them. See [helpers.md](helpers.md) for why.
+2. The canonical helpers from [canonical_helpers.js](../references/canonical_helpers.js), verbatim with JSDoc: `__makeLocalNodeId`, `__extractParams`, `__activeFlag`, `__setupConfig`. `__activeFlag` is a thin alias to the global `activeFlag()` (the single Active contract) — it has no fallback of its own; the env library always provides `activeFlag`.
+3. `typeof <name> === 'undefined'`-guarded fallbacks. `__setupConfig` **depends on** `getValue`, `hasKey`, `getScoped`, and `resolveConfigTokens`, so emit guarded fallbacks for all four (plus `walk` / `nowUTC` / `resolveRoot` / `setVariable` when the work body uses them) — a component must run `__setupConfig` correctly even if the env library is absent. See [helpers.md](helpers.md) for why.
 4. Operation-specific helpers, JSDoc'd, `__` prefixed (`__isMobileNumber`, `__splitSemicolonList`, `__compareAttr`, …).
 5. **No work-function helper.** Work logic is inline in the script node body.
 

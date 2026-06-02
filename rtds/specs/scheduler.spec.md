@@ -16,7 +16,7 @@ catalog:
 | -------------- | -------------------------------------------------------------- |
 | Operation Type | `Schedule`                                                     |
 | Component name | `checkSchedule` (matches existing reference at `rtds/components/checkSchedule.js`) |
-| Pattern        | `http_call` (multi-branch — branch by `result.body.action`)    |
+| Pattern        | `http_call` (multi-branch — branch by `result.response.action`)    |
 | Source handler | `rtds/pureconnect_handlers/NAllo_RTDS_Scheduler.xml`  |
 | Target file    | `rtds/components/checkSchedule.js`          |
 
@@ -114,11 +114,11 @@ var __timeout = getValue(__rtParams, 'Timeout', 10000);
 
 return jsonHttpRequest(__url, { method: 'GET', "timeout": __timeout }, _headers, null).then(
     function (result) {
-        if (!result || result.success !== true || !result.body) {
+        if (!result || result.success !== true || !result.response) {
             Logger.warn('[checkSchedule] api failed', { statusCode: result && result.statusCode, nextStep: global[_rtNextStep] });
             return;
         }
-        var __action = String(result.body.action || '');
+        var __action = String(result.response.action || '');
         var __branch = getValue(__rtParams, 'NextStep_' + __action, -1);
         if (__branch === -1) {
             Logger.warn('[checkSchedule] unmapped action', { action: __action, nextStep: global[_rtNextStep] });

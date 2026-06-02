@@ -207,16 +207,28 @@ describe('rtds-runtime main.js', function () {
             });
     });
 
-    it('isActive preserves the "false"-is-truthy Active contract', function () {
+    it('activeFlag coerces every Active encoding the dictionary emits', function () {
         return helpers
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
             .then(function (result) {
                 var sb = result.sandbox;
-                expect(sb.isActive(true)).toBe(true);
-                expect(sb.isActive(false)).toBe(false);
-                expect(sb.isActive('false')).toBe(true);   // Boolean('false') === true (documented)
-                expect(sb.isActive(0)).toBe(false);
-                expect(sb.isActive('${unresolved}')).toBe(true);
+                // boolean
+                expect(sb.activeFlag(true)).toBe(true);
+                expect(sb.activeFlag(false)).toBe(false);
+                // number 1/0
+                expect(sb.activeFlag(1)).toBe(true);
+                expect(sb.activeFlag(0)).toBe(false);
+                // string "1"/"0"/"true"/"false" (case-insensitive)
+                expect(sb.activeFlag('1')).toBe(true);
+                expect(sb.activeFlag('true')).toBe(true);
+                expect(sb.activeFlag('0')).toBe(false);
+                expect(sb.activeFlag('false')).toBe(false);  // explicit "0"/"false" mean OFF (real DB data)
+                expect(sb.activeFlag('')).toBe(false);
+                // array form [value, ...flags] is unwrapped first
+                expect(sb.activeFlag(['1', 'isEditable'])).toBe(true);
+                expect(sb.activeFlag(['0', 'isEditable'])).toBe(false);
+                // a config error (unresolved placeholder) fails closed -> inactive
+                expect(sb.activeFlag('${unresolved}')).toBe(false);
             });
     });
 

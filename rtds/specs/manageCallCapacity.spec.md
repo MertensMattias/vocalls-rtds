@@ -77,11 +77,11 @@ var __timeout = getValue(__rtParams, 'Timeout', 2000);
 
 return jsonHttpRequest(__url, { method: 'POST', "timeout": __timeout }, _headers, null).then(
     function (result) {
-        if (!result || result.success !== true || typeof result.body !== 'number') {
+        if (!result || result.success !== true || typeof result.response !== 'number') {
             Logger.warn('[manageCallCapacity] accumulator failed (fail-open)', { statusCode: result && result.statusCode, nextStep: global[_rtNextStep] });
             return;
         }
-        var __count = Number(result.body);
+        var __count = Number(result.response);
         var __admit = (__count % __ratio) === 0;
         global[_rtNextStep] = getValue(__rtParams, __admit ? 'NextStep_Allowed' : 'NextStep_NotAllowed', -1);
         Logger.info('[manageCallCapacity] evaluated', { count: __count, ratio: __ratio, admit: __admit, nextStep: global[_rtNextStep] });
