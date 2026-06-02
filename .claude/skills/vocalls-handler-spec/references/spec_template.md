@@ -17,8 +17,8 @@ Section budgets (in lines) are noted next to each heading.
 | Operation Type     | `<OperationType>`                                        |
 | Component name     | `<componentName>` (camelCase)                            |
 | Pattern            | `<http_call \| gui_exit \| set_attributes \| condition \| flow_jump>` (per [operation_bodies/INDEX.md](../../rtds-vocalls-component-gen/references/operation_bodies/INDEX.md)) |
-| Source handler     | `rtds_pureconnect_handlers/handlers/NAllo_RTDS_<X>.xml`  |
-| Target file        | `rtds_vocalls_operations/components/<componentName>.js`  |
+| Source handler     | `rtds/pureconnect_handlers/NAllo_RTDS_<X>.xml`  |
+| Target file        | `rtds/components/<componentName>.js`  |
 ```
 
 Header is fixed at ~6 lines (the table). Don't add a blurb above or below.

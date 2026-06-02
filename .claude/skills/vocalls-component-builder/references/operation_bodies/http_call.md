@@ -166,7 +166,7 @@ __isMobileNumber = function (phone) {
 
 ## Worked example — sendSms (the live v2 reference)
 
-This is the actual body of [`sendSms.js`](../../../../rtds_vocalls_operations/components/sendSms.js)'s
+This is the actual body of [`sendSms.js`](../../../../rtds/components/sendSms.js)'s
 script node (id=29). Diff against this when in doubt.
 
 ```js

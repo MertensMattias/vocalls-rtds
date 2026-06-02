@@ -2,7 +2,7 @@
  * main.js — RTDS demo flow
  *
  * Exercises the RTDS runtime end-to-end against a local devJson routing table.
- * Mirrors the two Script-node entry points described in RTDS_runtime_spec.md:
+ * Mirrors the two Script-node entry points described in rtds/docs/runtime-spec.md:
  *
  *   Entry Point A (initial call entry):
  *     RTDS_sourceId <- context.phone

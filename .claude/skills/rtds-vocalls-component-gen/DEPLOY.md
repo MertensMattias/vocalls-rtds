@@ -14,7 +14,7 @@ From repo root:
 ```bash
 SKILL=.claude/skills/rtds-vocalls-component-gen
 cp -r conventions PROJECT_CONVENTIONS.md "$SKILL/"
-cp rtds_vocalls_operations/components/{sendSms,sendMail,voicemaildetector}.js "$SKILL/references/examples/"
+cp rtds/components/{sendSms,sendMail,voicemaildetector}.js "$SKILL/references/examples/"
 cp projects/demo/globalLibraries/active/rtds_globalCodeAndHelpers.js "$SKILL/references/"
 cp projects/rtds-runtime/globalLibraries/active/rtds_{3_vocallsEnv,1_globalConfig}.js "$SKILL/references/"
 python "$SKILL/scripts/bundle_paths.py"

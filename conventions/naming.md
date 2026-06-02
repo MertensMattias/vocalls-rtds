@@ -39,7 +39,7 @@ This is how Vocalls cross-node visibility works — `var` would scope the helper
 
 ## Cross-script-node state
 
-State that spans multiple script nodes (e.g. `__guardTuiGuardId` in [guardTui.js](../rtds_vocalls_operations/components/guardTui.js)) **should** be pre-declared in the master `Variables` block so its lifecycle is visible. Lazy assignment at first write is a smell — the variable becomes invisible to a reader scanning master `Variables`.
+State that spans multiple script nodes (e.g. `__guardTuiGuardId` in [guardTui.js](../rtds/components/guardTui.js)) **should** be pre-declared in the master `Variables` block so its lifecycle is visible. Lazy assignment at first write is a smell — the variable becomes invisible to a reader scanning master `Variables`.
 
 ## Reflect on
 

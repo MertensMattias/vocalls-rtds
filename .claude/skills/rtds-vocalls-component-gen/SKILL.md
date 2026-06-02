@@ -54,5 +54,5 @@ Refresh from vocalls-rtds: [DEPLOY.md](DEPLOY.md).
 
 ## Output
 
-Default: `rtds_vocalls_operations/components/<componentName>.js` in the user's
+Default: `rtds/components/<componentName>.js` in the user's
 workspace (vocalls-rtds or other). Ask before overwrite.

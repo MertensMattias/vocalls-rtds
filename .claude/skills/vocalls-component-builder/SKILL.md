@@ -14,7 +14,7 @@ description: "DEPRECATED — superseded by the rtds-vocalls-component-gen skill.
 
 This skill produces a Vocalls Designer mxGraph component XML for a single
 RTDS operation, following the **v2 object-pattern** conventions established
-by the reference [sendSms.js](../../../rtds_vocalls_operations/components/sendSms.js).
+by the reference [sendSms.js](../../../rtds/components/sendSms.js).
 The skill is **not** for legacy PureConnect Interaction Handler XML and
 **not** for the older mxGraph components in `handler_source_file/`.
 
@@ -29,7 +29,7 @@ Trigger when the user:
   Vocalls component.
 - References an operation Type from the catalogue in
   [references/operation_bodies/INDEX.md](references/operation_bodies/INDEX.md).
-- Points at a legacy handler XML in `rtds_pureconnect_handlers/handlers/`
+- Points at a legacy handler XML in `rtds/pureconnect_handlers/`
   and asks to port it.
 - Asks for "a component following the sendSms conventions" or "the v2
   conventions".
@@ -207,7 +207,7 @@ by hand. Once the graph is written to disk, run:
 
 ```bash
 python .claude/skills/vocalls-component-builder/scripts/layout_component.py \
-  rtds_vocalls_operations/components/<componentName>.js
+  rtds/components/<componentName>.js
 ```
 
 This rewrites every baselayer node's `<mxGeometry>` so the trunk
@@ -263,7 +263,7 @@ vocalls-component-builder/
 ## Output
 
 Save the generated component XML to the user's workspace at
-`rtds_vocalls_operations/components/<componentName>.js`, overwriting only
+`rtds/components/<componentName>.js`, overwriting only
 after asking. Provide a path link.
 
 ## Things to avoid
@@ -271,7 +271,7 @@ after asking. Provide a path link.
 - **Don't use v1 patterns**: no `__rt<Key>` splay, no `__init`, no
   `__outputVar`, no per-Param master-`Code` declarations, no per-Param init
   logs.
-- **Don't copy from `references/rtds/handlers/` or legacy
+- **Don't copy from `rtds/pureconnect_handlers/` or legacy
   `component_source_file/`** — those are retired.
 - **Don't invent endpoint URLs, RTDS Params keys, or GUI-exit keys** —
   derive them from `RTDS_runtime_spec.md` and the per-Type body file.

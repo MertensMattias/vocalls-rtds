@@ -15,7 +15,7 @@ These were valid in v1 and are retired in v2. If you see them in a freshly-gener
 
 ## Routing-table contract
 
-- **Don't invent endpoint URLs, RTDS Params keys, or exit keys.** Derive them from `RTDS_runtime_spec.md` and the per-Type file in [.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/](../.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/).
+- **Don't invent endpoint URLs, RTDS Params keys, or exit keys.** Derive them from `rtds/docs/runtime-spec.md` and the per-Type file in [.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/](../.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/).
 
 ## XML / structural
 

@@ -1,7 +1,7 @@
 # Worked Example — `NAllo_RTDS_Disconnect.xml` → `disconnect.spec.md`
 
 A calibration example. Source handler is 72 lines of XML
-([rtds_pureconnect_handlers/handlers/NAllo_RTDS_Disconnect.xml](../../../../rtds_pureconnect_handlers/handlers/NAllo_RTDS_Disconnect.xml)).
+([rtds/pureconnect_handlers/NAllo_RTDS_Disconnect.xml](../../../../rtds/pureconnect_handlers/NAllo_RTDS_Disconnect.xml)).
 After applying [tool_filter.md](tool_filter.md) and recognising the
 idioms in [pattern_recognition.md](pattern_recognition.md), the spec is
 ~60 lines including the work-body sketch.
@@ -36,8 +36,8 @@ in "Open questions".
 | Operation Type     | `Disconnect`                                                |
 | Component name     | `disconnect`                                                |
 | Pattern            | `gui_exit` (terminal — no `RTDS_nextStepId` line)            |
-| Source handler     | `rtds_pureconnect_handlers/handlers/NAllo_RTDS_Disconnect.xml` |
-| Target file        | `rtds_vocalls_operations/components/disconnect.js`           |
+| Source handler     | `rtds/pureconnect_handlers/NAllo_RTDS_Disconnect.xml` |
+| Target file        | `rtds/components/disconnect.js`           |
 
 ## Business purpose
 

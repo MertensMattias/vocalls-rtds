@@ -316,7 +316,7 @@ Each endpoint string interpolates `${environment}` (e.g. `/smsapi-${environment}
 ## 6. Worked example
 
 A complete migrated routing table lives at
-[projects/rtds-runtime/callScripts/guardJsonFlow.latest.js](../projects/rtds-runtime/callScripts/guardJsonFlow.latest.js).
+[projects/rtds-runtime/callScripts/guardJsonFlow.js](../projects/rtds-runtime/callScripts/guardJsonFlow.js).
 It shows `SetVariables` → `GuardRouting` → `SendEmail` → `SendSMS` → `Disconnect` on the latest
 param shapes, with inline comments explaining each legacy→new change.
 
@@ -325,7 +325,7 @@ param shapes, with inline comments explaining each legacy→new change.
 ## 7. References
 
 - [PROJECT_CONVENTIONS.md](../PROJECT_CONVENTIONS.md) — the source of truth for all conventions.
-- `rtds_vocalls_operations/specs/<name>.spec.md` — per-operation business specs.
-- `rtds_vocalls_operations/components/<name>.js` — the component XML (the real contract).
+- `rtds/specs/<name>.spec.md` — per-operation business specs.
+- `rtds/components/<name>.js` — the component XML (the real contract).
 - [conventions/params.md](../conventions/params.md) — `__configJSON` / placeholder rules.
 - [conventions/es5.md](../conventions/es5.md) — the one mechanically-enforced syntax rule.

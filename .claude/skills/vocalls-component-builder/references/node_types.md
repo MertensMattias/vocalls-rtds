@@ -3,7 +3,7 @@
 This file is the **vocabulary catalogue** for the Vocalls Designer primitive
 nodes that the engine dispatches natively. The source palette is the
 right-hand block of
-[../../../../rtds_vocalls_operations/components/available_nodes_tempalte.js](../../../../rtds_vocalls_operations/components/available_nodes_tempalte.js).
+[../../../../rtds/components/available_nodes_tempalte.js](../../../../rtds/components/available_nodes_tempalte.js).
 
 This file is **catalogue only** — it documents shape, attributes, child
 structure, and edge contract per Type. Compositional rules (how to wire
@@ -83,7 +83,7 @@ the canonical 4-node skeleton, live in
 10. **Edge anchor pattern depends on the visual relationship.** Pair an
     `exit*` on the source's bounding box with the matching `entry*` on
     the target's bounding box. The three most common patterns observed
-    in production components (e.g. [voicemaildetector.js](../../../../rtds_vocalls_operations/components/voicemaildetector.js)):
+    in production components (e.g. [voicemaildetector.js](../../../../rtds/components/voicemaildetector.js)):
 
     | Relationship                                                                                         | `exit*` (source side)        | `entry*` (target side)      |
     | ---------------------------------------------------------------------------------------------------- | ---------------------------- | --------------------------- |
@@ -371,7 +371,7 @@ Branching per-key DTMF dispatcher.
 - Ground-truth XML examples for layout, parent references, and edge
   wiring: [primitive_examples.md](primitive_examples.md).
 - The palette source file:
-  [../../../../rtds_vocalls_operations/components/available_nodes_tempalte.js](../../../../rtds_vocalls_operations/components/available_nodes_tempalte.js).
+  [../../../../rtds/components/available_nodes_tempalte.js](../../../../rtds/components/available_nodes_tempalte.js).
 - Composition rules (how primitives sit between Script and output):
   [operation_bodies/composite.md](operation_bodies/composite.md).
 - Style aliases and master-attribute order:

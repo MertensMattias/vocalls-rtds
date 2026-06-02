@@ -16,7 +16,7 @@ lives here.
 
 **Sources** (read-only; do not edit these from the skill):
 
-- [`rtds_vocalls_operations/components/engieGetLanguage.js`](../../../../rtds_vocalls_operations/components/engieGetLanguage.js)
+- [`rtds/components/engieGetLanguage.js`](../../../../rtds/components/engieGetLanguage.js)
   — production reference. The component as a whole is Style B
   (multi-output, native composite with Engine `globalIntent` +
   `component` Types). Style A reuses the primitive shapes
@@ -24,11 +24,11 @@ lives here.
   not the multi-output / native-composite machinery. Anything from
   that file not shown below is intentionally excluded — see [§8 Out
   of scope](#8-out-of-scope).
-- [`rtds_vocalls_operations/components/available_nodes_tempalte.js`](../../../../rtds_vocalls_operations/components/available_nodes_tempalte.js)
+- [`rtds/components/available_nodes_tempalte.js`](../../../../rtds/components/available_nodes_tempalte.js)
   — palette template. Source for Types Engie doesn't instantiate
   (`setvar`, `pause`, `number`, `redirect`, `dtmf`) and for confirming
   attribute defaults.
-- [`rtds_vocalls_operations/components/sendSms.js`](../../../../rtds_vocalls_operations/components/sendSms.js)
+- [`rtds/components/sendSms.js`](../../../../rtds/components/sendSms.js)
   — Style A baseline. Master layer + canonical 4-node skeleton.
 
 ---

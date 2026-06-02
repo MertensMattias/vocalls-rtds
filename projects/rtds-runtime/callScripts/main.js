@@ -227,12 +227,12 @@ if (__isRepoRuntime && context && context.session) {
  *
  *   2. Drop the matching component / primitive for each `case` expression
  *      branch. For Style A components (sendSms, guardTui, etc.), drag the .js
- *      file from rtds_vocalls_operations/components/ onto the canvas. For
+ *      file from rtds/components/ onto the canvas. For
  *      native primitives (say, dtmf, redirect), use Designer's palette.
  *
  *   3. Each component carries its own per-instance config as a Designer
  *      property — `__configJSON` for Style A components (see
- *      rtds_vocalls_operations/components/sendSms.js). The component's init
+ *      rtds/components/sendSms.js). The component's init
  *      script parses it via __setupConfig(__configJSON), which resolves
  *      ${placeholder} tokens against the global scope. The runtime does NOT
  *      mirror op.Params into session variables; each component is the source

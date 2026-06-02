@@ -1,7 +1,7 @@
 # Pre-delivery checklist (v2)
 
 Run through every item before delivering a generated component. Diff against
-[../../../../rtds_vocalls_operations/components/sendSms.js](../../../../rtds_vocalls_operations/components/sendSms.js)
+[../../../../rtds/components/sendSms.js](../../../../rtds/components/sendSms.js)
 when anything looks off — it is the structural source of truth.
 
 ## Master layer

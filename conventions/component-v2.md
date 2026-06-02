@@ -2,7 +2,7 @@
 
 **Scope:** [Component] · **Answers:** *What does a v2 RTDS operation component look like? Four-node skeleton, master Code composition, work-body patterns.*
 
-**Canonical reference:** [sendSms.js](../rtds_vocalls_operations/components/sendSms.js) and [sendMail.js](../rtds_vocalls_operations/components/sendMail.js). Every new RTDS operation component matches the shape below.
+**Canonical reference:** [sendSms.js](../rtds/components/sendSms.js) and [sendMail.js](../rtds/components/sendMail.js). Every new RTDS operation component matches the shape below.
 
 For the *primitive wiring* used when a v2 component embeds Designer primitives (case/recognize/component) between Script and output, see [component-mxgraph.md](component-mxgraph.md).
 
@@ -35,11 +35,11 @@ CompanyInformation_en, GeneralKnowledge_en, Translations_en, id
 
 `id` is always `vocalls-master-layer`. `BackgroundNoise="true"`, `BreathInEffect="true"`, `EnableUpdateRelations="true"`, `AllowGlobalIntent="false"`.
 
-See [sendSms.js:17-43](../rtds_vocalls_operations/components/sendSms.js#L17-L43) for the canonical attribute set.
+See [sendSms.js:17-43](../rtds/components/sendSms.js#L17-L43) for the canonical attribute set.
 
 ### Languages — default is Dutch (Belgium)
 
-The default project language is **Dutch (Belgium) — `nl-BE`**, marked `isDefault: true`. Other entries are added on demand. Empty string fields (`ttsVoiceName`, `ttsEngine`, `ttsPitch`, `ttsSpeed`, `ttsVolume`) are **preserved as `''`** — don't drop them. See the `Languages=` attribute in [sendSms.js:26](../rtds_vocalls_operations/components/sendSms.js#L26).
+The default project language is **Dutch (Belgium) — `nl-BE`**, marked `isDefault: true`. Other entries are added on demand. Empty string fields (`ttsVoiceName`, `ttsEngine`, `ttsPitch`, `ttsSpeed`, `ttsVolume`) are **preserved as `''`** — don't drop them. See the `Languages=` attribute in [sendSms.js:26](../rtds/components/sendSms.js#L26).
 
 ## 3. Master `Code` — composition
 
@@ -65,13 +65,13 @@ __rtNextStep &= _rtNextStep;
 
 `&=` is the **documented placeholder-binding operator** — it keeps `__rtNextStep` synced with the flow variable `_rtNextStep`. Use it only on `__rtNextStep`. Everywhere else, `=`.
 
-See [sendSms.js:27](../rtds_vocalls_operations/components/sendSms.js#L27) for the canonical encoded form.
+See [sendSms.js:27](../rtds/components/sendSms.js#L27) for the canonical encoded form.
 
 ## 5. Master `PropertiesDefinition`
 
 Three entries, in this order: `__configJSON`, `__environment`, `__nextStep`. No `__outputVar`.
 
-See [sendSms.js:28](../rtds_vocalls_operations/components/sendSms.js#L28).
+See [sendSms.js:28](../rtds/components/sendSms.js#L28).
 
 ## 6. Init node body — universal
 
@@ -100,7 +100,7 @@ Patterns live in [.claude/skills/rtds-vocalls-component-gen/references/operation
 OnEnter='Logger.info(&apos;[<componentName>] exit&apos;, { nextStep: __rtNextStep });'
 ```
 
-See [sendSms.js:98](../rtds_vocalls_operations/components/sendSms.js#L98).
+See [sendSms.js:98](../rtds/components/sendSms.js#L98).
 
 ## Reflect on
 

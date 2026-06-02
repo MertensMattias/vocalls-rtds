@@ -1,6 +1,6 @@
 ---
 name: vocalls-handler-spec
-description: Translate a PureConnect Interaction Designer handler XML (e.g. `rtds_pureconnect_handlers/handlers/NAllo_RTDS_*.xml`) into a 1–3 page Vocalls-flavoured spec that captures the handler's business intent, inputs, outputs, branches, and any external calls — using Vocalls component terminology (Type, Params, NextStep_*, GUI-exit key, __rtParams, __rtNextStep, getValue, walk, _rtBaseUrl). The output is consumable as the input to the sibling `rtds-vocalls-component-gen` skill. Trigger this skill whenever the user points at a PureConnect handler XML and asks for a spec, a summary, a "translation", an "RTDS spec", a "component spec", a "design doc", an "input for the component builder", or says "I want to port this handler to Vocalls". Also trigger on phrasings like "decode this handler", "what does this handler do", "extract the logic from this handler XML", or "give me the Vocalls version" when the source is a PureConnect handler. Do not trigger on Vocalls XML components (`rtds_vocalls_operations/components/*.js`) — those go through the rtds-vocalls-component-gen skill directly.
+description: Translate a PureConnect Interaction Designer handler XML (e.g. `rtds/pureconnect_handlers/NAllo_RTDS_*.xml`) into a 1–3 page Vocalls-flavoured spec that captures the handler's business intent, inputs, outputs, branches, and any external calls — using Vocalls component terminology (Type, Params, NextStep_*, GUI-exit key, __rtParams, __rtNextStep, getValue, walk, _rtBaseUrl). The output is consumable as the input to the sibling `rtds-vocalls-component-gen` skill. Trigger this skill whenever the user points at a PureConnect handler XML and asks for a spec, a summary, a "translation", an "RTDS spec", a "component spec", a "design doc", an "input for the component builder", or says "I want to port this handler to Vocalls". Also trigger on phrasings like "decode this handler", "what does this handler do", "extract the logic from this handler XML", or "give me the Vocalls version" when the source is a PureConnect handler. Do not trigger on Vocalls XML components (`rtds/components/*.js`) — those go through the rtds-vocalls-component-gen skill directly.
 ---
 
 # Vocalls Handler Spec Generator
@@ -20,7 +20,7 @@ what the handler *means* — not what each `<Step>` does.
 
 Trigger when the user:
 
-- Points at a file in `rtds_pureconnect_handlers/handlers/` (e.g.
+- Points at a file in `rtds/pureconnect_handlers/` (e.g.
   `NAllo_RTDS_SendSMS.xml`, `NAllo_RTDS_Disconnect.xml`) and asks for a
   spec, summary, design doc, or "translation".
 - Says "port this handler to Vocalls", "give me the Vocalls version",
@@ -30,7 +30,7 @@ Trigger when the user:
 
 Do **not** trigger when:
 
-- The source is already a Vocalls component XML (`rtds_vocalls_operations/components/*.js`) — that's the component-builder skill's input shape, not ours.
+- The source is already a Vocalls component XML (`rtds/components/*.js`) — that's the component-builder skill's input shape, not ours.
 - The user wants the actual Vocalls component XML emitted — chain to
   `rtds-vocalls-component-gen` after the spec is approved.
 
@@ -57,7 +57,7 @@ you.
 
 Read or ask the user for these before generating:
 
-1. **Handler XML path** — typically `rtds_pureconnect_handlers/handlers/NAllo_RTDS_<Name>.xml`. The skill operates on exactly one file at a time.
+1. **Handler XML path** — typically `rtds/pureconnect_handlers/NAllo_RTDS_<Name>.xml`. The skill operates on exactly one file at a time.
 2. **Target operation Type** (optional) — if the user already knows which Vocalls Type the handler maps to (e.g. `SendSMS`, `Condition`), accept it. Otherwise derive it from the handler name + the mapping table.
 3. **Out-of-band context** (optional) — the user may attach a brief, a Lucidchart export, or a previous spec that explains *why* the handler exists. Use it to fill the "Business purpose" section if the XML alone is ambiguous.
 
@@ -152,10 +152,9 @@ Quick check:
 
 ## Output
 
-Save the generated spec to the user's workspace at one of:
+Save the generated spec to the user's workspace at:
 
-- `rtds_vocalls_operations/specs/<componentName>.spec.md` (preferred — sibling of the future component output)
-- `references/rtds/specs/<componentName>.spec.md` (acceptable if the project hasn't created the `specs/` folder yet)
+- `rtds/specs/<componentName>.spec.md` (sibling of the future component output under `rtds/components/`)
 
 Use camelCase `<componentName>` (e.g. `sendSms`, `disconnect`, `flowJump`)
 matching the convention from

@@ -790,7 +790,7 @@ function fetchAndStart(sourceId) {
 //   Async JS handlers. Each POSTs to the RTDS gateway and resolves to
 //   { nextStepId } once the gateway responds, so runStep can branch on the
 //   real outcome (Success / Failure). Ported from the GUI components
-//   rtds_vocalls_operations/components/sendSms.js and sendMail.js — same
+//   rtds/components/sendSms.js and sendMail.js — same
 //   payload shape, same branch semantics, same Timeout default (10000 ms).
 //
 //   Branch contract (both):
@@ -1066,7 +1066,7 @@ function executeSendEmail(op) {
 // specs/setVariables.spec.md Migration / Open questions). SendSMS / SendEmail
 // run inline as async JS handlers (POST to the RTDS gateway, branch on the
 // response) — same payload + branch contract as the canvas components in
-// rtds_vocalls_operations/components/. Condition / Emergency / Schedule /
+// rtds/components/. Condition / Emergency / Schedule /
 // FlowJump are NOT registered yet: they need real data sources wired in and
 // will be added back with correct implementations.
 registerRtdsOperation("SetVariables_vocalls", executeSetVariables);

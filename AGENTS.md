@@ -17,13 +17,40 @@ This file is the cross-vendor agent-config entry point. [CLAUDE.md](CLAUDE.md) i
 
 ## Key paths
 
+### Tooling
 - `core/loader.js` — script load order, `env.config.json` resolution
 - `core/minimalVocallsCore.js` — sandbox / ES5.1 constraints
 - `vocalls_session_init/vocallsContext.js` — session seed for simulate and project tests
 - `templates/` — copied by `npm run init`
-- `projects/<name>/` — runtime workspace (not committed by default)
-- `references/rtds/` — RTDS spec, runtime JS, swagger, handler/component XML (read-only reference)
 - `.claude/skills/rtds-vocalls-component-gen/` — skill for generating Vocalls Designer components
+
+### `projects/rtds-runtime/` — the committed reference runtime (runnable)
+- `globalLibraries/active/` — `rtds_3_vocallsEnv.js` (env / Logger / helpers), `rtds_2_runtime.js` (dispatch engine), `rtds_1_globalConfig.js` (`varObj` schema). Load order 3 → 2 → 1.
+- `callScript_init/` — `globalCode.js`, `globalVariables.js`
+- `callScripts/` — `main.js`, `main_sourceCode.js`, guard JSON flows
+- `tests/` — Jest (`main.test.js`)
+- `exported_callscripts/` — export staging
+
+Other `projects/<name>/` dirs (e.g. `demo`, or anything from `npm run init`) are local workspaces; `projects/*/.vocalls/` is gitignored. `projects/rtds-runtime/` is the exception: it is the committed reference runtime, and `env.config.json` points the active project at its subpaths.
+
+### `rtds/` — durable RTDS design, reference & docs
+- `rtds/docs/runtime-architecture.md` — how the runtime is wired (**start here**)
+- `rtds/docs/operations-catalog.md` — per-operation inventory (pattern / component / runtime / seed status)
+- `rtds/docs/runtime-spec.md` — field-level contract (Params, endpoints, exit keys); `rtds/docs/logging-design.md`
+- `rtds/specs/` — one `*.spec.md` per operation (source handler + target component in each header)
+- `rtds/components/` — Vocalls Designer mxGraph component exports (`*.js`)
+- `rtds/pureconnect_handlers/` — source PureConnect Interaction Designer handler XML (read-only reference)
+- `rtds/api_swagger/` — Swagger/OpenAPI for the RTDS HTTP APIs; `rtds/db_seed/` — dictionary + flow SQL; `rtds/samples/` — sample payloads
+- `rtds/README.md` — index of the above
+
+## What to update when you change X
+
+Keep these in lockstep so docs, specs, runtime, and seeds never drift:
+
+- **Change a component (`rtds/components/X.js`)** → update its spec `rtds/specs/X.spec.md`, the row in `rtds/docs/operations-catalog.md`, the runtime twin in `projects/rtds-runtime/globalLibraries/active/rtds_2_runtime.js` if one exists (`executeXxx` — keep payload + branch contract aligned, see [conventions/lockstep.md](conventions/lockstep.md)), the `rtds/db_seed/` SQL if Params changed, and the skill example if X is canonical (`sendSms` / `sendMail` / `voicemaildetector`).
+- **Change the runtime engine (`globalLibraries/active/rtds_*.js`)** → update `rtds/docs/runtime-architecture.md`, `rtds/docs/runtime-spec.md`, the affected `conventions/*.md`, and resync the skill's bundled runtime snapshot via [.claude/skills/rtds-vocalls-component-gen/DEPLOY.md](.claude/skills/rtds-vocalls-component-gen/DEPLOY.md) + `scripts/bundle_paths.py`.
+- **Add a new operation** → add the spec (`rtds/specs/`), the component (`rtds/components/`), seed dictionary/instance SQL (`rtds/db_seed/`), and a catalog row (`rtds/docs/operations-catalog.md`).
+- **Change a convention** → edit `PROJECT_CONVENTIONS.md` (bump its version line) and sync the skill bundle via the skill's `DEPLOY.md`.
 
 ## Conventions
 

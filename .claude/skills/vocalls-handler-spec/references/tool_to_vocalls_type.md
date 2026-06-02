@@ -6,7 +6,7 @@ overhead) is the confirmation signal. When they disagree, ask the user.
 
 ## By handler name
 
-The current `rtds_pureconnect_handlers/handlers/` set maps as follows.
+The current `rtds/pureconnect_handlers/` set maps as follows.
 Where the Vocalls Type uses a different name from the handler, the new
 name is **bold**.
 

@@ -51,7 +51,7 @@ Each conventions file declares its scope in its header:
 
 - **[All]** — applies everywhere (runtime libs, components, tests, docs).
 - **[Runtime]** — libraries under `projects/<name>/globalLibraries/active/`.
-- **[Component]** — files under `rtds_vocalls_operations/components/`.
+- **[Component]** — files under `rtds/components/`.
 - **[Test]** — files under `projects/<name>/tests/`.
 - **[Doc]** — per-operation specs and skill references.
 
@@ -109,7 +109,7 @@ This is the source of truth for forward-looking conventions. Other docs inherit:
 
 - **[WORKFLOW.md](WORKFLOW.md)** — agent generation methodology for this skill.
 - **`references/operation_bodies/`** — per-Type work-body patterns (inherits rules here).
-- **vocalls-rtds repo:** `CLAUDE.md` / `AGENTS.md` (quick reference), `rtds_vocalls_operations/specs/*.spec.md` (per-operation business specs).
+- **vocalls-rtds repo:** `CLAUDE.md` / `AGENTS.md` (quick reference), `rtds/specs/*.spec.md` (per-operation business specs).
 - **`docs/solutions/`** — postmortems and durable learnings from solved problems. Managed by `/ce-compound`.
 
 Per-operation specs **link to this document** for storage / logging / casing rules instead of repeating them. Duplicated convention text drifts; pointers don't.

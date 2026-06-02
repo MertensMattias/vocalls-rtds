@@ -36,9 +36,9 @@ REPLACEMENTS = [
         "../references/rtds_1_globalConfig.js",
     ),
     # Component examples
-    ("../../../../rtds_vocalls_operations/components/", "examples/"),
-    ("../../../rtds_vocalls_operations/components/", "references/examples/"),
-    ("../rtds_vocalls_operations/components/", "../references/examples/"),
+    ("../../../../rtds/components/", "examples/"),
+    ("../../../rtds/components/", "references/examples/"),
+    ("../rtds/components/", "../references/examples/"),
     # Skill-internal cross-refs
     (
         "../.claude/skills/vocalls-component-builder/references/",

@@ -42,7 +42,7 @@ Reads of operator-set data go through `getScoped(key, defaultValue)`:
 
 Bare `varObj[key]` reads in components are valid only when no `global` fallback is needed (e.g. when reading a key that's guaranteed to exist on varObj at that point in the flow). When in doubt, use `getScoped`.
 
-Writes of operator data go through `setVariable(path, value)` — the write-side counterpart to `getScoped`. A bare key targets `varObj`; a dotted path targets `varObj` / `globalThis` / a named reachable object, auto-creating intermediates and preserving the value's native type. This is what `SetVariables` (and its component twin) uses. See [setVariables.spec.md](../rtds_vocalls_operations/specs/setVariables.spec.md).
+Writes of operator data go through `setVariable(path, value)` — the write-side counterpart to `getScoped`. A bare key targets `varObj`; a dotted path targets `varObj` / `globalThis` / a named reachable object, auto-creating intermediates and preserving the value's native type. This is what `SetVariables` (and its component twin) uses. See [setVariables.spec.md](../rtds/specs/setVariables.spec.md).
 
 ## Reflect on
 

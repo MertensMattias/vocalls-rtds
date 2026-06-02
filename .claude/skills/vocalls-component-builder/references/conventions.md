@@ -1,7 +1,7 @@
 # RTDS Vocalls Component Conventions (v2)
 
 This document captures the rules a generated v2 component must satisfy. The
-structural source of truth is [rtds_vocalls_operations/components/sendSms.js](../../../../rtds_vocalls_operations/components/sendSms.js).
+structural source of truth is [rtds/components/sendSms.js](../../../../rtds/components/sendSms.js).
 When this document and the live `sendSms.js` disagree, the live file wins —
 flag the gap and update this document.
 
@@ -111,7 +111,7 @@ layout script:
 
 ```bash
 python .claude/skills/vocalls-component-builder/scripts/layout_component.py \
-  rtds_vocalls_operations/components/<componentName>.js
+  rtds/components/<componentName>.js
 ```
 
 It centres the trunk (input → init → script → primitives → output) on

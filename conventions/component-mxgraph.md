@@ -2,7 +2,7 @@
 
 **Scope:** [Component] · **Answers:** *How do I structure mxGraph XML when the component grows beyond the v2 four-node skeleton? Cell types, compound nodes, edges, labels, annotations.*
 
-**Canonical reference:** [voicemaildetector.js](../rtds_vocalls_operations/components/voicemaildetector.js) — a 1804-line hand-authored composite that demonstrates every wiring pattern below.
+**Canonical reference:** [voicemaildetector.js](../rtds/components/voicemaildetector.js) — a 1804-line hand-authored composite that demonstrates every wiring pattern below.
 
 For the v2 four-node skeleton itself, see [component-v2.md](component-v2.md). This file covers the *additional* patterns that show up when a component is hand-authored in Designer or when a v2 component embeds Designer primitives.
 
@@ -17,7 +17,7 @@ Every component starts with two `<mxCell>` entries that are not part of the visi
 <mxCell id="baselayer" parent="vocalls-master-layer" />
 ```
 
-See [voicemaildetector.js:17-41](../rtds_vocalls_operations/components/voicemaildetector.js#L17-L41).
+See [voicemaildetector.js:17-41](../rtds/components/voicemaildetector.js#L17-L41).
 
 Every visible node carries `parent="baselayer"`. The master-layer cell holds the component-wide attributes (`Code`, `Variables`, `PropertiesDefinition`, …); the baselayer cell is the visible drawing surface. Don't change these ids, don't nest extra layers, don't reparent visible nodes to `vocalls-master-layer`.
 
@@ -43,7 +43,7 @@ Three Designer primitives have an internal child layout: `case`, `recognize`, an
 
 ### `case`
 
-See [voicemaildetector.js:245-322](../rtds_vocalls_operations/components/voicemaildetector.js#L245-L322) for the canonical shape.
+See [voicemaildetector.js:245-322](../rtds/components/voicemaildetector.js#L245-L322) for the canonical shape.
 
 Rules:
 - Child `<mxCell>` carries `parent="<case-node-id>"`, **not** `parent="baselayer"`.
@@ -55,7 +55,7 @@ Rules:
 
 ### `recognize`
 
-See [voicemaildetector.js:670-756](../rtds_vocalls_operations/components/voicemaildetector.js#L670-L756) for the canonical shape.
+See [voicemaildetector.js:670-756](../rtds/components/voicemaildetector.js#L670-L756) for the canonical shape.
 
 Rules:
 - Chrome row first (`recognizeInnerNode`).
@@ -64,7 +64,7 @@ Rules:
 
 ### `component`
 
-See [voicemaildetector.js:608-653](../rtds_vocalls_operations/components/voicemaildetector.js#L608-L653) for the canonical shape (the GPT classifier).
+See [voicemaildetector.js:608-653](../rtds/components/voicemaildetector.js#L608-L653) for the canonical shape (the GPT classifier).
 
 Rules:
 - The `Type="component"` node is an embedded reusable component instance (referenced by `ComponentGuid`). It has exactly **one** child (`style="componentInnerNode"`) labelled by what the embedded component exposes (e.g. `Prompt`).
@@ -74,7 +74,7 @@ Rules:
 
 ## 5. Edges — how nodes are connected
 
-Every edge is a bare `<mxCell edge="1">` at the baselayer. See [voicemaildetector.js:174-183](../rtds_vocalls_operations/components/voicemaildetector.js#L174-L183) for one canonical form.
+Every edge is a bare `<mxCell edge="1">` at the baselayer. See [voicemaildetector.js:174-183](../rtds/components/voicemaildetector.js#L174-L183) for one canonical form.
 
 **Edge styles in active use** (counts from voicemaildetector):
 
@@ -98,7 +98,7 @@ Every edge is a bare `<mxCell edge="1">` at the baselayer. See [voicemaildetecto
 
 `Type="label"` nodes (`labelNode` style) act as named anchor points inside the flow. They're transient routing markers — same shape as a `transient` node (130×40), but `Kind` is absent and they're **not** flow inputs or outputs.
 
-See [voicemaildetector.js:333-372](../rtds_vocalls_operations/components/voicemaildetector.js#L333-L372) for the two label nodes (`picked by AI`, `regular voicemail`).
+See [voicemaildetector.js:333-372](../rtds/components/voicemaildetector.js#L333-L372) for the two label nodes (`picked by AI`, `regular voicemail`).
 
 Use them to:
 - Give a meaningful name to a branch convergence point.
@@ -106,7 +106,7 @@ Use them to:
 
 ## 7. Transient outputs — the named exit ports
 
-Every component exit is a `Type="transient"` node with `Kind="output"`. See [voicemaildetector.js:94-173](../rtds_vocalls_operations/components/voicemaildetector.js#L94-L173) for the four exits (`voicemail`, `not exists`, `not available`, `call answered`).
+Every component exit is a `Type="transient"` node with `Kind="output"`. See [voicemaildetector.js:94-173](../rtds/components/voicemaildetector.js#L94-L173) for the four exits (`voicemail`, `not exists`, `not available`, `call answered`).
 
 Rules:
 - `label` is the exit-key string that the runtime returns to the surrounding flow (`voicemail`, `not exists`, ...).
@@ -136,7 +136,7 @@ So: primitive *attribute values* are not JS and are not subject to the `__` pref
 
 ## 9. Annotation text — section headers in the canvas
 
-The voicemaildetector embeds visual section headers as bare `<mxCell vertex="1">` elements with an HTML `value=` and a no-interaction style. See [voicemaildetector.js:210-218](../rtds_vocalls_operations/components/voicemaildetector.js#L210-L218).
+The voicemaildetector embeds visual section headers as bare `<mxCell vertex="1">` elements with an HTML `value=` and a no-interaction style. See [voicemaildetector.js:210-218](../rtds/components/voicemaildetector.js#L210-L218).
 
 Key flags: `connectable=0` (no edges can attach) and `allowArrows=0` (no arrow handles on hover). Use these for any decorative text — never give it an `<object>` wrapper or a node `Type`. They exist only for the canvas reader, not the flow runtime.
 

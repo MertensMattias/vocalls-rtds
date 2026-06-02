@@ -361,7 +361,7 @@ in Designer:
 
 ```bash
 python .claude/skills/vocalls-component-builder/scripts/layout_component.py \
-  rtds_vocalls_operations/components/<componentName>.js
+  rtds/components/<componentName>.js
 ```
 
 Policy: trunk on x=317.5 (canonical column), 40px vertical gaps, branch
