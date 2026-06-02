@@ -1,3 +1,15 @@
+---
+status: spec-only
+catalog:
+  operation: "emergency"
+  legacy: false
+  pattern: "`http_call` (multi-branch)"
+  component: null
+  componentMark: "⬜"
+  runtimeCell: "⬜ not registered"
+  seed: "⬜"
+---
+
 # Operation Spec — emergency (Emergency)
 
 | Field          | Value                                                          |

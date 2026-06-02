@@ -1,0 +1,10 @@
+# Normalize line endings to LF in the repo (git stores LF; working tree may
+# render CRLF on Windows). Keeps generated-file checks (scripts/check_*) stable
+# regardless of core.autocrlf. See scripts/build_skill_bundle.py.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.gif binary
+*.pdf binary
+*.vsdx binary
+*.zip binary

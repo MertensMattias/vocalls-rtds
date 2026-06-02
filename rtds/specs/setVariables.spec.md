@@ -1,3 +1,15 @@
+---
+status: implemented
+catalog:
+  operation: "setVariables"
+  legacy: false
+  pattern: "`set_attributes`"
+  component: "setVariables.js"
+  componentMark: "✅"
+  runtimeCell: "JS twin `executeSetVariables` (`SetVariables_vocalls`)"
+  seed: "✅"
+---
+
 # Operation Spec — setVariables (SetVariables)
 
 | Field          | Value                                                              |

@@ -1,3 +1,15 @@
+---
+status: spec-only
+catalog:
+  operation: "ivrLogging"
+  legacy: false
+  pattern: "`http_call`"
+  component: null
+  componentMark: "⬜"
+  runtimeCell: "⬜ not registered"
+  seed: "⬜"
+---
+
 # Operation Spec — ivrLogging (IVRLogging)
 
 | Field          | Value                                                            |

@@ -14,7 +14,7 @@
  * Public surface (everything declared without var/let/const becomes global):
  *   - Object helpers: getOrDefault, isValidObject, getValue, getValueOrFalsy,
  *                     hasKey, findKey, walk, applyDefaults, getNestedValue,
- *                     nowUTC
+ *                     getScoped, nowUTC
  *   - varObj-shape readers: getRoutingConfig, getSessionConfig, getDebugConfig
  *   - Logger: Logger.debug / info / warn / error / API / configure
  *   - Lifecycle: initializeCallFlowContext(mode), storeSessionVariables()
@@ -205,6 +205,127 @@ function getNestedValue(obj, path) {
   return acc;
 }
 
+/**
+ * Reads operator-set call-scoped data with the RTDS scope contract:
+ * prefers varObj[key] (case-insensitive), falls back to exact-case
+ * global[key], then returns defaultValue. This is the single read path for
+ * attributes that SetAttributes / components write — see conventions/storage.md.
+ *
+ * @param {string} key
+ * @param {*}      defaultValue
+ * @returns {*}
+ */
+function getScoped(key, defaultValue) {
+  if (defaultValue === undefined) {
+    defaultValue = null;
+  }
+  if (!key) {
+    return defaultValue;
+  }
+  var vo = typeof varObj !== "undefined" ? varObj : null;
+  if (vo && hasKey(vo, key)) {
+    return getValue(vo, key, defaultValue);
+  }
+  var scope = null;
+  if (typeof global !== "undefined") {
+    scope = global;
+  } else if (typeof globalThis !== "undefined") {
+    scope = globalThis;
+  }
+  if (scope && scope[key] !== undefined && scope[key] !== null) {
+    return scope[key];
+  }
+  return defaultValue;
+}
+
+/**
+ * Resolves the explicit root named by the first segment of a dot-path, when
+ * that segment is one the operator can name as a root:
+ *   "varObj"               -> varObj
+ *   "globalThis" / "global" -> the global scope object
+ *   any other name that already exists in scope as an object -> that object
+ * Returns null when the first segment is NOT a recognised root keyword and is
+ * NOT an already-reachable object. In that case setVariable falls back to
+ * treating the whole path as nested under varObj (e.g. "auth.verified" ->
+ * varObj.auth.verified) — see specs/setVariables.spec.md Target resolution.
+ * The runtime never auto-creates a brand-new root global (that would mint
+ * undeclared globals and bypass the _rt* discipline, see conventions/storage.md).
+ *
+ * @param {string} name - The first dot-path segment.
+ * @returns {?Object} The resolved root object, or null when not a named root.
+ */
+function resolveRoot(name) {
+  var scope = null;
+  if (typeof global !== "undefined") {
+    scope = global;
+  } else if (typeof globalThis !== "undefined") {
+    scope = globalThis;
+  }
+  if (name === "varObj") {
+    return typeof varObj !== "undefined" ? varObj : null;
+  }
+  if (name === "globalThis" || name === "global") {
+    return scope;
+  }
+  if (scope && scope[name] && typeof scope[name] === "object") {
+    return scope[name];
+  }
+  return null;
+}
+
+/**
+ * Write-side counterpart to getScoped. Writes value at a dot-separated path.
+ * A bare key (no dot) targets varObj — the default call-scoped store. With a
+ * dot, the first segment is used as the root only when it names a recognised
+ * root (varObj | globalThis | global | an already-reachable object); otherwise
+ * the whole path is nested under varObj ("auth.verified" -> varObj.auth.verified).
+ * Only an explicit "globalThis"/"global" naming a non-object scope is skipped
+ * with a warning. Missing intermediate objects are auto-created (lodash-set
+ * semantics). Path segments keep the operator's exact casing — no normalisation.
+ * See specs/setVariables.spec.md and conventions/storage.md.
+ *
+ * @param {string} path  - Bare key or dot-separated target path.
+ * @param {*}      value - The value to write (native type preserved).
+ * @returns {void}
+ */
+function setVariable(path, value) {
+  var segments = String(path).split(".");
+
+  var root, startIndex;
+  if (segments.length === 1) {
+    root = typeof varObj !== "undefined" ? varObj : null;
+    startIndex = 0;
+  } else {
+    root = resolveRoot(segments[0]);
+    if (root) {
+      startIndex = 1;
+    } else {
+      // First segment is not a recognised root — treat the whole path as
+      // nested under varObj (the default call-scoped store).
+      root = typeof varObj !== "undefined" ? varObj : null;
+      startIndex = 0;
+    }
+  }
+
+  if (!root || typeof root !== "object") {
+    Logger.warn("[setVariable] unknown or non-object root — skipped", {
+      path: path,
+      root: segments[0],
+    });
+    return;
+  }
+
+  var node = root;
+  for (var i = startIndex; i < segments.length - 1; i++) {
+    var seg = segments[i];
+    if (node[seg] === null || typeof node[seg] !== "object") {
+      node[seg] = {};
+    }
+    node = node[seg];
+  }
+  node[segments[segments.length - 1]] = value;
+}
+
 // ============================================================================
 // varObj-SHAPE READERS
 // ============================================================================
@@ -240,6 +361,13 @@ function getDebugConfig(vo) {
 // LOGGER
 // ============================================================================
 
+/**
+ * Structured logger for the Vocalls JS environment.
+ * Levels (ascending): DEBUG < INFO < WARN < ERROR.
+ * WARN and ERROR events are also POSTed to the EventLog API.
+ * DEBUG and INFO are local-only (log_debug sink).
+ * Configure via Logger.configure({ activeLevel: 'WARN' }).
+ */
 Logger = {
   config: {
     enabled: true,
@@ -268,6 +396,7 @@ Logger = {
     };
   },
 
+  /** @param {string} severity 'DEBUG'|'INFO'|'WARN'|'ERROR' @returns {boolean} */
   shouldLog: function (severity) {
     var levels = ["DEBUG", "INFO", "WARN", "ERROR"];
     var activeIndex = levels.indexOf(this.config.activeLevel);
@@ -284,6 +413,7 @@ Logger = {
     return numericStatus >= 200 && numericStatus < 300;
   },
 
+  /** @param {*} obj @param {number} [maxSize] @returns {string} */
   sanitizeForLog: function (obj, maxSize) {
     maxSize = maxSize || this.config.maxBodySize;
     if (obj === null) return "null";
@@ -706,6 +836,42 @@ Logger = {
         "[Logger] Configuration updated: " + this.sanitizeForLog(config),
       );
     }
+  },
+
+  /**
+   * Diagnostic dump of the env-layer config: the call-scoped varObj, the
+   * Logger's own config, the DEFAULT_LOGGED_KEYS list, and the three
+   * varObj.config.* sub-trees (routing / session / debug). Output goes
+   * through Logger.debug, so it only prints when activeLevel is DEBUG —
+   * call Logger.configure({ activeLevel: 'DEBUG' }) first if needed.
+   *
+   * Call from a Script node AFTER initializeCallFlowContext has run, or
+   * varObj is still the pre-init value. RTDS dispatch state is dumped
+   * separately by dumpRtdsState (rtds_2_runtime.js).
+   *
+   * @returns {void}
+   */
+  dumpConfig: function () {
+    if (!this.shouldLog("DEBUG")) return;
+    var vo = typeof varObj !== "undefined" ? varObj : null;
+    this.debug("[config] varObj | " + this.sanitizeForLog(vo, 10000));
+    this.debug(
+      "[config] Logger.config | " + this.sanitizeForLog(this.config, 10000),
+    );
+    var keys =
+      typeof DEFAULT_LOGGED_KEYS !== "undefined" ? DEFAULT_LOGGED_KEYS : null;
+    this.debug(
+      "[config] DEFAULT_LOGGED_KEYS | " + this.sanitizeForLog(keys, 2000),
+    );
+    this.debug(
+      "[config] routing | " + this.sanitizeForLog(getRoutingConfig(vo), 4000),
+    );
+    this.debug(
+      "[config] session | " + this.sanitizeForLog(getSessionConfig(vo), 4000),
+    );
+    this.debug(
+      "[config] debug | " + this.sanitizeForLog(getDebugConfig(vo), 4000),
+    );
   },
 };
 

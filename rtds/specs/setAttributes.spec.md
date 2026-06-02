@@ -1,3 +1,15 @@
+---
+status: legacy
+catalog:
+  operation: "setAttributes"
+  legacy: true
+  pattern: "`set_attributes`"
+  component: "setAttributes.js"
+  componentMark: "🔒"
+  runtimeCell: "aliased to `executeSetVariables` (`SetAttributes_vocalls`)"
+  seed: "🔒"
+---
+
 # Operation Spec — setAttributes (SetAttributes)
 
 > **Superseded.** `SetAttributes` was hard-cut to **`SetVariables`** — see

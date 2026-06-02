@@ -2,7 +2,7 @@
 """
 layout_component.py — Deterministic mxGraph layout for v2 Style A Vocalls components.
 
-Reads an mxGraph XML file produced by the vocalls-component-builder skill and
+Reads an mxGraph XML file produced by the rtds-vocalls-component-gen skill and
 rewrites the `<mxGeometry>` x/y/width/height of every top-level (baselayer)
 node so the graph renders cleanly in Vocalls Designer.
 

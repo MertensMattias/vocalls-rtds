@@ -1,3 +1,15 @@
+---
+status: implemented
+catalog:
+  operation: "sendEmail"
+  legacy: false
+  pattern: "`http_call`"
+  component: "sendMail.js"
+  componentMark: "✅"
+  runtimeCell: "JS twin `executeSendEmail` (`SendMail_vocalls`)"
+  seed: "✅"
+---
+
 # Operation Spec — sendMail (SendEmail)
 
 | Field          | Value                                                         |

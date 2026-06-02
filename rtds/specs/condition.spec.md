@@ -1,3 +1,15 @@
+---
+status: spec-only
+catalog:
+  operation: "condition"
+  legacy: false
+  pattern: "`condition`"
+  component: null
+  componentMark: "⬜"
+  runtimeCell: "⬜ not registered"
+  seed: "⬜"
+---
+
 # Operation Spec — condition (Condition)
 
 | Field          | Value                                                          |

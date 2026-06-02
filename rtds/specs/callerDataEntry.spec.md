@@ -1,3 +1,15 @@
+---
+status: spec-only
+catalog:
+  operation: "callerDataEntry"
+  legacy: false
+  pattern: "`gui_exit` (multi-node)"
+  component: null
+  componentMark: "⬜"
+  runtimeCell: "⬜ not registered"
+  seed: "⬜"
+---
+
 # Operation Spec — callerDataEntry (CallerDataEntry)
 
 | Field          | Value                                                              |

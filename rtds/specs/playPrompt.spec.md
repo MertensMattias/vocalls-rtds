@@ -1,3 +1,15 @@
+---
+status: spec-only
+catalog:
+  operation: "playPrompt"
+  legacy: false
+  pattern: "`gui_exit`"
+  component: null
+  componentMark: "⬜"
+  runtimeCell: "GUI-exit `play_prompt` (`PlayPrompt_vocalls`)"
+  seed: "✅"
+---
+
 # Operation Spec — playPrompt (PlayPrompt)
 
 | Field          | Value                                                            |

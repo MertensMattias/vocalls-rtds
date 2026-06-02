@@ -22,6 +22,12 @@
     "switch": "node cli/switch.js",
     "delete": "node cli/delete.js",
     "test": "node ./node_modules/jest/bin/jest.js --runInBand --passWithNoTests",
+    "build:skill": "python scripts/build_skill_bundle.py",
+    "gen:catalog": "python scripts/gen_catalog.py",
+    "gen:agents": "python scripts/gen_agents_md.py",
+    "check:sync": "python scripts/check_skill_sync.py",
+    "check:lockstep": "python scripts/check_lockstep.py",
+    "check": "npm run check:sync && npm run check:lockstep && npm test",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

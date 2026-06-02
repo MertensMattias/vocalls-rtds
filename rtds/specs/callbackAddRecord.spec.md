@@ -1,3 +1,15 @@
+---
+status: spec-only
+catalog:
+  operation: "callbackAddRecord"
+  legacy: false
+  pattern: "`http_call`"
+  component: null
+  componentMark: "⬜"
+  runtimeCell: "⬜ not registered"
+  seed: "⬜"
+---
+
 # Operation Spec — callbackAddRecord (sub-operation of Callback)
 
 | Field          | Value                                                                  |

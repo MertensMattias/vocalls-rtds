@@ -1,3 +1,15 @@
+---
+status: implemented
+catalog:
+  operation: "guardTui"
+  legacy: false
+  pattern: "`http_call` + multi-node"
+  component: "guardTui.js"
+  componentMark: "✅"
+  runtimeCell: "GUI-exit `guard_tui` (`GuardTui_vocalls`)"
+  seed: "✅"
+---
+
 # Operation Spec — guardTui (GuardTUI)
 
 | Field          | Value                                                         |

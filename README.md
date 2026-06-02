@@ -37,3 +37,18 @@ See `rtds/README.md` for the RTDS reference index (spec, runtime JS, swagger, ex
 | `npm run export` | Bundle scripts for Vocalls deployment |
 | `npm run delete -- <name>` | Remove project from registry and disk |
 | `npm test` | Jest — runs `projects/*/tests/` after init |
+| `npm run check` | Consistency gate: skill-sync + lockstep + tests |
+| `npm run gen:catalog` / `gen:agents` / `build:skill` | Regenerate the generated artifacts |
+
+## Consistency checks
+
+Several artifacts are generated and drift-checked (see the "What to update when you change X"
+table in `CLAUDE.md`): the operations catalog from spec frontmatter, `AGENTS.md` from
+`CLAUDE.md`, and the component-generator skill bundle from the repo conventions. `npm run check`
+verifies they are in sync, runs the lockstep contract check, and runs the tests.
+
+Install the pre-commit hook once per clone so the gate runs automatically:
+
+```bash
+sh scripts/hooks/install.sh
+```

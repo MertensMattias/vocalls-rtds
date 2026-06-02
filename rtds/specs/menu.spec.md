@@ -1,3 +1,15 @@
+---
+status: spec-only
+catalog:
+  operation: "menu"
+  legacy: false
+  pattern: "`gui_exit` (multi-node)"
+  component: null
+  componentMark: "⬜"
+  runtimeCell: "GUI-exit `menu` (`Menu_vocalls`)"
+  seed: "✅"
+---
+
 # Operation Spec — menu (Menu)
 
 | Field          | Value                                                      |
