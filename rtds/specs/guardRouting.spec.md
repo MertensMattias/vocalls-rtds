@@ -19,6 +19,7 @@ catalog:
 | Pattern        | `http_call` + multi-node — fetch the active guard list, then loop: call each guard, play menu, transfer on accept, otherwise advance. Optional post-call SMS / email / voicemail. |
 | Source handler | `rtds/pureconnect_handlers/NAllo_RTDS_GuardRouting.xml`  |
 | Target file    | `rtds/components/guardRouting.js`              |
+| Component style | **Hand-built / Style B** — governed by [conventions/component-mxgraph.md](../../conventions/component-mxgraph.md), NOT the v2 four-node trunk. It diverges deliberately: an `input → getEnvironment component` entry, an embedded endpoint-config script node, and embedded auth / globalLibrary nodes. Do not hold it to the v2 skeleton. Open follow-ups: move the node-319 endpoint map into the env library; externalise the node-321 hardcoded client-IDs / token-URL / tenant-GUID. |
 
 ## Business purpose
 
@@ -119,11 +120,11 @@ var __timeout = getValue(__rtParams, 'RequestTimeout', 10000);
 
 return jsonHttpRequest(__url, { method: 'GET', "timeout": __timeout }, _headers, null).then(
     function (result) {
-        if (!result || result.success !== true || !Array.isArray(result.body)) {
+        if (!result || result.success !== true || !Array.isArray(result.response)) {
             Logger.warn('[guardRouting] fetch failed', { statusCode: result && result.statusCode, nextStep: global[_rtNextStep] });
             return;
         }
-        __guardList = result.body;
+        __guardList = result.response;
         global[_rtNextStep] = getValue(__rtParams, 'NextStep', -1);
         Logger.info('[guardRouting] list ready', { count: __guardList.length, nextStep: global[_rtNextStep] });
     },

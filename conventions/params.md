@@ -16,10 +16,10 @@ Unresolved `${name}` placeholders survive into `__rtParams` as raw text, and `Lo
 
 ## The `${name}` contract — what it will and won't do
 
-`${name}` is a **runtime substitution mechanism** that resolves a bare identifier against the `global` scope at the moment the carrying string is read. In a Style A component this fires in two places:
+`${name}` is a **runtime substitution mechanism** that resolves a bare identifier at the moment the carrying string is read. In a Style A component this fires in two places:
 
-1. **At init time, in `__setupConfig`** — against every value in `__configJSON`. The init node runs `__setupConfig` which calls `String.replace` over each Param value, looking up matched names in `global`. The resolved values land in `__rtParams`. Most common use.
-2. **At engine read time** — against primitive attributes whose semantics support it (most notably `redirect.Destination`). When the engine actually consumes the attribute (e.g. the moment the call is transferred), it resolves `${name}` against `global` the same way `__setupConfig` does.
+1. **At init time, in `__setupConfig`** — against every value in `__configJSON`. The init node runs `__setupConfig`, which delegates each Param value to the shared `resolveConfigTokens(raw, key)` helper (`rtds_3_vocallsEnv.js`). That helper resolves matched names via `getScoped` — **`varObj` first, then `global`** — using `String.replace` (never `new Function`). The resolved values land in `__rtParams`. Most common use. This is the single token-resolution path; the runtime twins resolve the same way, so a GUI component and its JS handler can't diverge at init time.
+2. **At engine read time** — against primitive attributes whose semantics support it (most notably `redirect.Destination`). When the engine actually consumes the attribute (e.g. the moment the call is transferred), it resolves `${name}` against `global`. **Note the asymmetry:** init-time resolution is `varObj`-first (via `getScoped`); engine-read-time resolution is `global`-only (the engine has no `varObj` view). For a name that exists on both with different values, the two sites can resolve differently — keep engine-read placeholders (`redirect.Destination`, etc.) backed by a `global`, or write the same value to both.
 
 Both whole-string and partial substitution are supported. Pattern is `${\w+}` — bare identifiers only.
 

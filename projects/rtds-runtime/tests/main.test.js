@@ -169,6 +169,82 @@ describe('rtds-runtime main.js', function () {
             });
     });
 
+    it('executeSetVariables skips all writes when Active is false', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                delete sb.varObj.InactiveKey;
+                delete sb.InactiveKey;
+                var out = sb.executeSetVariables({
+                    id: 'unit-inactive',
+                    name: 'unit-setvars-inactive',
+                    type: 'SetVariables',
+                    params: { Active: false, InactiveKey: 'ShouldNotWrite', NextStep: '00003' }
+                });
+                // Nothing written on either store, and the op advances on NextStep.
+                expect(sb.varObj.InactiveKey).toBeUndefined();
+                expect(sb.InactiveKey).toBeUndefined();
+                expect(out.nextStepId).toBe('00003');
+            });
+    });
+
+    it('executeSetVariables defaults Active to true (absent Active still writes)', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                delete sb.varObj.LegacyKey;
+                // No Active key at all — legacy config. Default-true means it writes.
+                var out = sb.executeSetVariables({
+                    id: 'unit-legacy',
+                    name: 'unit-setvars-legacy',
+                    type: 'SetVariables',
+                    params: { LegacyKey: 'Written', NextStep: '00004' }
+                });
+                expect(sb.varObj.LegacyKey).toBe('Written');
+                expect(out.nextStepId).toBe('00004');
+            });
+    });
+
+    it('isActive preserves the "false"-is-truthy Active contract', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                expect(sb.isActive(true)).toBe(true);
+                expect(sb.isActive(false)).toBe(false);
+                expect(sb.isActive('false')).toBe(true);   // Boolean('false') === true (documented)
+                expect(sb.isActive(0)).toBe(false);
+                expect(sb.isActive('${unresolved}')).toBe(true);
+            });
+    });
+
+    it('resolveConfigTokens substitutes varObj-first, falls back to global, warns on miss', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                // varObj-first: a key on varObj wins over the same key on global.
+                sb.varObj.tokA = 'fromVarObj';
+                sb.tokA = 'fromGlobal';
+                expect(sb.resolveConfigTokens('${tokA}', 'X')).toBe('fromVarObj');
+                // global fallback when not on varObj.
+                delete sb.varObj.tokB;
+                sb.tokB = 'fromGlobal';
+                expect(sb.resolveConfigTokens('x-${tokB}-y', 'X')).toBe('x-fromGlobal-y');
+                // A legitimately-stored empty string still substitutes (sentinel correctness).
+                sb.varObj.tokEmpty = '';
+                expect(sb.resolveConfigTokens('[${tokEmpty}]', 'X')).toBe('[]');
+                // Truly-unresolved placeholder is left raw (not silently "").
+                delete sb.varObj.tokMissing;
+                delete sb.tokMissing;
+                expect(sb.resolveConfigTokens('${tokMissing}', 'X')).toBe('${tokMissing}');
+                // No-placeholder strings and non-strings pass through.
+                expect(sb.resolveConfigTokens('plain', 'X')).toBe('plain');
+            });
+    });
+
     it('registers SendSMS / SendEmail as real JS handlers (not GUI-exit)', function () {
         return helpers
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
