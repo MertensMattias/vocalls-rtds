@@ -103,11 +103,11 @@ var __timeout = getValue(__rtParams, 'Timeout', 10000);
 
 return jsonHttpRequest(__url, { method: 'GET', "timeout": __timeout }, _headers, null).then(
     function (result) {
-        if (!result || result.success !== true || !result.body) {
+        if (!result || result.success !== true || !result.response) {
             Logger.warn('[flowJump] resolve failed', { sourceId: __sourceId, statusCode: result && result.statusCode, nextStep: global[_rtNextStep] });
             return;
         }
-        var __body = result.body;
+        var __body = result.response;
         context.session.variables.RTDS_sourceId = __sourceId;
         if (__body.projectId)          context.session.variables.RTDS_project = __body.projectId;
         if (__body.promptLibrary)      context.session.variables.RTDS_promptLibrary = __body.promptLibrary;

@@ -14,7 +14,7 @@
  * Public surface (everything declared without var/let/const becomes global):
  *   - Object helpers: getOrDefault, isValidObject, getValue, getValueOrFalsy,
  *                     hasKey, findKey, walk, applyDefaults, getNestedValue,
- *                     getScoped, isActive, resolveConfigTokens, nowUTC
+ *                     getScoped, activeFlag, resolveConfigTokens, nowUTC
  *   - varObj-shape readers: getRoutingConfig, getSessionConfig, getDebugConfig
  *   - Logger: Logger.debug / info / warn / error / API / configure
  *   - Lifecycle: initializeCallFlowContext(mode), storeSessionVariables()
@@ -113,19 +113,34 @@ function getValueOrFalsy(obj, key, defaultValue) {
 }
 
 /**
- * Coerces an Active param value to a boolean activation decision. A real
- * boolean passes through; anything else goes through Boolean(). This preserves
- * the documented contract that the string "false" is truthy (Boolean("false")
- * === true) and an unresolved "${toggle}" placeholder is truthy — see
- * conventions/params.md. Shared by the JS twins (executeSetVariables /
- * executeSendSms / executeSendEmail) and the GUI components so Active
- * truthiness can never diverge between the two.
+ * Coerces an Active param value to a boolean activation decision, across every
+ * encoding the dictionary emits: a real boolean passes through; number 1 / 0 ->
+ * true / false; string "1" / "true" -> true and "0" / "false" / "" -> false
+ * (case-insensitive); an array form [value, ...flags] is unwrapped to its first
+ * element first. Anything else (including an unresolved "${toggle}" placeholder)
+ * is inactive — a config error fails closed (skip) rather than running an op
+ * with broken config. See conventions/params.md.
  *
- * @param {*} value - The resolved Active value (boolean, string, number, ...).
+ * This is the single Active-coercion contract. The JS twins (executeSetVariables
+ * / executeSendSms / executeSendEmail) call it directly, and the GUI components
+ * call it through the component-local __activeFlag alias (which just delegates
+ * here), so Active truthiness can never diverge between the two paths.
+ *
+ * @param {*} value - The resolved Active value (boolean, string, number, array).
  * @returns {boolean}
  */
-function isActive(value) {
-  return typeof value === "boolean" ? value : Boolean(value);
+function activeFlag(value) {
+  if (Object.prototype.toString.call(value) === "[object Array]") {
+    value = value.length ? value[0] : false;
+  }
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value === "number") {
+    return value === 1;
+  }
+  var s = String(value).trim().toLowerCase();
+  return s === "1" || s === "true";
 }
 
 /**

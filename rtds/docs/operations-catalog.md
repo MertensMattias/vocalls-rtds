@@ -22,7 +22,7 @@ Legend: ✅ present · ⬜ not yet · 🔒 legacy (superseded).
 | sendSms | `http_call` | [spec](../specs/sendSms.spec.md) | ✅ [sendSms.js](../components/sendSms.js) | JS twin `executeSendSms` (`SendSms_vocalls`) | ✅ |
 | sendEmail | `http_call` | [spec](../specs/sendEmail.spec.md) | ✅ [sendMail.js](../components/sendMail.js) | JS twin `executeSendEmail` (`SendMail_vocalls`) | ✅ |
 | setVariables | `set_attributes` | [spec](../specs/setVariables.spec.md) | ✅ [setVariables.js](../components/setVariables.js) | JS twin `executeSetVariables` (`SetVariables_vocalls`) | ✅ |
-| setAttributes 🔒 | `set_attributes` | [spec](../specs/setAttributes.spec.md) | 🔒 [setAttributes.js](../components/setAttributes.js) | aliased to `executeSetVariables` (`SetAttributes_vocalls`) | 🔒 |
+| setAttributes 🔒 | `set_attributes` | [spec](../specs/setAttributes.spec.md) | 🔒 component removed — use [setVariables.js](../components/setVariables.js) | aliased to `executeSetVariables` (`SetAttributes_vocalls`) | 🔒 |
 | guardRouting | `http_call` + multi-node | [spec](../specs/guardRouting.spec.md) | ✅ [guardRouting.js](../components/guardRouting.js) | GUI-exit `guard_routing` (via `Guard_vocalls`) | ✅ |
 | guardTui | `http_call` + multi-node | [spec](../specs/guardTui.spec.md) | ✅ [guardTui.js](../components/guardTui.js) | GUI-exit `guard_tui` (`GuardTui_vocalls`) | ✅ |
 | guard | `gui_exit` (dispatcher → GuardRouting) | [spec](../specs/guard.spec.md) | — | GUI-exit `guard_routing` (`Guard_vocalls`) | ✅ |

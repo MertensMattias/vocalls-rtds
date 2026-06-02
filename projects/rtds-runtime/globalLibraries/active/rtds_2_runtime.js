@@ -445,7 +445,7 @@ function executeSetVariables(op) {
   // Active defaults to true for SetVariables: a large body of older config
   // never sets the key, and historically those ops always wrote. Only an
   // explicit Active:false skips. (Send* ops default false — opt-in.)
-  if (!isActive(getParam(op, "Active", true))) {
+  if (!activeFlag(getParam(op, "Active", true))) {
     var skipNext = resolveNextStep(op, null);
     Logger.info("[RTDS] SetVariables skipped — inactive", {
       nextStep: skipNext ? skipNext : "(none)",
@@ -898,7 +898,7 @@ function resolveFilesList(raw) {
 function executeSendSms(op) {
   var skipNext = resolveNextStep(op, null);
 
-  if (!isActive(getParam(op, "Active", false))) {
+  if (!activeFlag(getParam(op, "Active", false))) {
     Logger.info("[RTDS] SendSMS skipped — inactive", { nextStep: skipNext });
     return { nextStepId: skipNext };
   }
@@ -970,7 +970,7 @@ function executeSendSms(op) {
 function executeSendEmail(op) {
   var skipNext = resolveNextStep(op, null);
 
-  if (!isActive(getParam(op, "Active", false))) {
+  if (!activeFlag(getParam(op, "Active", false))) {
     Logger.info("[RTDS] SendEmail skipped — inactive", { nextStep: skipNext });
     return { nextStepId: skipNext };
   }

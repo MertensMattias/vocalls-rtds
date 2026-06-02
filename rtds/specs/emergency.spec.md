@@ -77,7 +77,7 @@ Expected response:
 
 ### Component structure
 
-Standard `http_call` shape with a switch on `result.body.action`.
+Standard `http_call` shape with a switch on `result.response.action`.
 
 `init`:
 
@@ -110,16 +110,16 @@ var __timeout = getValue(__rtParams, 'Timeout', 10000);
 
 return jsonHttpRequest(__url, { method: 'GET', "timeout": __timeout }, _headers, null).then(
     function (result) {
-        if (!result || result.success !== true || !result.body) {
+        if (!result || result.success !== true || !result.response) {
             Logger.warn('[emergency] api failed', { statusCode: result && result.statusCode, nextStep: global[_rtNextStep] });
             return;
         }
-        var __action = String(result.body.action || '');
+        var __action = String(result.response.action || '');
         if (__action === 'Continue') {
             global[_rtNextStep] = getValue(__rtParams, 'NextStep_Continue', -1);
         } else if (__action === 'Transfer') {
             global[_rtNextStep] = getValue(__rtParams, 'NextStep_Transfer', -1);
-            varObj.PhoneNumber = result.body.phoneNumber || getValue(__rtParams, 'PhoneNumber', '');
+            setVariable('PhoneNumber', result.response.phoneNumber || getValue(__rtParams, 'PhoneNumber', ''));
         } else if (__action === 'Disconnect') {
             global[_rtNextStep] = getValue(__rtParams, 'NextStep_Disconnect', -1);
         } else {
