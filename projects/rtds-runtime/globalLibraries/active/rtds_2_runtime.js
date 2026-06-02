@@ -264,7 +264,9 @@ function parseFlow(json) {
         firstOp.name +
         ")",
     );
-    Logger.debug("[RTDS] init | full table | " + Logger.sanitizeForLog(json, 20000));
+    Logger.debug(
+      "[RTDS] init | full table | " + Logger.sanitizeForLog(json, 20000),
+    );
   }
   return firstOp;
 }
@@ -928,26 +930,26 @@ function executeSendSms(op) {
     _headers,
     payload,
   ).then(
-      function (result) {
-        if (result && result.success === true) {
-          Logger.info("[RTDS] SendSMS success", { nextStep: successNext });
-          return { nextStepId: successNext };
-        }
-        Logger.warn("[RTDS] SendSMS gateway failure", {
-          statusCode: result && result.statusCode,
-          nextStep: failureNext,
-        });
-        return { nextStepId: failureNext };
-      },
-      function (err) {
-        Logger.error(
-          "[RTDS] SendSMS request error",
-          { nextStep: failureNext },
-          err,
-        );
-        return { nextStepId: failureNext };
-      },
-    );
+    function (result) {
+      if (result && result.success === true) {
+        Logger.info("[RTDS] SendSMS success", { nextStep: successNext });
+        return { nextStepId: successNext };
+      }
+      Logger.warn("[RTDS] SendSMS gateway failure", {
+        statusCode: result && result.statusCode,
+        nextStep: failureNext,
+      });
+      return { nextStepId: failureNext };
+    },
+    function (err) {
+      Logger.error(
+        "[RTDS] SendSMS request error",
+        { nextStep: failureNext },
+        err,
+      );
+      return { nextStepId: failureNext };
+    },
+  );
 }
 
 /**
@@ -1024,26 +1026,26 @@ function executeSendEmail(op) {
     _headers,
     payload,
   ).then(
-      function (result) {
-        if (result && result.success === true) {
-          Logger.info("[RTDS] SendEmail success", { nextStep: successNext });
-          return { nextStepId: successNext };
-        }
-        Logger.warn("[RTDS] SendEmail gateway failure", {
-          statusCode: result && result.statusCode,
-          nextStep: failureNext,
-        });
-        return { nextStepId: failureNext };
-      },
-      function (err) {
-        Logger.error(
-          "[RTDS] SendEmail request error",
-          { nextStep: failureNext },
-          err,
-        );
-        return { nextStepId: failureNext };
-      },
-    );
+    function (result) {
+      if (result && result.success === true) {
+        Logger.info("[RTDS] SendEmail success", { nextStep: successNext });
+        return { nextStepId: successNext };
+      }
+      Logger.warn("[RTDS] SendEmail gateway failure", {
+        statusCode: result && result.statusCode,
+        nextStep: failureNext,
+      });
+      return { nextStepId: failureNext };
+    },
+    function (err) {
+      Logger.error(
+        "[RTDS] SendEmail request error",
+        { nextStep: failureNext },
+        err,
+      );
+      return { nextStepId: failureNext };
+    },
+  );
 }
 
 // ===========================================================================
@@ -1067,21 +1069,22 @@ function executeSendEmail(op) {
 // rtds_vocalls_operations/components/. Condition / Emergency / Schedule /
 // FlowJump are NOT registered yet: they need real data sources wired in and
 // will be added back with correct implementations.
-registerRtdsOperation("SetVariables", executeSetVariables);
-registerRtdsOperation("SendSMS", executeSendSms);
-registerRtdsOperation("SendEmail", executeSendEmail);
+registerRtdsOperation("SetVariables_vocalls", executeSetVariables);
+registerRtdsOperation("SetAttributes_vocalls", executeSetVariables);
+registerRtdsOperation("SendSms_vocalls", executeSendSms);
+registerRtdsOperation("SendMail_vocalls", executeSendEmail);
 
 // --- GUI-exit Types — handled by Vocalls components on the canvas ---
-registerRtdsExit("WorkgroupTransfer", "workgroup_transfer");
-registerRtdsExit("ExternalTransfer", "external_transfer");
-registerRtdsExit("Menu", "menu");
-registerRtdsExit("LanguageMenu", "language_menu");
-registerRtdsExit("PlayPrompt", "play_prompt");
-registerRtdsExit("PlayAudio", "play_audio");
-registerRtdsExit("Disconnect", "disconnect");
-registerRtdsExit("GuardRouting", "guard_routing");
-registerRtdsExit("GuardTUI", "guard_tui");
-registerRtdsExit("Callback", "callback");
+registerRtdsExit("WorkgroupTransfer_vocalls", "workgroup_transfer");
+registerRtdsExit("ExternalTransfer_vocalls", "external_transfer");
+registerRtdsExit("Menu_vocalls", "menu");
+registerRtdsExit("LanguageMenu_vocalls", "language_menu");
+registerRtdsExit("PlayPrompt_vocalls", "play_prompt");
+registerRtdsExit("PlayAudio_vocalls", "play_audio");
+registerRtdsExit("Disconnect_vocalls", "disconnect");
+registerRtdsExit("Guard_vocalls", "guard_routing");
+registerRtdsExit("GuardTui_vocalls", "guard_tui");
+registerRtdsExit("Callback_vocalls", "callback");
 
 Logger.info("[RTDS] registry initialised", {
   types: RTDS_REGISTRY.size,

@@ -54,20 +54,19 @@ to `runStep` / `parseFlow` semantics.
 
 ## Design
 
-### 1. Refactor `fetchAndStart` into small units
+### 1. Keep `fetchAndStart` monolithic
 
-The current monolithic body is split into independently-testable units (behavior
-preserved):
+`fetchAndStart` stays a single function. The caching logic is added **inline**; the
+existing network call, `JSON.parse`, `parseFlow` and `runStep` tail stay in place
+exactly as today. The only extracted helper is a pure string sanitizer:
 
-- `fetchConfigFromApi(sourceId)` → promise resolving to the **parsed config object**
-  (the existing `jsonHttpRequest` GET + success check + `JSON.parse` of the body), or
-  rejecting on API failure / parse failure.
-- `readConfigCache(sourceId)` → `{ sourceId, fetchedAt, config }` or `null`.
-- `writeConfigCache(sourceId, config)` → persists the entry with `fetchedAt = now`.
-- `startFromConfig(config)` → the existing `parseFlow(config)` → `runStep(firstOp)`
-  tail; returns the exit key.
+- `configCacheKey(sourceId)` → the Storage filename (see §2 sanitization).
 
-`fetchAndStart` becomes the orchestrator wiring these together.
+Storage read and write happen **inline** inside `fetchAndStart` (each wrapped in
+`try/catch`). The existing `jsonHttpRequest` GET → success check → `JSON.parse` block
+appears in two inline arms — the fire-and-forget refresh and the awaited path — which
+is the accepted cost of keeping the function monolithic; the duplication is a few
+lines and both arms share the same success/parse shape.
 
 ### 2. Storage layout
 
@@ -82,24 +81,30 @@ One file per `sourceId` — no read-modify-write contention between concurrent c
 
 ### 3. Control flow
 
+All steps below are **inline** inside the single `fetchAndStart` function. "GET+parse"
+denotes the existing `jsonHttpRequest(url, {method:'GET'}, _headers).then(...)` block
+with its success check and `JSON.parse(body)`; "write cache" denotes an inline
+`Storage.writeFile(configCacheKey(sourceId), JSON.stringify({sourceId, fetchedAt:now, config}))`
+wrapped in `try/catch`.
+
 ```
 fetchAndStart(sourceId):
-  if !sourceId:                       -> set RTDS_error, return 'disconnect'   (unchanged)
-  if !_rtConfigCacheEnabled:          -> return fetchConfigFromApi(...).then(write+start, onError)
+  if !sourceId:               -> set RTDS_error, return 'disconnect'   (unchanged)
+  if !_rtConfigCacheEnabled:  -> GET+parse.then(write cache + parseFlow/runStep, onError)   (today's path + write)
 
-  cached = readConfigCache(sourceId)
+  cached = inline Storage.readFile(configCacheKey(sourceId)) -> {sourceId,fetchedAt,config} | null   (try/catch -> null)
   fresh  = cached && (now - cached.fetchedAt) <= _rtConfigCacheMaxAgeMs
 
   if fresh:
       # serve cache now; refresh in background (NOT returned/awaited)
-      fetchConfigFromApi(sourceId).then(
-          function(c){ writeConfigCache(sourceId, c); },
-          function(e){ log_warn('[RTDS] cache refresh failed', e); })
-      return startFromConfig(cached.config)
+      GET+parse.then(
+          function(c){ write cache },
+          function(e){ log_warn('[RTDS] cache refresh failed', e) })
+      return parseFlow(cached.config) -> runStep(firstOp)
 
   # miss OR stale -> await
-  return fetchConfigFromApi(sourceId).then(
-      function(c){ writeConfigCache(sourceId, c); return startFromConfig(c); },
+  return GET+parse.then(
+      function(c){ write cache; return parseFlow(c) -> runStep(firstOp) },
       onError)
 ```
 
@@ -108,15 +113,16 @@ fetchAndStart(sourceId):
 `onError` (await path API/parse failure):
 
 - If a cached entry exists (even one older than max-age): log a warn and
-  **serve the stale cache** — `return startFromConfig(cached.config)`. Better to run a
-  live caller on stale config than to drop the call during an API outage.
+  **serve the stale cache** — `return parseFlow(cached.config) -> runStep(firstOp)`.
+  Better to run a live caller on stale config than to drop the call during an API
+  outage.
 - If there is **no** cache at all: preserve current behavior — set
   `context.session.variables.RTDS_error` and `return 'disconnect'`.
 
 ### 5. Config knobs (`_rt*` globals)
 
-- `_rtConfigCacheMaxAgeMs` — default `300000` (5 min). Set in the env/config layer so
-  it is tunable per environment.
+- `_rtConfigCacheMaxAgeMs` — default `7200000` (120 min). Set in the env/config layer
+  so it is tunable per environment.
 - `_rtConfigCacheEnabled` — default `true`. When `false`, `fetchAndStart` behaves
   exactly as today (no Storage reads or writes) — a clean kill-switch.
 
