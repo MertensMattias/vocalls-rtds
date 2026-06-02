@@ -220,6 +220,31 @@ describe('rtds-runtime main.js', function () {
             });
     });
 
+    it('resolveConfigTokens substitutes varObj-first, falls back to global, warns on miss', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                // varObj-first: a key on varObj wins over the same key on global.
+                sb.varObj.tokA = 'fromVarObj';
+                sb.tokA = 'fromGlobal';
+                expect(sb.resolveConfigTokens('${tokA}', 'X')).toBe('fromVarObj');
+                // global fallback when not on varObj.
+                delete sb.varObj.tokB;
+                sb.tokB = 'fromGlobal';
+                expect(sb.resolveConfigTokens('x-${tokB}-y', 'X')).toBe('x-fromGlobal-y');
+                // A legitimately-stored empty string still substitutes (sentinel correctness).
+                sb.varObj.tokEmpty = '';
+                expect(sb.resolveConfigTokens('[${tokEmpty}]', 'X')).toBe('[]');
+                // Truly-unresolved placeholder is left raw (not silently "").
+                delete sb.varObj.tokMissing;
+                delete sb.tokMissing;
+                expect(sb.resolveConfigTokens('${tokMissing}', 'X')).toBe('${tokMissing}');
+                // No-placeholder strings and non-strings pass through.
+                expect(sb.resolveConfigTokens('plain', 'X')).toBe('plain');
+            });
+    });
+
     it('registers SendSMS / SendEmail as real JS handlers (not GUI-exit)', function () {
         return helpers
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })

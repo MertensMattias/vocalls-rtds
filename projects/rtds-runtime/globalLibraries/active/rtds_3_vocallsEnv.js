@@ -14,7 +14,7 @@
  * Public surface (everything declared without var/let/const becomes global):
  *   - Object helpers: getOrDefault, isValidObject, getValue, getValueOrFalsy,
  *                     hasKey, findKey, walk, applyDefaults, getNestedValue,
- *                     getScoped, isActive, nowUTC
+ *                     getScoped, isActive, resolveConfigTokens, nowUTC
  *   - varObj-shape readers: getRoutingConfig, getSessionConfig, getDebugConfig
  *   - Logger: Logger.debug / info / warn / error / API / configure
  *   - Lifecycle: initializeCallFlowContext(mode), storeSessionVariables()
@@ -252,6 +252,40 @@ function getScoped(key, defaultValue) {
     return scope[key];
   }
   return defaultValue;
+}
+
+/**
+ * Substitutes ${name} placeholders in a string using the RTDS scope contract
+ * (getScoped: varObj first, then global). Bare identifiers only — ${\w+}; no
+ * expressions, no dot-notation. A placeholder that resolves nowhere is left raw
+ * and a warn is logged (silent "" substitution hides config typos). This is the
+ * single token-resolution path shared by every component's __setupConfig and by
+ * the runtime twins, so init-time token resolution can never diverge between a
+ * GUI component and its JS handler. Uses String.replace, NOT new Function — the
+ * Vocalls runtime disables string-eval.
+ *
+ * @param {string} raw    - The raw value possibly containing ${name} tokens.
+ * @param {string} keyName - The Param key, for the unresolved-placeholder log.
+ * @returns {string} The string with resolved placeholders; unresolved ones kept raw.
+ */
+function resolveConfigTokens(raw, keyName) {
+  if (typeof raw !== "string" || raw.indexOf("${") === -1) {
+    return raw;
+  }
+  // Sentinel no real stored value can equal, so getScoped's "absent" branch is
+  // distinguishable from a legitimately stored null / empty / falsy value.
+  var MISSING = " __rtUnresolved ";
+  return raw.replace(/\$\{(\w+)\}/g, function (match, name) {
+    var sub = getScoped(name, MISSING);
+    if (sub !== MISSING) {
+      return String(sub);
+    }
+    Logger.warn("[resolveConfigTokens] unresolved placeholder", {
+      key: keyName,
+      placeholder: name,
+    });
+    return match;
+  });
 }
 
 /**
