@@ -19,6 +19,7 @@ catalog:
 | Pattern        | `http_call` + multi-node — fetch the active guard list, then loop: call each guard, play menu, transfer on accept, otherwise advance. Optional post-call SMS / email / voicemail. |
 | Source handler | `rtds/pureconnect_handlers/NAllo_RTDS_GuardRouting.xml`  |
 | Target file    | `rtds/components/guardRouting.js`              |
+| Component style | **Hand-built / Style B** — governed by [conventions/component-mxgraph.md](../../conventions/component-mxgraph.md), NOT the v2 four-node trunk. It diverges deliberately: an `input → getEnvironment component` entry, an embedded endpoint-config script node, and embedded auth / globalLibrary nodes. Do not hold it to the v2 skeleton. Open follow-ups: move the node-319 endpoint map into the env library; externalise the node-321 hardcoded client-IDs / token-URL / tenant-GUID. |
 
 ## Business purpose
 
