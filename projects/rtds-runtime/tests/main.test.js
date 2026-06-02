@@ -90,11 +90,12 @@ describe('rtds-runtime main.js', function () {
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
             .then(function (result) {
                 expect(typeof result.sandbox.RTDS_OPERATIONS.get).toBe('function');
-                expect(result.sandbox.RTDS_OPERATIONS.has('SetVariables')).toBe(true);
-                // SetAttributes was hard-cut (superseded by SetVariables).
-                expect(result.sandbox.RTDS_OPERATIONS.has('SetAttributes')).toBe(false);
+                expect(result.sandbox.RTDS_OPERATIONS.has('SetVariables_vocalls')).toBe(true);
+                // SetAttributes_vocalls is an alias of executeSetVariables, kept for
+                // legacy routing tables; both register as JS handlers.
+                expect(result.sandbox.RTDS_OPERATIONS.has('SetAttributes_vocalls')).toBe(true);
                 expect(typeof result.sandbox.RTDS_EXIT_KEYS.get).toBe('function');
-                expect(result.sandbox.RTDS_EXIT_KEYS.get('PlayPrompt')).toBe('play_prompt');
+                expect(result.sandbox.RTDS_EXIT_KEYS.get('PlayPrompt_vocalls')).toBe('play_prompt');
                 expect(result.sandbox.OP_VAR_PREFIX).toBeUndefined();
                 expect(typeof result.sandbox.fetchAndStart).toBe('function');
                 expect(typeof result.sandbox.resumeFrom).toBe('function');
@@ -173,10 +174,10 @@ describe('rtds-runtime main.js', function () {
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
             .then(function (result) {
                 var sb = result.sandbox;
-                expect(sb.RTDS_OPERATIONS.has('SendSMS')).toBe(true);
-                expect(sb.RTDS_OPERATIONS.has('SendEmail')).toBe(true);
-                expect(sb.RTDS_EXIT_KEYS.has('SendSMS')).toBe(false);
-                expect(sb.RTDS_EXIT_KEYS.has('SendEmail')).toBe(false);
+                expect(sb.RTDS_OPERATIONS.has('SendSms_vocalls')).toBe(true);
+                expect(sb.RTDS_OPERATIONS.has('SendMail_vocalls')).toBe(true);
+                expect(sb.RTDS_EXIT_KEYS.has('SendSms_vocalls')).toBe(false);
+                expect(sb.RTDS_EXIT_KEYS.has('SendMail_vocalls')).toBe(false);
                 expect(typeof sb.executeSendSms).toBe('function');
                 expect(typeof sb.executeSendEmail).toBe('function');
             });
@@ -316,7 +317,7 @@ describe('rtds-runtime main.js', function () {
                 // GUI-exit op. runStep must await the promise and return the key.
                 var ops = [
                     { id: '1', type: 'AsyncProbe', name: 'a', isFirstOperation: true, params: { NextStep: '2' } },
-                    { id: '2', type: 'PlayPrompt', name: 'p', params: {} }
+                    { id: '2', type: 'PlayPrompt_vocalls', name: 'p', params: {} }
                 ];
                 sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
                 sb.registerRtdsOperation('AsyncProbe', function (op) {
@@ -356,7 +357,7 @@ describe('rtds-runtime main.js', function () {
                 // NextStep '2' (a GUI-exit op) rather than hard-disconnect.
                 var ops = [
                     { id: '1', type: 'Condition', name: 'c', isFirstOperation: true, params: { NextStep: '2' } },
-                    { id: '2', type: 'PlayPrompt', name: 'p', params: {} }
+                    { id: '2', type: 'PlayPrompt_vocalls', name: 'p', params: {} }
                 ];
                 sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
                 expect(sb.RTDS_REGISTRY.has('Condition')).toBe(false);
