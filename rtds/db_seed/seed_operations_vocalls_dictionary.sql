@@ -111,20 +111,22 @@ INSERT INTO @OperationType (Name) VALUES
     ('SendMail_vocalls'),
     ('SendSms_vocalls'),
     ('Disconnect_vocalls'),
+
+    /* ---- helpdesk-flow types (DA_HELDPESK + LPA_ICT_HELDPESK) ---- */
     ('Say_vocalls'),
     ('PlayAudio_vocalls'),
-    ('InternalTransfer_vocalls'),
+    ('Transfer_vocalls'),
+    ('QueueTransfer_vocalls'),
     ('ExternalTransfer_vocalls'),
-    /* ---- helpdesk-flow types (DA_HELDPESK + LPA_ICT_HELDPESK) ---- */
+
     ('PlayPrompt_vocalls'),
-    ('PlayAudio_vocalls'),
     ('PlayTts_vocalls'),
     ('Menu_vocalls'),
     ('WorkgroupTransfer_vocalls'),
-    ('ExternalTransfer_vocalls'),
+
     ('Condition_vocalls'),
     ('Emergency_vocalls'),
-    ('Schedule_vocalls'),
+    ('CheckSchedule_vocalls'),
     ('Callback_vocalls'),
     ('FlowJump_vocalls');
 
