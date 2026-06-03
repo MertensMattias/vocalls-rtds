@@ -1,7 +1,7 @@
 ---
 title: "feat: RTDS flow simulator (run production runtime, mock API + GUI handoffs)"
 type: feat
-status: active
+status: completed
 date: 2026-06-03
 origin: docs/brainstorms/rtds-flow-simulator-requirements.md
 ---
