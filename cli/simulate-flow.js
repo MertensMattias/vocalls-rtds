@@ -249,9 +249,10 @@ function extractSteps(captured, sandbox) {
     var steps = [];
     for (var i = 0; i < captured.lines.length; i++) {
         var m = captured.lines[i].message;
-        // Match the always-on '[RTDS] step' INFO summary, but NOT the DEBUG
-        // '[RTDS] step params' dump (which also contains the substring).
-        if (m.indexOf('[RTDS] step') === -1 || m.indexOf('[RTDS] step params') !== -1) {
+        // Match the always-on '[RTDS] step' INFO summary (one per dispatched
+        // op). The per-step config/var dump is a separate lowercase '[rtds]'
+        // line (see dumpRtdsState), so it won't collide with this uppercase tag.
+        if (m.indexOf('[RTDS] step') === -1) {
             continue;
         }
         var ctx = {};

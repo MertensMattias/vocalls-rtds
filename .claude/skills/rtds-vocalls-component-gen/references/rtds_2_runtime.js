@@ -123,22 +123,33 @@ function getRtdsRegistry() {
 }
 
 /**
- * Diagnostic dump of the RTDS dispatch layer: the routing-table header
- * fields parseFlow scattered onto context.session.variables, the registry
- * snapshot, the live dispatcher/handoff state vars, the endpoint globals
- * the runtime POSTs to, and the full operations list expanded out of the
- * RTDS_opIndex Map (which JSON.stringify cannot serialise on its own).
+ * Diagnostic dump of the RTDS dispatch layer. Two modes, both DEBUG-gated:
+ *
+ *   - Full mode (no argument): the routing-table header fields parseFlow
+ *     scattered onto context.session.variables, the registry snapshot, the live
+ *     dispatcher/handoff state vars, the endpoint globals, and the full
+ *     operations list expanded out of the RTDS_opIndex Map. Call from a Script
+ *     node AFTER fetchAndStart has resolved (the RTDS_* vars and opIndex only
+ *     exist post-parseFlow).
+ *
+ *   - Per-step mode (pass the op being dispatched): a compact block for one op
+ *     -- the routing-table header, the dispatcher state, the op's own config
+ *     (current.params, so JS-handled AND GUI ops both show config), and the
+ *     opIndex size. Skips the registry, endpoints, and full ops list (those are
+ *     constant across steps and would be noise per op). runStep calls this once
+ *     per dispatched op so the local DEBUG trace shows, step by step, exactly
+ *     what config each component / JS handler receives and how the RTDS_* vars
+ *     stand -- the same per-step view the flow simulator prints.
  *
  * Output goes through Logger.debug, so it only prints when activeLevel is
- * DEBUG. Call from a Script node AFTER fetchAndStart has resolved (the
- * RTDS_* vars and opIndex only exist post-parseFlow); the handoff vars
- * (RTDS_currentOpId / RTDS_nextStepId) only populate once runStep reaches a
- * GUI op. Env-layer config (varObj, Logger.config) is dumped separately by
+ * DEBUG. Env-layer config (varObj, Logger.config) is dumped separately by
  * Logger.dumpConfig (rtds_3_vocallsEnv.js).
  *
+ * @param {Object} [currentOp] - When provided, dump the compact per-step block
+ *                               for this op instead of the full state dump.
  * @returns {void}
  */
-function dumpRtdsState() {
+function dumpRtdsState(currentOp) {
   if (!Logger.shouldLog("DEBUG")) return;
   var v = context.session.variables || {};
 
@@ -150,16 +161,35 @@ function dumpRtdsState() {
     supportedLanguages: v.RTDS_supportedLanguages || null,
   });
 
-  Logger.debug(
-    "[rtds] registry | " + Logger.sanitizeForLog(getRtdsRegistry(), 4000),
-  );
-
   Logger.debug("[rtds] dispatcher state", {
     currentOpId: v.RTDS_currentOpId || null,
     currentOpType: v.RTDS_currentOpType || null,
     nextStepId: v.RTDS_nextStepId || null,
     error: v.RTDS_error || null,
   });
+
+  var idx = v.RTDS_opIndex;
+  var opCount = idx && typeof idx.forEach === "function" ? idx.size : 0;
+
+  // Per-step mode: dump THIS op's config (works for js + gui ops) and stop.
+  if (currentOp) {
+    Logger.debug(
+      "[rtds] step config | id=" +
+        currentOp.id +
+        " type=" +
+        currentOp.type +
+        " | opCount=" +
+        opCount +
+        " | " +
+        Logger.sanitizeForLog(currentOp.params, 10000),
+    );
+    return;
+  }
+
+  // Full mode: registry, endpoints, and the whole operations list.
+  Logger.debug(
+    "[rtds] registry | " + Logger.sanitizeForLog(getRtdsRegistry(), 4000),
+  );
 
   Logger.debug("[rtds] endpoints", {
     baseUrl: typeof _rtBaseUrl !== "undefined" ? _rtBaseUrl : null,
@@ -171,7 +201,6 @@ function dumpRtdsState() {
     mail: typeof _rtMailEndpoint !== "undefined" ? _rtMailEndpoint : null,
   });
 
-  var idx = v.RTDS_opIndex;
   if (idx && typeof idx.forEach === "function") {
     var ops = [];
     idx.forEach(function (op) {
@@ -517,21 +546,13 @@ function runStep(startOpId) {
       kind: entry ? entry.kind : "unregistered",
     });
 
-    // DEBUG-only per-cycle dump of the operation's full params object. The
-    // INFO line above is the always-on summary; this adds the raw config the
-    // handler will read. Logger.debug early-returns when activeLevel isn't
-    // DEBUG, so this is silent (and the sanitize cost is skipped) in normal
-    // runs -- see the shouldLog guard before paying for serialisation.
-    if (Logger.shouldLog("DEBUG")) {
-      Logger.debug(
-        "[RTDS] step params | id=" +
-          current.id +
-          " type=" +
-          type +
-          " | " +
-          Logger.sanitizeForLog(current.params, 10000),
-      );
-    }
+    // DEBUG-only per-step dump: the op's config (current.params, so JS-handled
+    // AND GUI ops show it) plus the routing-table header and live dispatcher
+    // state. The INFO line above is the always-on summary; this is the rich
+    // per-op view -- the same one the flow simulator prints. dumpRtdsState
+    // early-returns when activeLevel isn't DEBUG, so the serialisation cost is
+    // skipped (and the trace stays quiet) in normal runs.
+    dumpRtdsState(current);
 
     // Unregistered type -- no real handler exists for this Type yet. Rather
     // than fail the leg, skip to the op's NextStep with a warning so the
