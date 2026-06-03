@@ -3,7 +3,7 @@
 **Document type:** Technical specification
 **Scope:** JavaScript runtime layer for RTDS routing table execution inside Vocalls
 **Related files:**
-- The runtime helpers ([rtds_globalCodeAndHelpers.js](rtds_globalCodeAndHelpers.js) — bundled snapshot). See [runtime_pointer.md](runtime_pointer.md).
+- The runtime helpers ([rtds_3_vocallsEnv.js](rtds_3_vocallsEnv.js) — env/helpers/Logger) and the dispatch engine ([rtds_2_runtime.js](rtds_2_runtime.js)), bundled snapshots. See [runtime_pointer.md](runtime_pointer.md).
 - `routing_table_api.md` — API that delivers the JSON this runtime consumes
 - `NALLO_APP_rtds_schema.md` — database schema reference
 - `assembleRoutingTable.js` — DB-to-JSON assembler (reference for JSON shape)

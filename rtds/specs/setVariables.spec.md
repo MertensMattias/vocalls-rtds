@@ -107,11 +107,14 @@ Params object. No string coercion.
 controls the type by quoting (or not) in the Params JSON — the runtime never re-types a
 value.
 
-Only **string** values are processed: trimmed, and token placeholders resolved against
-the scope (the same `resolveTokens` substitution the other operations use). A resolved
-string **stays a string** — `"n=${count}"` → `"n=5"`, and even a fully-tokened
-`"${count}"` resolves to a string, never the number `5`. Booleans, numbers, null,
-arrays, and objects pass through untouched.
+Only **string** values are processed: trimmed, and `${name}` token placeholders
+resolved against the scope via `resolveConfigTokens` (varObj → global; unresolved
+placeholders are left raw and warned). This is the same `setupConfig` →
+`resolveConfigTokens` substitution the canvas component runs in its `init` node, so the
+JS twin and the GUI component resolve config identically. A resolved string **stays a
+string** — `"n=${count}"` → `"n=5"`, and even a fully-tokened `"${count}"` resolves to a
+string, never the number `5`. Booleans, numbers, null, arrays, and objects pass through
+untouched.
 
 `Active` is the one coercion: it is read as a strict Boolean (`true`/`false`).
 
@@ -119,29 +122,37 @@ arrays, and objects pass through untouched.
 
 Lives in [rtds_2_runtime.js](../../projects/rtds-runtime/globalLibraries/active/rtds_2_runtime.js).
 Same dispatch contract as the other JS handlers (returns `{ nextStepId }`; the
-dispatch model is out of scope for this spec and unchanged by it).
+dispatch model is out of scope for this spec and unchanged by it). It is the lockstep
+twin of the canvas component: it runs the component's exact two-node pipeline through
+the **same shared env-library functions** (`setupConfig`, `getValue`, `walk`,
+`setVariable`) — the same delegation pattern as `activeFlag` — so the GUI and JS paths
+can never diverge. `setupConfig` (the `init`-node twin) coerces `Active` via
+`activeFlag`, trims strings and resolves `${name}` via `resolveConfigTokens`, and
+preserves native types; the loop (the `script`-node twin) walks the non-control keys.
+NextStep falls back to `-1` when absent (matching the component).
 
 ```
 function executeSetVariables(op) {
-  var params = op.params;
-  if (!params) { return { nextStepId: null }; }
+  if (!op || !op.params) { return { nextStepId: -1 }; }
 
-  var CONTROL = { active: 1, nextstep: 1 };
+  var rtParams = setupConfig(op.params);   // init-node twin: shared config contract
 
-  var keys = Object.keys(params);
-  var written = 0;
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i];
-    if (CONTROL[String(key).toLowerCase()]) { continue; }
-
-    var raw = getParam(op, key, null);          // unwrap array form, keep native type
-    var value = (typeof raw === "string") ? resolveTokens(raw) : raw;  // strings only
-    setVariable(key, value);                    // dot-path write (below)
-    written++;
+  if (!getValue(rtParams, "Active", true)) {   // default-true skip
+    var skipNext = getValue(rtParams, "NextStep", -1);
+    Logger.info("[RTDS] SetVariables skipped -- inactive", { nextStep: skipNext });
+    return { nextStepId: skipNext };
   }
 
-  var nextStepId = resolveNextStep(op, null);
-  Logger.debug("[RTDS] SetVariables done", { opName: op.name, written: written, nextStep: nextStepId || "(none)" });
+  var CONTROL_KEYS = { Active: 1, NextStep: 1 };
+  var written = 0;
+  walk(rtParams, function (key, value) {       // script-node twin
+    if (CONTROL_KEYS[key]) return;
+    setVariable(key, value);                   // dot-path write (below)
+    written++;
+  });
+
+  var nextStepId = getValue(rtParams, "NextStep", -1);
+  Logger.debug("[RTDS] SetVariables done", { opName: op.name, count: written, nextStep: nextStepId });
   return { nextStepId: nextStepId };
 }
 ```

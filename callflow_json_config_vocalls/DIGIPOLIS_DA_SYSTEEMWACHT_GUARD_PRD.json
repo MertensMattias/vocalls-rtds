@@ -1,18 +1,18 @@
 {
-  "SourceId": "+3281800051",
-  "Name": "DIGIPOLIS - DA_SYSTEEMWACHT",
-  "ProjectId": "127",
-  "Project": "DA HELPDESK",
-  "PromptLibraryId": "",
-  "PromptLibrary": "DIGIPOLIS\\DA\\SYSTEEMWACHT",
-  "SupportedLanguages": "NL",
-  "Operations": [
+  "sourceId": "+3281800051",
+  "name": "DIGIPOLIS - DA_SYSTEEMWACHT",
+  "projectId": "127",
+  "project": "DA HELPDESK",
+  "promptLibraryId": "",
+  "promptLibrary": "DIGIPOLIS\\DA\\SYSTEEMWACHT",
+  "supportedLanguages": "NL",
+  "operations": [
     {
-      "Id": "00000",
-      "Type": "SetVariables_vocalls",
-      "Name": "Call Initialization",
-      "IsFirstOperation": true,
-      "Params": {
+      "id": "00000",
+      "type": "SetVariables_vocalls",
+      "name": "Call Initialization",
+      "isFirstOperation": true,
+      "params": {
         "Active": true,
         "RoutingId": "DA_SYSTEEMWACHT",
         "CustomerName": "DA",
@@ -23,10 +23,10 @@
       }
     },
     {
-      "Id": "00001",
-      "Type": "Guard_vocalls",
-      "Name": "DA_SYSTEEMWACHT",
-      "Params": {
+      "id": "00001",
+      "type": "Guard_vocalls",
+      "name": "DA_SYSTEEMWACHT",
+      "params": {
         "Active": true,
         "ConfigId": 2,
         "ConfigName": "SYSTEEMWACHT",
@@ -46,10 +46,10 @@
       }
     },
     {
-      "Id": "00002",
-      "Type": "SendMail_vocalls",
-      "Name": "Mail-To: DA_SYSTEEMWACHT",
-      "Params": {
+      "id": "00002",
+      "type": "SendMail_vocalls",
+      "name": "Mail-To: DA_SYSTEEMWACHT",
+      "params": {
         "Active": true,
         "Subject": "DA_SYSTEEMWACHT: Call Report",
         "From": "IVR_EVENTS@n-allo.be",
@@ -69,10 +69,10 @@
       }
     },
     {
-      "Id": "00003",
-      "Type": "SendSms_vocalls",
-      "Name": "SMS-To: DA_SYSTEEMWACHT",
-      "Params": {
+      "id": "00003",
+      "type": "SendSms_vocalls",
+      "name": "SMS-To: DA_SYSTEEMWACHT",
+      "params": {
         "Active": true,
         "SmsAccountId": 47,
         "Routing": "SYSTEEMWACHT",
@@ -86,10 +86,10 @@
       }
     },
     {
-      "Id": "00099",
-      "Type": "Disconnect_vocalls",
-      "Name": "RTDS: Disconnect",
-      "Params": {}
+      "id": "00099",
+      "type": "Disconnect_vocalls",
+      "name": "RTDS: Disconnect",
+      "params": {}
     }
   ]
 }

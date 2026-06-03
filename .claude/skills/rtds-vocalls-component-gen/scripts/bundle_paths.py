@@ -14,15 +14,8 @@ REPLACEMENTS = [
     # PROJECT_CONVENTIONS
     ("../../../../PROJECT_CONVENTIONS.md", "../PROJECT_CONVENTIONS.md"),
     ("../../../PROJECT_CONVENTIONS.md", "PROJECT_CONVENTIONS.md"),
-    # Runtime snapshots
-    (
-        "../../../../projects/demo/globalLibraries/active/rtds_globalCodeAndHelpers.js",
-        "rtds_globalCodeAndHelpers.js",
-    ),
-    (
-        "../projects/demo/globalLibraries/active/rtds_globalCodeAndHelpers.js",
-        "../references/rtds_globalCodeAndHelpers.js",
-    ),
+    # Runtime snapshots (split rtds-runtime trio; the retired single-file
+    # demo/rtds_globalCodeAndHelpers.js is no longer bundled)
     (
         "../projects/rtds-runtime/globalLibraries/active/rtds_3_vocallsEnv.js",
         "../references/rtds_3_vocallsEnv.js",

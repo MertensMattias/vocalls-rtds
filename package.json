@@ -17,6 +17,7 @@
   "scripts": {
     "init": "node cli/init.js",
     "simulate": "node cli/simulate.js",
+    "simulate:flow": "node cli/simulate-flow.js",
     "validate": "node cli/validate.js",
     "export": "node cli/export.js",
     "switch": "node cli/switch.js",

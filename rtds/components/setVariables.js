@@ -14,7 +14,7 @@
         <mxGeometry x="233.5" y="-220" width="168" height="80" as="geometry" />
       </mxCell>
     </object>
-    <object label="script" Type="script" OnEnter="" OnLeave="" DynamicNextId="" Code="if (!getValue(__rtParams, &#39;Active&#39;, true)) {&#xa;    Logger.info(&#39;[setVariables] skipped -- inactive&#39;, { nextStep: __rtNextStep });&#xa;    return;&#xa;}&#xa;&#xa;var __CONTROL_KEYS = { Active: 1, NextStep: 1 };&#xa;var __written = 0;&#xa;&#xa;walk(__rtParams, function (key, value) {&#xa;    if (__CONTROL_KEYS[key]) return;&#xa;    setVariable(key, value);&#xa;    __written++;&#xa;});&#xa;&#xa;global[_rtNextStep] = getValue(__rtParams, &#39;NextStep&#39;, -1);&#xa;Logger.info(&#39;[setVariables] wrote variables&#39;, { count: __written, nextStep: global[_rtNextStep] });" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="29">
+    <object label="script" Type="script" OnEnter="" OnLeave="" DynamicNextId="" Code="if (!getValue(__rtParams, &#39;Active&#39;, true)) {&#xa;    Logger.info(&#39;[setVariables] skipped -- inactive&#39;, { nextStep: __rtNextStep });&#xa;    return;&#xa;}&#xa;&#xa;var __CONTROL_KEYS = { Active: 1, NextStep: 1 };&#xa;var __written = 0;&#xa;&#xa;walk(__rtParams, function (key, value) {&#xa;    if (__CONTROL_KEYS[key]) return;&#xa;    setVariable(key, value);&#xa;    __written++;&#xa;});&#xa;&#xa;global[_rtNextStep] = getValue(__rtParams, &#39;NextStep&#39;, &#39;&#39;);&#xa;Logger.info(&#39;[setVariables] wrote variables&#39;, { count: __written, nextStep: global[_rtNextStep] });" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="29">
       <mxCell style="scriptNode" parent="baselayer" vertex="1">
         <mxGeometry x="233.5" y="-60" width="168" height="80" as="geometry" />
       </mxCell>

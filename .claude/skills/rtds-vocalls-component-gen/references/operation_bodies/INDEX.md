@@ -37,7 +37,7 @@ Does the operation call an HTTP endpoint?
         │
         Does it write Param values out to globals?
         ├── Yes → set_attributes.md
-        │         (covers SetAttributes and any setVariables-style
+        │         (covers SetVariables — formerly SetAttributes — and any
         │          attribute-projection operation)
         └── No
             │
@@ -63,7 +63,8 @@ Does the operation call an HTTP endpoint?
 | `Schedule`           | `http_call.md` (dynamic branch via `result.state`) |
 | `IVRLogging`         | `http_call.md` *or* `set_attributes.md` — depends on whether the logging endpoint is in scope. If logging is purely client-side, the pattern is `set_attributes.md` with one key (`Message`). |
 | `UpdateSourceId`     | `flow_jump.md` (variant — see file)                |
-| `SetAttributes`      | `set_attributes.md`       |
+| `SetVariables`       | `set_attributes.md` (canonical; supersedes `SetAttributes`) |
+| `SetAttributes`      | `set_attributes.md` (legacy alias — routes to the same `set_variables` exit) |
 | `Condition`          | `condition.md`            |
 | `CheckAttribute`     | `condition.md`            |
 | `FlowJump`           | `flow_jump.md`            |

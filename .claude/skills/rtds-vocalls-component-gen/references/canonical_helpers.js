@@ -29,8 +29,7 @@
 //     __rtParams, populated by __setupConfig(__configJSON).
 //   - __setupConfig returns a flat { Key: value } map (no __rt prefix).
 //   - Read fields via getValue(__rtParams, 'Key', default) — provided by the
-//     global helpers library (rtds_globalCodeAndHelpers.js). See
-//     runtime_pointer.md.
+//     runtime env library (rtds_3_vocallsEnv.js). See runtime_pointer.md.
 //
 // When emitting into the XML attribute, encode:
 //   '  -> &apos;     (preferred for JS strings)

@@ -1,15 +1,26 @@
 # Runtime helpers — pointer
 
-The bundled RTDS runtime-helper snapshot is
-[rtds_globalCodeAndHelpers.js](rtds_globalCodeAndHelpers.js). In **vocalls-rtds**,
-the live file is `projects/demo/globalLibraries/active/rtds_globalCodeAndHelpers.js`.
+The bundled RTDS runtime snapshots are the **split reference runtime** — load
+order 3 → 2 → 1:
 
-Read the snapshot (or live file) when you need the source of `Logger`,
-`getValue`, `walk`, `hasKey`, `findKey`, `applyDefaults`, `getValueOrFalsy`,
-`getOrDefault`, `nowUTC`, `isValidObject`, `getParam`, `resolveTokens`, etc.
+- [rtds_3_vocallsEnv.js](rtds_3_vocallsEnv.js) — env, `Logger`, and the
+  object-access / config helpers (`getValue`, `getValueOrFalsy`, `hasKey`,
+  `findKey`, `walk`, `applyDefaults`, `getOrDefault`, `nowUTC`, `isValidObject`,
+  `getScoped`, `activeFlag`, `resolveConfigTokens`, `extractParams`,
+  `setupConfig`).
+- [rtds_2_runtime.js](rtds_2_runtime.js) — the dispatch engine and `getParam`.
+- [rtds_1_globalConfig.js](rtds_1_globalConfig.js) — the `varObj` schema.
 
-Re-sync `references/rtds_globalCodeAndHelpers.js` from the vocalls-rtds repo when
-helper behaviour changes.
+In **vocalls-rtds**, the live files are
+`projects/rtds-runtime/globalLibraries/active/rtds_{3,2,1}_*.js`.
+
+> The old single-file `projects/demo/.../rtds_globalCodeAndHelpers.js` is the
+> **retired v1 runtime** (it still defines the superseded `resolveTokens`
+> `$(name)` helper and the `OP_VAR_PREFIX` splay, and has no `setupConfig`). It
+> is no longer bundled or referenced — read the split files above instead.
+
+Re-sync these snapshots from the vocalls-rtds repo when helper behaviour
+changes (`npm run build:skill`).
 
 ## What you need to know without reading the file
 
@@ -59,8 +70,12 @@ Every v2 component logs through `Logger`. Do not call `log_debug` /
   from an arbitrary object. Different role from `getValue`.
 - `nowUTC()` — ISO-8601 UTC timestamp. Used by HTTP payloads.
 - `getParam(op, name, fallback)` — walks an RTDS operation object's
-  `Params`. Used by the runtime, not by individual components.
-- `resolveTokens(value)` — expands `${var}` placeholders against globals.
-  Components do their own substitution inside `__setupConfig` (via
-  `String.replace`) — see [params.md](../conventions/params.md). Don't
-  call `resolveTokens` from a component.
+  `Params` (unwrapping the `[value, ...flags]` array form). Lives in
+  `rtds_2_runtime.js`; used by the runtime, not by individual components.
+- `resolveConfigTokens(raw, keyName)` — expands `${name}` placeholders against
+  `getScoped` (varObj first, then global; `String.replace` only). This is what
+  `setupConfig` / `__setupConfig` call per string value. A component gets this
+  substitution for free via `__setupConfig(__configJSON)` — don't call
+  `resolveConfigTokens` directly. See [params.md](../conventions/params.md).
+  (The old `resolveTokens(value)` `$(name)` helper was removed from the runtime —
+  do not use it.)

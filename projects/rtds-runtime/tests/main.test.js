@@ -210,6 +210,46 @@ describe('rtds-runtime main.js', function () {
             });
     });
 
+    it('uses "" (falsy end-of-flow), never -1, when NextStep is absent or blank', function () {
+        // The "no next step" sentinel is "" everywhere: "" is falsy, so runStep's
+        // if(!nextStepId) and resumeFrom's === "" guard both end the flow cleanly.
+        // -1 would be TRUTHY and get mistaken for a real step id. Applies to every
+        // handler that reads NextStep.
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+
+                // SetVariables: NextStep entirely absent.
+                var sv = sb.executeSetVariables({
+                    id: 'nv-1', type: 'SetVariables', name: 'nv',
+                    params: { SomeKey: 'x' }
+                });
+                expect(sv.nextStepId).toBe('');
+
+                // SetVariables: NextStep present but blank.
+                var svBlank = sb.executeSetVariables({
+                    id: 'nv-2', type: 'SetVariables', name: 'nv',
+                    params: { SomeKey: 'x', NextStep: '' }
+                });
+                expect(svBlank.nextStepId).toBe('');
+
+                // SendSms inactive with no NextStep -> "" (not -1).
+                var sms = sb.executeSendSms({
+                    id: 'nv-3', type: 'SendSMS', name: 'nv',
+                    params: { Active: false }
+                });
+                expect(sms.nextStepId).toBe('');
+
+                // SendEmail inactive with no NextStep -> "" (not -1).
+                var mail = sb.executeSendEmail({
+                    id: 'nv-4', type: 'SendEmail', name: 'nv',
+                    params: { Active: false }
+                });
+                expect(mail.nextStepId).toBe('');
+            });
+    });
+
     it('activeFlag coerces every Active encoding the dictionary emits', function () {
         return helpers
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
@@ -257,6 +297,19 @@ describe('rtds-runtime main.js', function () {
                 expect(sb.resolveConfigTokens('${tokMissing}', 'X')).toBe('${tokMissing}');
                 // No-placeholder strings and non-strings pass through.
                 expect(sb.resolveConfigTokens('plain', 'X')).toBe('plain');
+            });
+    });
+
+    it('the superseded $(name) resolveTokens helper has been removed', function () {
+        // resolveTokens ($(name) syntax) was replaced everywhere by setupConfig
+        // -> resolveConfigTokens (${name}). It had zero callers, so it must not
+        // linger as dead code on the runtime surface.
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                expect(result.sandbox.resolveTokens).toBeUndefined();
+                // The replacement is present.
+                expect(typeof result.sandbox.resolveConfigTokens).toBe('function');
             });
     });
 
