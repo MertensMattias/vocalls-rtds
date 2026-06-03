@@ -110,8 +110,10 @@ _rtPhonebookEndpoint = `/phonebookapi-${environment}`;
 
 // Master-layer global. GUI components write their chosen next-op id here before
 // the Re-Entry Script fires. resumeFrom reads: _rtNextStep || RTDS_nextStepId.
-// Initialized to {} (falsy for the || fallback).
-_rtNextStep = {};
+// Initialized to "" -- an empty string is falsy, so before any component writes
+// a real id the || fallback to RTDS_nextStepId fires, and resumeFrom("") hits
+// its end-of-flow guard. ({} would be truthy and break both.)
+_rtNextStep = "";
 
 // +==========================================================================+
 // | S3  ENTRY SCRIPT BODY -- paste exactly the lines below this banner into  |

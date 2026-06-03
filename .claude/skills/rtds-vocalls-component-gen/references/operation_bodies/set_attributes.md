@@ -1,9 +1,10 @@
-# Pattern: SetAttributes / setVariables-style
+# Pattern: SetVariables (formerly SetAttributes)
 
 Use for any Type whose work body's job is to **write Param values out to
-global variables**. The reference Type is `SetAttributes`. The same
-pattern applies if you build a `setVariables` component or any thin
-attribute-projection operation.
+global variables**. The reference Type is `SetVariables` — the canonical name
+that hard-cut and superseded `SetAttributes` (which now survives only as the
+`SetAttributes_vocalls` registry alias routing to the same `set_variables`
+exit). The same pattern applies to any thin attribute-projection operation.
 
 Logging discipline lives in [logging.md](../../conventions/logging.md).
 Two logs is enough: skip (info) and the terminal outcome (info).
@@ -53,6 +54,6 @@ Logger.info('[<componentName>] wrote attributes', { count: __written, nextStep: 
 ## Params
 
 Whatever the operator wants to set. There is no fixed schema — that's the
-point of `SetAttributes`. The runtime spec
+point of `SetVariables`. The runtime spec
 [`../RTDS_runtime_spec.md §3`](../RTDS_runtime_spec.md) covers how the
 written globals interact with the rest of the call.

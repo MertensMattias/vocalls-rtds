@@ -72,9 +72,9 @@ the canonical 4-node skeleton, live in
    (`Expression="myVar >= 2"`, `VariableValue="'someValue'"`). The
    `${name}` substitution machinery in `__setupConfig` does **not** run
    against primitive attributes.
-7. **No JS shim in the runtime.** `rtds_globalCodeAndHelpers.js` contains
-   no helpers for any primitive Type. The Vocalls engine dispatches them
-   directly.
+7. **No JS shim in the runtime.** The runtime env library
+   (`rtds_3_vocallsEnv.js`) contains no helpers for any primitive Type. The
+   Vocalls engine dispatches them directly.
 8. **Call-leg dependency.** `say` / `recognize` / `dtmf` / `number` /
    `redirect` interact with the active call leg (audio out, speech /
    DTMF in, redirect). They are undefined behaviour if the call has been

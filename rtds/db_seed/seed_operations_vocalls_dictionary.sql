@@ -110,7 +110,23 @@ INSERT INTO @OperationType (Name) VALUES
     ('GuardTUI_vocalls'),
     ('SendMail_vocalls'),
     ('SendSms_vocalls'),
-    ('Disconnect_vocalls');
+    ('Disconnect_vocalls'),
+    ('Say_vocalls'),
+    ('PlayAudio_vocalls'),
+    ('InternalTransfer_vocalls'),
+    ('ExternalTransfer_vocalls'),
+    /* ---- helpdesk-flow types (DA_HELDPESK + LPA_ICT_HELDPESK) ---- */
+    ('PlayPrompt_vocalls'),
+    ('PlayAudio_vocalls'),
+    ('PlayTts_vocalls'),
+    ('Menu_vocalls'),
+    ('WorkgroupTransfer_vocalls'),
+    ('ExternalTransfer_vocalls'),
+    ('Condition_vocalls'),
+    ('Emergency_vocalls'),
+    ('Schedule_vocalls'),
+    ('Callback_vocalls'),
+    ('FlowJump_vocalls');
 
 DECLARE @Attribute TABLE (
     OperationType  varchar(255)  NOT NULL,
@@ -219,9 +235,134 @@ INSERT INTO @Attribute
 
     /* ---- Disconnect ---- (ends the interaction)
        Params: {} in this contract -> no NextStep. Only the universal 'Active'
-       control flag is catalogued. Add 'Prompt' (+ 'ApplicationID') if your
-       Disconnect variant plays a prompt before hanging up.                       */
-    ('Disconnect_vocalls', 'Active',         'boolean', 0, 0, 1, 1);
+       control flag is catalogued by default. The helpdesk flows have a
+       prompt-playing disconnect variant (e.g. 'RTDS: MaxQueue Disconnect',
+       'RTDS: IVR Error'), so 'Prompt' and 'ApplicationId' are catalogued too.    */
+    ('Disconnect_vocalls', 'Active',         'boolean', 0, 0, 1, 1),
+    ('Disconnect_vocalls', 'Prompt',         'string',  0, 0, 1, 1),
+    ('Disconnect_vocalls', 'ApplicationId',  'integer', 0, 0, 1, 1),
+
+    /* ========================================================================
+       HELPDESK-FLOW TYPES  (DA_HELDPESK +3233387777, LPA_ICT_HELDPESK +3233389999)
+       ------------------------------------------------------------------------
+       Attribute names and DataTypes are factored from the legacy source params.
+       NOTE on 'ApplicationId': the importer special-cases a param literally
+       named 'Application' -> attribute 'ApplicationID' (resolved to an integer
+       id). The helpdesk flows instead use the literal key 'ApplicationId', so it
+       is catalogued here verbatim as a plain integer attribute (no resolution).
+       If you switch the flows to the resolving 'Application' form, drop these
+       'ApplicationId' rows and rely on the importer's built-in 'ApplicationID'.
+       NOTE on dynamic branch keys: 'Menu' uses per-choice 'NextStep_<digit>' and
+       'Schedule' uses 'NextStep_Guard_<name>'. The dictionary is exact-match, so
+       only the suffixes seen in these two flows are seeded. A new choice digit or
+       guard name needs a matching row or the import THROWs 54016 for that key.
+       Runtime status (rtds_2_runtime.js): PlayPrompt/PlayAudio/Menu/Workgroup-
+       Transfer/ExternalTransfer/Callback have GUI-exit keys registered;
+       Condition/Emergency/Schedule/FlowJump are NOT yet registered (runtime will
+       skip to NextStep). Cataloguing here unblocks the IMPORT; wiring the
+       unregistered four is separate work.
+       ======================================================================== */
+
+    /* ---- PlayPrompt ---- (TTS / prompt-library playback)                       */
+    ('PlayPrompt_vocalls', 'Active',         'boolean', 0, 0, 1, 1),
+    ('PlayPrompt_vocalls', 'ApplicationId',  'integer', 0, 0, 1, 1),
+    ('PlayPrompt_vocalls', 'Prompt',         'string',  1, 0, 1, 1),
+    ('PlayPrompt_vocalls', 'NextStep',       'string',  1, 1, 1, 1),
+
+    /* ---- PlayAudio ---- (named audio-source playback)                          */
+    ('PlayAudio_vocalls', 'Active',          'boolean', 0, 0, 1, 1),
+    ('PlayAudio_vocalls', 'AudioSource',     'string',  1, 0, 1, 1),
+    ('PlayAudio_vocalls', 'Timeout',         'integer', 0, 0, 1, 1),
+    ('PlayAudio_vocalls', 'NextStep',        'string',  1, 1, 1, 1),
+
+    /* ---- Menu ---- (DTMF menu; per-choice NextStep_<digit> branches)           */
+    ('Menu_vocalls', 'Active',                  'boolean', 0, 0, 1, 1),
+    ('Menu_vocalls', 'ApplicationId',           'integer', 0, 0, 1, 1),
+    ('Menu_vocalls', 'StaticPrompt',            'string',  0, 0, 1, 1),
+    ('Menu_vocalls', 'Timeout',                 'integer', 0, 0, 1, 1),
+    ('Menu_vocalls', 'MaxTries',                'integer', 0, 0, 1, 1),
+    ('Menu_vocalls', 'NextStep_0',              'string',  0, 1, 1, 1),
+    ('Menu_vocalls', 'NextStep_DefaultChoice',  'string',  0, 1, 1, 1),
+    ('Menu_vocalls', 'NextStep',                'string',  1, 1, 1, 1),
+
+    /* ---- WorkgroupTransfer ---- (queue to an ACD workgroup)                    */
+    ('WorkgroupTransfer_vocalls', 'Active',             'boolean', 0, 0, 1, 1),
+    ('WorkgroupTransfer_vocalls', 'QueueName',          'string',  1, 0, 1, 1),
+    ('WorkgroupTransfer_vocalls', 'Skills',             'string',  0, 0, 1, 1),
+    ('WorkgroupTransfer_vocalls', 'Priority',           'integer', 0, 0, 1, 1),
+    ('WorkgroupTransfer_vocalls', 'EscapeKey',          'integer', 0, 0, 1, 1),
+    ('WorkgroupTransfer_vocalls', 'NextStep_EscapeKey', 'string',  0, 1, 1, 1),
+    ('WorkgroupTransfer_vocalls', 'NextStep',           'string',  1, 1, 1, 1),
+
+    /* ---- ExternalTransfer ---- (transfer to an external phone number)          */
+    ('ExternalTransfer_vocalls', 'Active',              'boolean', 0, 0, 1, 1),
+    ('ExternalTransfer_vocalls', 'PhoneNumber',         'string',  1, 0, 1, 1),
+    ('ExternalTransfer_vocalls', 'OutboundANI',         'string',  0, 0, 1, 1),
+    ('ExternalTransfer_vocalls', 'PerformCallAnalysis', 'string',  0, 0, 1, 1),
+    ('ExternalTransfer_vocalls', 'DiversionReason',     'integer', 0, 0, 1, 1),
+    ('ExternalTransfer_vocalls', 'Timeout',             'integer', 0, 0, 1, 1),
+    ('ExternalTransfer_vocalls', 'NextStep_Busy',       'string',  0, 1, 1, 1),
+    ('ExternalTransfer_vocalls', 'NextStep_RNA',        'string',  0, 1, 1, 1),
+    ('ExternalTransfer_vocalls', 'NextStep',            'string',  1, 1, 1, 1),
+
+    /* ---- Condition ---- (branch on an ACD statistic; NOT yet runtime-wired)    */
+    ('Condition_vocalls', 'Active',          'boolean', 0, 0, 1, 1),
+    ('Condition_vocalls', 'Statistic',       'string',  1, 0, 1, 1),
+    ('Condition_vocalls', 'Workgroup',       'string',  1, 0, 1, 1),
+    ('Condition_vocalls', 'Operator',        'string',  1, 0, 1, 1),
+    ('Condition_vocalls', 'Value',           'string',  1, 0, 1, 1),
+    ('Condition_vocalls', 'NextStep_True',   'string',  1, 1, 1, 1),
+    ('Condition_vocalls', 'NextStep_False',  'string',  1, 1, 1, 1),
+
+    /* ---- Emergency ---- (emergency-prompt check; NOT yet runtime-wired)        */
+    ('Emergency_vocalls', 'Active',               'boolean', 0, 0, 1, 1),
+    ('Emergency_vocalls', 'EmergencyId',          'string',  1, 0, 1, 1),
+    ('Emergency_vocalls', 'NextStep_Transfer',    'string',  0, 1, 1, 1),
+    ('Emergency_vocalls', 'NextStep_Disconnect',  'string',  0, 1, 1, 1),
+    ('Emergency_vocalls', 'NextStep_Continue',    'string',  0, 1, 1, 1),
+    ('Emergency_vocalls', 'NextStep_Failure',     'string',  0, 1, 1, 1),
+    ('Emergency_vocalls', 'NextStep',             'string',  1, 1, 1, 1),
+
+    /* ---- Schedule ---- (open/closed/guard routing; NOT yet runtime-wired.
+       Component checkSchedule.js exists. Guard branches are per-flow:
+       Guard_ICT (LPA_ICT), Guard_Klantwacht/Guard_Systeemwacht (DA).)            */
+    ('Schedule_vocalls', 'Active',                       'boolean', 0, 0, 1, 1),
+    ('Schedule_vocalls', 'ApplicationId',                'integer', 0, 0, 1, 1),
+    ('Schedule_vocalls', 'ScheduleID',                   'integer', 1, 0, 1, 1),
+    ('Schedule_vocalls', 'NextStep_Open',                'string',  0, 1, 1, 1),
+    ('Schedule_vocalls', 'NextStep_Closed',              'string',  0, 1, 1, 1),
+    ('Schedule_vocalls', 'NextStep_Transfer',            'string',  0, 1, 1, 1),
+    ('Schedule_vocalls', 'NextStep_Guard_ICT',           'string',  0, 1, 1, 1),
+    ('Schedule_vocalls', 'NextStep_Guard_Klantwacht',    'string',  0, 1, 1, 1),
+    ('Schedule_vocalls', 'NextStep_Guard_Systeemwacht',  'string',  0, 1, 1, 1),
+    ('Schedule_vocalls', 'NextStep_Failure',             'string',  0, 1, 1, 1),
+    ('Schedule_vocalls', 'NextStep',                     'string',  1, 1, 1, 1),
+
+    /* ---- Callback ---- (queue callback; DA_HELDPESK only)                      */
+    ('Callback_vocalls', 'Active',               'boolean', 0, 0, 1, 1),
+    ('Callback_vocalls', 'ConfigId',             'integer', 1, 0, 1, 1),
+    ('Callback_vocalls', 'CallbackOnANI',        'integer', 0, 0, 1, 1),
+    ('Callback_vocalls', 'ANIConfirmation',      'integer', 0, 0, 1, 1),
+    ('Callback_vocalls', 'AllowManualInput',     'integer', 0, 0, 1, 1),
+    ('Callback_vocalls', 'ManualInputRetries',   'integer', 0, 0, 1, 1),
+    ('Callback_vocalls', 'LocationFilter',       'string',  0, 0, 1, 1),
+    ('Callback_vocalls', 'ANIClassifications',   'string',  0, 0, 1, 1),
+    ('Callback_vocalls', 'ANIAttribute',         'string',  0, 0, 1, 1),
+    ('Callback_vocalls', 'CustomSkills',         'string',  0, 0, 1, 1),
+    ('Callback_vocalls', 'InheritSkills',        'integer', 0, 0, 1, 1),
+    ('Callback_vocalls', 'CustomPriority',       'integer', 0, 0, 1, 1),
+    ('Callback_vocalls', 'InheritPriority',      'integer', 0, 0, 1, 1),
+    ('Callback_vocalls', 'PromptFolder',         'string',  0, 0, 1, 1),
+    ('Callback_vocalls', 'Workgroup',            'string',  0, 0, 1, 1),
+    ('Callback_vocalls', 'NextStep_Accepted',    'string',  0, 1, 1, 1),
+    ('Callback_vocalls', 'NextStep_Rejected',    'string',  0, 1, 1, 1),
+    ('Callback_vocalls', 'NextStep_Failure',     'string',  0, 1, 1, 1),
+    ('Callback_vocalls', 'NextStep',             'string',  1, 1, 1, 1),
+
+    /* ---- FlowJump ---- (jump to another routing table by SourceId; NOT yet
+       runtime-wired. Only the target SourceId is carried.)                       */
+    ('FlowJump_vocalls', 'Active',           'boolean', 0, 0, 1, 1),
+    ('FlowJump_vocalls', 'SourceId',         'string',  1, 0, 1, 1);
 
 /* ============================================================================
    SECTION 2 -- SEED THE DICTIONARY (no need to edit below this line)

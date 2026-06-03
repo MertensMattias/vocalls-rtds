@@ -1,6 +1,6 @@
 ---
 name: rtds-vocalls-component-gen
-description: Generate Vocalls Designer mxGraph XML for a v2 RTDS operation component (sendSms-shaped). Use when the user asks to build, scaffold, generate, or convert an RTDS operation into a Vocalls component; cites Types like SetAttributes, Condition, CheckAttribute, FlowJump, Emergency, Schedule, SendSMS, SendEmail, PlayPrompt, WorkgroupTransfer; references handler XML or existing components; or asks for sendSms/v2 conventions. Self-contained skill with bundled conventions — works outside vocalls-rtds.
+description: Generate Vocalls Designer mxGraph XML for a v2 RTDS operation component (sendSms-shaped). Use when the user asks to build, scaffold, generate, or convert an RTDS operation into a Vocalls component; cites Types like SetVariables (formerly SetAttributes), Condition, CheckAttribute, FlowJump, Emergency, Schedule, SendSMS, SendEmail, PlayPrompt, WorkgroupTransfer; references handler XML or existing components; or asks for sendSms/v2 conventions. Self-contained skill with bundled conventions — works outside vocalls-rtds.
 ---
 
 # RTDS Vocalls Component Generator (v2)
@@ -43,7 +43,7 @@ When WORKFLOW or this file disagrees with `conventions/`, **the convention is co
 | [references/operation_bodies/](references/operation_bodies/) | Work-body patterns |
 | [references/examples/](references/examples/) | sendSms, sendMail, composite refs |
 | [references/canonical_helpers.js](references/canonical_helpers.js) | Three master helpers |
-| [references/rtds_globalCodeAndHelpers.js](references/rtds_globalCodeAndHelpers.js) | Runtime helper snapshot |
+| [references/rtds_3_vocallsEnv.js](references/rtds_3_vocallsEnv.js) · [rtds_2_runtime.js](references/rtds_2_runtime.js) · [rtds_1_globalConfig.js](references/rtds_1_globalConfig.js) | Runtime snapshots (env/helpers · engine · varObj schema) |
 | [references/checklist.md](references/checklist.md) | Pre-delivery sweep |
 | [assets/template.xml](assets/template.xml) | mxGraph skeleton |
 | [scripts/](scripts/) | Layout + encoding |

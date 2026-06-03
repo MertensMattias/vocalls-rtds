@@ -117,7 +117,7 @@ DECLARE @JsonPayload nvarchar(max) = N'
         "DialGuard": true,
         "OutboundAni": "",
         "Diversion": "",
-        "OnHoldAudioUrl": "https://audio-${environment}.n-allo.be/on-hold.wav",
+        "OnHoldAudioUrl": "https://data.freetouse.com/music/tracks/60974ab4-afa7-211d-3ffc-09fdbaff8e58/file/mp3",
         "Timeout": 15,
         "RecordVoicemail": true,
         "AcceptCallMenu": true,

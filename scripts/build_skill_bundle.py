@@ -58,18 +58,22 @@ for comp in ("sendSms", "sendMail", "voicemaildetector"):
         (f"rtds/components/{comp}.js", f"references/examples/{comp}.js", False)
     )
 
-# Runtime snapshots (JS, no banner)
+# Runtime snapshots (JS, no banner) — the committed reference runtime is the
+# split rtds_3 (env/helpers/Logger) -> rtds_2 (dispatch engine, getParam) ->
+# rtds_1 (varObj schema) trio under projects/rtds-runtime/. The old single-file
+# projects/demo/rtds_globalCodeAndHelpers.js is the retired v1 runtime (still has
+# resolveTokens / OP_VAR_PREFIX splay, no setupConfig) and is NOT bundled.
 MANIFEST.append(
     (
-        "projects/demo/globalLibraries/active/rtds_globalCodeAndHelpers.js",
-        "references/rtds_globalCodeAndHelpers.js",
+        "projects/rtds-runtime/globalLibraries/active/rtds_3_vocallsEnv.js",
+        "references/rtds_3_vocallsEnv.js",
         False,
     )
 )
 MANIFEST.append(
     (
-        "projects/rtds-runtime/globalLibraries/active/rtds_3_vocallsEnv.js",
-        "references/rtds_3_vocallsEnv.js",
+        "projects/rtds-runtime/globalLibraries/active/rtds_2_runtime.js",
+        "references/rtds_2_runtime.js",
         False,
     )
 )
