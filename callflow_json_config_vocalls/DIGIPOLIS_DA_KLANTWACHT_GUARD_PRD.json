@@ -1,0 +1,95 @@
+{
+  "SourceId": "+3281800050",
+  "Name": "DIGIPOLIS - DA_KLANTWACHT",
+  "ProjectId": "127",
+  "Project": "DA HELPDESK",
+  "PromptLibraryId": "",
+  "PromptLibrary": "DIGIPOLIS\\DA\\KLANTWACHT",
+  "SupportedLanguages": "NL",
+  "Operations": [
+    {
+      "Id": "00000",
+      "Type": "SetVariables_vocalls",
+      "Name": "Call Initialization",
+      "IsFirstOperation": true,
+      "Params": {
+        "Active": true,
+        "RoutingId": "DA_KLANTWACHT",
+        "CustomerName": "DA",
+        "CustomerProject": "KLANTWACHT",
+        "IvrEvent": "9999",
+        "IvrAction": "CT",
+        "NextStep": "00001"
+      }
+    },
+    {
+      "Id": "00001",
+      "Type": "Guard_vocalls",
+      "Name": "DA_KLANTWACHT",
+      "Params": {
+        "Active": true,
+        "ConfigId": 1,
+        "ConfigName": "KLANTWACHT",
+        "DialGuard": true,
+        "OutboundAni": "",
+        "Diversion": "",
+        "OnHoldAudioUrl": "https://audio-${environment}.n-allo.be/on-hold.wav",
+        "Timeout": 15,
+        "RecordVoicemail": true,
+        "AcceptCallMenu": true,
+        "AcceptCallMessage": "Press 1 to accept the call.",
+        "SendSms": true,
+        "SendMail": true,
+        "NextStep_Success": "00002",
+        "NextStep_Failure": "00002",
+        "NextStep": "00002"
+      }
+    },
+    {
+      "Id": "00002",
+      "Type": "SendMail_vocalls",
+      "Name": "Mail-To: DA_KLANTWACHT",
+      "Params": {
+        "Active": true,
+        "Subject": "DA_KLANTWACHT: Call Report",
+        "From": "IVR_EVENTS@n-allo.be",
+        "To": "${rtEmailTo}",
+        "Cc": "mattias.mertens@n-allo.be;bart.dexelle@digipolis.be;erik.dujardin@digipolis.be;chrisje.henrard@digipolis.be",
+        "Bcc": "",
+        "Body": "${rtEmailBody}",
+        "Priority": 2,
+        "Files": "${rtEmailAttachment}",
+        "AttachmentNames": "",
+        "AttachmentData": "",
+        "CustomerKey": "",
+        "Timeout": 10000,
+        "NextStep_Success": "00003",
+        "NextStep_Failure": "00003",
+        "NextStep": "00003"
+      }
+    },
+    {
+      "Id": "00003",
+      "Type": "SendSms_vocalls",
+      "Name": "SMS-To: DA_KLANTWACHT",
+      "Params": {
+        "Active": true,
+        "SmsAccountId": 47,
+        "Routing": "KLANTWACHT",
+        "From": "8850",
+        "To": "${rtSmsTo}",
+        "Body": "${rtSmsBody}",
+        "Timeout": 5000,
+        "NextStep_Success": "00099",
+        "NextStep_Failure": "00099",
+        "NextStep": "00099"
+      }
+    },
+    {
+      "Id": "00099",
+      "Type": "Disconnect_vocalls",
+      "Name": "RTDS: Disconnect",
+      "Params": {}
+    }
+  ]
+}

@@ -1,10 +1,10 @@
 /* global context */
 
 /**
- * globalVariables.js — Vocalls Platform Variable Declarations
+ * globalVariables.js -- Vocalls Platform Variable Declarations
  *
  * Declare global variables used across the call flow.
- * ES5.1 compliant — use var.
+ * ES5.1 compliant -- use var.
  */
 
 environment = '';

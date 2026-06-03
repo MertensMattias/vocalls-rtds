@@ -1,0 +1,76 @@
+{
+  "SourceId": "+3271690039",
+  "Name": "DIGIPOLIS - DA_SYSTEEMWACHT_TUI",
+  "ProjectId": "127",
+  "Project": "DA HELPDESK",
+  "PromptLibraryId": "",
+  "PromptLibrary": "DIGIPOLIS\\DA\\SYSTEEMWACHT",
+  "SupportedLanguages": "NL",
+  "Operations": [
+    {
+      "Id": "00000",
+      "Type": "SetVariables_vocalls",
+      "Name": "Call Initialization",
+      "IsFirstOperation": true,
+      "Params": {
+        "Active": true,
+        "RoutingId": "DA_SYSTEEMWACHT_TUI",
+        "CustomerName": "DA",
+        "CustomerProject": "SYSTEEMWACHT",
+        "IvrEvent": "9999",
+        "IvrAction": "CT",
+        "NextStep": "00001"
+      }
+    },
+    {
+      "Id": "00001",
+      "Type": "GuardTUI_vocalls",
+      "Name": "DA_SYSTEEMWACHT_TUI",
+      "Params": {
+        "Active": true,
+        "ConfigId": 2,
+        "ConfigName": "SYSTEEMWACHT",
+        "PhoneNumberVar": "ani",
+        "Timeout": 10000,
+        "Prompt": "To activate this number, press 7. To deactivate this number, press 3.",
+        "ResultActivated": "Your number is successfully activated.",
+        "ResultDeactivated": "Your number is successfully deactivated.",
+        "ResultOnlyActive": "You are currently the only active member, therefore you are not able to deactivate yourself.",
+        "ResultDenied": "You are not allowed to use this service. If you disagree, contact your administrator. Thank you for calling.",
+        "ResultError": "We encountered a technical issue. Contact your administrator to report this issue.",
+        "NextStep_Success": "00098",
+        "NextStep_Denied": "00099",
+        "NextStep_Failure": "00099",
+        "NextStep": "00098"
+      }
+    },
+    {
+      "Id": "00098",
+      "Type": "SetVariables_vocalls",
+      "Name": "Set: Cognos Success",
+      "Params": {
+        "Active": true,
+        "IvrEvent": "1200",
+        "IvrAction": "CT",
+        "NextStep": "00100"
+      }
+    },
+    {
+      "Id": "00099",
+      "Type": "SetVariables_vocalls",
+      "Name": "Set: Cognos Failure",
+      "Params": {
+        "Active": true,
+        "IvrEvent": "9999",
+        "IvrAction": "DC",
+        "NextStep": "00100"
+      }
+    },
+    {
+      "Id": "00100",
+      "Type": "Disconnect_vocalls",
+      "Name": "RTDS: Disconnect",
+      "Params": {}
+    }
+  ]
+}

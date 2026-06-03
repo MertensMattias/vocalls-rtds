@@ -1,15 +1,15 @@
 /**
- * rtds_3_vocallsEnv.js — Vocalls runtime / environment library
+ * rtds_3_vocallsEnv.js -- Vocalls runtime / environment library
  *
  * Cross-cutting platform code that is NOT RTDS-specific. Every Vocalls
  * project (RTDS or not) needs this layer: the Logger, the object-access
  * helpers, the varObj initialiser, and the session-store hook.
  *
  * Loaded FIRST by reverse-alphabetical sort (filename starts with
- * `rtds_3_` — sorts highest in the `rtds_` family, so reverse-alpha picks
+ * `rtds_3_` -- sorts highest in the `rtds_` family, so reverse-alpha picks
  * it first). Sibling files in this project:
- *   - rtds_2_runtime.js      — RTDS dispatch (depends on Logger + getValue)
- *   - rtds_1_globalConfig.js — DEFAULT_LOGGED_KEYS + constVarObj (loaded last)
+ *   - rtds_2_runtime.js      -- RTDS dispatch (depends on Logger + getValue)
+ *   - rtds_1_globalConfig.js -- DEFAULT_LOGGED_KEYS + constVarObj (loaded last)
  *
  * Public surface (everything declared without var/let/const becomes global):
  *   - Object helpers: getOrDefault, isValidObject, getValue, getValueOrFalsy,
@@ -19,7 +19,7 @@
  *   - Logger: Logger.debug / info / warn / error / API / configure
  *   - Lifecycle: initializeCallFlowContext(mode), storeSessionVariables()
  *
- * ES5.1 — no let/const, no arrow functions. Template literals allowed.
+ * ES5.1 -- no let/const, no arrow functions. Template literals allowed.
  */
 
 // ============================================================================
@@ -118,7 +118,7 @@ function getValueOrFalsy(obj, key, defaultValue) {
  * true / false; string "1" / "true" -> true and "0" / "false" / "" -> false
  * (case-insensitive); an array form [value, ...flags] is unwrapped to its first
  * element first. Anything else (including an unresolved "${toggle}" placeholder)
- * is inactive — a config error fails closed (skip) rather than running an op
+ * is inactive -- a config error fails closed (skip) rather than running an op
  * with broken config. See conventions/params.md.
  *
  * This is the single Active-coercion contract. The JS twins (executeSetVariables
@@ -240,7 +240,7 @@ function getNestedValue(obj, path) {
  * Reads operator-set call-scoped data with the RTDS scope contract:
  * prefers varObj[key] (case-insensitive), falls back to exact-case
  * global[key], then returns defaultValue. This is the single read path for
- * attributes that SetAttributes / components write — see conventions/storage.md.
+ * attributes that SetAttributes / components write -- see conventions/storage.md.
  *
  * @param {string} key
  * @param {*}      defaultValue
@@ -271,12 +271,12 @@ function getScoped(key, defaultValue) {
 
 /**
  * Substitutes ${name} placeholders in a string using the RTDS scope contract
- * (getScoped: varObj first, then global). Bare identifiers only — ${\w+}; no
+ * (getScoped: varObj first, then global). Bare identifiers only -- ${\w+}; no
  * expressions, no dot-notation. A placeholder that resolves nowhere is left raw
  * and a warn is logged (silent "" substitution hides config typos). This is the
  * single token-resolution path shared by every component's __setupConfig and by
  * the runtime twins, so init-time token resolution can never diverge between a
- * GUI component and its JS handler. Uses String.replace, NOT new Function — the
+ * GUI component and its JS handler. Uses String.replace, NOT new Function -- the
  * Vocalls runtime disables string-eval.
  *
  * @param {string} raw    - The raw value possibly containing ${name} tokens.
@@ -289,7 +289,7 @@ function resolveConfigTokens(raw, keyName) {
   }
   // Sentinel no real stored value can equal, so getScoped's "absent" branch is
   // distinguishable from a legitimately stored null / empty / falsy value.
-  var MISSING = " __rtUnresolved ";
+  var MISSING = " __rtUnresolved ";
   return raw.replace(/\$\{(\w+)\}/g, function (match, name) {
     var sub = getScoped(name, MISSING);
     if (sub !== MISSING) {
@@ -312,7 +312,7 @@ function resolveConfigTokens(raw, keyName) {
  * Returns null when the first segment is NOT a recognised root keyword and is
  * NOT an already-reachable object. In that case setVariable falls back to
  * treating the whole path as nested under varObj (e.g. "auth.verified" ->
- * varObj.auth.verified) — see specs/setVariables.spec.md Target resolution.
+ * varObj.auth.verified) -- see specs/setVariables.spec.md Target resolution.
  * The runtime never auto-creates a brand-new root global (that would mint
  * undeclared globals and bypass the _rt* discipline, see conventions/storage.md).
  *
@@ -340,13 +340,13 @@ function resolveRoot(name) {
 
 /**
  * Write-side counterpart to getScoped. Writes value at a dot-separated path.
- * A bare key (no dot) targets varObj — the default call-scoped store. With a
+ * A bare key (no dot) targets varObj -- the default call-scoped store. With a
  * dot, the first segment is used as the root only when it names a recognised
  * root (varObj | globalThis | global | an already-reachable object); otherwise
  * the whole path is nested under varObj ("auth.verified" -> varObj.auth.verified).
  * Only an explicit "globalThis"/"global" naming a non-object scope is skipped
  * with a warning. Missing intermediate objects are auto-created (lodash-set
- * semantics). Path segments keep the operator's exact casing — no normalisation.
+ * semantics). Path segments keep the operator's exact casing -- no normalisation.
  * See specs/setVariables.spec.md and conventions/storage.md.
  *
  * @param {string} path  - Bare key or dot-separated target path.
@@ -365,7 +365,7 @@ function setVariable(path, value) {
     if (root) {
       startIndex = 1;
     } else {
-      // First segment is not a recognised root — treat the whole path as
+      // First segment is not a recognised root -- treat the whole path as
       // nested under varObj (the default call-scoped store).
       root = typeof varObj !== "undefined" ? varObj : null;
       startIndex = 0;
@@ -373,7 +373,7 @@ function setVariable(path, value) {
   }
 
   if (!root || typeof root !== "object") {
-    Logger.warn("[setVariable] unknown or non-object root — skipped", {
+    Logger.warn("[setVariable] unknown or non-object root -- skipped", {
       path: path,
       root: segments[0],
     });
@@ -710,7 +710,7 @@ Logger = {
   },
 
   /**
-   * Debug logging — local trace only.
+   * Debug logging -- local trace only.
    * @param {string} message
    * @param {Object} [ctx]
    */
@@ -725,7 +725,7 @@ Logger = {
   },
 
   /**
-   * Info logging — local trace; production-visible.
+   * Info logging -- local trace; production-visible.
    * @param {string} message
    * @param {Object} [ctx]
    */
@@ -740,7 +740,7 @@ Logger = {
   },
 
   /**
-   * Warning logging — local + posted to EventLog API.
+   * Warning logging -- local + posted to EventLog API.
    * @param {string} message
    * @param {Object} [ctx]
    */
@@ -763,7 +763,7 @@ Logger = {
   },
 
   /**
-   * Error logging — local + posted to EventLog API. Pass the caught error
+   * Error logging -- local + posted to EventLog API. Pass the caught error
    * as errorObj so Logger captures the stack.
    * @param {string} message
    * @param {Object} [ctx]
@@ -794,7 +794,7 @@ Logger = {
   },
 
   /**
-   * API-call logging — derives error vs success from status code.
+   * API-call logging -- derives error vs success from status code.
    * @param {string} message
    * @param {Object} ctx - endpoint, status, duration, etc.
    * @param {Error|Object} [errorObj]
@@ -907,7 +907,7 @@ Logger = {
    * Diagnostic dump of the env-layer config: the call-scoped varObj, the
    * Logger's own config, the DEFAULT_LOGGED_KEYS list, and the three
    * varObj.config.* sub-trees (routing / session / debug). Output goes
-   * through Logger.debug, so it only prints when activeLevel is DEBUG —
+   * through Logger.debug, so it only prints when activeLevel is DEBUG --
    * call Logger.configure({ activeLevel: 'DEBUG' }) first if needed.
    *
    * Call from a Script node AFTER initializeCallFlowContext has run, or
@@ -945,7 +945,7 @@ Logger = {
 // ============================================================================
 
 /**
- * initializeCallFlowContext — Vocalls flow init Script node.
+ * initializeCallFlowContext -- Vocalls flow init Script node.
  * Builds varObj from constVarObj() (see rtds_1_globalConfig.js) and syncs
  * essential globals. Handles the session-restore path when an earlier leg
  * already stashed a varObj on context.session.variables.varObj.

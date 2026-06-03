@@ -1,15 +1,15 @@
 /**
- * rtds_2_runtime.js — RTDS routing-table dispatch
+ * rtds_2_runtime.js -- RTDS routing-table dispatch
  *
  * Pure RTDS orchestration: fetch the routing table by sourceId, parse it,
  * loop through JS-handled operations inline, and hand GUI-exit operations
  * off to the canvas by mirroring Params into RTDS_OP_* session variables
  * and returning a Type-specific exit key.
  *
- * Loaded SECOND by reverse-alphabetical sort (filename `rtds_2_…` sits
+ * Loaded SECOND by reverse-alphabetical sort (filename `rtds_2_...` sits
  * between `rtds_3_vocallsEnv.js` and `rtds_1_globalConfig.js`). The
  * env file (loaded first) provides Logger, getValue, jsonHttpRequest's
- * presence guard, etc. The config file (loaded last) provides constVarObj —
+ * presence guard, etc. The config file (loaded last) provides constVarObj --
  * not consumed by this file, so the back-reference is fine.
  *
  * Contract
@@ -31,7 +31,7 @@
  *   log_debug, log_warn, log_error, jsonHttpRequest, _headers,
  *   _rtBaseUrl, _rtGetSourceIdEndpoint
  *
- * ES5.1 — no let/const, no arrow functions. Template literals allowed.
+ * ES5.1 -- no let/const, no arrow functions. Template literals allowed.
  */
 
 // ===========================================================================
@@ -40,7 +40,7 @@
 //
 // Every operation Type in the catalogue is registered here, either as:
 //   - 'js'  kind: a JS handler that runs inline and returns { nextStepId }.
-//           Only real implementations are registered — there are no mock
+//           Only real implementations are registered -- there are no mock
 //           advancers. A Type with no real handler yet stays unregistered,
 //           and runStep skips it to its NextStep with a warning.
 //   - 'gui' kind: a Vocalls GUI component reached via the matching exitKey.
@@ -59,7 +59,7 @@
  *   - `{ kind: 'gui', exitKey: string  }` for GUI-exit types
  *
  * Populated by registerRtdsOperation / registerRtdsExit at library init time.
- * Do not mutate directly — use the register* functions.
+ * Do not mutate directly -- use the register* functions.
  *
  * @type {Map<string, {kind: string, handler?: Function, exitKey?: string}>}
  */
@@ -109,7 +109,7 @@ function registerRtdsExit(type, exitKey) {
 
 /**
  * @returns {Object} Snapshot of the registry as a plain object, for tests
- *                   and diagnostics. Read-only — mutation does not propagate.
+ *                   and diagnostics. Read-only -- mutation does not propagate.
  */
 function getRtdsRegistry() {
   var out = {};
@@ -199,7 +199,9 @@ function buildOpIndex(operations) {
     var op = operations[i];
     if (!op || !op.id) {
       log_error(
-        "[RTDS] buildOpIndex: operation at index " + i + " has no id — skipped",
+        "[RTDS] buildOpIndex: operation at index " +
+          i +
+          " has no id -- skipped",
       );
       continue;
     }
@@ -253,7 +255,7 @@ function parseFlow(json) {
   // DEBUG-only init dump: the full routing table as received, the operation
   // count, and the resolved first step. Logger.debug early-returns when
   // activeLevel isn't DEBUG, so the full-table serialisation cost is skipped
-  // (and the trace stays quiet) in normal runs — guard before sanitising.
+  // (and the trace stays quiet) in normal runs -- guard before sanitising.
   if (Logger.shouldLog("DEBUG")) {
     Logger.debug(
       "[RTDS] init | opCount=" +
@@ -275,7 +277,7 @@ function parseFlow(json) {
 // getFirstOperation(operations)
 //   Returns the entry-point operation. If multiple carry
 //   isFirstOperation === true (valid for FlowJump scenarios), returns the
-//   lexicographically lowest id — zero-padded numeric ids sort correctly.
+//   lexicographically lowest id -- zero-padded numeric ids sort correctly.
 // ===========================================================================
 
 /**
@@ -307,7 +309,7 @@ function getFirstOperation(operations) {
 // getParam(op, name, fallback)
 //   Reads a single typed param value from op.params, unwrapping the array
 //   form [value, ...flags]. GUI-builder flags (isDisplayed, isEditable) are
-//   irrelevant at runtime — only v[0] is used. Native types preserved.
+//   irrelevant at runtime -- only v[0] is used. Native types preserved.
 // ===========================================================================
 
 /**
@@ -358,7 +360,7 @@ function getParam(op, name, fallback) {
 // ===========================================================================
 // resolveTokens(value)
 //   Replaces $(ATTR_NAME) tokens in a string with the current value. Operator
-//   attributes resolve through getScoped (varObj → global); an RTDS_* token
+//   attributes resolve through getScoped (varObj -> global); an RTDS_* token
 //   falls back to context.session.variables (the dispatcher namespace).
 //   Non-string values pass through unchanged. Unresolved tokens become "".
 // ===========================================================================
@@ -425,7 +427,7 @@ function resolveNextStep(op, resultKey) {
 // ===========================================================================
 // executeSetVariables(op)
 //   JS-handled operation (supersedes SetAttributes). Writes each non-control
-//   Param to its dot-path target via setVariable — a bare key lands on varObj
+//   Param to its dot-path target via setVariable -- a bare key lands on varObj
 //   (the call-scoped store, see conventions/storage.md), a dotted key targets
 //   varObj/globalThis/a named reachable object. Values keep their native JSON
 //   type; only strings are token-resolved. Control keys (Active, NextStep) are
@@ -444,10 +446,10 @@ function executeSetVariables(op) {
 
   // Active defaults to true for SetVariables: a large body of older config
   // never sets the key, and historically those ops always wrote. Only an
-  // explicit Active:false skips. (Send* ops default false — opt-in.)
+  // explicit Active:false skips. (Send* ops default false -- opt-in.)
   if (!activeFlag(getParam(op, "Active", true))) {
     var skipNext = resolveNextStep(op, null);
-    Logger.info("[RTDS] SetVariables skipped — inactive", {
+    Logger.info("[RTDS] SetVariables skipped -- inactive", {
       nextStep: skipNext ? skipNext : "(none)",
     });
     return { nextStepId: skipNext };
@@ -560,7 +562,7 @@ function runStep(startOpId) {
     // INFO line above is the always-on summary; this adds the raw config the
     // handler will read. Logger.debug early-returns when activeLevel isn't
     // DEBUG, so this is silent (and the sanitize cost is skipped) in normal
-    // runs — see the shouldLog guard before paying for serialisation.
+    // runs -- see the shouldLog guard before paying for serialisation.
     if (Logger.shouldLog("DEBUG")) {
       Logger.debug(
         "[RTDS] step params | id=" +
@@ -572,13 +574,13 @@ function runStep(startOpId) {
       );
     }
 
-    // Unregistered type — no real handler exists for this Type yet. Rather
+    // Unregistered type -- no real handler exists for this Type yet. Rather
     // than fail the leg, skip to the op's NextStep with a warning so the
     // flow keeps moving. When the type's handler is later implemented and
     // registered, this branch stops being taken.
     if (!entry) {
       var skipTo = resolveNextStep(current, null);
-      Logger.warn("[RTDS] unimplemented operation type — skipping", {
+      Logger.warn("[RTDS] unimplemented operation type -- skipping", {
         type: type,
         step: current.id,
         nextStep: skipTo,
@@ -609,7 +611,7 @@ function runStep(startOpId) {
         return "disconnect";
       }
 
-      // Async handler — returns a thenable resolving to { nextStepId }.
+      // Async handler -- returns a thenable resolving to { nextStepId }.
       // Chain off it and resume the loop from the resolved step. The whole
       // call to runStep then resolves to a promise of the exit key, exactly
       // like fetchAndStart does. Synchronous handlers fall through unchanged.
@@ -658,7 +660,7 @@ function runStep(startOpId) {
       return entry.exitKey;
     }
 
-    // Corrupted entry — neither 'js' nor 'gui'. Defensive fail.
+    // Corrupted entry -- neither 'js' nor 'gui'. Defensive fail.
     log_error(
       '[RTDS] runStep: registry entry for "' +
         type +
@@ -693,7 +695,7 @@ function resumeFrom(nextStepId) {
     nextStepId === "" ||
     nextStepId === -1
   ) {
-    log_warn("[RTDS] resumeFrom: no nextStepId — end of flow.");
+    log_warn("[RTDS] resumeFrom: no nextStepId -- end of flow.");
     return "disconnect";
   }
   Logger.info("[RTDS] resuming", { from: String(nextStepId) });
@@ -702,7 +704,7 @@ function resumeFrom(nextStepId) {
 
 // ===========================================================================
 // fetchAndStart(sourceId)
-//   Entry A — fetches the routing table for sourceId, parses it, and routes
+//   Entry A -- fetches the routing table for sourceId, parses it, and routes
 //   to the entry-point operation. Used by the initial Script node on every
 //   call. URL: _rtBaseUrl + _rtGetSourceIdEndpoint + '?sourceId=' + encodeURIComponent(sourceId).
 //   Both globals must be set by the platform-init layer before this runs.
@@ -801,7 +803,7 @@ function fetchAndStart(sourceId) {
 //   Async JS handlers. Each POSTs to the RTDS gateway and resolves to
 //   { nextStepId } once the gateway responds, so runStep can branch on the
 //   real outcome (Success / Failure). Ported from the GUI components
-//   rtds/components/sendSms.js and sendMail.js — same
+//   rtds/components/sendSms.js and sendMail.js -- same
 //   payload shape, same branch semantics, same Timeout default (10000 ms).
 //
 //   Branch contract (both):
@@ -899,7 +901,7 @@ function executeSendSms(op) {
   var skipNext = resolveNextStep(op, null);
 
   if (!activeFlag(getParam(op, "Active", false))) {
-    Logger.info("[RTDS] SendSMS skipped — inactive", { nextStep: skipNext });
+    Logger.info("[RTDS] SendSMS skipped -- inactive", { nextStep: skipNext });
     return { nextStepId: skipNext };
   }
 
@@ -971,7 +973,7 @@ function executeSendEmail(op) {
   var skipNext = resolveNextStep(op, null);
 
   if (!activeFlag(getParam(op, "Active", false))) {
-    Logger.info("[RTDS] SendEmail skipped — inactive", { nextStep: skipNext });
+    Logger.info("[RTDS] SendEmail skipped -- inactive", { nextStep: skipNext });
     return { nextStepId: skipNext };
   }
 
@@ -1060,7 +1062,7 @@ function executeSendEmail(op) {
 }
 
 // ===========================================================================
-// REGISTRATION — wires every catalogue Type into RTDS_REGISTRY.
+// REGISTRATION -- wires every catalogue Type into RTDS_REGISTRY.
 //
 // Only real handlers are registered. A Type with no real handler yet is left
 // unregistered; runStep skips it to its NextStep with a warning (see the
@@ -1070,22 +1072,24 @@ function executeSendEmail(op) {
 // The runtime loop is untouched in either case.
 // ===========================================================================
 
-// --- Real JS handlers ---
-// SetVariables writes operator variables to dot-path targets (varObj by
-// default). It supersedes the old SetAttributes Type via a hard cut — the
-// SetAttributes alias is intentionally NOT registered (see
-// specs/setVariables.spec.md Migration / Open questions). SendSMS / SendEmail
-// run inline as async JS handlers (POST to the RTDS gateway, branch on the
-// response) — same payload + branch contract as the canvas components in
-// rtds/components/. Condition / Emergency / Schedule /
-// FlowJump are NOT registered yet: they need real data sources wired in and
-// will be added back with correct implementations.
-registerRtdsOperation("SetVariables_vocalls", executeSetVariables);
-registerRtdsOperation("SetAttributes_vocalls", executeSetVariables);
-registerRtdsOperation("SendSms_vocalls", executeSendSms);
-registerRtdsOperation("SendMail_vocalls", executeSendEmail);
+// --- JS twins DISABLED ---
+// The inline JS handlers (executeSetVariables / executeSendSms /
+// executeSendEmail) are no longer registered. SetVariables / SendSms / SendMail
+// are now handled by their Vocalls canvas components (rtds/components/) via the
+// GUI-exit keys below, NOT inline in the runtime. The executeXxx functions are
+// kept defined above (dead code) so the twins can be re-enabled by restoring
+// the registerRtdsOperation lines. SetAttributes_vocalls is routed to the same
+// set_variables exit (the canvas setVariables.js handles both).
+     registerRtdsOperation("SetVariables_vocalls", executeSetVariables);
+//   registerRtdsOperation("SetAttributes_vocalls", executeSetVariables);
+//   registerRtdsOperation("SendSms_vocalls", executeSendSms);
+//   registerRtdsOperation("SendMail_vocalls", executeSendEmail);
 
-// --- GUI-exit Types — handled by Vocalls components on the canvas ---
+// --- GUI-exit Types -- handled by Vocalls components on the canvas ---
+registerRtdsExit("SetVariables_vocalls", "set_variables");
+registerRtdsExit("SetAttributes_vocalls", "set_variables");
+registerRtdsExit("SendSms_vocalls", "send_sms");
+registerRtdsExit("SendMail_vocalls", "send_mail");
 registerRtdsExit("WorkgroupTransfer_vocalls", "workgroup_transfer");
 registerRtdsExit("ExternalTransfer_vocalls", "external_transfer");
 registerRtdsExit("Menu_vocalls", "menu");

@@ -1,21 +1,21 @@
 /**
- * rtds_1_globalConfig.js — Project varObj schema + log keys
+ * rtds_1_globalConfig.js -- Project varObj schema + log keys
  *
  * The per-project shape file. Operators edit this when adding new
  * varObj fields or customising the default-log-keys list. Everything
  * machinery-ish lives in the other two libraries in this directory.
  *
- * Loaded LAST by reverse-alphabetical sort (filename `rtds_1_…` sorts
+ * Loaded LAST by reverse-alphabetical sort (filename `rtds_1_...` sorts
  * lowest in the `rtds_` family, so reverse-alpha picks it last). By the
  * time this file parses, getOrDefault is already defined; constVarObj is
  * called later at runtime by initializeCallFlowContext, when `context`
  * is also reachable.
  *
  * Public surface:
- *   - DEFAULT_LOGGED_KEYS — attribute names included in default log payloads.
- *   - constVarObj()       — returns a fresh varObj for new calls.
+ *   - DEFAULT_LOGGED_KEYS -- attribute names included in default log payloads.
+ *   - constVarObj()       -- returns a fresh varObj for new calls.
  *
- * ES5.1 — no let/const, no arrow functions.
+ * ES5.1 -- no let/const, no arrow functions.
  */
 
 // ============================================================================
@@ -33,7 +33,7 @@ DEFAULT_LOGGED_KEYS = [
 ];
 
 // ============================================================================
-// varObj schema — the call-scoped state object.
+// varObj schema -- the call-scoped state object.
 // initializeCallFlowContext calls this once per fresh call leg and copies the
 // result into the global `varObj`. Operators add fields here; downstream code
 // reads them via getValue / direct property access.

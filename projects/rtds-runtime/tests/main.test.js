@@ -90,10 +90,13 @@ describe('rtds-runtime main.js', function () {
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
             .then(function (result) {
                 expect(typeof result.sandbox.RTDS_OPERATIONS.get).toBe('function');
-                expect(result.sandbox.RTDS_OPERATIONS.has('SetVariables_vocalls')).toBe(true);
-                // SetAttributes_vocalls is an alias of executeSetVariables, kept for
-                // legacy routing tables; both register as JS handlers.
-                expect(result.sandbox.RTDS_OPERATIONS.has('SetAttributes_vocalls')).toBe(true);
+                // JS twins are disabled: SetVariables / SetAttributes are no
+                // longer inline JS handlers, they route to the set_variables
+                // GUI-exit (the canvas setVariables.js component).
+                expect(result.sandbox.RTDS_OPERATIONS.has('SetVariables_vocalls')).toBe(false);
+                expect(result.sandbox.RTDS_OPERATIONS.has('SetAttributes_vocalls')).toBe(false);
+                expect(result.sandbox.RTDS_EXIT_KEYS.get('SetVariables_vocalls')).toBe('set_variables');
+                expect(result.sandbox.RTDS_EXIT_KEYS.get('SetAttributes_vocalls')).toBe('set_variables');
                 expect(typeof result.sandbox.RTDS_EXIT_KEYS.get).toBe('function');
                 expect(result.sandbox.RTDS_EXIT_KEYS.get('PlayPrompt_vocalls')).toBe('play_prompt');
                 expect(result.sandbox.OP_VAR_PREFIX).toBeUndefined();
@@ -257,15 +260,18 @@ describe('rtds-runtime main.js', function () {
             });
     });
 
-    it('registers SendSMS / SendEmail as real JS handlers (not GUI-exit)', function () {
+    it('routes SendSMS / SendEmail to GUI-exit (JS twins disabled, functions still defined)', function () {
         return helpers
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
             .then(function (result) {
                 var sb = result.sandbox;
-                expect(sb.RTDS_OPERATIONS.has('SendSms_vocalls')).toBe(true);
-                expect(sb.RTDS_OPERATIONS.has('SendMail_vocalls')).toBe(true);
-                expect(sb.RTDS_EXIT_KEYS.has('SendSms_vocalls')).toBe(false);
-                expect(sb.RTDS_EXIT_KEYS.has('SendMail_vocalls')).toBe(false);
+                // Twins disabled: no longer registered as inline JS handlers.
+                expect(sb.RTDS_OPERATIONS.has('SendSms_vocalls')).toBe(false);
+                expect(sb.RTDS_OPERATIONS.has('SendMail_vocalls')).toBe(false);
+                // They now route to the canvas components via GUI-exit keys.
+                expect(sb.RTDS_EXIT_KEYS.get('SendSms_vocalls')).toBe('send_sms');
+                expect(sb.RTDS_EXIT_KEYS.get('SendMail_vocalls')).toBe('send_mail');
+                // The executeXxx functions remain defined (dead code, re-enableable).
                 expect(typeof sb.executeSendSms).toBe('function');
                 expect(typeof sb.executeSendEmail).toBe('function');
             });
