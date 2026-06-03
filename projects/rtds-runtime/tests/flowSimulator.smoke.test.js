@@ -70,13 +70,38 @@ describe('flow simulator — real GuardTui flow end-to-end (covers AE2, AE4)', f
             .then(function (result) {
                 // Ordered steps: every dispatched op id, in order, exactly once each.
                 var ids = result.steps.map(function (s) {
-                    var m = s.match(/"id":"(\d+)"/);
-                    return m ? m[1] : null;
+                    return s.id;
                 });
                 expect(ids).toEqual(['00000', '00001', '00098', '00100']);
 
+                // Each step carries the config (params) fed to its component/handler.
+                var guardStep = result.steps.filter(function (s) {
+                    return s.type === 'GuardTui_vocalls';
+                })[0];
+                expect(guardStep).toBeTruthy();
+                expect(guardStep.config).toBeTruthy();
+                expect(guardStep.config.ConfigId).toBe(3);
+                expect(guardStep.config.NextStep_Success).toBe('00098');
+
                 // No error-level logs on a clean run.
                 expect(result.errors).toHaveLength(0);
+            });
+    });
+
+    it('snapshots RTDS_* vars per GUI handoff (currentOpId/Config/nextStep)', function () {
+        return simulateFlow
+            .runFlow({ flowPath: REAL_FLOW, silent: true })
+            .then(function (result) {
+                var guardHandoff = result.handoffs.filter(function (h) {
+                    return h.opType === 'GuardTui_vocalls';
+                })[0];
+                expect(guardHandoff.rtdsVars).toBeTruthy();
+                expect(guardHandoff.rtdsVars.RTDS_currentOpId).toBe('00001');
+                expect(guardHandoff.rtdsVars.RTDS_currentOpType).toBe('GuardTui_vocalls');
+                // The config mirrored into the session for the component handoff.
+                expect(guardHandoff.rtdsVars.RTDS_currentOpConfig.ConfigId).toBe(3);
+                expect(guardHandoff.rtdsVars.RTDS_nextStepId).toBe('00098');
+                expect(guardHandoff.rtdsVars.RTDS_sourceId).toBe('+3271690041');
             });
     });
 

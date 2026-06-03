@@ -194,19 +194,87 @@ function installLogCapture(sandbox, captured, silent) {
     sandbox.log_error = sink('error', console.error);
 }
 
+// The RTDS_* session vars the runtime reads/writes during the dispatch loop.
+// RTDS_opIndex is a Map (summarised as a count, never dumped raw).
+var RTDS_VAR_KEYS = [
+    'RTDS_sourceId',
+    'RTDS_name',
+    'RTDS_project',
+    'RTDS_promptLibrary',
+    'RTDS_supportedLanguages',
+    'RTDS_currentOpId',
+    'RTDS_currentOpType',
+    'RTDS_currentOpConfig',
+    'RTDS_nextStepId',
+    'RTDS_error',
+];
+
 /**
- * Pull the ordered step list out of the captured INFO lines. The runtime emits
- * one '[RTDS] step' line per dispatched op via Logger.info -> log_debug.
+ * Snapshot the RTDS_* session variables in use. opIndex is reported as a count;
+ * everything else is copied by value (objects shallow-cloned so a later mutation
+ * of context.session.variables doesn't rewrite an earlier snapshot).
+ *
+ * @param {Object} sandbox
+ * @returns {Object} plain { RTDS_sourceId, ..., RTDS_opIndexCount }
  */
-function extractSteps(captured) {
+function snapshotRtdsVars(sandbox) {
+    var vars = (sandbox.context && sandbox.context.session && sandbox.context.session.variables) || {};
+    var snap = {};
+    for (var i = 0; i < RTDS_VAR_KEYS.length; i++) {
+        var k = RTDS_VAR_KEYS[i];
+        var v = vars[k];
+        // RTDS_currentOpConfig is the op.params object handed to the component —
+        // shallow-clone so the snapshot is frozen at this step.
+        snap[k] = v && typeof v === 'object' ? JSON.parse(JSON.stringify(v)) : v;
+    }
+    var idx = vars.RTDS_opIndex;
+    snap.RTDS_opIndexCount = idx && typeof idx.forEach === 'function' ? idx.size : 0;
+    return snap;
+}
+
+/**
+ * Pull the ordered list of dispatched ops out of the captured log lines. The
+ * runtime emits one '[RTDS] step' INFO line per dispatched op (id/type/name/
+ * kind in its JSON context). We enrich each with the op's config (params) read
+ * from the opIndex on the session, so the summary shows exactly what config was
+ * fed to each component / JS handler.
+ *
+ * @param {Object} captured
+ * @param {Object} sandbox - for opIndex lookup (config per step).
+ * @returns {Array<{id, type, name, kind, config}>}
+ */
+function extractSteps(captured, sandbox) {
+    var vars = (sandbox && sandbox.context && sandbox.context.session && sandbox.context.session.variables) || {};
+    var opIndex = vars.RTDS_opIndex;
     var steps = [];
     for (var i = 0; i < captured.lines.length; i++) {
         var m = captured.lines[i].message;
         // Match the always-on '[RTDS] step' INFO summary, but NOT the DEBUG
         // '[RTDS] step params' dump (which also contains the substring).
-        if (m.indexOf('[RTDS] step') !== -1 && m.indexOf('[RTDS] step params') === -1) {
-            steps.push(m);
+        if (m.indexOf('[RTDS] step') === -1 || m.indexOf('[RTDS] step params') !== -1) {
+            continue;
         }
+        var ctx = {};
+        var brace = m.indexOf('{');
+        if (brace !== -1) {
+            try {
+                ctx = JSON.parse(m.slice(brace));
+            } catch (e) {
+                ctx = {};
+            }
+        }
+        var config = null;
+        if (opIndex && typeof opIndex.get === 'function' && ctx.id != null) {
+            var op = opIndex.get(String(ctx.id));
+            if (op) config = op.params || {};
+        }
+        steps.push({
+            id: ctx.id,
+            type: ctx.type,
+            name: ctx.name,
+            kind: ctx.kind,
+            config: config,
+        });
     }
     return steps;
 }
@@ -260,12 +328,14 @@ function autoAdvance(sandbox, firstExitKey, maxSteps, handoffs) {
             return Promise.resolve('disconnect');
         }
 
-        // Record the GUI handoff the production prepareGuiHandoff just set up.
+        // Record the GUI handoff the production prepareGuiHandoff just set up,
+        // with a snapshot of the RTDS_* vars as they stand at this step.
         handoffs.push({
             exitKey: exitKey,
             opId: vars.RTDS_currentOpId,
             opType: vars.RTDS_currentOpType,
             nextStepId: vars.RTDS_nextStepId,
+            rtdsVars: snapshotRtdsVars(sandbox),
         });
 
         // A GUI op with no default NextStep is end-of-flow (see above). Stop
@@ -285,9 +355,34 @@ function autoAdvance(sandbox, firstExitKey, maxSteps, handoffs) {
     return step(firstExitKey, 0);
 }
 
+/** Render a value compactly for the trace (objects as JSON, scalars with type). */
+function renderValue(v) {
+    if (v === undefined) return '(unset)';
+    if (v === null) return '(null)';
+    if (typeof v === 'object') return JSON.stringify(v);
+    return String(v) + ' (' + typeof v + ')';
+}
+
+/** Render an RTDS_* var snapshot as indented lines under a step. */
+function printRtdsVars(snap, indent) {
+    for (var i = 0; i < RTDS_VAR_KEYS.length; i++) {
+        var k = RTDS_VAR_KEYS[i];
+        if (snap[k] === undefined) continue; // skip vars not set yet
+        console.log(indent + k + ' = ' + renderValue(snap[k]));
+    }
+    console.log(indent + 'RTDS_opIndexCount = ' + snap.RTDS_opIndexCount);
+}
+
 /** Print the end-of-run trace (R7). */
 function printTrace(sandbox, captured, handoffs, finalExitKey, httpCalls) {
-    var steps = extractSteps(captured);
+    var steps = extractSteps(captured, sandbox);
+
+    // Index handoff var-snapshots by opId so each step can show the RTDS_* vars
+    // as they stood when that op dispatched.
+    var snapByOpId = {};
+    handoffs.forEach(function (h) {
+        if (h.opId != null) snapByOpId[String(h.opId)] = h.rtdsVars;
+    });
 
     console.log('\n========== RTDS FLOW SIMULATION TRACE ==========');
 
@@ -296,7 +391,21 @@ function printTrace(sandbox, captured, handoffs, finalExitKey, httpCalls) {
         console.log('  (none — flow did not dispatch any op)');
     } else {
         steps.forEach(function (s) {
-            console.log('  ' + s);
+            console.log(
+                '  [' + s.id + '] ' + s.type + ' "' + s.name + '" (' + s.kind + ')'
+            );
+            // Config fed to the component / JS handler for this op.
+            if (s.config && Object.keys(s.config).length > 0) {
+                console.log('      config: ' + JSON.stringify(s.config));
+            } else if (s.config) {
+                console.log('      config: {} (no params)');
+            }
+            // RTDS_* vars as they stood when this op dispatched (handoff steps).
+            var snap = snapByOpId[String(s.id)];
+            if (snap) {
+                console.log('      RTDS vars:');
+                printRtdsVars(snap, '        ');
+            }
         });
     }
 
@@ -310,6 +419,9 @@ function printTrace(sandbox, captured, handoffs, finalExitKey, httpCalls) {
             );
         });
     }
+
+    console.log('\nRTDS session variables (final):');
+    printRtdsVars(snapshotRtdsVars(sandbox), '  ');
 
     console.log('\nHTTP calls (' + httpCalls.length + '):');
     httpCalls.forEach(function (c) {
@@ -450,7 +562,7 @@ function runFlowImpl(runOpts) {
         .then(function (finalExitKey) {
             return {
                 finalExitKey: finalExitKey,
-                steps: extractSteps(captured),
+                steps: extractSteps(captured, sandbox),
                 handoffs: handoffs,
                 httpCalls: http.calls,
                 errors: captured.errors,
