@@ -16,7 +16,9 @@
  *           Nothing in the runtime is re-implemented or mocked.
  *   - HTTP boundary: jsonHttpRequest is replaced with a Vocalls-shaped mock
  *           (core/flowSimHttp) — { success, statusCode, response }. The chosen
- *           flow file IS the routing-table response (via core/flowAdapter).
+ *           flow file IS the routing-table response. Flow files are authored in
+ *           the runtime-native shape (camelCase sourceId/operations/id/type/
+ *           params), so they are served straight to fetchAndStart — no adapter.
  *   - GUI boundary: at a GUI-exit key the handoff is recorded and the flow
  *           auto-advances on the op's default NextStep (RTDS_nextStepId set by
  *           the production prepareGuiHandoff), calling the real resumeFrom().
@@ -42,10 +44,30 @@ var fs = require('fs');
 var path = require('path');
 var vocallsContext = require('../vocalls_session_init/vocallsContext');
 var loader = require('../core/loader');
-var flowAdapter = require('../core/flowAdapter');
 var makeFlowSimHttp = require('../core/flowSimHttp');
 
 var DEFAULT_MAX_STEPS = 100;
+
+/**
+ * Fail loud on a structurally malformed flow rather than letting the runtime's
+ * parseFlow log an error and disconnect silently. Flow files are runtime-native
+ * (camelCase `operations` array); the runtime reads them directly. We only
+ * assert the envelope is well-formed enough to dispatch — parseFlow owns the
+ * deeper checks (entry point, per-op shape).
+ *
+ * @param {Object} flow
+ * @throws {Error} when flow is not an object or has no non-empty operations array.
+ */
+function validateFlow(flow) {
+    if (!flow || typeof flow !== 'object') {
+        throw new Error('simulate-flow: flow file is not a JSON object');
+    }
+    if (!Array.isArray(flow.operations) || flow.operations.length === 0) {
+        throw new Error(
+            'simulate-flow: flow has no non-empty "operations" array — is it the runtime-native (camelCase) shape?'
+        );
+    }
+}
 
 function ensureProjectRoot() {
     var cwd = process.cwd();
@@ -97,7 +119,9 @@ function parseArgs() {
                 break;
             case '--max-steps':
             case '--maxSteps':
-                options.maxSteps = parseInt(args[++i], 10) || DEFAULT_MAX_STEPS;
+                // Explicit parse — `|| DEFAULT` would turn a valid 0 into 100.
+                var parsedMax = parseInt(args[++i], 10);
+                options.maxSteps = isNaN(parsedMax) ? DEFAULT_MAX_STEPS : parsedMax;
                 break;
             case '--fixture':
                 var spec = args[++i] || '';
@@ -201,6 +225,30 @@ function autoAdvance(sandbox, firstExitKey, maxSteps, handoffs) {
         return !key || key === 'disconnect';
     }
 
+    /**
+     * Does the GUI op the runtime just handed off from have a real default
+     * NextStep? If not, it is end-of-flow: in production the component would
+     * write _rtNextStep = -1 and resumeFrom(-1) would disconnect cleanly. We
+     * mock at the exit-key boundary, so the component never runs — instead we
+     * read the op's own default NextStep (the same resolveNextStep the runtime
+     * uses) to decide. Without this, prepareGuiHandoff leaves RTDS_nextStepId
+     * stale (it only writes when a default exists, rtds_2_runtime.js), and we
+     * would resume on a stale id and loop until the max-step cap.
+     */
+    function guiOpHasDefaultNext() {
+        var opIndex = vars.RTDS_opIndex;
+        var opId = vars.RTDS_currentOpId;
+        if (!opIndex || typeof opIndex.get !== 'function' || opId == null) {
+            return false;
+        }
+        var op = opIndex.get(String(opId));
+        if (!op) {
+            return false;
+        }
+        var next = sandbox.resolveNextStep(op, null);
+        return !!next;
+    }
+
     function step(exitKey, count) {
         if (isTerminal(exitKey)) {
             return Promise.resolve(exitKey);
@@ -219,6 +267,12 @@ function autoAdvance(sandbox, firstExitKey, maxSteps, handoffs) {
             opType: vars.RTDS_currentOpType,
             nextStepId: vars.RTDS_nextStepId,
         });
+
+        // A GUI op with no default NextStep is end-of-flow (see above). Stop
+        // cleanly — do NOT resume on the stale RTDS_nextStepId.
+        if (!guiOpHasDefaultNext()) {
+            return Promise.resolve('disconnect');
+        }
 
         var nextStepId = vars.RTDS_nextStepId;
         // Real production re-entry — no op re-parsing, uses the runtime's own
@@ -290,7 +344,7 @@ function printTrace(sandbox, captured, handoffs, finalExitKey, httpCalls) {
  * the integration path is exercised in-process without spawning the CLI.
  *
  * @param {Object} runOpts
- * @param {string} runOpts.flowPath - path to the authoring-format flow file.
+ * @param {string} runOpts.flowPath - path to the runtime-native flow file.
  * @param {string} [runOpts.project='rtds-runtime']
  * @param {string} [runOpts.env]
  * @param {string} [runOpts.language]
@@ -299,11 +353,11 @@ function printTrace(sandbox, captured, handoffs, finalExitKey, httpCalls) {
  * @param {boolean} [runOpts.silent] - suppress live console output (capture only).
  * @returns {Promise<{ finalExitKey, steps, handoffs, httpCalls, errors, varObj, sandbox }>}
  *          Always a promise — a synchronous failure (missing file, malformed
- *          flow that adaptFlow rejects) surfaces as a rejection, never a throw.
+ *          flow that validateFlow rejects) surfaces as a rejection, not a throw.
  */
 function runFlow(runOpts) {
-    // Funnel synchronous failures (file read, adaptFlow's loud throw) into the
-    // returned promise so callers have one error channel.
+    // Funnel synchronous failures (file read, validateFlow's loud throw) into
+    // the returned promise so callers have one error channel.
     try {
         return runFlowImpl(runOpts);
     } catch (err) {
@@ -314,7 +368,9 @@ function runFlow(runOpts) {
 function runFlowImpl(runOpts) {
     runOpts = runOpts || {};
     var projectName = runOpts.project || 'rtds-runtime';
-    var maxSteps = runOpts.maxSteps || DEFAULT_MAX_STEPS;
+    // A caller-supplied 0 is a valid "do not auto-advance" cap — only fall back
+    // to the default when maxSteps is genuinely absent (not falsy-zero).
+    var maxSteps = runOpts.maxSteps == null ? DEFAULT_MAX_STEPS : runOpts.maxSteps;
 
     var absFlowPath = path.isAbsolute(runOpts.flowPath)
         ? runOpts.flowPath
@@ -323,12 +379,12 @@ function runFlowImpl(runOpts) {
         return Promise.reject(new Error('Flow file not found: ' + absFlowPath));
     }
 
-    var raw = JSON.parse(fs.readFileSync(absFlowPath, 'utf8'));
-
-    // adaptFlow throws loudly on malformed input (R5). Let it propagate.
-    var adaptedFlow = flowAdapter.adaptFlow(raw, {
-        logger: runOpts.silent ? function () {} : console.log,
-    });
+    // Flow files are authored in the runtime-native shape (camelCase
+    // sourceId/operations/id/type/params); the runtime's parseFlow reads them
+    // directly — no envelope adapter. We still fail loud on a structurally
+    // malformed flow rather than letting parseFlow log + disconnect silently.
+    var flow = JSON.parse(fs.readFileSync(absFlowPath, 'utf8'));
+    validateFlow(flow);
 
     var resolvedEnv = (runOpts.env || 'acc').toLowerCase();
     var resolvedLanguage = runOpts.language ? String(runOpts.language).toUpperCase() : null;
@@ -354,7 +410,7 @@ function runFlowImpl(runOpts) {
 
     // RTDS_sourceId resolves from context.phone (main.js S3). Point it at the
     // flow's own sourceId so fetchAndStart requests THIS flow's routing table.
-    sandbox.context.phone = String(adaptedFlow.sourceId || '');
+    sandbox.context.phone = String(flow.sourceId || '');
 
     // main.js reads global _apiResult; VM throws ReferenceError if unset.
     if (sandbox._apiResult === undefined) {
@@ -364,7 +420,7 @@ function runFlowImpl(runOpts) {
 
     // --- Boundary 1: the HTTP mock (Vocalls shape). The flow IS the routing
     //     table; other endpoints fall to fixtures or a generic success. ---
-    var http = makeFlowSimHttp({ adaptedFlow: adaptedFlow, fixtures: runOpts.fixtures || {} });
+    var http = makeFlowSimHttp({ flow: flow, fixtures: runOpts.fixtures || {} });
     sandbox.jsonHttpRequest = http.jsonHttpRequest;
     sandbox.httpRequest = http.jsonHttpRequest;
 
@@ -419,7 +475,7 @@ function main() {
     console.log('===================');
     console.log('Flow:', options.flowPath);
     console.log('Project:', options.project);
-    console.log('Env:', options.env || '(project default)');
+    console.log('Env:', options.env || 'acc (default)');
     if (options.language) console.log('Language:', options.language);
     console.log('Max steps:', options.maxSteps);
     console.log('');

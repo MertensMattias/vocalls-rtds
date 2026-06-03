@@ -109,13 +109,13 @@ describe('flow simulator — real GuardTui flow end-to-end (covers AE2, AE4)', f
 
 describe('flow simulator — error surfacing', function () {
     it('surfaces a runtime error distinctly and reflects failure', function () {
-        // Operations present but none flagged IsFirstOperation -> production
+        // operations present but none flagged isFirstOperation -> production
         // getFirstOperation calls log_error and parseFlow returns null, so
         // fetchAndStart disconnects with an RTDS error logged.
         var flowPath = writeTempFlow({
-            SourceId: '+3200000000',
-            Operations: [
-                { Id: '00000', Type: 'SetVariables_vocalls', Name: 'no-entry', Params: { NextStep: '' } },
+            sourceId: '+3200000000',
+            operations: [
+                { id: '00000', type: 'SetVariables_vocalls', name: 'no-entry', params: { NextStep: '' } },
             ],
         });
         return simulateFlow.runFlow({ flowPath: flowPath, silent: true }).then(function (result) {
@@ -125,15 +125,15 @@ describe('flow simulator — error surfacing', function () {
         });
     });
 
-    it('throws loudly (adapter) on a malformed flow with no Operations', function () {
-        var flowPath = writeTempFlow({ SourceId: 'X' });
+    it('rejects loudly on a malformed flow with no operations array', function () {
+        var flowPath = writeTempFlow({ sourceId: 'X' });
         return simulateFlow
             .runFlow({ flowPath: flowPath, silent: true })
             .then(function () {
                 throw new Error('expected runFlow to reject on malformed flow');
             })
             .catch(function (err) {
-                expect(err.message).toMatch(/Operations is missing/);
+                expect(err.message).toMatch(/no non-empty "operations" array/);
             });
     });
 });
@@ -145,10 +145,10 @@ describe('flow simulator — max-step cap', function () {
         // the cycle would auto-advance forever — the simulator's max-step cap
         // is what halts it.
         var flowPath = writeTempFlow({
-            SourceId: '+3200000001',
-            Operations: [
-                { Id: '00000', Type: 'PlayPrompt_vocalls', Name: 'a', IsFirstOperation: true, Params: { NextStep: '00001' } },
-                { Id: '00001', Type: 'PlayPrompt_vocalls', Name: 'b', Params: { NextStep: '00000' } },
+            sourceId: '+3200000001',
+            operations: [
+                { id: '00000', type: 'PlayPrompt_vocalls', name: 'a', isFirstOperation: true, params: { NextStep: '00001' } },
+                { id: '00001', type: 'PlayPrompt_vocalls', name: 'b', params: { NextStep: '00000' } },
             ],
         });
         return simulateFlow
@@ -162,6 +162,36 @@ describe('flow simulator — max-step cap', function () {
                 });
                 expect(capHit).toBe(true);
                 expect(result.handoffs.length).toBeLessThanOrEqual(5);
+            });
+    });
+});
+
+describe('flow simulator — terminal GUI op with no NextStep', function () {
+    it('ends cleanly (no error, no cap) at a non-Disconnect GUI op with no NextStep', function () {
+        // A final GUI-exit op (PlayPrompt) with no NextStep is end-of-flow. In
+        // production the component writes _rtNextStep = -1; here prepareGuiHandoff
+        // leaves RTDS_nextStepId stale (it only writes when a default exists), so
+        // a naive resume would loop on the stale id until the cap. The simulator
+        // detects the missing default NextStep and stops cleanly instead.
+        var flowPath = writeTempFlow({
+            sourceId: '+3200000002',
+            operations: [
+                { id: '00000', type: 'SetVariables_vocalls', name: 'init', isFirstOperation: true, params: { NextStep: '00001' } },
+                { id: '00001', type: 'PlayPrompt_vocalls', name: 'bye', params: { Prompt: 'goodbye' } },
+            ],
+        });
+        return simulateFlow
+            .runFlow({ flowPath: flowPath, silent: true, maxSteps: 10 })
+            .then(function (result) {
+                expect(result.finalExitKey).toBe('disconnect');
+                // Clean stop: no max-step cap error, no other errors.
+                expect(result.errors).toHaveLength(0);
+                // The terminal PlayPrompt handoff was recorded exactly once
+                // (not looped) before the clean stop.
+                var playHandoffs = result.handoffs.filter(function (h) {
+                    return h.opType === 'PlayPrompt_vocalls';
+                });
+                expect(playHandoffs.length).toBe(1);
             });
     });
 });

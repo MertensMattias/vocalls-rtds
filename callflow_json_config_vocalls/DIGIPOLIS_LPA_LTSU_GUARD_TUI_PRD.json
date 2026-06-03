@@ -1,18 +1,18 @@
 {
-  "SourceId": "+3271690038",
-  "Name": "DIGIPOLIS - LPA_LTSU_GUARD_TUI",
-  "ProjectId": "",
-  "Project": "LPA ICT",
-  "PromptLibraryId": "",
-  "PromptLibrary": "DIGIPOLIS\\LPA\\LTSU",
-  "SupportedLanguages": "NL",
-  "Operations": [
+  "sourceId": "+3271690038",
+  "name": "DIGIPOLIS - LPA_LTSU_GUARD_TUI",
+  "projectId": "",
+  "project": "LPA ICT",
+  "promptLibraryId": "",
+  "promptLibrary": "DIGIPOLIS\\LPA\\LTSU",
+  "supportedLanguages": "NL",
+  "operations": [
     {
-      "Id": "00000",
-      "Type": "SetVariables_vocalls",
-      "Name": "Call Initialization",
-      "IsFirstOperation": true,
-      "Params": {
+      "id": "00000",
+      "type": "SetVariables_vocalls",
+      "name": "Call Initialization",
+      "isFirstOperation": true,
+      "params": {
         "Active": true,
         "RoutingId": "LPA_LTSU_GUARD_TUI",
         "CustomerName": "LPA",
@@ -23,10 +23,10 @@
       }
     },
     {
-      "Id": "00001",
-      "Type": "GuardTui_vocalls",
-      "Name": "LPA_LTSU_GUARD_TUI",
-      "Params": {
+      "id": "00001",
+      "type": "GuardTui_vocalls",
+      "name": "LPA_LTSU_GUARD_TUI",
+      "params": {
         "Active": true,
         "ConfigId": 4,
         "ConfigName": "LPA_LTSU_GUARD",
@@ -45,10 +45,10 @@
       }
     },
     {
-      "Id": "00098",
-      "Type": "SetVariables_vocalls",
-      "Name": "Set: Cognos Success",
-      "Params": {
+      "id": "00098",
+      "type": "SetVariables_vocalls",
+      "name": "Set: Cognos Success",
+      "params": {
         "Active": true,
         "IvrEvent": "1200",
         "IvrAction": "CT",
@@ -56,10 +56,10 @@
       }
     },
     {
-      "Id": "00099",
-      "Type": "SetVariables_vocalls",
-      "Name": "Set: Cognos Failure",
-      "Params": {
+      "id": "00099",
+      "type": "SetVariables_vocalls",
+      "name": "Set: Cognos Failure",
+      "params": {
         "Active": true,
         "IvrEvent": "9999",
         "IvrAction": "DC",
@@ -67,10 +67,10 @@
       }
     },
     {
-      "Id": "00100",
-      "Type": "Disconnect_vocalls",
-      "Name": "RTDS: Disconnect",
-      "Params": {}
+      "id": "00100",
+      "type": "Disconnect_vocalls",
+      "name": "RTDS: Disconnect",
+      "params": {}
     }
   ]
 }

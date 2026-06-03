@@ -12,8 +12,10 @@
  *
  * Boundary behaviour (the only two things mocked are API + GUI handoffs):
  *   - Routing-table fetch  (url contains 'routing-table/source')
- *       → { success:true, statusCode:200, response: adaptedFlow }
- *     The chosen flow file IS the routing-table mock.
+ *       → { success:true, statusCode:200, response: flow }
+ *     The chosen flow file IS the routing-table mock. Flow files are authored in
+ *     the runtime-native shape (camelCase sourceId/operations/id/type/params),
+ *     so the flow object is served straight to fetchAndStart — no conversion.
  *   - EventLog / logging   (url contains 'EventLog')
  *       → { success:true, statusCode:200 }   (no body needed)
  *   - Any other endpoint   → a per-URL fixture if one was supplied (substring
@@ -29,7 +31,7 @@
  *
  * Usage:
  *   var makeFlowSimHttp = require('../core/flowSimHttp');
- *   var mock = makeFlowSimHttp({ adaptedFlow: flow, fixtures: { '/sms': {...} } });
+ *   var mock = makeFlowSimHttp({ flow: runtimeFlow, fixtures: { '/sms': {...} } });
  *   sandbox.jsonHttpRequest = mock.jsonHttpRequest;
  *   sandbox.httpRequest = mock.jsonHttpRequest;
  *   // after the run: mock.calls -> [{ url, method }, ...]
@@ -65,16 +67,16 @@ function makeThenable(value) {
  * Resolve a URL to its Vocalls-shaped response.
  *
  * @param {string} url
- * @param {Object} adaptedFlow - runtime-shape flow served for the routing table.
+ * @param {Object} flow - runtime-native flow served for the routing-table fetch.
  * @param {Object} fixtures - map of URL-substring → response body or full envelope.
  * @returns {Object} Vocalls-shaped { success, statusCode, response? }
  */
-function resolveResponse(url, adaptedFlow, fixtures) {
+function resolveResponse(url, flow, fixtures) {
     var u = String(url || '');
 
     // The chosen flow file IS the routing-table mock.
     if (u.indexOf('routing-table/source') !== -1) {
-        return { success: true, statusCode: 200, response: adaptedFlow };
+        return { success: true, statusCode: 200, response: flow };
     }
 
     // Logging endpoint — acknowledged, no body consumed by the runtime.
@@ -107,14 +109,14 @@ function resolveResponse(url, adaptedFlow, fixtures) {
  * Build a Vocalls-shaped jsonHttpRequest mock.
  *
  * @param {Object} options
- * @param {Object} options.adaptedFlow - runtime-shape flow (from flowAdapter)
- *        served for the routing-table fetch.
+ * @param {Object} options.flow - runtime-native flow served for the
+ *        routing-table fetch.
  * @param {Object} [options.fixtures] - map of URL-substring → response.
  * @returns {{ jsonHttpRequest: Function, calls: Array<{url:string,method:string}> }}
  */
 function makeFlowSimHttp(options) {
     options = options || {};
-    var adaptedFlow = options.adaptedFlow;
+    var flow = options.flow;
     var fixtures = options.fixtures || {};
     var calls = [];
 
@@ -127,7 +129,7 @@ function makeFlowSimHttp(options) {
     function jsonHttpRequest(url, opts /*, headers, body */) {
         var method = (opts && opts.method) || 'GET';
         calls.push({ url: String(url || ''), method: method });
-        var value = resolveResponse(url, adaptedFlow, fixtures);
+        var value = resolveResponse(url, flow, fixtures);
         return makeThenable(value);
     }
 
