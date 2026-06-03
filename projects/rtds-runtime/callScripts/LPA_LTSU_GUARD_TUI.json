@@ -22,7 +22,7 @@
     },
     {
       "Id": "00001",
-      "Type": "GuardTUI_vocalls",
+      "Type": "GuardTui_vocalls",
       "Name": "LPA_ICT_GUARD",
       "Params": {
         "Active": true,

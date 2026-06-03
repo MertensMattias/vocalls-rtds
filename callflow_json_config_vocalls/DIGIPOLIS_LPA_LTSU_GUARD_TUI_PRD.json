@@ -24,7 +24,7 @@
     },
     {
       "Id": "00001",
-      "Type": "GuardTUI_vocalls",
+      "Type": "GuardTui_vocalls",
       "Name": "LPA_LTSU_GUARD_TUI",
       "Params": {
         "Active": true,

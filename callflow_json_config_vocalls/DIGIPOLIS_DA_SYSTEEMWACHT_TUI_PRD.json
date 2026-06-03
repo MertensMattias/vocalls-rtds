@@ -24,7 +24,7 @@
     },
     {
       "Id": "00001",
-      "Type": "GuardTUI_vocalls",
+      "Type": "GuardTui_vocalls",
       "Name": "DA_SYSTEEMWACHT_TUI",
       "Params": {
         "Active": true,

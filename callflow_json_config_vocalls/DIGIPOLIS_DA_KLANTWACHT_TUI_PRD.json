@@ -24,7 +24,7 @@
     },
     {
       "Id": "00001",
-      "Type": "GuardTUI_vocalls",
+      "Type": "GuardTui_vocalls",
       "Name": "DA_KLANTWACHT_TUI",
       "Params": {
         "Active": true,

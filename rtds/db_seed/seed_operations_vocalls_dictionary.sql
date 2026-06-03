@@ -9,7 +9,7 @@
 
        SetVariables_vocalls   -- session-variable writer (replaces SetAttributes)
        Guard_vocalls          -- guard / on-call dial-out
-       GuardTUI_vocalls       -- self-service guard activate/deactivate line
+       GuardTui_vocalls       -- self-service guard activate/deactivate line
        SendMail_vocalls       -- mail dispatch
        SendSms_vocalls        -- SMS dispatch
        Disconnect_vocalls     -- end the interaction
@@ -107,7 +107,7 @@ DECLARE @OperationType TABLE (Name varchar(255) NOT NULL PRIMARY KEY);
 INSERT INTO @OperationType (Name) VALUES
     ('SetVariables_vocalls'),
     ('Guard_vocalls'),
-    ('GuardTUI_vocalls'),
+    ('GuardTui_vocalls'),
     ('SendMail_vocalls'),
     ('SendSms_vocalls'),
     ('Disconnect_vocalls'),
@@ -184,21 +184,21 @@ INSERT INTO @Attribute
        + say nodes). The six spoken slots (Prompt, Result*) are plain text params
        here; multi-language via TtsMessages is deferred. ConfigName is carried for
        parity with the flow header but is not consumed by the component.          */
-    ('GuardTUI_vocalls', 'Active',             'boolean', 0, 0, 1, 1),
-    ('GuardTUI_vocalls', 'ConfigId',           'integer', 1, 0, 1, 1),
-    ('GuardTUI_vocalls', 'ConfigName',         'string',  0, 0, 1, 1),
-    ('GuardTUI_vocalls', 'PhoneNumberVar',     'string',  0, 0, 1, 1),
-    ('GuardTUI_vocalls', 'Timeout',            'integer', 0, 0, 1, 1),
-    ('GuardTUI_vocalls', 'Prompt',             'string',  1, 0, 1, 1),
-    ('GuardTUI_vocalls', 'ResultActivated',    'string',  1, 0, 1, 1),
-    ('GuardTUI_vocalls', 'ResultDeactivated',  'string',  1, 0, 1, 1),
-    ('GuardTUI_vocalls', 'ResultOnlyActive',   'string',  1, 0, 1, 1),
-    ('GuardTUI_vocalls', 'ResultDenied',       'string',  1, 0, 1, 1),
-    ('GuardTUI_vocalls', 'ResultError',        'string',  1, 0, 1, 1),
-    ('GuardTUI_vocalls', 'NextStep',           'string',  1, 1, 1, 1),
-    ('GuardTUI_vocalls', 'NextStep_Success',   'string',  1, 1, 1, 1),
-    ('GuardTUI_vocalls', 'NextStep_Denied',    'string',  1, 1, 1, 1),
-    ('GuardTUI_vocalls', 'NextStep_Failure',   'string',  1, 1, 1, 1),
+    ('GuardTui_vocalls', 'Active',             'boolean', 0, 0, 1, 1),
+    ('GuardTui_vocalls', 'ConfigId',           'integer', 1, 0, 1, 1),
+    ('GuardTui_vocalls', 'ConfigName',         'string',  0, 0, 1, 1),
+    ('GuardTui_vocalls', 'PhoneNumberVar',     'string',  0, 0, 1, 1),
+    ('GuardTui_vocalls', 'Timeout',            'integer', 0, 0, 1, 1),
+    ('GuardTui_vocalls', 'Prompt',             'string',  1, 0, 1, 1),
+    ('GuardTui_vocalls', 'ResultActivated',    'string',  1, 0, 1, 1),
+    ('GuardTui_vocalls', 'ResultDeactivated',  'string',  1, 0, 1, 1),
+    ('GuardTui_vocalls', 'ResultOnlyActive',   'string',  1, 0, 1, 1),
+    ('GuardTui_vocalls', 'ResultDenied',       'string',  1, 0, 1, 1),
+    ('GuardTui_vocalls', 'ResultError',        'string',  1, 0, 1, 1),
+    ('GuardTui_vocalls', 'NextStep',           'string',  1, 1, 1, 1),
+    ('GuardTui_vocalls', 'NextStep_Success',   'string',  1, 1, 1, 1),
+    ('GuardTui_vocalls', 'NextStep_Denied',    'string',  1, 1, 1, 1),
+    ('GuardTui_vocalls', 'NextStep_Failure',   'string',  1, 1, 1, 1),
 
     /* ---- SendMail ---- (mail dispatch)
        Cc / Bcc : semicolon lists; Priority 1 high / 2 normal / 3 low;
@@ -437,6 +437,6 @@ SELECT  ot.Name                              AS OperationType,
 FROM    rtds.Dic_OperationType ot
 JOIN    rtds.Dic_Attribute     da ON da.DicOperationTypeID = ot.DicOperationTypeID
 JOIN    rtds.Dic_AttributeType at ON at.DicAttributeTypeID = da.DicAttributeTypeID
-WHERE   ot.Name IN ('SetVariables_vocalls', 'Guard_vocalls', 'GuardTUI_vocalls', 'SendMail_vocalls', 'SendSms_vocalls', 'Disconnect_vocalls')
+WHERE   ot.Name IN ('SetVariables_vocalls', 'Guard_vocalls', 'GuardTui_vocalls', 'SendMail_vocalls', 'SendSms_vocalls', 'Disconnect_vocalls')
 ORDER BY ot.Name, da.IsNext, da.Name;
 */
