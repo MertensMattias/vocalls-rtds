@@ -471,7 +471,7 @@ Style B and out of scope.
 <object
   label="output"
   Type="transient"
-  OnEnter="Logger.info(&apos;[&lt;componentName&gt;] exit&apos;, { nextStep: __rtNextStep });"
+  OnEnter="global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1);&#xa;Logger.info(&apos;[&lt;componentName&gt;] exit&apos;, { outcome: __rtOutcome, nextStep: global[_rtNextStep] });"
   OnLeave=""
   MaxEntryCount=""
   MaxEntryNodeId=""

@@ -7,25 +7,32 @@ network call and no GUI handoff — just session-variable surgery.
 
 Logging discipline lives in [logging.md](../../conventions/logging.md).
 
+**`__rtOutcome` staging.** The work body stages an outcome KEY into the
+local `__rtOutcome` (plain `=`, the literal Params key name); the output
+node (id=6 OnEnter) resolves it to `global[_rtNextStep]` once with
+`global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1);`. Init
+pre-stages `__rtOutcome = 'NextStep_Failure';`, which the missing-SourceId
+guard leaves in place; the success path stages `'NextStep'`.
+
 ## Skeleton
 
 ```js
 if (!getValue(__rtParams, 'Active', false)) {
-    Logger.info('[flowJump] skipped — inactive', { nextStep: __rtNextStep });
+    Logger.info('[flowJump] skipped — inactive', { outcome: __rtOutcome });
     return;
 }
 
 var __targetSourceId = getValue(__rtParams, 'SourceId', '');
 if (!__targetSourceId) {
-    global[_rtNextStep] = getValue(__rtParams, 'NextStep_Failure', -1);
-    Logger.warn('[flowJump] missing SourceId', { nextStep: global[_rtNextStep] });
+    __rtOutcome = 'NextStep_Failure';
+    Logger.warn('[flowJump] missing SourceId', { outcome: __rtOutcome });
     return;
 }
 
 context.session.variables.RTDS_sourceId    = __targetSourceId;
 context.session.variables.RTDS_currentOpId = '';
-global[_rtNextStep] = getValue(__rtParams, 'NextStep', -1);
-Logger.info('[flowJump] jumped', { sourceId: __targetSourceId, nextStep: global[_rtNextStep] });
+__rtOutcome = 'NextStep';
+Logger.info('[flowJump] jumped', { sourceId: __targetSourceId, outcome: __rtOutcome });
 ```
 
 **Why this shape**
@@ -34,7 +41,8 @@ Logger.info('[flowJump] jumped', { sourceId: __targetSourceId, nextStep: global[
   operation" against the new SourceId on re-entry, rather than continuing
   from a stale position.
 - The missing-SourceId branch is the one real error path — `warn`
-  because it's a caller misconfiguration, not infrastructure failure.
+  because it's a caller misconfiguration, not infrastructure failure. It
+  leaves the init-staged `'NextStep_Failure'` outcome in place.
 - `sourceId` is the one field worth recording in the success log —
   it's *what* changed, which is the whole point of FlowJump.
 - `var __targetSourceId` follows the `__`-prefix-on-every-var rule per

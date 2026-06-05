@@ -63,29 +63,39 @@ when anything looks off — it is the structural source of truth.
 
 ## Init node body
 
-- [ ] Exactly three lines: `__rtParams = __setupConfig(__configJSON)`,
-      `_headers` guard, `Logger.debug` of `__rtParams`.
+- [ ] Exactly four lines: `__rtParams = __setupConfig(__configJSON)`,
+      `_headers` guard, `__rtOutcome = 'NextStep_Failure';` (stages the
+      default failure outcome), `Logger.debug` of `__rtParams`.
 - [ ] Log prefix `[<componentName>]` matches the work-node log prefix.
 
 ## Script (work) node body
 
-- [ ] First statement assigns the default next step:
-      `global[_rtNextStep] = getValue(__rtParams, 'NextStep', -1);`
-      (or branch-specific variant for non-linear operations).
+- [ ] First statement stages the default outcome KEY:
+      `__rtOutcome = 'NextStep';` (or branch-specific variant). The work
+      body **stages** `__rtOutcome` with plain `=` and the literal Params
+      key name — it never writes `global[_rtNextStep]` directly (the output
+      node resolves it once). **GUI-exit operations are the exception** —
+      they `return '<exit_key>'` and do not stage `__rtOutcome`.
 - [ ] `Active` guard: `if (!getValue(__rtParams, 'Active', false)) { ... return; }`.
 - [ ] All Param reads go through `getValue` / `getValueOrFalsy` / `hasKey`.
-- [ ] HTTP operations: failure default set **before** the network call,
-      success branch sets success default inside the `.then` success callback.
+- [ ] HTTP operations: `__rtOutcome = 'NextStep_Failure';` staged **before**
+      the network call, success branch stages `__rtOutcome = 'NextStep_Success';`
+      inside the `.then` success callback.
 - [ ] HTTP operations: **both** `.then` callbacks present; error callback
       uses `Logger.error(msg, ctx, err)` (passes the caught error as 3rd arg).
+- [ ] HTTP body truthiness checks use `String(x).toLowerCase() === 'true'`,
+      never bare `if (x)` or strict `!== 'true'`.
 
 ## Logging (see [logging.md](../conventions/logging.md))
 
 - [ ] All logging goes through `Logger.{debug,info,warn,error}` — no bare
       `log_debug` / `log_error` calls.
 - [ ] Init node uses `Logger.debug` with `{ params: __rtParams }`.
-- [ ] Skip-on-inactive uses `Logger.info` with `{ nextStep }`.
-- [ ] Terminal outcomes carry `nextStep` in `context`.
+- [ ] Skip-on-inactive uses `Logger.info` with `{ outcome: __rtOutcome }`
+      (GUI-exit skip uses `{ outcome: 'NextStep' }`).
+- [ ] Work-body terminal outcomes carry `outcome: __rtOutcome` in
+      `context` (not `nextStep`); the resolved `nextStep` is logged once
+      at the output node.
 - [ ] Handled non-success outcomes use `Logger.warn` (validation, 4xx,
       `result.success === false`, branch fell back to default).
 - [ ] Exceptions / network errors / 5xx use `Logger.error` with the caught
@@ -96,7 +106,12 @@ when anything looks off — it is the structural source of truth.
 
 ## Output node
 
-- [ ] `OnEnter='Logger.info(&apos;[<componentName>] exit&apos;, { nextStep: __rtNextStep });'`
+- [ ] Resolves the staged outcome **once**:
+      `global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1);`
+      then `Logger.info('[<componentName>] exit', { outcome: __rtOutcome, nextStep: global[_rtNextStep] });`
+      (XML-encoded). This is the **only** place `global[_rtNextStep]` is
+      written. GUI-exit components are the exception — they route on the
+      returned exit key and need no `__rtOutcome` resolution here.
 
 ## XML encoding
 
@@ -183,9 +198,10 @@ skip this section.
       `MaxEntryNodeId="6"`.
 - [ ] **The Script (id=29) work body is identical to its plain-pattern
       equivalent.** No `__makeLocalNodeId('<primitive-id>')` calls; no
-      primitive ids returned as exit keys. The Script still assigns
-      `global[_rtNextStep]` to a routing-table next step or returns a
-      canonical GUI-exit key from [operation_bodies/gui_exit.md](operation_bodies/gui_exit.md).
+      primitive ids returned as exit keys. The Script still stages
+      `__rtOutcome` for a routing-table next step (resolved once at the
+      output node) or returns a canonical GUI-exit key from
+      [operation_bodies/gui_exit.md](operation_bodies/gui_exit.md).
 - [ ] Primitive attribute values (`Text`, `Expression`, `VariableName`,
       `VariableValue`, `Destination`, `Grammar`, etc.) are **not** JS
       and do **not** carry the `__` prefix. JS inside `OnEnter` /
@@ -195,7 +211,8 @@ skip this section.
       attribute values. `${name}` markup in primitive attributes is for
       the engine, not for `__setupConfig`.
 - [ ] Output node's `OnEnter` log
-      (`Logger.info('[<componentName>] exit', { nextStep: __rtNextStep });`)
+      (`Logger.info('[<componentName>] exit', { outcome: __rtOutcome, nextStep: global[_rtNextStep] });`,
+      after resolving `global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1);`)
       is the single exit-trace event. It fires once on the way out,
       regardless of which primitive branch was taken.
 - [ ] Diff against [operation_bodies/composite.md](operation_bodies/composite.md)

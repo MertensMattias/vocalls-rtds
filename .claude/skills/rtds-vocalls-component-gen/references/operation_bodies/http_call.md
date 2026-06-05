@@ -4,6 +4,15 @@ Use for any Type whose work body issues a `jsonHttpRequest`. The shape is
 the same in every case — what varies is the payload, the branch keys, and
 sometimes how the success result selects among multiple branches.
 
+**`__rtOutcome` staging.** The work body never writes `global[_rtNextStep]`.
+It **stages** an outcome KEY — the literal Params key name — into the local
+`__rtOutcome` (plain `=`, at most once per path). The output node (id=6
+OnEnter) resolves that key to `global[_rtNextStep]` exactly once with
+`global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1);`. The init
+node (id=7) pre-stages `__rtOutcome = 'NextStep_Failure';` before the work
+body runs. So every branch below assigns `__rtOutcome`, never the engine's
+`global[_rtNextStep]`.
+
 Logging discipline lives in [logging.md](../../conventions/logging.md).
 Three log lines is the floor: skip (info), terminal outcome (info/warn/error).
 Don't add intermediate "checking..." / "calling..." logs — the init-node
@@ -12,19 +21,19 @@ debug dump covers the "why".
 ## Skeleton
 
 ```js
-// 1. Pre-assign the "did nothing" default outcome.
-global[_rtNextStep] = getValue(__rtParams, 'NextStep', -1);
+// 1. Stage the "did nothing" default outcome.
+__rtOutcome = 'NextStep';
 
 if (!getValue(__rtParams, 'Active', false)) {
-    Logger.info('[<componentName>] skipped — inactive', { nextStep: global[_rtNextStep] });
+    Logger.info('[<componentName>] skipped — inactive', { outcome: __rtOutcome });
     return;
 }
 
 // 2. (Optional) Precondition guards. Don't log "checking..." — just return
 //    with a warn if the guard fails. See "Precondition guards" below.
 
-// 3. Pre-assign the failure outcome BEFORE the network call.
-global[_rtNextStep] = getValue(__rtParams, 'NextStep_Failure', -1);
+// 3. Stage the failure outcome BEFORE the network call.
+__rtOutcome = 'NextStep_Failure';
 
 var __url = __rtBaseUrl + __rtEndpoint;
 var __method = 'POST';
@@ -34,17 +43,17 @@ var __payload = { /* operation-specific */ };
 return jsonHttpRequest(__url, { method: __method, "timeout": __timeout }, _headers, __payload).then(
     function (result) {
         if (result && result.success === true) {
-            global[_rtNextStep] = getValue(__rtParams, 'NextStep_Success', -1);
-            Logger.info('[<componentName>] success', { nextStep: global[_rtNextStep] });
+            __rtOutcome = 'NextStep_Success';
+            Logger.info('[<componentName>] success', { outcome: __rtOutcome });
             return;
         }
         Logger.warn('[<componentName>] request failed', {
             statusCode: result && result.statusCode,
-            nextStep: global[_rtNextStep]
+            outcome: __rtOutcome
         });
     },
     function (err) {
-        Logger.error('[<componentName>] request error', { nextStep: global[_rtNextStep] }, err);
+        Logger.error('[<componentName>] request error', { outcome: __rtOutcome }, err);
     }
 );
 ```
@@ -57,16 +66,17 @@ guard-locals you introduce (`__to`, `__from`, `__customerKey`, …). See
 
 **Why this shape**
 
-- The default-outcome pre-assignment in step 1 means *every* path through the
-  function leaves a sensible `global[_rtNextStep]` — even early returns from
-  guards.
-- Step 3 pre-assigns failure *before* the network call. If the callbacks
+- The default-outcome staging in step 1 means *every* path through the
+  function leaves a sensible `__rtOutcome` — even early returns from
+  guards. The output node resolves it to `global[_rtNextStep]` once.
+- Step 3 stages failure *before* the network call. If the callbacks
   never fire (timeout, host kill), we still end up on the failure branch.
 - Both `.then` callbacks are always populated.
 - `Logger.warn` for a handled non-success (the server answered, just with a
   failure); `Logger.error` with the caught error for an exception. Both
   POST to the EventLog API.
-- The `nextStep` field is on every terminal log so traces stitch together.
+- The `outcome` field is on every terminal log so traces stitch together;
+  the resolved `nextStep` is logged once at the output node.
 
 ## Branch selection variants
 
@@ -79,7 +89,7 @@ function (result) {
     if (!result || result.success !== true) {
         Logger.warn('[emergency] request failed', {
             statusCode: result && result.statusCode,
-            nextStep: global[_rtNextStep]
+            outcome: __rtOutcome
         });
         return;
     }
@@ -87,8 +97,8 @@ function (result) {
     var __branchKey = __status === 'transfer'   ? 'NextStep_Transfer'
                     : __status === 'disconnect' ? 'NextStep_Disconnect'
                     :                             'NextStep_Continue';
-    global[_rtNextStep] = getValue(__rtParams, __branchKey, -1);
-    Logger.info('[emergency] success', { status: __status, nextStep: global[_rtNextStep] });
+    __rtOutcome = __branchKey;
+    Logger.info('[emergency] success', { status: __status, outcome: __rtOutcome });
 },
 ```
 
@@ -97,16 +107,16 @@ function (result) {
 ```js
 function (result) {
     if (!result || result.success !== true) {
-        Logger.warn('[schedule] request failed', { nextStep: global[_rtNextStep] });
+        Logger.warn('[schedule] request failed', { outcome: __rtOutcome });
         return;
     }
     var __state = String(result.state || '').replace(/\s+/g, '');
     var __key = 'NextStep_' + __state;
     if (hasKey(__rtParams, __key)) {
-        global[_rtNextStep] = getValue(__rtParams, __key, -1);
-        Logger.info('[schedule] success', { state: __state, nextStep: global[_rtNextStep] });
+        __rtOutcome = __key;
+        Logger.info('[schedule] success', { state: __state, outcome: __rtOutcome });
     } else {
-        Logger.warn('[schedule] no branch for state', { state: __state, nextStep: global[_rtNextStep] });
+        Logger.warn('[schedule] no branch for state', { state: __state, outcome: __rtOutcome });
     }
 },
 ```
@@ -118,13 +128,13 @@ function (result) {
     if (result && result.success === true) {
         var __resultVar = getValue(__rtParams, 'ResultVar', '');
         if (__resultVar) global[__resultVar] = result.body;
-        global[_rtNextStep] = getValue(__rtParams, 'NextStep_Success', -1);
-        Logger.info('[restGet] success', { nextStep: global[_rtNextStep] });
+        __rtOutcome = 'NextStep_Success';
+        Logger.info('[restGet] success', { outcome: __rtOutcome });
         return;
     }
     Logger.warn('[restGet] request failed', {
         statusCode: result && result.statusCode,
-        nextStep: global[_rtNextStep]
+        outcome: __rtOutcome
     });
 },
 ```
@@ -137,8 +147,8 @@ Use only when an input is worth validating client-side. Don't log
 ```js
 var __to = getValue(__rtParams, 'To', '');
 if (!__to || !__isMobileNumber(__to)) {
-    Logger.warn('[sendSms] invalid phone number', { to: __to, nextStep: global[_rtNextStep] });
-    return;     // leaves global[_rtNextStep] on the "did nothing" default
+    Logger.warn('[sendSms] invalid phone number', { to: __to, outcome: __rtOutcome });
+    return;     // leaves __rtOutcome on the "did nothing" default ('NextStep')
 }
 ```
 
@@ -170,20 +180,20 @@ This is the actual body of [`sendSms.js`](examples/sendSms.js)'s
 script node (id=29). Diff against this when in doubt.
 
 ```js
-global[_rtNextStep] = getValue(__rtParams, 'NextStep', -1);
+__rtOutcome = 'NextStep';
 
 if (!getValue(__rtParams, 'Active', false)) {
-    Logger.info('[sendSms] skipped — inactive', { nextStep: global[_rtNextStep] });
+    Logger.info('[sendSms] skipped — inactive', { outcome: __rtOutcome });
     return;
 }
 
 var __to = getValue(__rtParams, 'To', '');
 if (!__to || !__isMobileNumber(__to)) {
-    Logger.warn('[sendSms] invalid phone number', { to: __to, nextStep: global[_rtNextStep] });
+    Logger.warn('[sendSms] invalid phone number', { to: __to, outcome: __rtOutcome });
     return;
 }
 
-global[_rtNextStep] = getValue(__rtParams, 'NextStep_Failure', -1);
+__rtOutcome = 'NextStep_Failure';
 
 var __url = __rtBaseUrl + __rtEndpoint;
 var __method = 'POST';
@@ -200,17 +210,17 @@ var __payload = {
 return jsonHttpRequest(__url, { method: __method, "timeout": __timeout }, _headers, __payload).then(
     function (result) {
         if (result && result.success === true) {
-            global[_rtNextStep] = getValue(__rtParams, 'NextStep_Success', -1);
-            Logger.info('[sendSms] success', { nextStep: global[_rtNextStep] });
+            __rtOutcome = 'NextStep_Success';
+            Logger.info('[sendSms] success', { outcome: __rtOutcome });
             return;
         }
         Logger.warn('[sendSms] request failed', {
             statusCode: result && result.statusCode,
-            nextStep: global[_rtNextStep]
+            outcome: __rtOutcome
         });
     },
     function (err) {
-        Logger.error('[sendSms] request error', { nextStep: global[_rtNextStep] }, err);
+        Logger.error('[sendSms] request error', { outcome: __rtOutcome }, err);
     }
 );
 ```

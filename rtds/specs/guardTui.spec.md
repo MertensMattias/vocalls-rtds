@@ -32,12 +32,16 @@ Self-service guard administration line. A guard calls in, the operation checks w
 | `ConfigId`        | number           | yes      | —       | Guard pool identifier passed to the Guard API.                                                                                        |
 | `PhoneNumberVar`  | string           | no       | `'ani'` | Name of the session variable holding the caller's phone number (defaults to `varObj.ani`).                                            |
 | `Timeout`         | number (ms)      | no       | `10000` | HTTP request timeout for each backend call.                                                                                            |
-| `Prompt`          | string           | yes      | —       | DTMF menu prompt. e.g. "To activate this number, press 7. To deactivate this number, press 3."                                       |
-| `ResultActivated` | string           | yes      | —       | Confirmation prompt after a successful activate.                                                                                      |
-| `ResultDeactivated`| string          | yes      | —       | Confirmation prompt after a successful deactivate.                                                                                    |
-| `ResultOnlyActive`| string           | yes      | —       | Apology prompt when the caller is the last active member and tried to deactivate.                                                     |
-| `ResultDenied`    | string           | yes      | —       | Apology prompt when the caller's number isn't registered for the configured guard pool.                                               |
-| `ResultError`     | string           | yes      | —       | Apology prompt on any technical failure (HTTP error, malformed response, etc.).                                                       |
+| `ConfigName`      | string           | no       | —       | Carried for flow-header parity; not read by the component runtime.                                                                      |
+| `ResultCurrentlyActivated_<LANG>` | string | yes | — | State preamble when the caller is already active (e.g. `ResultCurrentlyActivated_NL`). Supports `${CustomerProject}` tokens. |
+| `ResultCurrentlyDeactivated_<LANG>` | string | yes | — | State preamble when the caller is inactive. |
+| `PromptActivate_<LANG>` | string   | yes      | —       | DTMF prompt offering activation (press 7).                                                                                             |
+| `PromptDeactivate_<LANG>` | string | yes      | —       | DTMF prompt offering deactivation (press 3).                                                                                           |
+| `ResultActivated_<LANG>` | string  | yes      | —       | Confirmation prompt after a successful activate.                                                                                      |
+| `ResultDeactivated_<LANG>` | string | yes      | —       | Confirmation prompt after a successful deactivate.                                                                                    |
+| `ResultOnlyActive_<LANG>` | string | yes      | —       | Apology when the caller is the last active member and tried to deactivate.                                                             |
+| `ResultDenied_<LANG>` | string     | yes      | —       | Apology when the caller's number isn't registered for the configured guard pool.                                                       |
+| `ResultError_<LANG>` | string      | yes      | —       | Apology on technical failure (HTTP error, malformed response, etc.).                                                                   |
 | `NextStep`        | string (step ID) | yes      | —       | Continuation when the operation is inactive or the menu has been served and the caller is ready to be released.                       |
 | `NextStep_Success`| string (step ID) | yes      | —       | Continuation after a successful activate or deactivate.                                                                                |
 | `NextStep_Denied` | string (step ID) | yes      | —       | Continuation when the caller's number was not allowed by the eligibility check.                                                       |
@@ -91,7 +95,7 @@ OnEnter: Logger.info('[guardTui] exit', { nextStep: __rtNextStep });
 Variables block:
 
 ```js
-__configJSON = { "Active": false, "ConfigId": "", "PhoneNumberVar": "ani", "Timeout": 10000, "Prompt": "...", "ResultActivated": "...", "ResultDeactivated": "...", "ResultOnlyActive": "...", "ResultDenied": "...", "ResultError": "...", "NextStep": "00010", "NextStep_Success": "00011", "NextStep_Denied": "00012", "NextStep_Failure": "00099" };
+__configJSON = { "Active": true, "ConfigId": 1, "ConfigName": "KLANTWACHT", "PhoneNumberVar": "ani", "Timeout": 10000, "ResultCurrentlyActivated_NL": "...", "ResultCurrentlyDeactivated_NL": "...", "PromptActivate_NL": "...", "PromptDeactivate_NL": "...", "ResultActivated_NL": "...", "ResultDeactivated_NL": "...", "ResultOnlyActive_NL": "...", "ResultDenied_NL": "...", "ResultError_NL": "...", "NextStep": "00010", "NextStep_Success": "00011", "NextStep_Denied": "00012", "NextStep_Failure": "00099" };
 __environment = environment;
 __rtBaseUrl = _rtBaseUrl;
 __rtTuiCheckAccessEndpoint = _rtTuiCheckAccessEndpoint;

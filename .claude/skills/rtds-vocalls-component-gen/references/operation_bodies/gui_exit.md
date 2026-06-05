@@ -9,6 +9,11 @@ All 11 GUI-exit Types share one skeleton. The only things that vary are
 the `RTDS_currentOpType` value (PascalCase Type name) and the returned
 exit key (snake_case string). The table below is the source of truth.
 
+**GUI-exit bypasses `__rtOutcome`.** Unlike the other patterns, GUI-exit
+operations do NOT stage `__rtOutcome` — they `return '<exit_key>'` and the
+engine routes on the returned string directly, so there is no outcome key
+to resolve at the output node.
+
 Logging discipline lives in [logging.md](../../conventions/logging.md).
 Two logs is enough here: skip (info) and the GUI handoff (info). The
 output node's exit log fires on resumption.
@@ -17,7 +22,7 @@ output node's exit log fires on resumption.
 
 ```js
 if (!getValue(__rtParams, 'Active', false)) {
-    Logger.info('[<componentName>] skipped — inactive', { nextStep: __rtNextStep });
+    Logger.info('[<componentName>] skipped — inactive', { outcome: 'NextStep' });
     return;
 }
 
@@ -39,7 +44,8 @@ return '<exit_key>';
 - `walk` writes every Param to `RTDS_OP_<Key>` with operator-chosen casing
   preserved. That's the contract the downstream GUI node reads.
 - The `Active` guard returns early *without* writing `RTDS_OP_*`. The skip
-  log shows the default `nextStep` the call will fall through on.
+  log records `{ outcome: 'NextStep' }` — no exit key has been chosen yet,
+  so the call falls through on the default next step.
 - `__nextStepId` is hoisted into a local so the handoff log and the
   session-variable assignment use the same value. The `__` prefix is
   mandatory — see [naming.md](../../conventions/naming.md). `walk`'s callback
@@ -71,7 +77,7 @@ return '<exit_key>';
 
 ```js
 if (!getValue(__rtParams, 'Active', false)) {
-    Logger.info('[workgroupTransfer] skipped — inactive', { nextStep: __rtNextStep });
+    Logger.info('[workgroupTransfer] skipped — inactive', { outcome: 'NextStep' });
     return;
 }
 
@@ -95,7 +101,7 @@ return 'workgroup_transfer';
 
 ```js
 if (!getValue(__rtParams, 'Active', false)) {
-    Logger.info('[disconnect] skipped — inactive', { nextStep: __rtNextStep });
+    Logger.info('[disconnect] skipped — inactive', { outcome: 'NextStep' });
     return;
 }
 

@@ -8,6 +8,13 @@ a session variable).
 Logging discipline lives in [logging.md](../../conventions/logging.md).
 Two logs is enough: skip (info) and the branch outcome (info).
 
+**`__rtOutcome` staging.** The work body stages the chosen branch KEY into
+the local `__rtOutcome` (plain `=`, the literal `NextStep_True` /
+`NextStep_False` key name); the output node (id=6 OnEnter) resolves it to
+`global[_rtNextStep]` once with
+`global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1);`. The work
+body never writes `global[_rtNextStep]`.
+
 ## Operation-specific helper — `__compareAttr`
 
 This pattern requires a component-scoped helper in master `Code`. Paste it
@@ -48,7 +55,7 @@ operator semantics; every `var`-declared local carries `__` per
 
 ```js
 if (!getValue(__rtParams, 'Active', false)) {
-    Logger.info('[checkAttribute] skipped — inactive', { nextStep: __rtNextStep });
+    Logger.info('[checkAttribute] skipped — inactive', { outcome: __rtOutcome });
     return;
 }
 
@@ -57,8 +64,8 @@ var __op  = getValue(__rtParams, 'Operator', 'eq');
 var __rhs = getValue(__rtParams, 'Value', '');
 
 var __branchKey = __compareAttr(__lhs, __op, __rhs) ? 'NextStep_True' : 'NextStep_False';
-global[_rtNextStep] = getValue(__rtParams, __branchKey, -1);
-Logger.info('[checkAttribute] branch', { branch: __branchKey, nextStep: global[_rtNextStep] });
+__rtOutcome = __branchKey;
+Logger.info('[checkAttribute] branch', { branch: __branchKey, outcome: __rtOutcome });
 ```
 
 ## Skeleton — `Condition` (lhs may be a global or a literal)
@@ -68,7 +75,7 @@ global name (look it up) or a literal value (use as-is):
 
 ```js
 if (!getValue(__rtParams, 'Active', false)) {
-    Logger.info('[condition] skipped — inactive', { nextStep: __rtNextStep });
+    Logger.info('[condition] skipped — inactive', { outcome: __rtOutcome });
     return;
 }
 
@@ -78,8 +85,8 @@ var __op     = getValue(__rtParams, 'Operator', 'eq');
 var __rhs    = getValue(__rtParams, 'Value', '');
 
 var __branchKey = __compareAttr(__lhs, __op, __rhs) ? 'NextStep_True' : 'NextStep_False';
-global[_rtNextStep] = getValue(__rtParams, __branchKey, -1);
-Logger.info('[condition] branch', { branch: __branchKey, nextStep: global[_rtNextStep] });
+__rtOutcome = __branchKey;
+Logger.info('[condition] branch', { branch: __branchKey, outcome: __rtOutcome });
 ```
 
 **Mental model**: this is the v2 mirror of the PureConnect handler

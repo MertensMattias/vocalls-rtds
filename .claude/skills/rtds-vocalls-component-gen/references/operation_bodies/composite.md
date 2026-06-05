@@ -107,9 +107,13 @@ production-reference id-numbering observation.
   primitive id as an exit key.
 - **The output node remains the single terminal sink.** Every primitive
   branch (directly or transitively) edges into id=6. This guarantees the
-  output's `OnEnter` log (`Logger.info('[<componentName>] exit', { nextStep: __rtNextStep });`)
-  fires exactly once per run, regardless of which primitive branch was
-  taken.
+  output's `OnEnter` log fires exactly once per run, regardless of which
+  primitive branch was taken. For `__rtOutcome`-staging Script bodies that
+  output node also resolves the staged key once
+  (`global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1);
+  Logger.info('[<componentName>] exit', { outcome: __rtOutcome, nextStep: global[_rtNextStep] });`).
+  GUI-exit Script bodies return an exit key directly and don't stage
+  `__rtOutcome`.
 
 ## Edge contract — rules summary
 
@@ -215,7 +219,7 @@ unchanged**:
 
 ```js
 if (!getValue(__rtParams, 'Active', false)) {
-    Logger.info('[menu] skipped — inactive', { nextStep: __rtNextStep });
+    Logger.info('[menu] skipped — inactive', { outcome: 'NextStep' });
     return;
 }
 

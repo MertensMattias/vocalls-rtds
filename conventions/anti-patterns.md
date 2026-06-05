@@ -10,7 +10,7 @@ These were valid in v1 and are retired in v2. If you see them in a freshly-gener
 
 - **No `__rt<Key>` / `__rt<TypePrefix><Key>` splay in master `Code`.** Use `__rtParams` + `getValue(__rtParams, '<Key>', default)` instead. The splay produced one master-`Code` const per Param; v2 collapses them into a single dictionary read by `__setupConfig`. See [component-v2.md §3](component-v2.md).
 - **No `__init` helper in master `Code`.** Gone in v2. The init-node body does the work directly — see [component-v2.md §6](component-v2.md).
-- **No `__outputVar` PropertyDefinition.** Gone in v2. The work body assigns to `global[_rtNextStep]` directly. See [component-v2.md §5](component-v2.md).
+- **No `__outputVar` PropertyDefinition.** Gone in v2. The work body **stages** an outcome key into `__rtOutcome` and the output node resolves it to `global[_rtNextStep]` exactly once (`global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1)`). The work body does **not** write `global[_rtNextStep]` mid-flight (gui_exit operations are the exception — they `return` the exit key). See [component-v2.md §6–§8](component-v2.md).
 - **Don't copy from `handler_source_file/` or legacy `component_source_file/`.** Those are retired reference directories. The live canonical examples are `sendSms.js` / `sendMail.js` (v2 skill-generated) and `voicemaildetector.js` (hand-built composite).
 
 ## Routing-table contract
@@ -32,6 +32,9 @@ These were valid in v1 and are retired in v2. If you see them in a freshly-gener
 - **Don't introduce case-normalisation passes between read and write.** `getValue` is case-insensitive on the read side; `walk` and `applyDefaults` preserve casing on the write side. That asymmetry is intentional — the operator's chosen key casing is the output contract. See [casing.md](casing.md).
 - **Don't try to substitute `${name}` placeholders in primitive attributes via `__setupConfig`.** Primitive attributes are read by the engine, not by component JS. `${name}` resolution inside `Text`, `Expression`, `VariableValue`, etc. is the engine's job (when it does it at all). See [params.md](params.md) and [component-mxgraph.md §8](component-mxgraph.md).
 - **Don't use `function name(...) {}` declarations for component-scoped helpers.** Use `name = function (...) { ... };` (bare globals). Function declarations don't survive cross-node visibility the same way. Exception: the env library `rtds_3_vocallsEnv.js` uses `function name() {}` because it's loaded at runtime startup. See [naming.md](naming.md).
+- **Don't default a say/TTS text expression to `false`.** A missing per-language text must fall back to `''`, never `false` — `{getValue(__rtParams, '<Key>_' + language, '')}`. A `false` default plays the literal word "false" (or worse) through TTS. See [say-text.md](say-text.md).
+- **Don't decide on an HTTP-body value with `if (x)` or strict `x !== 'true'`.** The body comes back as a string: `if (x)` treats the string `"false"` as truthy (it's a non-empty string), and `x !== 'true'` fails when the value is a real boolean `true` (strict compare of boolean vs string). Use `String(x).toLowerCase() === 'true'` — it handles both the string and boolean forms. See [say-text.md](say-text.md).
+- **Don't gate an API-supplied id on `typeof id === 'number'`.** The id may arrive as the string `"42"` (fails the check) or as `NaN` (passes it). Normalize once with `Number(x) || 0` and test `> 0`. See [naming.md](naming.md).
 
 ## Reflect on
 
@@ -39,3 +42,7 @@ These were valid in v1 and are retired in v2. If you see them in a freshly-gener
 - **[grep]** Any `function name() {}` declarations inside component XML attribute values?
 - **[judgment]** Any `.then(success)` without a paired error callback?
 - **[grep]** Any explicit case-normalisation between a read and a write?
+- **[grep]** Does the work body write `global[_rtNextStep]` mid-flight instead of staging `__rtOutcome` (gui_exit excepted)?
+- **[grep]** Any say/TTS text defaulting to `false` instead of `''`?
+- **[grep]** Any HTTP-body decision via `if (x)` or `!== 'true'` instead of `String(x).toLowerCase() === 'true'`?
+- **[grep]** Any `typeof id === 'number'` check on an API-supplied id?

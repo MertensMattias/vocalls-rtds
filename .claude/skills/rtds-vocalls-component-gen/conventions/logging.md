@@ -35,7 +35,7 @@ Three log lines is the floor per component. Most don't need a fourth:
 | Outcome         | `info` / `warn` / `error` | Terminal point of the work node.                                       |
 | Exit            | `info`                    | Output node `OnEnter`.                                                 |
 
-The `nextStep` field is non-negotiable on outcome and exit logs. It's how traces stitch from one component to the next.
+The **`outcome`** field is non-negotiable: outcome (work-node) logs carry the staged outcome key (`outcome: __rtOutcome`), and the exit log carries **both** `outcome` and the resolved `nextStep` (`{ outcome: __rtOutcome, nextStep: global[_rtNextStep] }`). The work body stages only the key (no step id is resolved until the output node — see [component-v2.md §7–§8](component-v2.md)), so a mid-flight `nextStep` value doesn't exist yet; `outcome` is what stitches the trace until the exit log resolves it. (GUI-exit operations `return` the exit key instead of staging `__rtOutcome`; their exit log carries the returned key.)
 
 ## Level selection
 
@@ -47,5 +47,5 @@ The `nextStep` field is non-negotiable on outcome and exit logs. It's how traces
 
 - **[grep]** Any bare `log_debug` / `log_warn` / `log_error` calls outside `rtds_3_vocallsEnv.js`?
 - **[judgment]** Are component logs limited to the three-line floor?
-- **[grep]** Does every outcome and exit log carry `nextStep`?
+- **[grep]** Does every outcome log carry `outcome`, and the exit log carry both `outcome` and the resolved `nextStep`?
 - **[judgment]** Are calls structured with `(message, contextObj, errorObj?)` or bare strings with `|` concatenation?

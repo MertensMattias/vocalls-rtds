@@ -62,7 +62,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code="__rtParams = __setupConfig(__configJSON);&#xa;if (!_headers) { _headers = {}; }&#xa;Logger.debug(&#39;[sendSms] config resolved&#39;, { params: __rtParams });"
+      Code="__rtParams = __setupConfig(__configJSON);&#xa;if (!_headers) { _headers = {}; }&#xa;__rtOutcome = &#39;NextStep_Failure&#39;;&#xa;Logger.debug(&#39;[sendSms] config resolved&#39;, { params: __rtParams, outcome: __rtOutcome });"
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
@@ -78,7 +78,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code='global[_rtNextStep] = getValue(__rtParams, &#39;NextStep&#39;, -1);&#xa;&#xa;if (!getValue(__rtParams, &#39;Active&#39;, false)) {&#xa;    Logger.info(&#39;[sendSms] skipped — inactive&#39;, { nextStep: global[_rtNextStep] });&#xa;    return;&#xa;}&#xa;&#xa;var __to = getValue(__rtParams, &#39;To&#39;, &#39;&#39;);&#xa;if (!__to || !__isMobileNumber(__to)) {&#xa;    Logger.warn(&#39;[sendSms] invalid phone number&#39;, { to: __to, nextStep: global[_rtNextStep] });&#xa;    return;&#xa;}&#xa;&#xa;global[_rtNextStep] = getValue(__rtParams, &#39;NextStep_Failure&#39;, -1);&#xa;&#xa;var __url = __rtBaseUrl + __rtEndpoint;&#xa;var __method = &#39;POST&#39;;&#xa;var __timeout = getValue(__rtParams, &#39;Timeout&#39;, 10000);&#xa;var __payload = {&#xa;    smsAccountId: Number(getValue(__rtParams, &#39;SmsAccountId&#39;, -1)),&#xa;    routing:      getValue(__rtParams, &#39;Routing&#39;, &#39;&#39;),&#xa;    from:         getValue(__rtParams, &#39;From&#39;, &#39;&#39;),&#xa;    to:           __to,&#xa;    content:      getValue(__rtParams, &#39;Body&#39;, &#39;&#39;),&#xa;    plannedTime:  nowUTC()&#xa;};&#xa;&#xa;return jsonHttpRequest(__url, { method: __method, "timeout": __timeout }, _headers, __payload).then(&#xa;    function (result) {&#xa;        if (result &amp;&amp; result.success === true) {&#xa;            global[_rtNextStep] = getValue(__rtParams, &#39;NextStep_Success&#39;, -1);&#xa;            Logger.info(&#39;[sendSms] success&#39;, { nextStep: global[_rtNextStep] });&#xa;            return;&#xa;        }&#xa;        Logger.warn(&#39;[sendSms] request failed&#39;, { statusCode: result &amp;&amp; result.statusCode, nextStep: global[_rtNextStep] });&#xa;    },&#xa;    function (err) {&#xa;        Logger.error(&#39;[sendSms] request error&#39;, { nextStep: global[_rtNextStep] }, err);&#xa;    }&#xa;);'
+      Code='__rtOutcome = &#39;NextStep&#39;;&#xa;&#xa;if (!getValue(__rtParams, &#39;Active&#39;, false)) {&#xa;    Logger.info(&#39;[sendSms] skipped — inactive&#39;, { outcome: __rtOutcome });&#xa;    return;&#xa;}&#xa;&#xa;var __to = getValue(__rtParams, &#39;To&#39;, &#39;&#39;);&#xa;if (!__to || !__isMobileNumber(__to)) {&#xa;    Logger.warn(&#39;[sendSms] invalid phone number&#39;, { to: __to, outcome: __rtOutcome });&#xa;    return;&#xa;}&#xa;&#xa;__rtOutcome = &#39;NextStep_Failure&#39;;&#xa;&#xa;var __url = __rtBaseUrl + __rtEndpoint;&#xa;var __method = &#39;POST&#39;;&#xa;var __timeout = getValue(__rtParams, &#39;Timeout&#39;, 10000);&#xa;var __payload = {&#xa;    smsAccountId: Number(getValue(__rtParams, &#39;SmsAccountId&#39;, -1)),&#xa;    routing:      getValue(__rtParams, &#39;Routing&#39;, &#39;&#39;),&#xa;    from:         getValue(__rtParams, &#39;From&#39;, &#39;&#39;),&#xa;    to:           __to,&#xa;    content:      getValue(__rtParams, &#39;Body&#39;, &#39;&#39;),&#xa;    plannedTime:  nowUTC()&#xa;};&#xa;&#xa;return jsonHttpRequest(__url, { method: __method, "timeout": __timeout }, _headers, __payload).then(&#xa;    function (result) {&#xa;        if (result &amp;&amp; result.success === true) {&#xa;            __rtOutcome = &#39;NextStep_Success&#39;;&#xa;            Logger.info(&#39;[sendSms] success&#39;, { outcome: __rtOutcome });&#xa;            return;&#xa;        }&#xa;        Logger.warn(&#39;[sendSms] request failed&#39;, { statusCode: result &amp;&amp; result.statusCode, outcome: __rtOutcome });&#xa;    },&#xa;    function (err) {&#xa;        Logger.error(&#39;[sendSms] request error&#39;, { outcome: __rtOutcome }, err);&#xa;    }&#xa;);'
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
@@ -91,7 +91,7 @@
     <object
       label="output"
       Type="transient"
-      OnEnter="Logger.info(&#39;[sendSms] exit&#39;, { nextStep: __rtNextStep });"
+      OnEnter="global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1);&#xa;Logger.info(&#39;[sendSms] exit&#39;, { outcome: __rtOutcome, nextStep: global[_rtNextStep] });"
       OnLeave=""
       MaxEntryCount=""
       MaxEntryNodeId=""

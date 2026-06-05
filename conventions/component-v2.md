@@ -60,10 +60,15 @@ __configJSON = { /* Params with placeholder defaults */ };
 __environment = environment;
 __rtBaseUrl   = _rtBaseUrl;                 // HTTP ops only
 __rtEndpoint  = _rt<TypePrefix>Endpoint;    // HTTP ops only
+__rtOutcome   = 'NextStep_Failure';         // cross-script outcome key; staged in init, read at output
 __rtNextStep &= _rtNextStep;
 ```
 
+`__rtOutcome` is cross-script state (staged in init/work, read at the output node), so it is pre-declared here per the [naming.md](naming.md) cross-script rule. The init node re-stages it (§6); it is **not** an operator-facing property (no `PropertiesDefinition` entry — see §5).
+
 `&=` is the **documented placeholder-binding operator** — it keeps `__rtNextStep` synced with the flow variable `_rtNextStep`. Use it only on `__rtNextStep`. Everywhere else, `=`.
+
+The `&=` binding is **reserved for self-contained embedded Style-B flows** (e.g. [guardTui.js](../rtds/components/guardTui.js)), where `__rtNextStep` must stay synced for an embedded sub-flow to route on it. It is **not** the general routing mechanism. For a general v2 routing-table component, the step id is resolved **once at the output node** via `global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1)` (see §7–§8) — the work body never writes the step id mid-flight. Keep the `&=` line in master `Variables` regardless (it costs nothing and the engine still reads `global[_rtNextStep]`); just don't treat it as the resolution path.
 
 See [sendSms.js:27](../rtds/components/sendSms.js#L27) for the canonical encoded form.
 
@@ -75,37 +80,48 @@ See [sendSms.js:28](../rtds/components/sendSms.js#L28).
 
 ## 6. Init node body — universal
 
-Three lines, always:
+Four lines, always:
 
 ```js
 __rtParams = __setupConfig(__configJSON);
 if (!_headers) { _headers = {}; }
-Logger.debug('[<componentName>] config resolved', { params: __rtParams });
+__rtOutcome = 'NextStep_Failure';
+Logger.debug('[<componentName>] config resolved', { params: __rtParams, outcome: __rtOutcome });
 ```
+
+`__rtOutcome` is the component-internal **outcome key** — the literal Params key *name* (`'NextStep'`, `'NextStep_Success'`, `'NextStep_Denied'`, `'NextStep_Failure'`, `'NextStep_<State>'`, …) of the branch this execution chose. It is initialised here to the failure key, so any unhandled path exits as failure. The work node stages it (§7); the output node resolves it to `global[_rtNextStep]` (§8). `language` is also normalised here — see [say-text.md](say-text.md).
 
 ## 7. Work node body — per pattern
 
-Patterns live in [.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/](../.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/): `http_call.md`, `gui_exit.md`, `set_attributes.md`, `condition.md`, `flow_jump.md`, plus `composite.md` modifier. The work body:
+Patterns live in [.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/](../.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/): `http_call.md`, `gui_exit.md`, `set_attributes.md`, `condition.md`, `flow_jump.md`, plus `composite.md` modifier.
 
-1. Sets default `NextStep` first: `global[_rtNextStep] = getValue(__rtParams, 'NextStep', -1);`.
-2. Active guard — early return + info-level "skipped — inactive" log if `!Active`.
-3. Validates inputs — warn-level log and return for any failed precondition.
-4. Re-defaults to failure before any HTTP call: `global[_rtNextStep] = getValue(__rtParams, 'NextStep_Failure', -1);`.
-5. Builds payload, fires `jsonHttpRequest(...).then(success, error)`. **Error callback is mandatory.**
-6. Three log lines total: skipped (info) / validation (warn) / outcome (info, warn, or error).
+The work body **stages an outcome key** into `__rtOutcome` — it never writes `global[_rtNextStep]` mid-flight. Each path assigns `__rtOutcome = '<NextStepKey>';` with a plain `=` (not `global[...]` indirection), the literal Params key *name*, at most once per execution path. `__rtOutcome` was pre-seeded to `'NextStep_Failure'` in the init node (§6), so an unhandled path already exits as failure. The output node (§8) is the single place that resolves the key to a step id. In order, the work body:
+
+1. Active guard — early return + info-level "skipped — inactive" log if `!Active`. The skipped path sets `__rtOutcome = 'NextStep';` (the did-nothing default) before returning.
+2. Validates inputs — warn-level log and return for any failed precondition. A validation failure leaves (or sets) `__rtOutcome = 'NextStep_Failure';`.
+3. Builds payload, fires `jsonHttpRequest(...).then(success, error)`. **Error callback is mandatory.** The success callback sets `__rtOutcome` to the chosen branch key (`'NextStep_Success'`, `'NextStep_<State>'`, the default `'NextStep'`, …); the error callback leaves it at `'NextStep_Failure'` (or sets it explicitly).
+4. Three log lines total: skipped (info) / validation (warn) / outcome (info, warn, or error). Work-body logs carry `outcome` (the staged key); see [logging.md](logging.md).
+
+**`gui_exit` exception:** GUI-exit operations do **not** use `__rtOutcome`. They `return '<exit_key>';` directly — the engine routes on the returned string via `prepareGuiHandoff`. Don't stage or resolve `__rtOutcome` in a gui_exit work body. See [.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/gui_exit.md](../.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/gui_exit.md).
 
 ## 8. Output node
 
-```
-OnEnter='Logger.info(&apos;[<componentName>] exit&apos;, { nextStep: __rtNextStep });'
+The output node `OnEnter` is the **single place** the staged outcome key is resolved to a step id and written to the engine global. Two lines:
+
+```js
+global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1);
+Logger.info('[<componentName>] exit', { outcome: __rtOutcome, nextStep: global[_rtNextStep] });
 ```
 
-See [sendSms.js:98](../rtds/components/sendSms.js#L98).
+The engine routes on `global[_rtNextStep]` (`resumeFrom(global[_rtNextStep] || RTDS_nextStepId)` in `rtds_2_runtime.js`); the staging in `__rtOutcome` is purely component-internal. The exit log carries **both** the staged `outcome` and the resolved `nextStep`.
+
+GUI-exit operations are the exception — they `return` the exit key from the work node and have no `__rtOutcome` resolve here (§7).
 
 ## Reflect on
 
 - **[grep]** Does the component have exactly the four canonical ids (`0`/`7`/`29`/`6`)?
 - **[grep]** Master-attribute order matches §2?
 - **[judgment]** Master `Code` composition matches §3?
-- **[grep]** Init body is the universal three lines?
-- **[grep]** Output node logs exit with `nextStep`?
+- **[grep]** Init body is the universal four lines (incl. `__rtOutcome = 'NextStep_Failure';`)?
+- **[grep]** Work body stages `__rtOutcome = '<key>'` with plain `=` and never writes `global[_rtNextStep]` mid-flight (gui_exit excepted)?
+- **[grep]** Output node resolves `__rtOutcome` to `global[_rtNextStep]` and logs both `outcome` and `nextStep`?

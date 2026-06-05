@@ -11,16 +11,28 @@ Two logs is enough: skip (info) and the terminal outcome (info).
 Per-key logs inside the walk are noise — the init-node debug dump
 already shows what's being written.
 
+**`__rtOutcome` staging.** The work body stages an outcome KEY into the
+local `__rtOutcome` (plain `=`, the literal Params key name); the output
+node (id=6 OnEnter) resolves it to `global[_rtNextStep]` once with
+`global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1);`. Init
+pre-stages `__rtOutcome = 'NextStep_Failure';`, so the success key is only
+staged **after** the walk — if the walk throws, the staged failure stands
+and the flow hasn't advanced.
+
 ## Skeleton
 
 ```js
+__rtOutcome = 'NextStep';
+
 if (!getValue(__rtParams, 'Active', false)) {
-    Logger.info('[<componentName>] skipped — inactive', { nextStep: __rtNextStep });
+    Logger.info('[<componentName>] skipped — inactive', { outcome: __rtOutcome });
     return;
 }
 
 var __CONTROL_KEYS = { Active: 1, NextStep: 1, LogAttributes: 1 };
 var __written = 0;
+
+__rtOutcome = 'NextStep_Failure';
 
 walk(__rtParams, function (key, value) {
     if (__CONTROL_KEYS[key]) return;
@@ -28,8 +40,8 @@ walk(__rtParams, function (key, value) {
     __written++;
 });
 
-global[_rtNextStep] = getValue(__rtParams, 'NextStep', -1);
-Logger.info('[<componentName>] wrote attributes', { count: __written, nextStep: global[_rtNextStep] });
+__rtOutcome = 'NextStep';
+Logger.info('[<componentName>] wrote attributes', { count: __written, outcome: __rtOutcome });
 ```
 
 **Why this shape**
@@ -48,8 +60,9 @@ Logger.info('[<componentName>] wrote attributes', { count: __written, nextStep: 
 - The `count` field in the outcome log is the one number worth recording —
   a "wrote attributes" line with `count: 0` is a real signal that the
   Params shape is wrong.
-- `NextStep` is assigned **after** the walk — if the walk throws, the
-  flow hasn't advanced.
+- The `'NextStep'` outcome is staged **after** the walk — if the walk
+  throws, the failure outcome staged by init (and re-staged before the
+  walk) stands, so the flow hasn't advanced.
 
 ## Params
 
