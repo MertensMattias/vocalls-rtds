@@ -1,6 +1,6 @@
 <mxGraphModel
-  dx="4859"
-  dy="2576"
+  dx="4413"
+  dy="2877"
   grid="1"
   gridSize="10"
   guides="1"
@@ -24,7 +24,7 @@
       BackgroundNoise="true"
       BreathInEffect="true"
       Languages="{&#39;nl&#39;:{&#39;isDefault&#39;:true,&#39;languageName&#39;:&#39;Dutch (Belgium)&#39;,&#39;ttsLanguageCode&#39;:&#39;nl-BE&#39;,&#39;ttsVoiceName&#39;:&#39;&#39;,&#39;ttsEngine&#39;:&#39;&#39;,&#39;ttsPitch&#39;:&#39;&#39;,&#39;ttsSpeed&#39;:&#39;&#39;,&#39;ttsVolume&#39;:&#39;&#39;,&#39;prosodyBaseEnabled&#39;:true,&#39;prosodyContourEnabled&#39;:false}}"
-      Variables='__configJSON = {&#xa;    "Active": false,&#xa;    "ConfigId": 1,&#xa;    "ConfigName": "KLANTWACHT",&#xa;    "DialGuard": true,&#xa;    "OutboundAni": "",&#xa;    "Diversion": "",&#xa;    "OnHoldAudioUrl": "https://audio-${environment}.n-allo.be/on-hold.wav",&#xa;    "Timeout": 15,&#xa;    "RecordVoicemail": true,&#xa;    "AcceptCallMenu": true,&#xa;    "AcceptCallMessage": "Press 1 to accept the call.",&#xa;    "SendSms": true,&#xa;    "SendMail": true,&#xa;    "NextStep_Success": "00002",&#xa;    "NextStep_Failure": "00099",&#xa;    "NextStep": "00005"&#xa;};&#xa;__environment = environment;&#xa;__rtBaseUrl = _rtBaseUrl;&#xa;__rtGuardEndpoint = _rtActiveGuardByConfigEndpoint;&#xa;__rtOutcome = &#39;NextStep_Failure&#39;;&#xa;__rtNextStep &amp;= _rtNextStep;&#xa;__guardList = [];&#xa;__guardIndex = 0;&#xa;__guardCount = 0;&#xa;__guardLog = [];&#xa;__guardPickedUp = false;&#xa;__recordVoicemail = false;&#xa;__diversion = &#39;&#39;;&#xa;__onHoldAudioUrl = &#39;&#39;;&#xa;__currentGuardPhone = &#39;&#39;;&#xa;__transferResult = null;&#xa;__voicemailCapture = &#39;&#39;;'
+      Variables='__configJSON = {&#xa;    "Active": false,&#xa;    "ConfigId": 1,&#xa;    "ConfigName": "KLANTWACHT",&#xa;    "DialGuard": true,&#xa;    "OutboundAni": "",&#xa;    "Diversion": "",&#xa;    "OnHoldAudioUrl": "https://audio-${environment}.n-allo.be/on-hold.wav",&#xa;    "Timeout": 15,&#xa;    "RecordVoicemail": true,&#xa;    "AcceptCallMenu": true,&#xa;    "AcceptCallMessage": "Press 1 to accept the call.",&#xa;    "SendSms": true,&#xa;    "SendMail": true,&#xa;    "NextStep_Success": "00002",&#xa;    "NextStep_Failure": "00099",&#xa;    "NextStep": "00005"&#xa;};&#xa;__environment = environment;&#xa;__rtBaseUrl = _rtBaseUrl;&#xa;__rtGuardEndpoint = _rtActiveGuardByConfigEndpoint;&#xa;__rtNextStep &amp;= _rtNextStep;&#xa;__guardList = [];&#xa;__guardIndex = 0;&#xa;__guardCount = 0;&#xa;__guardLog = [];&#xa;__guardPickedUp = false;&#xa;__recordVoicemail = false;&#xa;__diversion = &#39;&#39;;&#xa;__onHoldAudioUrl = &#39;&#39;;&#xa;__currentGuardPhone = &#39;&#39;;&#xa;__transferResult = null;&#xa;__voicemailCapture = &#39;&#39;;'
       PropertiesDefinition='[&#xa;    {&#xa;        "name": "__configJSON",&#xa;        "title": "Operation config (JSON)",&#xa;        "hint": "Full RTDS operation Params object as JSON. Must include all required Params fields for the operation type.",&#xa;        "controlSettings": {&#xa;            "controlType": "text",&#xa;            "maxLength": 5000,&#xa;            "dataType": "string",&#xa;            "readonly": false&#xa;        }&#xa;    },&#xa;    {&#xa;        "name": "__environment",&#xa;        "title": "Environment",&#xa;        "hint": "Deployment environment. Controls which RTDS API endpoint is called.",&#xa;        "controlSettings": {&#xa;            "controlType": "text",&#xa;            "defaultValue": "environment",&#xa;            "maxLength": 100,&#xa;            "dataType": "string",&#xa;            "readonly": false&#xa;        }&#xa;    },&#xa;    {&#xa;        "name": "__nextStep",&#xa;        "title": "Next step (output variable name)",&#xa;        "hint": "Name of the session variable that will receive the next step Id after execution.",&#xa;        "controlSettings": {&#xa;            "controlType": "text",&#xa;            "defaultValue": "_rtNextStep",&#xa;            "maxLength": 100,&#xa;            "dataType": "string",&#xa;            "readonly": false&#xa;        }&#xa;    }&#xa;]'
       EnableUpdateRelations="true"
       AllowGlobalIntent="false"
@@ -67,7 +67,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code="__rtParams = __setupConfig(__configJSON);&#xa;if (!_headers) { _headers = {}; }&#xa;__rtOutcome = &#39;NextStep_Failure&#39;;&#xa;Logger.debug(&#39;[guardRouting] config resolved&#39;, { params: __rtParams, outcome: __rtOutcome });"
+      Code="__rtParams = __setupConfig(__configJSON);&#xa;if (!_headers) { _headers = {}; }&#xa;Logger.debug(&#39;[guardRouting] config resolved&#39;, { params: __rtParams });"
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
@@ -83,7 +83,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code='__rtOutcome = &#39;NextStep&#39;;&#xa;&#xa;if (!getValue(__rtParams, &#39;Active&#39;, false)) {&#xa;    Logger.info(&#39;[guardRouting] skipped -- inactive&#39;, { outcome: __rtOutcome });&#xa;    return;&#xa;}&#xa;&#xa;__guardList = [];&#xa;__guardIndex = 0;&#xa;__guardCount = 0;&#xa;__guardLog = [];&#xa;__guardPickedUp = false;&#xa;__recordVoicemail = String(getValue(__rtParams, &#39;RecordVoicemail&#39;, false)).toLowerCase() === &#39;true&#39;;&#xa;__diversion = getValue(__rtParams, &#39;Diversion&#39;, &#39;&#39;);&#xa;__onHoldAudioUrl = getValue(__rtParams, &#39;OnHoldAudioUrl&#39;, &#39;&#39;);&#xa;__currentGuardPhone = &#39;&#39;;&#xa;&#xa;__rtOutcome = &#39;NextStep_Failure&#39;;&#xa;&#xa;var __url = __rtBaseUrl + __rtGuardEndpoint + &#39;/&#39; + getValue(__rtParams, &#39;ConfigId&#39;, -1);&#xa;&#xa;return jsonHttpRequest(__url, { method: &#39;GET&#39;, "timeout": 10000 }, _headers).then(&#xa;    function (result) {&#xa;        if (!result || result.success !== true) {&#xa;            Logger.warn(&#39;[guardRouting] guard lookup failed&#39;, { statusCode: result &amp;&amp; result.statusCode, outcome: __rtOutcome });&#xa;            return;&#xa;        }&#xa;        var __guards = result.response || [];&#xa;        if (!__guards.length) {&#xa;            Logger.warn(&#39;[guardRouting] no active guards&#39;, { outcome: __rtOutcome });&#xa;            return;&#xa;        }&#xa;        __guardList = __guards;&#xa;        __guardCount = __guards.length;&#xa;        __rtOutcome = &#39;NextStep&#39;;&#xa;        Logger.info(&#39;[guardRouting] guards resolved&#39;, { count: __guardCount, outcome: __rtOutcome });&#xa;    },&#xa;    function (err) {&#xa;        Logger.error(&#39;[guardRouting] guard lookup error&#39;, { outcome: __rtOutcome }, err);&#xa;    }&#xa;);'
+      Code='global[_rtNextStep] = getValue(__rtParams, &#39;NextStep&#39;, &#39;&#39;);&#xa;&#xa;if (!getValue(__rtParams, &#39;Active&#39;, false)) {&#xa;    Logger.info(&#39;[guardRouting] skipped -- inactive&#39;, { nextStep: global[_rtNextStep] });&#xa;    return;&#xa;}&#xa;&#xa;__guardList = [];&#xa;__guardIndex = 0;&#xa;__guardCount = 0;&#xa;__guardLog = [];&#xa;__guardPickedUp = false;&#xa;__recordVoicemail = String(getValue(__rtParams, &#39;RecordVoicemail&#39;, false)).toLowerCase() === &#39;true&#39;;&#xa;__diversion = getValue(__rtParams, &#39;Diversion&#39;, &#39;&#39;);&#xa;__onHoldAudioUrl = getValue(__rtParams, &#39;OnHoldAudioUrl&#39;, &#39;&#39;);&#xa;__currentGuardPhone = &#39;&#39;;&#xa;&#xa;global[_rtNextStep] = getValue(__rtParams, &#39;NextStep_Failure&#39;, &#39;&#39;);&#xa;&#xa;var __url = __rtBaseUrl + __rtGuardEndpoint + &#39;/&#39; + getValue(__rtParams, &#39;ConfigId&#39;, -1);&#xa;&#xa;return jsonHttpRequest(__url, { method: &#39;GET&#39;, "timeout": 10000 }, _headers).then(&#xa;    function (result) {&#xa;        if (!result || result.success !== true) {&#xa;            Logger.warn(&#39;[guardRouting] guard lookup failed&#39;, { statusCode: result &amp;&amp; result.statusCode, nextStep: global[_rtNextStep] });&#xa;            return;&#xa;        }&#xa;        var __guards = result.response || [];&#xa;        if (!__guards.length) {&#xa;            Logger.warn(&#39;[guardRouting] no active guards&#39;, { nextStep: global[_rtNextStep] });&#xa;            return;&#xa;        }&#xa;        __guardList = __guards;&#xa;        __guardCount = __guards.length;&#xa;        global[_rtNextStep] = getValue(__rtParams, &#39;NextStep&#39;, &#39;&#39;);&#xa;        Logger.info(&#39;[guardRouting] guards resolved&#39;, { count: __guardCount, nextStep: global[_rtNextStep] });&#xa;    },&#xa;    function (err) {&#xa;        Logger.error(&#39;[guardRouting] guard lookup error&#39;, { nextStep: global[_rtNextStep] }, err);&#xa;    }&#xa;);'
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
@@ -120,7 +120,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code="var __guard = __guardList[__guardIndex] || {};&#xa;__currentGuardPhone = __guard.phone || &#39;&#39;;&#xa;__rtOutcome = &#39;NextStep_Success&#39;;&#xa;Logger.info(&#39;[guardRouting] dialing guard&#39;, { index: __guardIndex, outcome: __rtOutcome });"
+      Code="var __guard = __guardList[__guardIndex] || {};&#xa;__currentGuardPhone = __guard.phone || &#39;&#39;;&#xa;global[_rtNextStep] = getValue(__rtParams, &#39;NextStep_Success&#39;, &#39;&#39;);&#xa;Logger.info(&#39;[guardRouting] dialing guard&#39;, { index: __guardIndex, nextStep: global[_rtNextStep] });"
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
@@ -136,7 +136,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code="var __guard = __guardList[__guardIndex] || {};&#xa;var __redirectOutcome = __classifyRedirect(__transferResult);&#xa;__guardLog.push({ name: __guard.name, phone: __guard.phone, email: __guard.email, time: nowUTC(), outcome: __redirectOutcome });&#xa;if (__redirectOutcome === &#39;success&#39;) {&#xa;    __guardPickedUp = true;&#xa;    __rtOutcome = &#39;NextStep_Success&#39;;&#xa;} else {&#xa;    __guardIndex = __guardIndex + 1;&#xa;    __rtOutcome = &#39;NextStep&#39;;&#xa;}&#xa;Logger.info(&#39;[guardRouting] guard attempt logged&#39;, { index: __guardIndex, redirectOutcome: __redirectOutcome, outcome: __rtOutcome });"
+      Code="var __guard = __guardList[__guardIndex] || {};&#xa;var __outcome = __classifyRedirect(__transferResult);&#xa;__guardLog.push({ name: __guard.name, phone: __guard.phone, email: __guard.email, time: nowUTC(), outcome: __outcome });&#xa;if (__outcome === &#39;success&#39;) {&#xa;    __guardPickedUp = true;&#xa;    global[_rtNextStep] = getValue(__rtParams, &#39;NextStep_Success&#39;, &#39;&#39;);&#xa;} else {&#xa;    __guardIndex = __guardIndex + 1;&#xa;    global[_rtNextStep] = getValue(__rtParams, &#39;NextStep&#39;, &#39;&#39;);&#xa;}&#xa;Logger.info(&#39;[guardRouting] guard attempt logged&#39;, { index: __guardIndex, outcome: __outcome });"
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
@@ -179,7 +179,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code="var __voicemailResult = (typeof __voicemailCapture !== &#39;undefined&#39; &amp;&amp; __voicemailCapture) ? String(__voicemailCapture) : &#39;&#39;;&#xa;setVariable(&#39;guardVoicemailTranscript&#39;, __voicemailResult);&#xa;setVariable(&#39;guardVoicemailRecorded&#39;, __voicemailResult !== &#39;&#39;);&#xa;Logger.info(&#39;[guardRouting] voicemail captured&#39;, { recorded: __voicemailResult !== &#39;&#39;, outcome: __rtOutcome });"
+      Code="var __voicemailResult = (typeof __voicemailCapture !== &#39;undefined&#39; &amp;&amp; __voicemailCapture) ? String(__voicemailCapture) : &#39;&#39;;&#xa;setVariable(&#39;guardVoicemailTranscript&#39;, __voicemailResult);&#xa;setVariable(&#39;guardVoicemailRecorded&#39;, __voicemailResult !== &#39;&#39;);&#xa;Logger.info(&#39;[guardRouting] voicemail captured&#39;, { recorded: __voicemailResult !== &#39;&#39;, nextStep: global[_rtNextStep] });"
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
@@ -192,7 +192,7 @@
     <object
       label="output"
       Type="transient"
-      OnEnter="global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1);&#xa;Logger.info(&#39;[guardRouting] exit&#39;, { outcome: __rtOutcome, nextStep: global[_rtNextStep] });"
+      OnEnter="Logger.info(&#39;[guardRouting] exit&#39;, { nextStep: __rtNextStep });"
       OnLeave=""
       MaxEntryCount=""
       MaxEntryNodeId=""

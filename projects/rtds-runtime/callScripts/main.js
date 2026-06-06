@@ -108,12 +108,11 @@ _rtScheduleEndpoint = `/schedulingapi-${environment}/api/schedule/`;
 // Phonebook lookup endpoint. Available for future use.
 _rtPhonebookEndpoint = `/phonebookapi-${environment}`;
 
-// Master-layer global. GUI components write their chosen next-op id here before
-// the Re-Entry Script fires. resumeFrom reads: _rtNextStep || RTDS_nextStepId.
-// Initialized to "" -- an empty string is falsy, so before any component writes
-// a real id the || fallback to RTDS_nextStepId fires, and resumeFrom("") hits
-// its end-of-flow guard. ({} would be truthy and break both.)
-_rtNextStep = "";
+// Self-naming pointer. Per the storage.md contract, components write the next
+// step id via global[_rtNextStep] = ... and the Re-Entry Script reads it back
+// via global[_rtNextStep]. Holding the slot's own name keeps that indirection
+// stable across iterations. Initialised here once; never reassigned at runtime.
+_rtNextStep = "_rtNextStep";
 
 // +==========================================================================+
 // | S3  ENTRY SCRIPT BODY -- paste exactly the lines below this banner into  |
@@ -244,20 +243,19 @@ if (__isRepoRuntime && context && context.session) {
  *      step 4).
  *
  *   4. After every component, drop a Re-Entry Script node. Its entire body
- *      is ONE LINE:
+ *      is TWO LINES (assign so the case selector re-routes on the new key):
  *
- *          return resumeFrom(_rtNextStep || context.session.variables.RTDS_nextStepId);
+ *          result = resumeFrom(global[_rtNextStep] || context.session.variables.RTDS_nextStepId);
+ *          return result;
  *
  *      The component is responsible for writing the chosen next-op id to
- *      the master-layer variable `_rtNextStep` before it exits. Style A
- *      components do this via `global[_rtNextStep] = getValue(__rtParams,
- *      'NextStep_...', -1);` -- the master `Variables` block binds the
- *      component's internal `__rtNextStep` to the flow's `_rtNextStep` via
- *      the `&=` placeholder-binding operator, so the same id is visible
- *      to the Re-Entry script. If a component forgets to write it,
- *      prepareGuiHandoff has pre-populated RTDS_nextStepId with the op's
- *      default `NextStep`, so the fallback still advances the flow (just
- *      on the default branch).
+ *      `global[_rtNextStep]` before it exits. Style A components do this via
+ *      `global[_rtNextStep] = getValue(__rtParams, 'NextStep_...', -1);` --
+ *      since `_rtNextStep` is a self-naming pointer (init'd to "_rtNextStep"),
+ *      that resolves to `global._rtNextStep`, the slot the Re-Entry Script
+ *      reads back. If a component forgets to write it, prepareGuiHandoff has
+ *      pre-populated RTDS_nextStepId with the op's default `NextStep`, so the
+ *      fallback still advances the flow (just on the default branch).
  *
  *   5. The Re-Entry Script's outputs follow the same pattern as the Entry
  *      Script -- one per exit-key the next op might return. Wire each to its

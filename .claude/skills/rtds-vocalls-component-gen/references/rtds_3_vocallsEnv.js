@@ -1,26 +1,4 @@
 /**
- * rtds_3_vocallsEnv.js -- Vocalls runtime / environment library
- *
- * Cross-cutting platform code that is NOT RTDS-specific. Every Vocalls
- * project (RTDS or not) needs this layer: the Logger, the object-access
- * helpers, the varObj initialiser, and the session-store hook.
- *
- * Loaded FIRST by reverse-alphabetical sort (filename starts with
- * `rtds_3_` -- sorts highest in the `rtds_` family, so reverse-alpha picks
- * it first). Sibling files in this project:
- *   - rtds_2_runtime.js      -- RTDS dispatch (depends on Logger + getValue)
- *   - rtds_1_globalConfig.js -- DEFAULT_LOGGED_KEYS + constVarObj (loaded last)
- *
- * Public surface (everything declared without var/let/const becomes global):
- *   - Object helpers: getOrDefault, isValidObject, getValue, getValueOrFalsy,
- *                     hasKey, findKey, walk, applyDefaults, getNestedValue,
- *                     getScoped, activeFlag, resolveConfigTokens, nowUTC
- *   - varObj-shape readers: getRoutingConfig, getSessionConfig, getDebugConfig
- *   - Logger: Logger.debug / info / warn / error / API / configure
- *   - Lifecycle: initializeCallFlowContext(mode), storeSessionVariables()
- *
- * ES5.1 -- no let/const, no arrow functions. Template literals allowed.
- */
 
 // ============================================================================
 // OBJECT-ACCESS HELPERS

@@ -25,6 +25,11 @@ var REAL_FLOW = path.join(
     'DIGIPOLIS_LPA_ICT_GUARD_TUI_PRD.json'
 );
 
+function expectedSourceIdFromFlowFile(flowPath) {
+    var raw = JSON.parse(fs.readFileSync(flowPath, 'utf8'));
+    return raw.SourceId || raw.sourceId;
+}
+
 // Write a temp authoring-format flow file, return its path. Cleaned up after.
 var tempFiles = [];
 function writeTempFlow(obj) {
@@ -101,7 +106,9 @@ describe('flow simulator — real GuardTui flow end-to-end (covers AE2, AE4)', f
                 // The config mirrored into the session for the component handoff.
                 expect(guardHandoff.rtdsVars.RTDS_currentOpConfig.ConfigId).toBe(3);
                 expect(guardHandoff.rtdsVars.RTDS_nextStepId).toBe('00098');
-                expect(guardHandoff.rtdsVars.RTDS_sourceId).toBe('+3271690041');
+                expect(guardHandoff.rtdsVars.RTDS_sourceId).toBe(
+                    expectedSourceIdFromFlowFile(REAL_FLOW)
+                );
             });
     });
 

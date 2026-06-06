@@ -14,8 +14,8 @@
  *   - Routing-table fetch  (url contains 'routing-table/source')
  *       → { success:true, statusCode:200, response: flow }
  *     The chosen flow file IS the routing-table mock. Flow files are authored in
- *     the runtime-native shape (camelCase sourceId/operations/id/type/params),
- *     so the flow object is served straight to fetchAndStart — no conversion.
+ *     runtime-native shape (camelCase sourceId/operations/id/type/params).
+ *     Authoring files are PascalCase; cli/simulate-flow.js adapts before serving.
  *   - EventLog / logging   (url contains 'EventLog')
  *       → { success:true, statusCode:200 }   (no body needed)
  *   - Any other endpoint   → a per-URL fixture if one was supplied (substring

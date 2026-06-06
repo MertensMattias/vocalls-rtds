@@ -44,15 +44,14 @@ branch, so each was filled from the **component's own `__configJSON` defaults**:
 | --- | --- | --- |
 | `PhoneNumberVar: "ani"` | component default | which var holds the caller number to (de)activate |
 | `Timeout: 10000` | component default | DTMF/HTTP timeout |
-| `Prompt`, `ResultActivated`, `ResultDeactivated`, `ResultOnlyActive`, `ResultDenied`, `ResultError` | component default English text | spoken `say` nodes; `IsRequired=1` in the dictionary |
+| `ResultCurrentlyActivated_NL`, `ResultCurrentlyDeactivated_NL`, `PromptActivate_NL`, `PromptDeactivate_NL`, `ResultActivated_NL`, `ResultDeactivated_NL`, `ResultOnlyActive_NL`, `ResultDenied_NL`, `ResultError_NL` | `sourceCode_guardTui.js` / KLANTWACHT template | per-language spoken slots; component resolves `base + '_' + language` |
 | `NextStep_Denied` | mapped to the legacy **Failure** node | the component branches on `denied`; legacy had no such branch, so denied falls through to the Cognos-failure node |
 
 The two trailing **Cognos** `SetAttributes` nodes (success `IVREvent 1200 / IVRAction CT`,
 failure `9999 / DC`) → `SetVariables_vocalls` with `IvrEvent`/`IvrAction`. `Active:true` added.
 
-> ⚠️ **Spoken text is English placeholder.** The legacy flows are `SupportedLanguages: "NL"` but
-> the component ships English defaults. Replace `Prompt`/`Result*` with the real Dutch prompts (or
-> wire multi-language `TtsMessages`) before production.
+> ⚠️ **Spoken text is still English placeholder** (`*_NL` suffix, English copy). Replace with Dutch
+> copy (or add `*_FR` / `*_DE` dictionary rows) before production.
 
 ### ⚠️ Data-quality findings in the source files
 
@@ -89,7 +88,7 @@ From `registerRtdsOperation` / `registerRtdsExit` ([rtds_2_runtime.js:1083-1098]
 | `Callback` | `Callback_vocalls` | ⚠️ exit registered, **no component** |
 | `Condition` | `Condition_vocalls` | ❌ **not registered, no component, spec-only** |
 | `Emergency` | `Emergency_vocalls` | ❌ **not registered, no component, spec-only** |
-| `Schedule` | `Schedule_vocalls` | ⚠️ component [checkSchedule.js](../rtds/components/checkSchedule.js) exists but **not registered** |
+| `Schedule` | `CheckSchedule_vocalls` | ⚠️ component [checkSchedule.js](../rtds/components/checkSchedule.js) exists but **not registered** |
 | `FlowJump` | `FlowJump_vocalls` | ❌ **not registered, spec-only** |
 
 Files containing any ❌/⚠️-unregistered type (the two helpdesk flows) will be written with a **`_TODO` filename suffix** so it's obvious they reference types the runtime will currently *skip to NextStep with a warning*.

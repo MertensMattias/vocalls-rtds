@@ -1,0 +1,176 @@
+{
+  "SourceId": "+3224581030",
+  "Name": "N-ALLO - RECEPTION",
+  "ProjectId": "83",
+  "Project": "NALLO",
+  "PromptLibraryId": "1",
+  "PromptLibrary": "N-Allo\\RECEPTION",
+  "SupportedLanguages": "NL|FR",
+  "Operations": [
+    {
+      "Id": "00000",
+      "Type": "SetAttributes",
+      "Name": "Call Initialization",
+      "IsFirstOperation": true,
+      "Params": {
+        "LogAttributes": "RTDS_ProjectName|Eic_RemoteId|ATTR_RoutingId|ATTR_CallflowId",
+        "CallflowId": "RECEPTION",
+        "RoutingId": "RECEPTION",
+        "NextStep": "00001"
+      }
+    },
+    {
+      "Id": "00001",
+      "Type": "PlayPrompt",
+      "Name": "Play: Welcome",
+      "Params": {
+        "Active": ["1", "isDisplayed", "isEditable"],
+        "ApplicationId": "11",
+        "Prompt": ["Welcome", "isDisplayed", "isEditable"],
+        "NextStep": "00002"
+      },
+      "TtsMessages": { "NL": "test NL", "FR": "test FR" }
+    },
+    {
+      "Id": "00002",
+      "Type": "LanguageMenu",
+      "Name": "Choose Dutch or French",
+      "Params": {
+        "StaticPrompt": "Menu_LanguageMenu.wav",
+        "Languages": "$(RTDS_SupportedLanguages)",
+        "MaxTries": "2",
+        "NextStep": "00003"
+      }
+    },
+    {
+      "Id": "00003",
+      "Type": "Schedule",
+      "Name": "Check: Scheduler",
+      "Params": {
+        "ApplicationId": "1",
+        "ScheduleID": 51,
+        "NextStep_Open": "00040",
+        "NextStep_Transfer": "00090",
+        "NextStep_Closed": "00100",
+        "NextStep": "00099"
+      }
+    },
+    {
+      "Id": "00040",
+      "Type": "Condition",
+      "Name": "Check: Staffing",
+      "Params": {
+        "Statistic": "AgentsLoggedIn",
+        "Workgroup": "N-ALLO_Reception_V",
+        "Operator": "gt",
+        "Value": 0,
+        "NextStep_True": "00043",
+        "NextStep_False": "00091"
+      }
+    },
+    {
+      "Id": "00043",
+      "Type": "Condition",
+      "Name": "Check: MaxQueue",
+      "Params": {
+        "Statistic": "CallsWaiting",
+        "Workgroup": "N-ALLO_Reception_V",
+        "Operator": "gt",
+        "Value": 39,
+        "NextStep_True": "00091",
+        "NextStep_False": "00050"
+      }
+    },
+    {
+      "Id": "00050",
+      "Type": "WorkgroupTransfer",
+      "Name": "Route-To: LPA REGIO",
+      "Params": {
+        "QueueName": "N-ALLO_Reception_V",
+        "Skills": "$(RTDS_ChosenLanguage)|Reception",
+        "Priority": 100,
+        "Timeout": 10,
+        "NextStep_Timeout": "00052",
+        "NextStep": "00051"
+      }
+    },
+    {
+      "Id": "00051",
+      "Type": "PlayPrompt",
+      "Name": "Queue: Message 1",
+      "Params": { "Prompt": "Queue_Waitmessage01", "NextStep": "00052" }
+    },
+    {
+      "Id": "00052",
+      "Type": "PlayPrompt",
+      "Name": "Play: NoBodyAvailable",
+      "Params": {
+        "Active": true,
+        "Prompt": "Queue_NoBodyAvailable.wav",
+        "NextStep": "00091"
+      }
+    },
+    {
+      "Id": "00090",
+      "Type": "ExternalTransfer",
+      "Name": "Route-To: External Number",
+      "Params": {
+        "PhoneNumber": "",
+        "OutboundANI": "",
+        "PerformCallAnalysis": false,
+        "DiversionReason": 8,
+        "Timeout": 30,
+        "NextStep_Busy": "00093",
+        "NextStep_RNA": "00093",
+        "NextStep": "00100"
+      }
+    },
+    {
+      "Id": "00091",
+      "Type": "VoicemailCallback",
+      "Name": "Leave voicemail",
+      "Params": {
+        "Prompt": "Voicemail_LeaveMessage.wav",
+        "ReadyPrompt": "Voicemail_MessageRecorded",
+        "TerminationKeys": "#",
+        "MaxDuration": 120,
+        "RecordingFilePrefix": "Reception",
+        "Workgroup": "N-ALLO_Reception_VM",
+        "Skills": "$(RTDS_ChosenLanguage)|Reception",
+        "CallbackNumber": "$(Eic_RemoteId)",
+        "CallbackFrom": "Voicemail from Customer",
+        "CallbackSubject": "Voicemail Recorded",
+        "TransferAttributes": "Eic_Language",
+        "NextStep": "00094",
+        "NextStep_Escape": "00093",
+        "NextStep_Error": "00093"
+      }
+    },
+    {
+      "Id": "00093",
+      "Type": "PlayPrompt",
+      "Name": "Play: Voicemail Error",
+      "Params": {
+        "Active": true,
+        "Prompt": "Voicemail_Error.wav",
+        "NextStep": "00094"
+      }
+    },
+    {
+      "Id": "00094",
+      "Type": "PlayPrompt",
+      "Name": "Play: Voicemail Disconnect",
+      "Params": {
+        "Active": true,
+        "Prompt": "Voicemail_Disconnect.wav",
+        "NextStep": "00100"
+      }
+    },
+    {
+      "Id": "00100",
+      "Type": "Disconnect",
+      "Name": "RTDS: Disconnect",
+      "Params": {}
+    }
+  ]
+}

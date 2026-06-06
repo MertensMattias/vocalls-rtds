@@ -236,7 +236,7 @@
         }
       }
     },
-    "/Guard": {
+    "/api/Guard": {
       "get": {
         "tags": ["Guard"],
         "operationId": "GetGuards",
@@ -317,9 +317,55 @@
             }
           }
         }
+      },
+      "put": {
+        "tags": ["Guard"],
+        "operationId": "UpdateGuard",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuardDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuardDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuardDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              }
+            }
+          }
+        }
       }
     },
-    "/Guard/active": {
+    "/api/Guard/active": {
       "get": {
         "tags": ["Guard"],
         "operationId": "GetActiveGuards",
@@ -356,7 +402,7 @@
         }
       }
     },
-    "/Guard/current": {
+    "/api/Guard/current": {
       "get": {
         "tags": ["Guard"],
         "operationId": "GetCurrentGuard",
@@ -394,7 +440,7 @@
         }
       }
     },
-    "/Guard/{id}": {
+    "/api/Guard/{id}": {
       "get": {
         "tags": ["Guard"],
         "operationId": "GetGuardById",
@@ -434,7 +480,47 @@
         }
       }
     },
-    "/Guard/activate/{guardID}": {
+    "/api/Guard/GetByGuardConfig/{id}": {
+      "get": {
+        "tags": ["Guard"],
+        "operationId": "GetByGuardConfig",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Guard/activate/{guardID}": {
       "post": {
         "tags": ["Guard"],
         "operationId": "ActivateGuard",
@@ -474,7 +560,7 @@
         }
       }
     },
-    "/Guard/deactivate/{guardID}": {
+    "/api/Guard/deactivate/{guardID}": {
       "post": {
         "tags": ["Guard"],
         "operationId": "DeactivateGuard",
@@ -496,17 +582,171 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/GuardDto"
+                  "type": "boolean"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GuardDto"
+                  "type": "boolean"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GuardDto"
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Guard/GetGuardByPhoneNumberAndConfig": {
+      "get": {
+        "tags": ["Guard"],
+        "operationId": "GetGuardByPhoneNumberAndConfig",
+        "parameters": [
+          {
+            "name": "phoneNumber",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "guardConfigId",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GuardDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GuardDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GuardDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Guard/GetAllCurrentActiveGuardsByGuardConfig": {
+      "get": {
+        "tags": ["Guard"],
+        "operationId": "GetAllCurrentActiveGuardsByGuardConfig",
+        "parameters": [
+          {
+            "name": "guardConfigId",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GuardDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GuardDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GuardDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Guard/AnyGuardWithPhoneNumberAndConfig": {
+      "get": {
+        "tags": ["Guard"],
+        "parameters": [
+          {
+            "name": "guardConfigId",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "phonenumber",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "originGuardId",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "format": "int32",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
                 }
               }
             }
@@ -895,6 +1135,9 @@
           "updatedBy": {
             "type": "string",
             "nullable": true
+          },
+          "activeFlag": {
+            "type": "boolean"
           }
         }
       },
@@ -1025,7 +1268,8 @@
             "nullable": true
           },
           "updatedBy": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           }
         }
       }

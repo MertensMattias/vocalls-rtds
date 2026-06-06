@@ -1,18 +1,18 @@
 {
-  "sourceId": "+3281800050",
-  "name": "DIGIPOLIS - DA_KLANTWACHT",
-  "projectId": "127",
-  "project": "DA HELPDESK",
-  "promptLibraryId": "",
-  "promptLibrary": "DIGIPOLIS\\DA\\KLANTWACHT",
-  "supportedLanguages": "NL",
-  "operations": [
+  "SourceId": "+3257351122",
+  "Name": "DIGIPOLIS - DA_KLANTWACHT",
+  "ProjectId": "127",
+  "Project": "DA HELPDESK",
+  "PromptLibraryId": "",
+  "PromptLibrary": "DIGIPOLIS\\DA\\KLANTWACHT",
+  "SupportedLanguages": "NL",
+  "Operations": [
     {
-      "id": "00000",
-      "type": "SetVariables_vocalls",
-      "name": "Call Initialization",
-      "isFirstOperation": true,
-      "params": {
+      "Id": "00000",
+      "Type": "SetVariables_vocalls",
+      "Name": "Call Initialization",
+      "IsFirstOperation": true,
+      "Params": {
         "Active": true,
         "RoutingId": "DA_KLANTWACHT",
         "CustomerName": "DA",
@@ -23,10 +23,10 @@
       }
     },
     {
-      "id": "00001",
-      "type": "Guard_vocalls",
-      "name": "DA_KLANTWACHT",
-      "params": {
+      "Id": "00001",
+      "Type": "Guard_vocalls",
+      "Name": "DA_KLANTWACHT",
+      "Params": {
         "Active": true,
         "ConfigId": 1,
         "ConfigName": "KLANTWACHT",
@@ -46,10 +46,10 @@
       }
     },
     {
-      "id": "00002",
-      "type": "SendMail_vocalls",
-      "name": "Mail-To: DA_KLANTWACHT",
-      "params": {
+      "Id": "00002",
+      "Type": "SendMail_vocalls",
+      "Name": "Mail-To: DA_KLANTWACHT",
+      "Params": {
         "Active": true,
         "Subject": "DA_KLANTWACHT: Call Report",
         "From": "IVR_EVENTS@n-allo.be",
@@ -69,10 +69,10 @@
       }
     },
     {
-      "id": "00003",
-      "type": "SendSms_vocalls",
-      "name": "SMS-To: DA_KLANTWACHT",
-      "params": {
+      "Id": "00003",
+      "Type": "SendSms_vocalls",
+      "Name": "SMS-To: DA_KLANTWACHT",
+      "Params": {
         "Active": true,
         "SmsAccountId": 47,
         "Routing": "KLANTWACHT",
@@ -86,10 +86,10 @@
       }
     },
     {
-      "id": "00099",
-      "type": "Disconnect_vocalls",
-      "name": "RTDS: Disconnect",
-      "params": {}
+      "Id": "00099",
+      "Type": "Disconnect_vocalls",
+      "Name": "RTDS: Disconnect",
+      "Params": {}
     }
   ]
 }

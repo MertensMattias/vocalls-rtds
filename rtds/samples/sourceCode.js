@@ -1,6 +1,6 @@
 <mxGraphModel
-  dx="4432"
-  dy="4625"
+  dx="7612"
+  dy="6512"
   grid="1"
   gridSize="10"
   guides="1"
@@ -10,8 +10,8 @@
   fold="1"
   page="1"
   pageScale="1"
-  pageWidth="850"
-  pageHeight="1100"
+  pageWidth="827"
+  pageHeight="1169"
 >
   <root>
     <object
@@ -86,13 +86,13 @@
     <object
       label=""
       Type="dial"
-      OnEnter="Logger.debug(&#39;[rtds] result object: &#39; + JSON.stringify(result))"
+      OnEnter="Logger.debug(&#39;[rtds] result object: &#39; + JSON.stringify(result)); &#xa;Logger.debug(&#39;[rtds] varObj object: &#39; + JSON.stringify(varObj));"
       OnLeave=""
       MaxEntryCount=""
       MaxEntryNodeId=""
       DynamicNextId=""
-      id="100"
       DynamicNextTabGuid=""
+      id="100"
     >
       <mxCell
         style="dialNode;strokeColor=#D1B73D;"
@@ -253,7 +253,7 @@
     </mxCell>
     <object label="START" Type="start" id="82">
       <mxCell style="startNode" parent="baselayer" vertex="1">
-        <mxGeometry x="52" y="-2400" width="130" height="40" as="geometry" />
+        <mxGeometry x="52.5" y="-2410" width="130" height="40" as="geometry" />
       </mxCell>
     </object>
     <object
@@ -320,16 +320,12 @@
       DynamicNextTabGuid=""
       id="230"
     >
-      <mxCell
-        style="scriptNode;strokeColor=#999999;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="scriptNode" parent="baselayer" vertex="1">
         <mxGeometry x="-44" y="-320" width="168" height="80" as="geometry" />
       </mxCell>
     </object>
     <object
-      label="get&lt;br&gt;SourceId"
+      label="get&lt;br&gt;SourceIdd"
       Type="script"
       OnEnter=""
       OnLeave=""
@@ -345,7 +341,7 @@
         parent="baselayer"
         vertex="1"
       >
-        <mxGeometry x="33.5" y="-1630" width="168" height="80" as="geometry" />
+        <mxGeometry x="33" y="-1660" width="168" height="80" as="geometry" />
       </mxCell>
     </object>
     <mxCell
@@ -394,7 +390,7 @@
         parent="baselayer"
         vertex="1"
       >
-        <mxGeometry x="33" y="-1750" width="168" height="80" as="geometry" />
+        <mxGeometry x="33" y="-1800" width="168" height="80" as="geometry" />
       </mxCell>
     </object>
     <mxCell
@@ -416,7 +412,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code="_rtBaseUrl = &#39;https://api.n-allo.be&#39;;&#xa;_rtSmsEndpoint = `/smsapi-${environment}/api/Send`;&#xa;_rtMailEndpoint = `/mailapi-${environment}/api/SendMail`;&#xa;&#xa;_rtGetSourceIdEndpoint = `/routingtablesapi-${environment}/api/routing-table/source`;&#xa;&#xa;_rtTuiCheckAccessEndpoint = `/rtdsapi-${environment}/api/Guards/AnyGuardWithPhoneNumberAndConfig`;&#xa;_rtTuiGetStateEndpoint = `/rtdsapi-${environment}/api/Guards/GetGuardByPhoneNumberAndConfig`;&#xa;_rtTuiActivateEndpoint = `/rtdsapi-${environment}/api/Guards/Activate`;&#xa;_rtTuiDeactivateEndpoint = `/rtdsapi-${environment}/api/Guards/Disable`;&#xa;&#xa;_rtActiveGuardByConfigEndpoint = `/digipolisapi-${environment}/Guard/GetAllCurrentActiveGuardsByGuardConfig`;&#xa;_rtAnyGuardWithPhoneAndConfEndpoint = `/digipolisapi-${environment}/Guard/AnyGuardWithPhoneNumberAndConfig`;&#xa;&#xa;_rtScheduleEndpoint = `/schedulingapi-${environment}/api/schedule/`;&#xa;_rtPhonebookEndpoint = `/phonebookapi-${environment}`;"
+      Code="_rtBaseUrl = &#39;https://api.n-allo.be&#39;;&#xa;_rtSmsEndpoint = `/smsapi-${environment}/api/Send`;&#xa;_rtMailEndpoint = `/mailapi-${environment}/api/SendMail`;&#xa;&#xa;_rtGetSourceIdEndpoint = `/routingtablesapi-${environment}/api/routing-table/source`;&#xa;&#xa;_rtTuiCheckAccessEndpoint = `/rtdsapi-${environment}/api/Guard/AnyGuardWithPhoneNumberAndConfig`;&#xa;_rtTuiGetStateEndpoint = `/rtdsapi-${environment}/api/Guard/GetGuardByPhoneNumberAndConfig`;&#xa;_rtTuiActivateEndpoint = `/rtdsapi-${environment}/api/Guard/Activate`;&#xa;_rtTuiDeactivateEndpoint = `/rtdsapi-${environment}/api/Guard/Disable`;&#xa;&#xa;_rtActiveGuardByConfigEndpoint = `/digipolisapi-${environment}/api/Guard/GetAllCurrentActiveGuardsByGuardConfig`;&#xa;_rtAnyGuardWithPhoneAndConfEndpoint = `/digipolisapi-${environment}/api/Guard/AnyGuardWithPhoneNumberAndConfig`;&#xa;&#xa;_rtScheduleEndpoint = `/schedulingapi-${environment}/api/schedule/`;&#xa;_rtPhonebookEndpoint = `/phonebookapi-${environment}`;&#xa;&#xa;&#xa;Logger.configure({ activeLevel: &#39;DEBUG&#39; });"
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
@@ -465,11 +461,7 @@
       DynamicNextTabGuid=""
       id="353"
     >
-      <mxCell
-        style="scriptNode;strokeColor=#999999;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="scriptNode" parent="baselayer" vertex="1">
         <mxGeometry x="-44" y="-140" width="168" height="80" as="geometry" />
       </mxCell>
     </object>
@@ -491,7 +483,7 @@
         parent="baselayer"
         vertex="1"
       >
-        <mxGeometry x="-81.5" y="-1480" width="398" height="80" as="geometry" />
+        <mxGeometry x="-81.5" y="-1520" width="398" height="80" as="geometry" />
       </mxCell>
     </object>
     <mxCell
@@ -528,11 +520,7 @@
       MaxEntryCount=""
       id="394"
     >
-      <mxCell
-        style="labelNode;strokeColor=#999999;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="labelNode" parent="baselayer" vertex="1">
         <mxGeometry
           x="450"
           y="-1111.75"
@@ -674,12 +662,12 @@
       </mxCell>
     </object>
     <mxCell
-      id="431"
+      id="527"
       style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;"
+      edge="1"
       parent="baselayer"
       source="401"
-      target="325"
-      edge="1"
+      target="525"
     >
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
@@ -699,18 +687,14 @@
       </mxCell>
     </object>
     <mxCell
-      id="430"
+      id="523"
       style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;"
+      edge="1"
       parent="baselayer"
       source="402"
-      target="321"
-      edge="1"
+      target="521"
     >
-      <mxGeometry relative="1" as="geometry">
-        <Array as="points">
-          <mxPoint x="770" y="-370" />
-        </Array>
-      </mxGeometry>
+      <mxGeometry relative="1" as="geometry" />
     </mxCell>
     <object
       label="sendEmail"
@@ -728,12 +712,12 @@
       </mxCell>
     </object>
     <mxCell
-      id="449"
+      id="519"
       style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;"
+      edge="1"
       parent="baselayer"
       source="403"
-      target="428"
-      edge="1"
+      target="517"
     >
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
@@ -753,12 +737,12 @@
       </mxCell>
     </object>
     <mxCell
-      id="439"
+      id="515"
       style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;"
+      edge="1"
       parent="baselayer"
       source="404"
-      target="437"
-      edge="1"
+      target="513"
     >
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
@@ -953,10 +937,10 @@
       </mxCell>
     </object>
     <object
-      label="result == &#39;send_email&#39;"
+      label="result == &#39;send_mail&#39;"
       DynamicNextId=""
       SubType="expression"
-      Expression="result == &#39;send_email&#39;"
+      Expression="result == &#39;send_mail&#39;"
       id="389"
     >
       <mxCell style="expressionNode" parent="378" vertex="1">
@@ -1119,12 +1103,12 @@
       </mxGeometry>
     </mxCell>
     <mxCell
-      id="421"
+      id="531"
       style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;"
+      edge="1"
       parent="baselayer"
       source="419"
-      target="333"
-      edge="1"
+      target="529"
     >
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
@@ -1140,7 +1124,11 @@
       DynamicNextTabGuid=""
       id="419"
     >
-      <mxCell style="labelNode" parent="baselayer" vertex="1">
+      <mxCell
+        style="labelNode;strokeColor=#999999;"
+        parent="baselayer"
+        vertex="1"
+      >
         <mxGeometry
           x="450"
           y="-1191.75"
@@ -1164,16 +1152,6 @@
           <mxPoint x="330" y="-1172" />
         </Array>
       </mxGeometry>
-    </mxCell>
-    <mxCell
-      id="429"
-      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;"
-      parent="baselayer"
-      source="333"
-      target="428"
-      edge="1"
-    >
-      <mxGeometry relative="1" as="geometry" />
     </mxCell>
     <mxCell
       id="423"
@@ -1282,82 +1260,6 @@
       </mxCell>
     </object>
     <mxCell
-      id="443"
-      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;"
-      parent="baselayer"
-      source="321"
-      target="428"
-      edge="1"
-    >
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-    <object
-      label=""
-      Type="component"
-      ComponentGuid="2c9746c6-eff2-4a12-af2f-45b0482ff045"
-      ComponentVersion="J4bZfKh7vNSqq6T/bq4lrA=="
-      SupportedLanguages=""
-      __configJSON="paramsEmail"
-      __environment="environment"
-      __rtBaseUrl="_rtBaseUrl"
-      __rtEndpoint="_rtMailEndpoint"
-      __rtNextStep="_rtNextStep"
-      SingleInput="0"
-      SingleOutput="6"
-      ManualId=""
-      EnableUpdateRelations="true"
-      AllowGlobalIntent="false"
-      PropertiesDefinition="&#39;[\n    {\n        \&#39;name\&#39;: \&#39;__configJSON\&#39;,\n        \&#39;title\&#39;: \&#39;Operation config (JSON)\&#39;,\n        \&#39;hint\&#39;: \&#39;Full RTDS operation Params object as JSON. Must include all required Params fields for the operation type.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;maxLength\&#39;: 5000,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    },\n    {\n        \&#39;name\&#39;: \&#39;__environment\&#39;,\n        \&#39;title\&#39;: \&#39;Environment\&#39;,\n        \&#39;hint\&#39;: \&#39;Deployment environment. Controls which RTDS API endpoint is called.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;defaultValue\&#39;: \&#39;environment\&#39;,\n            \&#39;maxLength\&#39;: 100,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    },\n    {\n        \&#39;name\&#39;: \&#39;__nextStep\&#39;,\n        \&#39;title\&#39;: \&#39;Next step (output variable name)\&#39;,\n        \&#39;hint\&#39;: \&#39;Name of the session variable that will receive the next step Id after execution.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;defaultValue\&#39;: \&#39;_rtNextStep\&#39;,\n            \&#39;maxLength\&#39;: 100,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    }\n]&#39;"
-      id="321"
-    >
-      <mxCell style="component3Node" parent="baselayer" vertex="1">
-        <mxGeometry x="770" y="-405.5" width="155" height="71" as="geometry" />
-      </mxCell>
-    </object>
-    <object label="rtds_sendEmail" id="322">
-      <mxCell style="componentInnerNode;" parent="321" vertex="1">
-        <mxGeometry x="10" y="16" width="135" height="45" as="geometry" />
-      </mxCell>
-    </object>
-    <mxCell
-      id="442"
-      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;"
-      parent="baselayer"
-      source="325"
-      target="428"
-      edge="1"
-    >
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-    <object
-      label=""
-      Type="component"
-      ComponentGuid="70d37307-be29-4769-9306-64dedee16f4c"
-      ComponentVersion="kGf9kBIIeQVHCh5jeoSGCA=="
-      SupportedLanguages=""
-      __configJSON="params"
-      __environment="environment"
-      __rtBaseUrl="_rtBaseUrl"
-      __rtEndpoint="_rtSmsEndpoint"
-      __rtNextStep="_rtNextStep"
-      SingleInput="0"
-      SingleOutput="6"
-      ManualId=""
-      EnableUpdateRelations="true"
-      AllowGlobalIntent="false"
-      PropertiesDefinition="&#39;[\n    {\n        \&#39;name\&#39;: \&#39;__configJSON\&#39;,\n        \&#39;title\&#39;: \&#39;Operation config (JSON)\&#39;,\n        \&#39;hint\&#39;: \&#39;Full RTDS operation Params object as JSON. Must include all required Params fields for the operation type.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;maxLength\&#39;: 5000,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    },\n    {\n        \&#39;name\&#39;: \&#39;__environment\&#39;,\n        \&#39;title\&#39;: \&#39;Environment\&#39;,\n        \&#39;hint\&#39;: \&#39;Deployment environment. Controls which RTDS API endpoint is called.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;defaultValue\&#39;: \&#39;environment\&#39;,\n            \&#39;maxLength\&#39;: 100,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    },\n    {\n        \&#39;name\&#39;: \&#39;__nextStep\&#39;,\n        \&#39;title\&#39;: \&#39;Next step (output variable name)\&#39;,\n        \&#39;hint\&#39;: \&#39;Name of the session variable that will receive the next step Id after execution.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;defaultValue\&#39;: \&#39;_rtNextStep\&#39;,\n            \&#39;maxLength\&#39;: 100,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    }\n]&#39;"
-      id="325"
-    >
-      <mxCell style="component3Node" parent="baselayer" vertex="1">
-        <mxGeometry x="770" y="-495.5" width="155" height="71" as="geometry" />
-      </mxCell>
-    </object>
-    <object label="rtds_sendSms" id="326">
-      <mxCell style="componentInnerNode;" parent="325" vertex="1">
-        <mxGeometry x="10" y="16" width="135" height="45" as="geometry" />
-      </mxCell>
-    </object>
-    <mxCell
       id="441"
       style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;"
       parent="baselayer"
@@ -1387,47 +1289,6 @@
     </object>
     <object label="rtds_workgroupTransfer" id="433">
       <mxCell style="componentInnerNode" parent="432" vertex="1">
-        <mxGeometry x="10" y="16" width="135" height="45" as="geometry" />
-      </mxCell>
-    </object>
-    <mxCell
-      id="444"
-      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;"
-      parent="baselayer"
-      source="437"
-      target="428"
-      edge="1"
-    >
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-    <object
-      label=""
-      Type="component"
-      ComponentGuid="4831f02d-87e3-44b5-bf4b-dff68873e1b2"
-      ComponentVersion=""
-      SupportedLanguages=""
-      __configJSON='{   "Active": false,   "ConfigId": "",   "PhoneNumberVar": "ani",   "Timeout": 10000,   "Prompt": "To activate this number, press 7. To deactivate this number, press 3.",   "ResultActivated": "Your number is successfully activated.",   "ResultDeactivated": "Your number is successfully deactivated.",   "ResultOnlyActive": "You are currently the only active member, therefore you are not able to deactivate yourself.",   "ResultDenied": "You are not allowed to use this service. If you disagree, contact your administrator. Thank you for calling.",   "ResultError": "We encountered a technical issue. Contact your administrator to report this issue.",   "NextStep": "00010",   "NextStep_Success": "00011",   "NextStep_Denied": "00012",   "NextStep_Failure": "00099" }'
-      __environment="environment"
-      __rtBaseUrl="_rtBaseUrl"
-      __rtTuiCheckAccessEndpoint="_rtTuiCheckAccessEndpoint"
-      __rtTuiGetStateEndpoint="_rtTuiGetStateEndpoint"
-      __rtTuiActivateEndpoint="_rtTuiActivateEndpoint"
-      __rtTuiDeactivateEndpoint="_rtTuiDeactivateEndpoint"
-      __rtNextStep="_rtNextStep"
-      SingleInput="0"
-      SingleOutput="6"
-      ManualId=""
-      EnableUpdateRelations="true"
-      AllowGlobalIntent="false"
-      PropertiesDefinition="&#39;[\n    {\n        \&#39;name\&#39;: \&#39;__configJSON\&#39;,\n        \&#39;title\&#39;: \&#39;Operation config (JSON)\&#39;,\n        \&#39;hint\&#39;: \&#39;Full RTDS operation Params object as JSON. Must include all required Params fields for the operation type.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;maxLength\&#39;: 5000,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    },\n    {\n        \&#39;name\&#39;: \&#39;__environment\&#39;,\n        \&#39;title\&#39;: \&#39;Environment\&#39;,\n        \&#39;hint\&#39;: \&#39;Deployment environment. Controls which RTDS API endpoint is called.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;defaultValue\&#39;: \&#39;environment\&#39;,\n            \&#39;maxLength\&#39;: 100,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    },\n    {\n        \&#39;name\&#39;: \&#39;__nextStep\&#39;,\n        \&#39;title\&#39;: \&#39;Next step (output variable name)\&#39;,\n        \&#39;hint\&#39;: \&#39;Name of the session variable that will receive the next step Id after execution.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;defaultValue\&#39;: \&#39;_rtNextStep\&#39;,\n            \&#39;maxLength\&#39;: 100,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    }\n]&#39;"
-      id="437"
-    >
-      <mxCell style="component5Node;" parent="baselayer" vertex="1">
-        <mxGeometry x="770" y="-225.5" width="155" height="71" as="geometry" />
-      </mxCell>
-    </object>
-    <object label="rtds_guardTui" id="438">
-      <mxCell style="componentInnerNode;" parent="437" vertex="1">
         <mxGeometry x="10" y="16" width="135" height="45" as="geometry" />
       </mxCell>
     </object>
@@ -1535,9 +1396,11 @@
     >
       <mxGeometry relative="1" as="geometry">
         <Array as="points">
-          <mxPoint x="290" y="-1914" />
-          <mxPoint x="290" y="-1770" />
-          <mxPoint x="118" y="-1770" />
+          <mxPoint x="170" y="-1914" />
+          <mxPoint x="170" y="-1910" />
+          <mxPoint x="370" y="-1910" />
+          <mxPoint x="370" y="-1830" />
+          <mxPoint x="117" y="-1830" />
         </Array>
       </mxGeometry>
     </mxCell>
@@ -1560,7 +1423,7 @@
       ComponentGuid="3fd2689f-4b77-4e7c-a6eb-ce7660ad3754"
       ComponentVersion="IXbPB0yTriztX0TuIDS+ew=="
       SupportedLanguages=""
-      __configJSON="__jsonConfig"
+      __configJSON="context.session.variables.RTDS_currentOpConfig"
       __environment="environment"
       __rtBaseUrl="_rtBaseUrl"
       __rtEndpoint="_rtScheduleEndpoint"
@@ -1579,38 +1442,6 @@
     </object>
     <object label="rtds_checkScheduler" id="350">
       <mxCell style="componentInnerNode;" parent="349" vertex="1">
-        <mxGeometry x="10" y="16" width="135" height="45" as="geometry" />
-      </mxCell>
-    </object>
-    <object
-      label=""
-      Type="component"
-      ComponentGuid="dde18c8b-7924-4b07-a014-3f5d4bea8f29"
-      ComponentVersion="sUtXuhhkY/9c26miqflNOA=="
-      SupportedLanguages=""
-      __configJSON="__jsonConfig"
-      __environment="environment"
-      __rtNextStep="_rtNextStep"
-      SingleInput="0"
-      SingleOutput="6"
-      ManualId=""
-      EnableUpdateRelations="true"
-      AllowGlobalIntent="false"
-      PropertiesDefinition="&#39;[\n    {\n        \&#39;name\&#39;: \&#39;__configJSON\&#39;,\n        \&#39;title\&#39;: \&#39;Operation config (JSON)\&#39;,\n        \&#39;hint\&#39;: \&#39;Full RTDS operation Params object as JSON. Must include all required Params fields for the operation type.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;maxLength\&#39;: 5000,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    },\n    {\n        \&#39;name\&#39;: \&#39;__environment\&#39;,\n        \&#39;title\&#39;: \&#39;Environment\&#39;,\n        \&#39;hint\&#39;: \&#39;Deployment environment. Controls which RTDS API endpoint is called.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;defaultValue\&#39;: \&#39;environment\&#39;,\n            \&#39;maxLength\&#39;: 100,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    },\n    {\n        \&#39;name\&#39;: \&#39;__nextStep\&#39;,\n        \&#39;title\&#39;: \&#39;Next step (output variable name)\&#39;,\n        \&#39;hint\&#39;: \&#39;Name of the session variable that will receive the next step Id after execution.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;defaultValue\&#39;: \&#39;_rtNextStep\&#39;,\n            \&#39;maxLength\&#39;: 100,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    }\n]&#39;"
-      id="333"
-    >
-      <mxCell style="componentNode" parent="baselayer" vertex="1">
-        <mxGeometry
-          x="760"
-          y="-1207.25"
-          width="155"
-          height="71"
-          as="geometry"
-        />
-      </mxCell>
-    </object>
-    <object label="rtds_setVariables" id="334">
-      <mxCell style="componentInnerNode;" parent="333" vertex="1">
         <mxGeometry x="10" y="16" width="135" height="45" as="geometry" />
       </mxCell>
     </object>
@@ -1635,46 +1466,10 @@
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
     <object label="" Type="hung" OnEnter="" OnLeave="" id="464">
-      <mxCell
-        style="hungNode;strokeColor=#C97654;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="hungNode" parent="baselayer" vertex="1">
         <mxGeometry
           x="772.4999999999998"
           y="-1290"
-          width="130"
-          height="40"
-          as="geometry"
-        />
-      </mxCell>
-    </object>
-    <mxCell
-      id="467"
-      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
-      parent="baselayer"
-      source="466"
-      target="378"
-      edge="1"
-    >
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-    <object
-      label=""
-      Type="pickup"
-      OnEnter=""
-      OnLeave=""
-      DynamicNextId=""
-      id="466"
-    >
-      <mxCell
-        style="pickupNode;strokeColor=#D1B73D;"
-        parent="baselayer"
-        vertex="1"
-      >
-        <mxGeometry
-          x="-140.00000000000023"
-          y="-1330"
           width="130"
           height="40"
           as="geometry"
@@ -1712,50 +1507,6 @@
         <mxPoint x="1158" y="-1171.75" as="sourcePoint" />
         <mxPoint x="928" y="-1382" as="targetPoint" />
       </mxGeometry>
-    </mxCell>
-    <object
-      label=""
-      Type="counter"
-      OnEnter=""
-      OnLeave=""
-      MaxEntryNodeId=""
-      MaxEntryCount=""
-      VariableName=""
-      id="458"
-    >
-      <mxCell
-        style="counterNode;strokeColor=#999999;"
-        parent="baselayer"
-        vertex="1"
-      >
-        <mxGeometry x="750" y="-1440" width="188" height="96" as="geometry" />
-      </mxCell>
-    </object>
-    <object id="459">
-      <mxCell style="counterInnerNode" parent="458" vertex="1">
-        <mxGeometry x="10" y="16" width="168" height="40" as="geometry" />
-      </mxCell>
-    </object>
-    <object
-      label="&amp;gt;= 10"
-      DynamicNextId=""
-      SubType="expression"
-      Expression="&gt;= 10"
-      id="460"
-    >
-      <mxCell style="expressionNode" parent="458" vertex="1">
-        <mxGeometry x="10" y="56" width="168" height="30" as="geometry" />
-      </mxCell>
-    </object>
-    <mxCell
-      id="465"
-      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.446;exitY=1.167;exitDx=0;exitDy=0;exitPerimeter=0;"
-      parent="baselayer"
-      source="460"
-      target="464"
-      edge="1"
-    >
-      <mxGeometry relative="1" as="geometry" />
     </mxCell>
     <object
       label=""
@@ -1806,6 +1557,279 @@
     <object label="rtds_3_vocallsEnv" id="371">
       <mxCell style="globalLibraryInnerNode;" parent="370" vertex="1">
         <mxGeometry x="10" y="16" width="160" height="34" as="geometry" />
+      </mxCell>
+    </object>
+    <object
+      label="output"
+      Type="transient"
+      OnEnter=""
+      OnLeave=""
+      DynamicNextId=""
+      Title="output"
+      Kind="output"
+      MaxEntryNodeId=""
+      MaxEntryCount=""
+      DynamicNextTabGuid=""
+      Parameters=""
+      id="474"
+    >
+      <mxCell
+        style="transientNode;strokeColor=#666666;"
+        parent="baselayer"
+        vertex="1"
+      >
+        <mxGeometry x="772.5" y="-1390" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object
+      label=""
+      Type="counter"
+      OnEnter=""
+      OnLeave=""
+      MaxEntryNodeId=""
+      MaxEntryCount=""
+      VariableName=""
+      id="458"
+    >
+      <mxCell
+        style="counterNode;strokeColor=#999999;"
+        parent="baselayer"
+        vertex="1"
+      >
+        <mxGeometry x="753.5" y="-1560" width="188" height="96" as="geometry" />
+      </mxCell>
+    </object>
+    <object id="459">
+      <mxCell style="counterInnerNode" parent="458" vertex="1">
+        <mxGeometry x="10" y="16" width="168" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object
+      label="&amp;gt;= 10"
+      DynamicNextId=""
+      SubType="expression"
+      Expression="&gt;= 10"
+      id="460"
+    >
+      <mxCell style="expressionNode" parent="458" vertex="1">
+        <mxGeometry x="10" y="56" width="168" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell
+      id="465"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.446;exitY=1.167;exitDx=0;exitDy=0;exitPerimeter=0;"
+      parent="baselayer"
+      source="460"
+      target="474"
+      edge="1"
+    >
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell
+      id="516"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;"
+      edge="1"
+      parent="baselayer"
+      source="513"
+      target="428"
+    >
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object
+      label=""
+      Type="component"
+      ComponentGuid="4831f02d-87e3-44b5-bf4b-dff68873e1b2"
+      ComponentVersion="SCuezxI9IqZB+ohOTBcUww=="
+      SupportedLanguages=""
+      __configJSON="context.session.variables.RTDS_currentOpConfig"
+      __environment="environment"
+      __rtBaseUrl="_rtBaseUrl"
+      __rtTuiCheckAccessEndpoint="_rtTuiCheckAccessEndpoint"
+      __rtTuiGetStateEndpoint="_rtTuiGetStateEndpoint"
+      __rtTuiActivateEndpoint="_rtTuiActivateEndpoint"
+      __rtTuiDeactivateEndpoint="_rtTuiDeactivateEndpoint"
+      __rtNextStep="_rtNextStep"
+      SingleInput="0"
+      SingleOutput="6"
+      ManualId=""
+      EnableUpdateRelations="true"
+      AllowGlobalIntent="false"
+      PropertiesDefinition="&#39;[\n    {\n        \&#39;name\&#39;: \&#39;__configJSON\&#39;,\n        \&#39;title\&#39;: \&#39;Operation config (JSON)\&#39;,\n        \&#39;hint\&#39;: \&#39;Full RTDS operation Params object as JSON. Must include all required Params fields for the operation type.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;maxLength\&#39;: 5000,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    },\n    {\n        \&#39;name\&#39;: \&#39;__environment\&#39;,\n        \&#39;title\&#39;: \&#39;Environment\&#39;,\n        \&#39;hint\&#39;: \&#39;Deployment environment. Controls which RTDS API endpoint is called.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;defaultValue\&#39;: \&#39;environment\&#39;,\n            \&#39;maxLength\&#39;: 100,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    },\n    {\n        \&#39;name\&#39;: \&#39;__nextStep\&#39;,\n        \&#39;title\&#39;: \&#39;Next step (output variable name)\&#39;,\n        \&#39;hint\&#39;: \&#39;Name of the session variable that will receive the next step Id after execution.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;defaultValue\&#39;: \&#39;_rtNextStep\&#39;,\n            \&#39;maxLength\&#39;: 100,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    }\n]&#39;"
+      id="513"
+    >
+      <mxCell style="componentNode;" vertex="1" parent="baselayer">
+        <mxGeometry x="770" y="-225" width="155" height="71" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="rtds_guardTui" id="514">
+      <mxCell style="componentInnerNode;" vertex="1" parent="513">
+        <mxGeometry x="10" y="16" width="135" height="45" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell
+      id="520"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;"
+      edge="1"
+      parent="baselayer"
+      source="517"
+      target="428"
+    >
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object
+      label=""
+      Type="component"
+      ComponentGuid="577f1f57-2b79-47f8-b013-510f9b42b0ac"
+      ComponentVersion="/q7cwiI8w9/O3V38i/MxIA=="
+      SupportedLanguages="nl;"
+      __configJSON="context.session.variables.RTDS_currentOpConfig"
+      __environment="environment"
+      __rtBaseUrl="_rtBaseUrl"
+      __rtGuardEndpoint="_rtActiveGuardByConfigEndpoint"
+      __rtNextStep="_rtNextStep"
+      __guardList="[]"
+      __guardIndex="0"
+      __guardCount="0"
+      __guardLog="[]"
+      __guardPickedUp="false"
+      __recordVoicemail="false"
+      __diversion="&#39;&#39;"
+      __onHoldAudioUrl="&#39;&#39;"
+      __currentGuardPhone="&#39;&#39;"
+      __transferResult="null"
+      __voicemailCapture="&#39;&#39;"
+      mlctp_guardVoicemailPrompt_nl="&#39;Geachte klant, laat alstublieft een bericht achter.&#39;"
+      SingleInput="0"
+      SingleOutput="6"
+      ManualId=""
+      EnableUpdateRelations="true"
+      AllowGlobalIntent="false"
+      PropertiesDefinition="&#39;[\n    {\n        \&#39;name\&#39;: \&#39;__configJSON\&#39;,\n        \&#39;title\&#39;: \&#39;Operation config (JSON)\&#39;,\n        \&#39;hint\&#39;: \&#39;Full RTDS operation Params object as JSON. Must include all required Params fields for the operation type.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;maxLength\&#39;: 5000,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    },\n    {\n        \&#39;name\&#39;: \&#39;__environment\&#39;,\n        \&#39;title\&#39;: \&#39;Environment\&#39;,\n        \&#39;hint\&#39;: \&#39;Deployment environment. Controls which RTDS API endpoint is called.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;defaultValue\&#39;: \&#39;environment\&#39;,\n            \&#39;maxLength\&#39;: 100,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    },\n    {\n        \&#39;name\&#39;: \&#39;__nextStep\&#39;,\n        \&#39;title\&#39;: \&#39;Next step (output variable name)\&#39;,\n        \&#39;hint\&#39;: \&#39;Name of the session variable that will receive the next step Id after execution.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;defaultValue\&#39;: \&#39;_rtNextStep\&#39;,\n            \&#39;maxLength\&#39;: 100,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    }\n]&#39;"
+      id="517"
+    >
+      <mxCell style="componentNode;" vertex="1" parent="baselayer">
+        <mxGeometry x="773" y="-315" width="155" height="71" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="rtds_guardRouting" id="518">
+      <mxCell style="componentInnerNode;" vertex="1" parent="517">
+        <mxGeometry x="10" y="16" width="135" height="45" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell
+      id="524"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;"
+      edge="1"
+      parent="baselayer"
+      source="521"
+      target="428"
+    >
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object
+      label=""
+      Type="component"
+      ComponentGuid="2c9746c6-eff2-4a12-af2f-45b0482ff045"
+      ComponentVersion="KcFkO9wURI7ni8xfwQRhng=="
+      SupportedLanguages=""
+      __configJSON="context.session.variables.RTDS_currentOpConfig"
+      __environment="environment"
+      __rtBaseUrl="_rtBaseUrl"
+      __rtEndpoint="_rtMailEndpoint"
+      __rtNextStep="_rtNextStep"
+      SingleInput="0"
+      SingleOutput="6"
+      ManualId=""
+      EnableUpdateRelations="true"
+      AllowGlobalIntent="false"
+      PropertiesDefinition="&#39;[\n    {\n        \&#39;name\&#39;: \&#39;__configJSON\&#39;,\n        \&#39;title\&#39;: \&#39;Operation config (JSON)\&#39;,\n        \&#39;hint\&#39;: \&#39;Full RTDS operation Params object as JSON. Must include all required Params fields for the operation type.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;maxLength\&#39;: 5000,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    },\n    {\n        \&#39;name\&#39;: \&#39;__environment\&#39;,\n        \&#39;title\&#39;: \&#39;Environment\&#39;,\n        \&#39;hint\&#39;: \&#39;Deployment environment. Controls which RTDS API endpoint is called.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;defaultValue\&#39;: \&#39;environment\&#39;,\n            \&#39;maxLength\&#39;: 100,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    },\n    {\n        \&#39;name\&#39;: \&#39;__nextStep\&#39;,\n        \&#39;title\&#39;: \&#39;Next step (output variable name)\&#39;,\n        \&#39;hint\&#39;: \&#39;Name of the session variable that will receive the next step Id after execution.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;defaultValue\&#39;: \&#39;_rtNextStep\&#39;,\n            \&#39;maxLength\&#39;: 100,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    }\n]&#39;"
+      id="521"
+    >
+      <mxCell style="component3Node;" vertex="1" parent="baselayer">
+        <mxGeometry x="770" y="-405" width="155" height="71" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="rtds_sendEmail" id="522">
+      <mxCell style="componentInnerNode;" vertex="1" parent="521">
+        <mxGeometry x="10" y="16" width="135" height="45" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell
+      id="528"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;"
+      edge="1"
+      parent="baselayer"
+      source="525"
+      target="428"
+    >
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object
+      label=""
+      Type="component"
+      ComponentGuid="70d37307-be29-4769-9306-64dedee16f4c"
+      ComponentVersion="YhMTplVBwWXLM3W9DjGiiw=="
+      SupportedLanguages=""
+      __configJSON="context.session.variables.RTDS_currentOpConfig"
+      __environment="environment"
+      __rtBaseUrl="_rtBaseUrl"
+      __rtEndpoint="_rtSmsEndpoint"
+      __rtNextStep="_rtNextStep"
+      SingleInput="0"
+      SingleOutput="6"
+      ManualId=""
+      EnableUpdateRelations="true"
+      AllowGlobalIntent="false"
+      PropertiesDefinition="&#39;[\n    {\n        \&#39;name\&#39;: \&#39;__configJSON\&#39;,\n        \&#39;title\&#39;: \&#39;Operation config (JSON)\&#39;,\n        \&#39;hint\&#39;: \&#39;Full RTDS operation Params object as JSON. Must include all required Params fields for the operation type.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;maxLength\&#39;: 5000,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    },\n    {\n        \&#39;name\&#39;: \&#39;__environment\&#39;,\n        \&#39;title\&#39;: \&#39;Environment\&#39;,\n        \&#39;hint\&#39;: \&#39;Deployment environment. Controls which RTDS API endpoint is called.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;defaultValue\&#39;: \&#39;environment\&#39;,\n            \&#39;maxLength\&#39;: 100,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    },\n    {\n        \&#39;name\&#39;: \&#39;__nextStep\&#39;,\n        \&#39;title\&#39;: \&#39;Next step (output variable name)\&#39;,\n        \&#39;hint\&#39;: \&#39;Name of the session variable that will receive the next step Id after execution.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;defaultValue\&#39;: \&#39;_rtNextStep\&#39;,\n            \&#39;maxLength\&#39;: 100,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    }\n]&#39;"
+      id="525"
+    >
+      <mxCell style="component3Node;" vertex="1" parent="baselayer">
+        <mxGeometry x="770" y="-495" width="155" height="71" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="rtds_sendSms" id="526">
+      <mxCell style="componentInnerNode;" vertex="1" parent="525">
+        <mxGeometry x="10" y="16" width="135" height="45" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell
+      id="532"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;"
+      edge="1"
+      parent="baselayer"
+      source="529"
+      target="428"
+    >
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object
+      label=""
+      Type="component"
+      ComponentGuid="dde18c8b-7924-4b07-a014-3f5d4bea8f29"
+      ComponentVersion="I0nzkHJdcIfprptZ10x/Tw=="
+      SupportedLanguages=""
+      __configJSON="context.session.variables.RTDS_currentOpConfig"
+      __environment="environment"
+      __rtNextStep="_rtNextStep"
+      SingleInput="0"
+      SingleOutput="6"
+      ManualId=""
+      EnableUpdateRelations="true"
+      AllowGlobalIntent="false"
+      PropertiesDefinition="&#39;[\n    {\n        \&#39;name\&#39;: \&#39;__configJSON\&#39;,\n        \&#39;title\&#39;: \&#39;Operation config (JSON)\&#39;,\n        \&#39;hint\&#39;: \&#39;Full RTDS operation Params object as JSON. Bare keys write to varObj; dotted keys write nested paths (varObj by default, or globalThis dot key).\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;maxLength\&#39;: 5000,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    },\n    {\n        \&#39;name\&#39;: \&#39;__environment\&#39;,\n        \&#39;title\&#39;: \&#39;Environment\&#39;,\n        \&#39;hint\&#39;: \&#39;Deployment environment.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;defaultValue\&#39;: \&#39;environment\&#39;,\n            \&#39;maxLength\&#39;: 100,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    },\n    {\n        \&#39;name\&#39;: \&#39;__nextStep\&#39;,\n        \&#39;title\&#39;: \&#39;Next step (output variable name)\&#39;,\n        \&#39;hint\&#39;: \&#39;Name of the session variable that will receive the next step Id after execution.\&#39;,\n        \&#39;controlSettings\&#39;: {\n            \&#39;controlType\&#39;: \&#39;text\&#39;,\n            \&#39;defaultValue\&#39;: \&#39;_rtNextStep\&#39;,\n            \&#39;maxLength\&#39;: 100,\n            \&#39;dataType\&#39;: \&#39;string\&#39;,\n            \&#39;readonly\&#39;: false\n        }\n    }\n]&#39;"
+      id="529"
+    >
+      <mxCell
+        style="component3Node;strokeColor=#999999;"
+        vertex="1"
+        parent="baselayer"
+      >
+        <mxGeometry x="760" y="-1207" width="155" height="71" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="rtds_setVariables" id="530">
+      <mxCell style="componentInnerNode;" vertex="1" parent="529">
+        <mxGeometry x="10" y="16" width="135" height="45" as="geometry" />
       </mxCell>
     </object>
   </root>

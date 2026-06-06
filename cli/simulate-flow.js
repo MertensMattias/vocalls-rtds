@@ -16,9 +16,9 @@
  *           Nothing in the runtime is re-implemented or mocked.
  *   - HTTP boundary: jsonHttpRequest is replaced with a Vocalls-shaped mock
  *           (core/flowSimHttp) — { success, statusCode, response }. The chosen
- *           flow file IS the routing-table response. Flow files are authored in
- *           the runtime-native shape (camelCase sourceId/operations/id/type/
- *           params), so they are served straight to fetchAndStart — no adapter.
+ *           flow file IS the routing-table response. Authoring files in
+ *           callflow_json_config_vocalls/ use PascalCase (importer contract);
+ *           simulate-flow adapts them to runtime camelCase before fetchAndStart.
  *   - GUI boundary: at a GUI-exit key the handoff is recorded and the flow
  *           auto-advances on the op's default NextStep (RTDS_nextStepId set by
  *           the production prepareGuiHandoff), calling the real resumeFrom().
@@ -49,11 +49,51 @@ var makeFlowSimHttp = require('../core/flowSimHttp');
 var DEFAULT_MAX_STEPS = 100;
 
 /**
+ * Convert importer/authoring envelope (PascalCase) to runtime-native camelCase.
+ * Idempotent when the file is already camelCase.
+ *
+ * @param {Object} flow - parsed JSON from callflow_json_config_vocalls/*.json
+ * @returns {Object} runtime shape for parseFlow / fetchAndStart
+ */
+function adaptAuthoringFlowToRuntime(flow) {
+    if (!flow || typeof flow !== 'object') {
+        return flow;
+    }
+    if (Array.isArray(flow.operations)) {
+        return flow;
+    }
+    if (!Array.isArray(flow.Operations)) {
+        return flow;
+    }
+    var ops = flow.Operations.map(function (op) {
+        var row = {
+            id: op.Id,
+            type: op.Type,
+            name: op.Name,
+            isFirstOperation: op.IsFirstOperation,
+            params: op.Params || {},
+        };
+        if (op.TtsMessages) {
+            row.ttsMessages = op.TtsMessages;
+        }
+        return row;
+    });
+    return {
+        sourceId: flow.SourceId,
+        name: flow.Name,
+        projectId: flow.ProjectId,
+        project: flow.Project,
+        promptLibraryId: flow.PromptLibraryId,
+        promptLibrary: flow.PromptLibrary,
+        supportedLanguages: flow.SupportedLanguages,
+        operations: ops,
+    };
+}
+
+/**
  * Fail loud on a structurally malformed flow rather than letting the runtime's
- * parseFlow log an error and disconnect silently. Flow files are runtime-native
- * (camelCase `operations` array); the runtime reads them directly. We only
- * assert the envelope is well-formed enough to dispatch — parseFlow owns the
- * deeper checks (entry point, per-op shape).
+ * parseFlow log an error and disconnect silently. Expects runtime-native
+ * camelCase (`operations` array) — call adaptAuthoringFlowToRuntime first.
  *
  * @param {Object} flow
  * @throws {Error} when flow is not an object or has no non-empty operations array.
@@ -253,6 +293,11 @@ function extractSteps(captured, sandbox) {
         // op). The per-step config/var dump is a separate lowercase '[rtds]'
         // line (see dumpRtdsState), so it won't collide with this uppercase tag.
         if (m.indexOf('[RTDS] step') === -1) {
+            continue;
+        }
+        // DEBUG params dump is "[RTDS] step params | id=..." — also matches
+        // the substring above but is not a dispatch summary.
+        if (m.indexOf('[RTDS] step params') !== -1) {
             continue;
         }
         var ctx = {};
@@ -492,11 +537,11 @@ function runFlowImpl(runOpts) {
         return Promise.reject(new Error('Flow file not found: ' + absFlowPath));
     }
 
-    // Flow files are authored in the runtime-native shape (camelCase
-    // sourceId/operations/id/type/params); the runtime's parseFlow reads them
-    // directly — no envelope adapter. We still fail loud on a structurally
-    // malformed flow rather than letting parseFlow log + disconnect silently.
-    var flow = JSON.parse(fs.readFileSync(absFlowPath, 'utf8'));
+    // Authoring files use PascalCase (insert_flow_on_sourceId importer); adapt
+    // to runtime camelCase before parseFlow / fetchAndStart consume the mock.
+    var flow = adaptAuthoringFlowToRuntime(
+        JSON.parse(fs.readFileSync(absFlowPath, 'utf8'))
+    );
     validateFlow(flow);
 
     var resolvedEnv = (runOpts.env || 'acc').toLowerCase();
@@ -616,4 +661,4 @@ if (require.main === module) {
     main();
 }
 
-module.exports = { runFlow: runFlow };
+module.exports = { runFlow: runFlow, adaptAuthoringFlowToRuntime: adaptAuthoringFlowToRuntime };

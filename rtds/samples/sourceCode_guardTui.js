@@ -1,6 +1,6 @@
 <mxGraphModel
-  dx="5558"
-  dy="6643"
+  dx="4859"
+  dy="3676"
   grid="1"
   gridSize="10"
   guides="1"
@@ -32,11 +32,15 @@
       ManualId=""
       RequiredVariables=""
       HintGrammar=""
-      LastLanguage="nl"
+      LastLanguage="default"
       InfoAboutUser_nl=""
       CompanyInformation_nl=""
       GeneralKnowledge_nl=""
       Translations_nl=""
+      InfoAboutUser_al=""
+      CompanyInformation_al=""
+      GeneralKnowledge_al=""
+      Translations_al=""
       InfoAboutUser_fr=""
       CompanyInformation_fr=""
       GeneralKnowledge_fr=""
@@ -55,16 +59,6 @@
       <mxCell />
     </object>
     <mxCell id="baselayer" parent="vocalls-master-layer" />
-    <mxCell
-      id="643"
-      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;"
-      parent="baselayer"
-      source="0"
-      target="567"
-      edge="1"
-    >
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
     <object
       label="input"
       Type="transient"
@@ -84,7 +78,7 @@
         parent="baselayer"
         vertex="1"
       >
-        <mxGeometry x="-41" y="-750" width="130" height="40" as="geometry" />
+        <mxGeometry x="-500.5" y="-960" width="130" height="40" as="geometry" />
       </mxCell>
     </object>
     <object
@@ -219,11 +213,7 @@
       AltTexts_en=""
       id="460"
     >
-      <mxCell
-        style="sayNode;strokeColor=#6AB04E;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
         <mxGeometry x="368" y="730" width="390" height="95" as="geometry" />
       </mxCell>
     </object>
@@ -443,6 +433,19 @@
       </mxCell>
     </object>
     <mxCell
+      id="28"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
+      parent="baselayer"
+      source="0"
+      target="574"
+      edge="1"
+    >
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="-30" y="-700" as="sourcePoint" />
+        <mxPoint x="-30" y="-540" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <mxCell
       id="30"
       style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;"
       parent="baselayer"
@@ -548,8 +551,21 @@
       </mxGeometry>
     </mxCell>
     <mxCell
-      id="642"
-      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;"
+      id="566"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;"
+      parent="baselayer"
+      source="568"
+      target="570"
+      edge="1"
+    >
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="-448" y="-680" as="sourcePoint" />
+        <mxPoint x="-448" y="-300" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <mxCell
+      id="577"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;"
       parent="baselayer"
       source="567"
       target="7"
@@ -574,7 +590,202 @@
         parent="baselayer"
         vertex="1"
       >
-        <mxGeometry x="-60" y="-620" width="168" height="80" as="geometry" />
+        <mxGeometry x="-520" y="-200" width="168" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <object
+      label="api configs"
+      Type="script"
+      OnEnter=""
+      OnLeave=""
+      DynamicNextId=""
+      Code='varObj = {};&#xa;callIdKey = &#39;&#39;;&#xa;&#xa;result = null;&#xa;env = &#39;acc&#39;;&#xa;debug = true;&#xa;debugCall = true;&#xa;&#xa;_rtConfig = {};&#xa;_rtNextStep = &#39;&#39;;&#xa;&#xa;_headers = &#39;&#39;;&#xa;&#xa;&#xa;&#xa;&#xa;&#xa;&#xa;//__rtBaseUrl = _rtBaseUrl;&#xa;&#xa;_rtBaseUrl = &#39;https://api.n-allo.be&#39;;&#xa;_rtSmsEndpoint = `/smsapi-${environment}/api/Send`;&#xa;_rtMailEndpoint = `/mailapi-${environment}/api/SendMail`;&#xa;_rtGetSourceIdEndpoint = `/routingtablesapi-${environment}/api/routing-table/source`;&#xa;__rtBaseUrl = &#39;https://api.n-allo.be&#39;;&#xa;&#xa;&#xa;__rtTuiCheckAccessEndpoint = `/digipolisapi-api-${environment}/api/Guard/AnyGuardWithPhoneNumberAndConfig`;&#xa;__rtTuiGetStateEndpoint = `/digipolisapi-api-${environment}/api/Guard/GetGuardByPhoneNumberAndConfig`;&#xa;__rtTuiActivateEndpoint = `/digipolisapi-api-${environment}/api/Guard/activate`;&#xa;__rtTuiDeactivateEndpoint = `/digipolisapi-api-${environment}/api/Guard/deactivate`;&#xa;&#xa;Logger.configure({ activeLevel: &#39;DEBUG&#39; });'
+      MaxEntryNodeId=""
+      MaxEntryCount=""
+      DynamicNextTabGuid=""
+      id="568"
+    >
+      <mxCell
+        style="scriptNode;strokeColor=#999999;"
+        parent="baselayer"
+        vertex="1"
+      >
+        <mxGeometry x="-519.5" y="-700" width="168" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell
+      id="569"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;"
+      parent="baselayer"
+      source="574"
+      target="568"
+      edge="1"
+    >
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="-435.5" y="-700" as="sourcePoint" />
+        <mxPoint x="-435.5" y="-460" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <object
+      label=""
+      Type="component"
+      ComponentGuid="da71a20a-d4d4-431c-bda4-1dca3d981ad5"
+      ComponentVersion="X1eVVViNIdZtZ6PJzPO4Kg=="
+      SupportedLanguages=""
+      __retriesOnFailure="1"
+      __tokenUrl='"https://login.microsoftonline.com/24139d14-c62c-4c47-8bdd-ce71ea1d50cf/oauth2/v2.0/token"'
+      __clientIdAcc='"29ff6118-7b55-44b8-8e95-03636d3334f8"'
+      __clientIdPrd='"487c3298-394e-4ef3-9ca2-b0eda87b1a14"'
+      __environment='"acc"'
+      __forceTokenReload="false"
+      SingleInput="0"
+      ManualId=""
+      EnableUpdateRelations="true"
+      AllowGlobalIntent="false"
+      PropertiesDefinition="&#39;[ \n    { \n        \&#39;name\&#39;: \&#39;__retriesOnFailure\&#39;, \n        \&#39;title\&#39;: \&#39;The total amount of tries\&#39;, \n        \&#39;hint\&#39;: \&#39;Select the total tries to retrieve a valid Okta Auth header.\&#39;, \n        \&#39;controlSettings\&#39;: { \n            \&#39;controlType\&#39;: \&#39;dropdown\&#39;, \n            \&#39;defaultValue\&#39;: 1, \n            \&#39;dataType\&#39;: \&#39;number\&#39;,  \n            \&#39;options\&#39;: [ \n                1, \n                2, \n                3 \n            ] \n        } \n    }, \n    { \n        \&#39;name\&#39;: \&#39;__forceTokenReload\&#39;, \n        \&#39;title\&#39;: \&#39;Forced token reload\&#39;, \n        \&#39;controlSettings\&#39;: { \n            \&#39;controlType\&#39;: \&#39;dropdown\&#39;, \n            \&#39;defaultValue\&#39;: \&#39;false\&#39;, \n            \&#39;options\&#39;: [ \n                \&#39;true\&#39;, \n                \&#39;false\&#39; \n            ] \n        } \n    } \n]&#39;"
+      id="570"
+    >
+      <mxCell
+        style="component3Node;strokeColor=#999999;"
+        parent="baselayer"
+        vertex="1"
+      >
+        <mxGeometry x="-513" y="-460" width="155" height="131" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="nalOktaAuth" id="571">
+      <mxCell style="componentInnerNode" parent="570" vertex="1">
+        <mxGeometry x="10" y="16" width="135" height="45" as="geometry" />
+      </mxCell>
+    </object>
+    <object
+      label='&lt;font color="#333333"&gt;&lt;span style="font-weight: normal"&gt;getTokenFailure&lt;br&gt;&lt;/span&gt;&lt;/font&gt;'
+      ComponentId="23"
+      SubType="transient"
+      Kind="output"
+      id="572"
+    >
+      <mxCell style="component3OutputNode" parent="570" vertex="1">
+        <mxGeometry x="10" y="61" width="135" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object
+      label='&lt;font color="#333333"&gt;&lt;span style="font-weight: normal"&gt;getTokenSuccess&lt;br&gt;&lt;/span&gt;&lt;/font&gt;'
+      ComponentId="17"
+      SubType="transient"
+      Kind="output"
+      id="573"
+    >
+      <mxCell style="component3OutputNode" parent="570" vertex="1">
+        <mxGeometry x="10" y="91" width="135" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object
+      label=""
+      Type="component"
+      ComponentGuid="953a6f47-b453-4d6f-96eb-d67f2a222bcf"
+      ComponentVersion="dPdDs3WsUtvPUYJ6ZgJ2Jw=="
+      SupportedLanguages=""
+      __environment='"acc"'
+      SingleInput="0"
+      SingleOutput="6"
+      ManualId=""
+      EnableUpdateRelations="true"
+      AllowGlobalIntent="false"
+      PropertiesDefinition=""
+      id="574"
+    >
+      <mxCell
+        style="component3Node;strokeColor=#999999;"
+        parent="baselayer"
+        vertex="1"
+      >
+        <mxGeometry x="-513.5" y="-830" width="155" height="60" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="getEnvironment" id="575">
+      <mxCell style="componentInnerNode" parent="574" vertex="1">
+        <mxGeometry x="10" y="16" width="135" height="34" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell
+      id="576"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
+      parent="baselayer"
+      source="573"
+      target="567"
+      edge="1"
+    >
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="-435.5" y="-339" as="sourcePoint" />
+        <mxPoint x="-435" y="20" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <mxCell
+      id="578"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
+      parent="baselayer"
+      source="572"
+      target="567"
+      edge="1"
+    >
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="-274" y="-384" />
+          <mxPoint x="-274" y="-284" />
+          <mxPoint x="-436" y="-284" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <object
+      label=""
+      Type="globalLibrary"
+      LibraryGuid="ff4d0c4c-7a8e-4c7d-a7ee-cca186ea2873"
+      LibraryVersion="null"
+      SupportedLanguages=""
+      id="579"
+    >
+      <mxCell style="globalLibraryNode;" parent="baselayer" vertex="1">
+        <mxGeometry x="-780" y="-960" width="180" height="60" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="rtds_1_globalConfig" id="580">
+      <mxCell style="globalLibraryInnerNode;" parent="579" vertex="1">
+        <mxGeometry x="10" y="16" width="160" height="34" as="geometry" />
+      </mxCell>
+    </object>
+    <object
+      label=""
+      Type="globalLibrary"
+      LibraryGuid="92f0ecdb-bdb1-4c76-bce5-0f2a822379da"
+      LibraryVersion="null"
+      SupportedLanguages=""
+      id="581"
+    >
+      <mxCell style="globalLibraryNode;" parent="baselayer" vertex="1">
+        <mxGeometry x="-780" y="-870" width="180" height="60" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="rtds_2_runtime" id="582">
+      <mxCell style="globalLibraryInnerNode;" parent="581" vertex="1">
+        <mxGeometry x="10" y="16" width="160" height="34" as="geometry" />
+      </mxCell>
+    </object>
+    <object
+      label=""
+      Type="globalLibrary"
+      LibraryGuid="dbb79182-33e8-4733-b4a4-f735d07e7bc9"
+      LibraryVersion="null"
+      SupportedLanguages=""
+      id="583"
+    >
+      <mxCell style="globalLibraryNode;" parent="baselayer" vertex="1">
+        <mxGeometry x="-780" y="-780" width="180" height="60" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="rtds_3_vocallsEnv" id="584">
+      <mxCell style="globalLibraryInnerNode;" parent="583" vertex="1">
+        <mxGeometry x="10" y="16" width="160" height="34" as="geometry" />
       </mxCell>
     </object>
     <mxCell
@@ -584,7 +795,7 @@
       parent="baselayer"
       vertex="1"
     >
-      <mxGeometry x="560" y="-1700" width="2680" height="580" as="geometry" />
+      <mxGeometry x="-10" y="-1190" width="2680" height="580" as="geometry" />
     </mxCell>
     <mxCell
       id="588"

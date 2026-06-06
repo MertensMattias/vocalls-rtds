@@ -1,3 +1,5 @@
+language = null;
+
 /**
  * rtds_1_globalConfig.js -- Project varObj schema + log keys
  *

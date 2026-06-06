@@ -19,6 +19,6 @@ debug = true;
 debugCall = true;
 
 _rtConfig = {};
-_rtNextStep = "";
+_rtNextStep = "_rtNextStep";
 
 _headers = '';

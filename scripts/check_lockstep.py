@@ -112,12 +112,12 @@ def seed_param_names_by_optype():
     """
     text = SEED.read_text(encoding="utf-8")
     out = {}
-    # Anchor on the attribute-type column ('string'|'integer'|'boolean'); only
+    # Anchor on the attribute-type column ('string'|'int'|'bit'); only
     # the @Attribute rows have it, so the @OperationType VALUES list (type names
     # only, no type column) can't match. No need to bound the block — comment
     # semicolons elsewhere are irrelevant.
     for ot, name in re.findall(
-        r"\('([A-Za-z0-9_]+_vocalls)',\s*'([A-Za-z_][A-Za-z0-9_]*)',\s*'(?:string|integer|boolean)'",
+        r"\('([A-Za-z0-9_]+_vocalls)',\s*'([A-Za-z_][A-Za-z0-9_]*)',\s*'(?:string|int|bit)'",
         text,
     ):
         out.setdefault(ot, set()).add(name)

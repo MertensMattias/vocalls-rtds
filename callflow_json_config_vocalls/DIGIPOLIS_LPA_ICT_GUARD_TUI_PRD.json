@@ -1,18 +1,18 @@
 {
-  "sourceId": "+3271690041",
-  "name": "DIGIPOLIS - LPA_ICT_GUARD_TUI",
-  "projectId": "",
-  "project": "LPA ICT",
-  "promptLibraryId": "",
-  "promptLibrary": "DIGIPOLIS\\LPA\\ICT_HELPDESK",
-  "supportedLanguages": "NL",
-  "operations": [
+  "SourceId": "+3257351121",
+  "Name": "DIGIPOLIS - LPA_ICT_GUARD_TUI",
+  "ProjectId": "",
+  "Project": "LPA ICT",
+  "PromptLibraryId": "",
+  "PromptLibrary": "DIGIPOLIS\\LPA\\ICT_HELPDESK",
+  "SupportedLanguages": "NL",
+  "Operations": [
     {
-      "id": "00000",
-      "type": "SetVariables_vocalls",
-      "name": "Call Initialization",
-      "isFirstOperation": true,
-      "params": {
+      "Id": "00000",
+      "Type": "SetVariables_vocalls",
+      "Name": "Call Initialization",
+      "IsFirstOperation": true,
+      "Params": {
         "Active": true,
         "RoutingId": "LPA_ICT_GUARD_TUI",
         "CustomerName": "LPA",
@@ -23,21 +23,24 @@
       }
     },
     {
-      "id": "00001",
-      "type": "GuardTui_vocalls",
-      "name": "LPA_ICT_GUARD_TUI",
-      "params": {
+      "Id": "00001",
+      "Type": "GuardTui_vocalls",
+      "Name": "LPA_ICT_GUARD_TUI",
+      "Params": {
         "Active": true,
         "ConfigId": 3,
         "ConfigName": "LPA_ICT_GUARD",
         "PhoneNumberVar": "ani",
         "Timeout": 10000,
-        "Prompt": "To activate this number, press 7. To deactivate this number, press 3.",
-        "ResultActivated": "Your number is successfully activated.",
-        "ResultDeactivated": "Your number is successfully deactivated.",
-        "ResultOnlyActive": "You are currently the only active member, therefore you are not able to deactivate yourself.",
-        "ResultDenied": "You are not allowed to use this service. If you disagree, contact your administrator. Thank you for calling.",
-        "ResultError": "We encountered a technical issue. Contact your administrator to report this issue.",
+        "ResultCurrentlyActivated_NL": "You are currently activated on guard configuration ${CustomerProject}",
+        "ResultCurrentlyDeactivated_NL": "You are currently not activated on guard configuration ${CustomerProject}",
+        "PromptActivate_NL": "To activate yourself, press 7.",
+        "PromptDeactivate_NL": "To deactivate yourself, press 3.",
+        "ResultActivated_NL": "Your number is successfully activated.",
+        "ResultDeactivated_NL": "Your number is successfully deactivated.",
+        "ResultOnlyActive_NL": "You are currently the only active member, therefore you are not able to deactivate yourself.",
+        "ResultDenied_NL": "You are not allowed to use this service. If you disagree, contact your administrator. Thank you for calling.",
+        "ResultError_NL": "We encountered a technical issue. Contact your administrator to report this issue.",
         "NextStep_Success": "00098",
         "NextStep_Denied": "00099",
         "NextStep_Failure": "00099",
@@ -45,10 +48,10 @@
       }
     },
     {
-      "id": "00098",
-      "type": "SetVariables_vocalls",
-      "name": "Set: Cognos Success",
-      "params": {
+      "Id": "00098",
+      "Type": "SetVariables_vocalls",
+      "Name": "Set: Cognos Success",
+      "Params": {
         "Active": true,
         "IvrEvent": "1200",
         "IvrAction": "CT",
@@ -56,10 +59,10 @@
       }
     },
     {
-      "id": "00099",
-      "type": "SetVariables_vocalls",
-      "name": "Set: Cognos Failure",
-      "params": {
+      "Id": "00099",
+      "Type": "SetVariables_vocalls",
+      "Name": "Set: Cognos Failure",
+      "Params": {
         "Active": true,
         "IvrEvent": "9999",
         "IvrAction": "DC",
@@ -67,15 +70,15 @@
       }
     },
     {
-      "id": "00100",
-      "type": "Disconnect_vocalls",
-      "name": "RTDS: Disconnect",
-      "params": {
+      "Id": "00100",
+      "Type": "Disconnect_vocalls",
+      "Name": "RTDS: Disconnect",
+      "Params": {
         "Active": true,
-        "ApplicationId": "20",
+        "ApplicationId": 20,
         "Prompt": "Disconnect_goodbye"
       },
-      "ttsMessages": {
+      "TtsMessages": {
         "NL": "Disconnect_goodbye"
       }
     }
