@@ -210,11 +210,12 @@ describe('rtds-runtime main.js', function () {
             });
     });
 
-    it('uses "" (falsy end-of-flow), never -1, when NextStep is absent or blank', function () {
-        // The "no next step" sentinel is "" everywhere: "" is falsy, so runStep's
-        // if(!nextStepId) and resumeFrom's === "" guard both end the flow cleanly.
-        // -1 would be TRUTHY and get mistaken for a real step id. Applies to every
-        // handler that reads NextStep.
+    it('uses null (falsy end-of-flow), never -1, when NextStep is absent or blank', function () {
+        // The "no next step" sentinel is null everywhere: null is falsy, so
+        // runStep's if(!nextStepId) ends the flow cleanly. resolveNextStep returns
+        // null when neither a result-specific NextStep nor a bare NextStep is set
+        // (a blank "" Param is falsy and skipped too). -1 would be TRUTHY and get
+        // mistaken for a real step id. Applies to every handler that reads NextStep.
         return helpers
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
             .then(function (result) {
@@ -225,28 +226,28 @@ describe('rtds-runtime main.js', function () {
                     id: 'nv-1', type: 'SetVariables', name: 'nv',
                     params: { SomeKey: 'x' }
                 });
-                expect(sv.nextStepId).toBe('');
+                expect(sv.nextStepId).toBe(null);
 
                 // SetVariables: NextStep present but blank.
                 var svBlank = sb.executeSetVariables({
                     id: 'nv-2', type: 'SetVariables', name: 'nv',
                     params: { SomeKey: 'x', NextStep: '' }
                 });
-                expect(svBlank.nextStepId).toBe('');
+                expect(svBlank.nextStepId).toBe(null);
 
-                // SendSms inactive with no NextStep -> "" (not -1).
+                // SendSms inactive with no NextStep -> null (not -1).
                 var sms = sb.executeSendSms({
                     id: 'nv-3', type: 'SendSMS', name: 'nv',
                     params: { Active: false }
                 });
-                expect(sms.nextStepId).toBe('');
+                expect(sms.nextStepId).toBe(null);
 
-                // SendEmail inactive with no NextStep -> "" (not -1).
+                // SendEmail inactive with no NextStep -> null (not -1).
                 var mail = sb.executeSendEmail({
                     id: 'nv-4', type: 'SendEmail', name: 'nv',
                     params: { Active: false }
                 });
-                expect(mail.nextStepId).toBe('');
+                expect(mail.nextStepId).toBe(null);
             });
     });
 
@@ -300,15 +301,14 @@ describe('rtds-runtime main.js', function () {
             });
     });
 
-    it('the superseded $(name) resolveTokens helper has been removed', function () {
-        // resolveTokens ($(name) syntax) was replaced everywhere by setupConfig
-        // -> resolveConfigTokens (${name}). It had zero callers, so it must not
-        // linger as dead code on the runtime surface.
+    it('exposes both token helpers: $(name) resolveTokens and ${name} resolveConfigTokens', function () {
+        // Two token syntaxes coexist on the runtime surface:
+        //   - resolveTokens   resolves $(name) tokens in Param strings (Send* / SetVariables).
+        //   - resolveConfigTokens resolves ${name} tokens from setupConfig.
         return helpers
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
             .then(function (result) {
-                expect(result.sandbox.resolveTokens).toBeUndefined();
-                // The replacement is present.
+                expect(typeof result.sandbox.resolveTokens).toBe('function');
                 expect(typeof result.sandbox.resolveConfigTokens).toBe('function');
             });
     });
