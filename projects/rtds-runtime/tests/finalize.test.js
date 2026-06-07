@@ -18,7 +18,33 @@
  */
 
 var path = require('path');
+var fs = require('fs');
+var vm = require('vm');
 var h = require(path.join(process.cwd(), 'projects', 'rtds-runtime', 'tests', 'components', '_harness'));
+
+// Decode + extract the master-layer Code attribute (the onCallResult callback)
+// from the production source flow, the same way _harness.readMasterCode does for
+// components -- but from callScripts/main_sourceCode.js.
+function decodeEntities(s) {
+    return s
+        .replace(/&#xa;/g, '\n').replace(/&apos;/g, "'").replace(/&#39;/g, "'")
+        .replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&');
+}
+function readMainCode() {
+    var file = path.join(process.cwd(), 'projects', 'rtds-runtime', 'callScripts', 'main_sourceCode.js');
+    var raw = fs.readFileSync(file, 'utf8');
+    var k = raw.indexOf('Code=');
+    var delim = raw[k + 5];
+    var start = k + 6;
+    var end = raw.indexOf(delim, start);
+    return decodeEntities(raw.slice(start, end));
+}
+// Define onCallResult (from the real source flow) inside the booted sandbox so
+// it closes over the live runtime: finalizeFrom, runStep, context, globals.
+function defineOnCallResult(sb) {
+    vm.runInContext(readMainCode(), sb);
+}
 
 // Fresh runtime per test, with finalization state reset and a couple of test-only
 // Types registered: a synchronous data op (writes a varObj key) and a GUI op.
@@ -174,6 +200,112 @@ describe('runStep — live calls are unaffected by the finalize flag', function 
 
             expect(out).toBe('test_gui');                           // normal exit key, not 'disconnect'
             expect(sb.context.session.variables.RTDS_currentOpId).toBe('G'); // prepareGuiHandoff ran
+        });
+    });
+});
+
+describe('onCallResult — termination callback (from main_sourceCode.js)', function () {
+    function bootWithCallback() {
+        return boot().then(function (sb) {
+            sb._endFlowSemaphore = 0;          // declared in master Variables; reset per test
+            defineOnCallResult(sb);
+            expect(typeof sb.onCallResult).toBe('function');
+            return sb;
+        });
+    }
+
+    it('resumes from RTDS_nextStepId and returns the finalize task', function () {
+        return bootWithCallback().then(function (sb) {
+            install(sb, [
+                dataOp('A', 'FromA', 'a', 'B'),
+                dataOp('B', 'FromB', 'b', null)
+            ]);
+            sb.context.session.variables.RTDS_nextStepId = 'A';
+
+            var out = sb.onCallResult();
+
+            expect(out).toBe('disconnect');
+            expect(sb._endFlowSemaphore).toBe(1);
+            expect(sb.RTDS_finalizing).toBe(true);
+            expect(sb.getScoped('FromA', null)).toBe('a');
+            expect(sb.getScoped('FromB', null)).toBe('b');
+        });
+    });
+
+    it('falls back to RTDS_currentOpId when RTDS_nextStepId is unset', function () {
+        return bootWithCallback().then(function (sb) {
+            install(sb, [dataOp('A', 'FromA', 'a', null)]);
+            sb.context.session.variables.RTDS_nextStepId = null;
+            sb.context.session.variables.RTDS_currentOpId = 'A';
+
+            sb.onCallResult();
+
+            expect(sb.getScoped('FromA', null)).toBe('a');
+        });
+    });
+
+    it('is idempotent: a second invocation is a no-op (semaphore guard)', function () {
+        return bootWithCallback().then(function (sb) {
+            install(sb, [dataOp('A', 'FromA', '1', null)]);
+            sb.context.session.variables.RTDS_nextStepId = 'A';
+
+            sb.onCallResult();
+            expect(sb._endFlowSemaphore).toBe(1);
+            expect(sb.getScoped('FromA', null)).toBe('1');
+
+            // Re-point the flow; a guarded second call must NOT run it again.
+            install(sb, [dataOp('A', 'FromA', '2', null)]);
+            var second = sb.onCallResult();
+
+            expect(second).toBeUndefined();
+            expect(sb._endFlowSemaphore).toBe(1);
+            expect(sb.getScoped('FromA', null)).toBe('1');   // unchanged -> engine did not re-run
+        });
+    });
+
+    it('with no resume point set, returns cleanly without entering finalize mode', function () {
+        return bootWithCallback().then(function (sb) {
+            install(sb, [dataOp('A', 'FromA', 'a', null)]);
+            sb.context.session.variables.RTDS_nextStepId = null;
+            sb.context.session.variables.RTDS_currentOpId = null;
+
+            var out = sb.onCallResult();
+
+            expect(out).toBeUndefined();
+            expect(sb._endFlowSemaphore).toBe(1);            // guard still incremented (entered once)
+            expect(sb.RTDS_finalizing).toBe(false);          // finalizeFrom guard returned before latching
+            expect(sb.getScoped('FromA', 'MISSING')).toBe('MISSING');
+        });
+    });
+
+    it('platform-await contract: the returned promise resolves only after the async tail completes', function () {
+        return bootWithCallback().then(function (sb) {
+            var posted = false;
+            sb.registerRtdsOperation('AsyncPost', function (op) {
+                return {
+                    then: function (onOk) {
+                        return Promise.resolve().then(function () {
+                            posted = true;
+                            return onOk({ nextStepId: (op.params && op.params.NextStep) || null });
+                        });
+                    }
+                };
+            });
+            install(sb, [
+                { id: 'A', type: 'AsyncPost', name: 'post', params: { NextStep: 'B' } },
+                dataOp('B', 'FromB', 'b', null)
+            ]);
+            sb.context.session.variables.RTDS_nextStepId = 'A';
+
+            var task = sb.onCallResult();
+
+            expect(task && typeof task.then).toBe('function');
+            expect(posted).toBe(false);                      // platform would still be awaiting
+            return task.then(function (resolved) {
+                expect(resolved).toBe('disconnect');
+                expect(posted).toBe(true);                   // async POST completed before resolve
+                expect(sb.getScoped('FromB', null)).toBe('b');
+            });
         });
     });
 });

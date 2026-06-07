@@ -332,6 +332,27 @@ return resumeFrom(_rtNextStep || context.session.variables.RTDS_nextStepId);
 
 The GUI node must write the chosen outcome step Id into `context.session.variables.RTDS_nextStepId` before this Script node is entered.
 
+### Entry point C — call finalization (`onCallResult`)
+
+The platform termination callback, declared in the master-layer `Code` property (not a Script node). Fires on every end-of-call path:
+
+```js
+function onCallResult() {
+    if (_endFlowSemaphore > 0) { return; }
+    _endFlowSemaphore++;
+    var resumeAt = context.session.variables.RTDS_nextStepId
+                || context.session.variables.RTDS_currentOpId;
+    return finalizeFrom(resumeAt);
+    // Sequential finaliser slot (separate effort): KeyLog(); SegmentLog();
+}
+```
+
+`finalizeFrom` sets the **`RTDS_finalizing`** flag and reuses `runStep`. While finalizing, `runStep` filters out GUI-exit operations (logs `[RTDS] finalize: stop at GUI node` and stops — no live call leg to route to a canvas component) and runs only the JS-inline data tail: the call-report `SendEmail` / `SendSMS`, attribute writes, API calls. **Returning** the task makes the platform await it, so async terminal POSTs complete reliably.
+
+`_endFlowSemaphore` (idempotency, starts `0`) and `RTDS_finalizing` (starts `false`) are declared in the master-layer `Variables` property. `RTDS_finalizing` is never reset — finalization is terminal and the global scope is discarded at session end.
+
+To reach the tail, the routing table must place data-only ops after the last caller-facing node, chained via `NextStep`, terminating at a node with no `NextStep` (or a GUI node, which is the natural logged stop).
+
 ---
 
 ## 8. Unimplemented Operation Types

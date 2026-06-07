@@ -205,7 +205,7 @@ What stays open:
 1. `onCallEnd(callResult)` is called by the platform on every termination path the runtime cares about, as documented. `onSessionEnd` is the documented backstop and is left unwired.
 2. `_endFlowSemaphore` resets to `0` at session start because it is declared in the master-node `Variables`. If the platform reuses session state across calls (unlikely for IVR sessions), we add an explicit reset in `initializeCallFlowContext`.
 3. `DEFAULT_LOGGED_KEYS` corresponds 1:1 with names available either on `varObj` or in the global scope. Operators editing the list keep this invariant.
-4. The `jsonHttpRequest` `.then(success, failure)` shape behaves identically to its use in the production reference - fire-and-forget, no blocking the call termination.
+4. ~~The `jsonHttpRequest` `.then(success, failure)` shape behaves identically to its use in the production reference - fire-and-forget, no blocking the call termination.~~ **Updated (RTDS execution-completion work, 2026-06-08):** a task **returned** from the termination callback (`onCallResult`) is **awaited** by the platform — exactly how `result = fetchAndStart(...)` is awaited before routing. The execution-completion path (`finalizeFrom` → `runStep` in `RTDS_finalizing` mode) relies on this: it returns its task so the data tail's async `SendSMS` / `SendEmail` POSTs reliably complete. If `KeyLog` / `SegmentLog` are later wired into the same callback, chain them so the whole sequence is returned and awaited, rather than treating them as fire-and-forget. See [runtime-architecture.md](runtime-architecture.md) "Finalization mode".
 5. Vocalls does not reorder or coalesce calls to `onCallEnd`. If it does, `_endFlowSemaphore` handles the re-entry case.
 
 If any of these is wrong, flag now.

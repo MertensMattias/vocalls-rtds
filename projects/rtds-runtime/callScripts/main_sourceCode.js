@@ -19,12 +19,12 @@
       MaxEntryCount=""
       MaxEntryNodeId=""
       SpeechRecognitionEngine=""
-      Code=""
+      Code='function onCallResult() {&#xa;    // Platform termination callback -- fires on every end-of-call path.&#xa;    // _endFlowSemaphore guards against the platform invoking it more than once.&#xa;    if (_endFlowSemaphore &gt; 0) { return; }&#xa;    _endFlowSemaphore++;&#xa;&#xa;    // Resume the RTDS flow from where the call stopped and run the data-only&#xa;    // tail (call-report SendEmail/SendSMS, attribute writes, API calls).&#xa;    // RTDS_nextStepId is the step after the node that was mid-handoff;&#xa;    // RTDS_currentOpId is the fallback. Both are staged by prepareGuiHandoff.&#xa;    var resumeAt = context.session.variables.RTDS_nextStepId&#xa;                || context.session.variables.RTDS_currentOpId;&#xa;&#xa;    // finalizeFrom returns the runStep task; returning it here makes the&#xa;    // platform await the data tail (incl. async SendSMS/SendEmail POSTs)&#xa;    // before tearing the session down.&#xa;    return finalizeFrom(resumeAt);&#xa;    // Sequential finaliser slot (separate effort): KeyLog(); SegmentLog();&#xa;}'
       Extensions=""
       BackgroundNoise="false"
       BreathInEffect="false"
       Languages="{&#39;nl&#39;:{&#39;isDefault&#39;:true,&#39;languageName&#39;:&#39;Dutch&#39;,&#39;ttsLanguageCode&#39;:&#39;nl-NL&#39;,&#39;ttsVoiceName&#39;:&#39;nl-NL-Luc&#39;,&#39;ttsEngine&#39;:&#39;ElevenLabs&#39;,&#39;ttsPitch&#39;:&#39;&#39;,&#39;ttsSpeed&#39;:&#39;&#39;,&#39;ttsVolume&#39;:&#39;&#39;,&#39;prosodyBaseEnabled&#39;:false,&#39;prosodyContourEnabled&#39;:false}}"
-      Variables='environment = &#39;&#39;;&#xa;language = &#39;&#39;;&#xa;&#xa;varObj = {};&#xa;callIdKey = &#39;&#39;;&#xa;&#xa;result = null;&#xa;env = &#39;acc&#39;;&#xa;debug = true;&#xa;debugCall = true;&#xa;&#xa;_rtConfig = {};&#xa;_rtNextStep = "_rtNextStep";&#xa;&#xa;_headers = &#39;&#39;;'
+      Variables='environment = &#39;&#39;;&#xa;language = &#39;&#39;;&#xa;&#xa;varObj = {};&#xa;callIdKey = &#39;&#39;;&#xa;&#xa;result = null;&#xa;env = &#39;acc&#39;;&#xa;debug = true;&#xa;debugCall = true;&#xa;&#xa;_rtConfig = {};&#xa;_rtNextStep = "_rtNextStep";&#xa;&#xa;_headers = &#39;&#39;;&#xa;&#xa;_endFlowSemaphore = 0;&#xa;RTDS_finalizing = false;'
       HintGrammar=""
       RequiredVariables=""
       PropertiesDefinition=""

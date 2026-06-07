@@ -44,12 +44,16 @@ Every operation Type is registered into a single map, `RTDS_REGISTRY`, as one of
 a Type with no handler yet stays unregistered and `runStep` skips it to its `NextStep` with a
 warning (no mock advancers).
 
-### Two entry points
+### Entry points
 
 ```
-Entry A — initial call:   return fetchAndStart(RTDS_sourceId)
-Entry B — GUI re-entry:    return resumeFrom(RTDS_nextStepId)
+Entry A — initial call:    return fetchAndStart(RTDS_sourceId)
+Entry B — GUI re-entry:     return resumeFrom(RTDS_nextStepId)
+Entry C — call finalized:   return finalizeFrom(RTDS_nextStepId || RTDS_currentOpId)
 ```
+
+Entry C is the platform termination callback (`onCallResult`, in the master-layer
+`Code` property). See **Finalization mode** below.
 
 ### Control flow
 
@@ -96,6 +100,30 @@ A GUI component and its JS twin (where both exist) must keep the **same payload 
 contract** — this is the lockstep rule (see [lockstep](../../conventions/lockstep.md)). Three
 twins exist today: `executeSendSms` / `executeSendEmail` / `executeSetVariables` in
 `rtds_2_runtime.js` alongside `rtds/components/sendSms.js` / `sendMail.js` / `setVariables.js`.
+
+## Finalization mode (`RTDS_finalizing` + `finalizeFrom`)
+
+When an interaction terminates (caller hangup, drop, error, transfer), the RTDS flow stops
+wherever it was. Any operations the routing table placed *after* the caller-facing node —
+the call-report `SendEmail` / `SendSMS`, attribute writes, an API call — never run. The
+platform termination callback closes that gap.
+
+- **`onCallResult()`** (master-layer `Code` property) fires on every end-of-call path. Guarded
+  by `_endFlowSemaphore` (idempotent), it resumes from `RTDS_nextStepId || RTDS_currentOpId`
+  (both staged by `prepareGuiHandoff`) via `finalizeFrom` and **returns the resulting task** so
+  the platform awaits it.
+- **`finalizeFrom(nextStepId)`** sets the **`RTDS_finalizing`** flag, then reuses the normal
+  `runStep` engine — there is no separate loop. While the flag is set, `runStep`'s GUI-exit
+  branch is **filtered**: instead of `prepareGuiHandoff` + an exit key, it logs
+  `[RTDS] finalize: stop at GUI node` and stops. There is no live call leg post-termination, so
+  a caller-facing component cannot run and an exit key would route nowhere. Only the JS-inline
+  (data) tail runs to completion.
+- The flag is **never cleared** — finalization is the terminal mode of the call and the global
+  scope is discarded at session end. It defaults `false` for every live call (declared in
+  `rtds_2_runtime.js` and the master-layer `Variables`), so live-call dispatch is unaffected.
+- When an async JS handler (SendSMS / SendEmail) is in the tail, `runStep` resolves to a
+  promise; `onCallResult` returns it, so the platform holds teardown until the terminal POSTs
+  complete — reliably, not fire-and-forget.
 
 ## The `varObj` store
 
