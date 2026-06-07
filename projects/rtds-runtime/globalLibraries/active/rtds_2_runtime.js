@@ -30,6 +30,17 @@
 RTDS_REGISTRY = new Map();
 
 /**
+ * Finalization-mode flag. Set true by finalizeFrom (from the platform's
+ * onCallResult termination callback) so runStep filters out GUI-exit operations
+ * and runs only the JS-inline data tail. Defaults false for every live call;
+ * never reset (finalization is terminal -- the global scope is discarded at
+ * session end). Also declared in the master-layer Variables property so a fresh
+ * session always starts with it false.
+ * @type {boolean}
+ */
+RTDS_finalizing = false;
+
+/**
  * Read-only view over RTDS_REGISTRY filtered to JS-handled types.
  * Maps Type string -> handler function. Kept for back-compat.
  * @type {Map<string, Function>}
@@ -615,6 +626,18 @@ function runStep(startOpId) {
 
     // GUI-exit operation.
     if (entry.kind === "gui") {
+      // Finalization mode (set by onCallResult via finalizeFrom): the
+      // interaction is over, there is no live call leg to route to a canvas
+      // component, and runStep's return value is not routed. GUI operations are
+      // filtered out -- log and stop, dropping the interactive remainder. Only
+      // the JS-inline (data) tail runs to completion. See finalizeFrom.
+      if (RTDS_finalizing) {
+        Logger.info("[RTDS] finalize: stop at GUI node", {
+          step: current.id,
+          type: type,
+        });
+        return "disconnect";
+      }
       prepareGuiHandoff(current);
       Logger.info("[RTDS] GUI handoff", {
         step: current.id,
@@ -663,6 +686,47 @@ function resumeFrom(nextStepId) {
     return "disconnect";
   }
   Logger.info("[RTDS] resuming", { from: String(nextStepId) });
+  return runStep(String(nextStepId));
+}
+
+// ===========================================================================
+// finalizeFrom(nextStepId)
+//   End-of-call entry point, called from the platform's termination callback
+//   (onCallResult). Runs the remaining flow from nextStepId in FINALIZATION
+//   MODE: it sets the RTDS_finalizing flag, then reuses the normal runStep
+//   engine. While the flag is set, runStep's GUI-exit branch filters out
+//   caller-facing operations -- it logs and stops instead of handing off, since
+//   the call leg is gone -- so only the JS-inline (data) tail of the flow runs:
+//   the call-report SendEmail / SendSMS, attribute writes, and API calls that
+//   the caller's hangup cut short.
+//
+//   The flag is never cleared: finalization is the terminal mode of the call,
+//   and the global scope is discarded when the session ends. There is no live
+//   call after this, so no path that must see runStep behave normally again.
+//
+//   Returns whatever runStep returns. When an async JS handler (SendSMS /
+//   SendEmail) is in the tail, that is a promise; onCallResult returns it so the
+//   platform awaits it before tearing the session down -- which is what makes
+//   those terminal POSTs reliably complete rather than fire-and-forget.
+// ===========================================================================
+
+/**
+ * @param {string|number|null} nextStepId
+ * @returns {string|Promise<string>|undefined} The runStep result ('disconnect'
+ *   or a promise of it), or undefined when there is no resume point.
+ */
+function finalizeFrom(nextStepId) {
+  if (
+    nextStepId === undefined ||
+    nextStepId === null ||
+    nextStepId === "" ||
+    nextStepId === -1
+  ) {
+    log_warn("[RTDS] finalizeFrom: no resume point -- nothing to finalize.");
+    return undefined;
+  }
+  RTDS_finalizing = true;
+  Logger.info("[RTDS] finalizing", { from: String(nextStepId) });
   return runStep(String(nextStepId));
 }
 
