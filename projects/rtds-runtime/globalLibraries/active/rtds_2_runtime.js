@@ -1,39 +1,3 @@
-/**
- * rtds_2_runtime.js -- RTDS routing-table dispatch
- *
- * Pure RTDS orchestration: fetch the routing table by sourceId, parse it,
- * loop through JS-handled operations inline, and hand GUI-exit operations
- * off to the canvas by mirroring Params into RTDS_OP_* session variables
- * and returning a Type-specific exit key.
- *
- * Loaded SECOND by reverse-alphabetical sort (filename `rtds_2_...` sits
- * between `rtds_3_vocallsEnv.js` and `rtds_1_globalConfig.js`). The
- * env file (loaded first) provides Logger, getValue, jsonHttpRequest's
- * presence guard, etc. The config file (loaded last) provides constVarObj --
- * not consumed by this file, so the back-reference is fine.
- *
- * Contract
- * --------
- *   Entry A (initial call entry):
- *     return fetchAndStart(context.session.variables.RTDS_sourceId);
- *
- *   Entry B (re-entry after a GUI node completes):
- *     return resumeFrom(context.session.variables.RTDS_nextStepId);
- *
- * Op routing:
- *   - JS-handled type (in RTDS_OPERATIONS): handler runs inline, returns
- *     { nextStepId }, runStep loops to the next op.
- *   - GUI-exit type (in RTDS_EXIT_KEYS): Params mirrored to session as
- *     RTDS_OP_<Key>, exit key string returned to Vocalls. Re-entry happens
- *     through resumeFrom(RTDS_nextStepId).
- *
- * Required platform globals (provided by rtds_3_vocallsEnv.js + Vocalls):
- *   log_debug, log_warn, log_error, jsonHttpRequest, _headers,
- *   _rtBaseUrl, _rtGetSourceIdEndpoint
- *
- * ES5.1 -- no let/const, no arrow functions. Template literals allowed.
- */
-
 // ===========================================================================
 // Unified operation registry (plug-and-play dispatch)
 // ===========================================================================
@@ -123,33 +87,22 @@ function getRtdsRegistry() {
 }
 
 /**
- * Diagnostic dump of the RTDS dispatch layer. Two modes, both DEBUG-gated:
- *
- *   - Full mode (no argument): the routing-table header fields parseFlow
- *     scattered onto context.session.variables, the registry snapshot, the live
- *     dispatcher/handoff state vars, the endpoint globals, and the full
- *     operations list expanded out of the RTDS_opIndex Map. Call from a Script
- *     node AFTER fetchAndStart has resolved (the RTDS_* vars and opIndex only
- *     exist post-parseFlow).
- *
- *   - Per-step mode (pass the op being dispatched): a compact block for one op
- *     -- the routing-table header, the dispatcher state, the op's own config
- *     (current.params, so JS-handled AND GUI ops both show config), and the
- *     opIndex size. Skips the registry, endpoints, and full ops list (those are
- *     constant across steps and would be noise per op). runStep calls this once
- *     per dispatched op so the local DEBUG trace shows, step by step, exactly
- *     what config each component / JS handler receives and how the RTDS_* vars
- *     stand -- the same per-step view the flow simulator prints.
+ * Diagnostic dump of the RTDS dispatch layer: the routing-table header
+ * fields parseFlow scattered onto context.session.variables, the registry
+ * snapshot, the live dispatcher/handoff state vars, the endpoint globals
+ * the runtime POSTs to, and the full operations list expanded out of the
+ * RTDS_opIndex Map (which JSON.stringify cannot serialise on its own).
  *
  * Output goes through Logger.debug, so it only prints when activeLevel is
- * DEBUG. Env-layer config (varObj, Logger.config) is dumped separately by
+ * DEBUG. Call from a Script node AFTER fetchAndStart has resolved (the
+ * RTDS_* vars and opIndex only exist post-parseFlow); the handoff vars
+ * (RTDS_currentOpId / RTDS_nextStepId) only populate once runStep reaches a
+ * GUI op. Env-layer config (varObj, Logger.config) is dumped separately by
  * Logger.dumpConfig (rtds_3_vocallsEnv.js).
  *
- * @param {Object} [currentOp] - When provided, dump the compact per-step block
- *                               for this op instead of the full state dump.
  * @returns {void}
  */
-function dumpRtdsState(currentOp) {
+function dumpRtdsState() {
   if (!Logger.shouldLog("DEBUG")) return;
   var v = context.session.variables || {};
 
@@ -161,35 +114,16 @@ function dumpRtdsState(currentOp) {
     supportedLanguages: v.RTDS_supportedLanguages || null,
   });
 
+  Logger.debug(
+    "[rtds] registry | " + Logger.sanitizeForLog(getRtdsRegistry(), 4000),
+  );
+
   Logger.debug("[rtds] dispatcher state", {
     currentOpId: v.RTDS_currentOpId || null,
     currentOpType: v.RTDS_currentOpType || null,
     nextStepId: v.RTDS_nextStepId || null,
     error: v.RTDS_error || null,
   });
-
-  var idx = v.RTDS_opIndex;
-  var opCount = idx && typeof idx.forEach === "function" ? idx.size : 0;
-
-  // Per-step mode: dump THIS op's config (works for js + gui ops) and stop.
-  if (currentOp) {
-    Logger.debug(
-      "[rtds] step config | id=" +
-        currentOp.id +
-        " type=" +
-        currentOp.type +
-        " | opCount=" +
-        opCount +
-        " | " +
-        Logger.sanitizeForLog(currentOp.params, 10000),
-    );
-    return;
-  }
-
-  // Full mode: registry, endpoints, and the whole operations list.
-  Logger.debug(
-    "[rtds] registry | " + Logger.sanitizeForLog(getRtdsRegistry(), 4000),
-  );
 
   Logger.debug("[rtds] endpoints", {
     baseUrl: typeof _rtBaseUrl !== "undefined" ? _rtBaseUrl : null,
@@ -201,6 +135,7 @@ function dumpRtdsState(currentOp) {
     mail: typeof _rtMailEndpoint !== "undefined" ? _rtMailEndpoint : null,
   });
 
+  var idx = v.RTDS_opIndex;
   if (idx && typeof idx.forEach === "function") {
     var ops = [];
     idx.forEach(function (op) {
@@ -387,6 +322,48 @@ function getParam(op, name, fallback) {
 }
 
 // ===========================================================================
+// resolveTokens(value)
+//   Replaces $(ATTR_NAME) tokens in a string with the current value. Operator
+//   attributes resolve through getScoped (varObj -> global); an RTDS_* token
+//   falls back to context.session.variables (the dispatcher namespace).
+//   Non-string values pass through unchanged. Unresolved tokens become "".
+// ===========================================================================
+
+/**
+ * @param {*} value
+ * @returns {*}
+ */
+function resolveTokens(value) {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  return value.replace(/\$\(([^)]+)\)/g, function (match, name) {
+    // RTDS_* tokens belong to the dispatcher namespace on
+    // context.session.variables (see conventions/storage.md). Resolve them
+    // there first so an operator-set varObj/global key of the same name can't
+    // shadow them. All other tokens resolve operator data via getScoped.
+    if (String(name).indexOf("RTDS_") === 0) {
+      var rtdsVal = context.session.variables[name];
+      if (rtdsVal !== undefined && rtdsVal !== null) {
+        return String(rtdsVal);
+      }
+      return "";
+    }
+
+    var scoped = getScoped(name, null);
+    if (scoped !== undefined && scoped !== null) {
+      return String(scoped);
+    }
+    var sessionVal = context.session.variables[name];
+    if (sessionVal !== undefined && sessionVal !== null) {
+      return String(sessionVal);
+    }
+    return "";
+  });
+}
+
+// ===========================================================================
 // resolveNextStep(op, resultKey)
 //   Returns the next-operation Id string. Checks resultKey first
 //   (e.g. "NextStep_Open"), falls back to "NextStep". Null when neither set.
@@ -413,57 +390,56 @@ function resolveNextStep(op, resultKey) {
 
 // ===========================================================================
 // executeSetVariables(op)
-//   JS-handled operation (supersedes SetAttributes). Lockstep twin of the
-//   canvas component rtds/components/setVariables.js: it runs the component's
-//   exact two-node pipeline through the SAME shared env-library functions, so
-//   the GUI and JS paths can never diverge --
-//     init   -> setupConfig(op.params)  (Active coerced via activeFlag, strings
-//               trimmed + ${name} resolved via resolveConfigTokens, native
-//               types preserved)
-//     script -> getValue(rtParams, 'Active', true) default-true skip; walk the
-//               non-control keys, writing each to its dot-path target via
-//               setVariable (bare key -> varObj); NextStep via getValue(..,-1).
-//   Control keys (Active, NextStep) are never stored. NextStep controls flow
-//   only. Returns { nextStepId }.
+//   JS-handled operation (supersedes SetAttributes). Writes each non-control
+//   Param to its dot-path target via setVariable -- a bare key lands on varObj
+//   (the call-scoped store, see conventions/storage.md), a dotted key targets
+//   varObj/globalThis/a named reachable object. Values keep their native JSON
+//   type; only strings are token-resolved. Control keys (Active, NextStep) are
+//   never stored. NextStep controls flow only. Returns { nextStepId }.
 // ===========================================================================
 
 /**
  * @param {Object} op
- * @returns {{ nextStepId: (string|number) }}
+ * @returns {{ nextStepId: ?string }}
  */
 function executeSetVariables(op) {
-  if (!op || !op.params) {
-    return { nextStepId: "" };
+  var params = op.params;
+  if (!params) {
+    return { nextStepId: null };
   }
-
-  // init node twin: single shared config-resolution contract.
-  var rtParams = setupConfig(op.params);
 
   // Active defaults to true for SetVariables: a large body of older config
   // never sets the key, and historically those ops always wrote. Only an
   // explicit Active:false skips. (Send* ops default false -- opt-in.)
-  if (!getValue(rtParams, "Active", true)) {
-    var skipNext = getValue(rtParams, "NextStep", "");
+  if (!activeFlag(getParam(op, "Active", true))) {
+    var skipNext = resolveNextStep(op, null);
     Logger.info("[RTDS] SetVariables skipped -- inactive", {
-      nextStep: skipNext,
+      nextStep: skipNext ? skipNext : "(none)",
     });
     return { nextStepId: skipNext };
   }
 
-  // script node twin: walk non-control keys, dot-path write each.
-  var CONTROL_KEYS = { Active: 1, NextStep: 1 };
+  var CONTROL = { active: 1, nextstep: 1 };
+
+  var keys = Object.keys(params);
   var written = 0;
-  walk(rtParams, function (key, value) {
-    if (CONTROL_KEYS[key]) return;
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    if (CONTROL[String(key).toLowerCase()]) {
+      continue;
+    }
+
+    var raw = getParam(op, key, null); // unwrap array form, keep native type
+    var value = typeof raw === "string" ? resolveTokens(raw) : raw; // strings only
     setVariable(key, value); // dot-path write; varObj by default
     written++;
-  });
+  }
 
-  var nextStepId = getValue(rtParams, "NextStep", "");
+  var nextStepId = resolveNextStep(op, null);
   Logger.debug("[RTDS] SetVariables done", {
     opName: op.name,
     count: written,
-    nextStep: nextStepId,
+    nextStep: nextStepId ? nextStepId : "(none)",
   });
   return { nextStepId: nextStepId };
 }
@@ -546,13 +522,21 @@ function runStep(startOpId) {
       kind: entry ? entry.kind : "unregistered",
     });
 
-    // DEBUG-only per-step dump: the op's config (current.params, so JS-handled
-    // AND GUI ops show it) plus the routing-table header and live dispatcher
-    // state. The INFO line above is the always-on summary; this is the rich
-    // per-op view -- the same one the flow simulator prints. dumpRtdsState
-    // early-returns when activeLevel isn't DEBUG, so the serialisation cost is
-    // skipped (and the trace stays quiet) in normal runs.
-    dumpRtdsState(current);
+    // DEBUG-only per-cycle dump of the operation's full params object. The
+    // INFO line above is the always-on summary; this adds the raw config the
+    // handler will read. Logger.debug early-returns when activeLevel isn't
+    // DEBUG, so this is silent (and the sanitize cost is skipped) in normal
+    // runs -- see the shouldLog guard before paying for serialisation.
+    if (Logger.shouldLog("DEBUG")) {
+      Logger.debug(
+        "[RTDS] step params | id=" +
+          current.id +
+          " type=" +
+          type +
+          " | " +
+          Logger.sanitizeForLog(current.params, 10000),
+      );
+    }
 
     // Unregistered type -- no real handler exists for this Type yet. Rather
     // than fail the leg, skip to the op's NextStep with a warning so the
@@ -875,24 +859,17 @@ function resolveFilesList(raw) {
 
 /**
  * @param {Object} op
- * @returns {{ nextStepId: (string|number) }|Promise<{ nextStepId: (string|number) }>}
+ * @returns {{ nextStepId: ?string }|Promise<{ nextStepId: ?string }>}
  */
 function executeSendSms(op) {
-  // Same config-handling contract as executeSetVariables and the canvas
-  // component's init node: setupConfig coerces Active via activeFlag, trims
-  // strings and resolves ${name} via resolveConfigTokens, and preserves native
-  // JSON types. Reads then come off the resolved map via getValue. NextStep
-  // falls back to "" when absent -- "" is falsy, so runStep / resumeFrom treat
-  // it as clean end-of-flow (matching setVariables and the component).
-  var rtParams = setupConfig(op && op.params);
-  var skipNext = getValue(rtParams, "NextStep", "");
+  var skipNext = resolveNextStep(op, null);
 
-  if (!getValue(rtParams, "Active", false)) {
+  if (!activeFlag(getParam(op, "Active", false))) {
     Logger.info("[RTDS] SendSMS skipped -- inactive", { nextStep: skipNext });
     return { nextStepId: skipNext };
   }
 
-  var to = String(getValue(rtParams, "To", ""));
+  var to = String(resolveTokens(getParam(op, "To", "")));
   if (!to || !isMobileNumber(to)) {
     Logger.warn("[RTDS] SendSMS invalid phone number", {
       to: to,
@@ -901,8 +878,8 @@ function executeSendSms(op) {
     return { nextStepId: skipNext };
   }
 
-  var failureNext = getValue(rtParams, "NextStep_Failure", skipNext);
-  var successNext = getValue(rtParams, "NextStep_Success", skipNext);
+  var failureNext = resolveNextStep(op, "NextStep_Failure") || skipNext;
+  var successNext = resolveNextStep(op, "NextStep_Success") || skipNext;
 
   if (typeof _rtSmsEndpoint === "undefined" || !_rtSmsEndpoint) {
     Logger.error("[RTDS] SendSMS endpoint not configured", {
@@ -912,13 +889,13 @@ function executeSendSms(op) {
   }
 
   var url = _rtBaseUrl + _rtSmsEndpoint;
-  var timeout = Number(getValue(rtParams, "Timeout", 10000)) || 10000;
+  var timeout = Number(getParam(op, "Timeout", 10000)) || 10000;
   var payload = {
-    smsAccountId: Number(getValue(rtParams, "SmsAccountId", -1)),
-    routing: getValue(rtParams, "Routing", ""),
-    from: getValue(rtParams, "From", ""),
+    smsAccountId: Number(getParam(op, "SmsAccountId", -1)),
+    routing: resolveTokens(getParam(op, "Routing", "")),
+    from: resolveTokens(getParam(op, "From", "")),
     to: to,
-    content: getValue(rtParams, "Body", ""),
+    content: resolveTokens(getParam(op, "Body", "")),
     plannedTime: nowUTC(),
   };
 
@@ -954,25 +931,21 @@ function executeSendSms(op) {
 
 /**
  * @param {Object} op
- * @returns {{ nextStepId: (string|number) }|Promise<{ nextStepId: (string|number) }>}
+ * @returns {{ nextStepId: ?string }|Promise<{ nextStepId: ?string }>}
  */
 function executeSendEmail(op) {
-  // Same config-handling contract as executeSetVariables and the canvas
-  // component's init node: setupConfig coerces Active via activeFlag, trims
-  // strings and resolves ${name} via resolveConfigTokens, and preserves native
-  // JSON types. Reads then come off the resolved map via getValue. NextStep
-  // falls back to "" when absent -- "" is falsy, so runStep / resumeFrom treat
-  // it as clean end-of-flow (matching setVariables and the component).
-  var rtParams = setupConfig(op && op.params);
-  var skipNext = getValue(rtParams, "NextStep", "");
+  var skipNext = resolveNextStep(op, null);
 
-  if (!getValue(rtParams, "Active", false)) {
+  if (!activeFlag(getParam(op, "Active", false))) {
     Logger.info("[RTDS] SendEmail skipped -- inactive", { nextStep: skipNext });
     return { nextStepId: skipNext };
   }
 
-  var from = String(getValue(rtParams, "From", ""));
-  var to = splitSemicolonList(getValue(rtParams, "To", ""));
+  var from = String(resolveTokens(getParam(op, "From", ""))).replace(
+    /^\s+|\s+$/g,
+    "",
+  );
+  var to = splitSemicolonList(resolveTokens(getParam(op, "To", "")));
   if (!from || to.length === 0) {
     Logger.warn("[RTDS] SendEmail missing From or To", {
       from: from,
@@ -982,8 +955,8 @@ function executeSendEmail(op) {
     return { nextStepId: skipNext };
   }
 
-  var failureNext = getValue(rtParams, "NextStep_Failure", skipNext);
-  var successNext = getValue(rtParams, "NextStep_Success", skipNext);
+  var failureNext = resolveNextStep(op, "NextStep_Failure") || skipNext;
+  var successNext = resolveNextStep(op, "NextStep_Success") || skipNext;
 
   if (typeof _rtMailEndpoint === "undefined" || !_rtMailEndpoint) {
     Logger.error("[RTDS] SendEmail endpoint not configured", {
@@ -992,33 +965,35 @@ function executeSendEmail(op) {
     return { nextStepId: failureNext };
   }
 
-  var priority = Number(getValue(rtParams, "Priority", 2));
+  var priority = Number(getParam(op, "Priority", 2));
   if (priority !== 1 && priority !== 2 && priority !== 3) priority = 2;
 
   var payload = {
     from: from,
-    subject: getValue(rtParams, "Subject", ""),
+    subject: resolveTokens(getParam(op, "Subject", "")),
     to: to,
-    body: getValue(rtParams, "Body", ""),
+    body: resolveTokens(getParam(op, "Body", "")),
     priority: priority,
   };
 
-  var cc = splitSemicolonList(getValue(rtParams, "Cc", ""));
+  var cc = splitSemicolonList(resolveTokens(getParam(op, "Cc", "")));
   if (cc.length) payload.cc = cc;
-  var bcc = splitSemicolonList(getValue(rtParams, "Bcc", ""));
+  var bcc = splitSemicolonList(resolveTokens(getParam(op, "Bcc", "")));
   if (bcc.length) payload.bcc = bcc;
-  var files = resolveFilesList(getValue(rtParams, "Files", ""));
+  var files = resolveFilesList(resolveTokens(getParam(op, "Files", "")));
   if (files.length) payload.files = files;
   var attachments = buildAttachments(
-    getValue(rtParams, "AttachmentNames", ""),
-    getValue(rtParams, "AttachmentData", ""),
+    getParam(op, "AttachmentNames", ""),
+    getParam(op, "AttachmentData", ""),
   );
   if (attachments.length) payload.attachments = attachments;
-  var customerKey = String(getValue(rtParams, "CustomerKey", ""));
+  var customerKey = String(
+    resolveTokens(getParam(op, "CustomerKey", "")),
+  ).replace(/^\s+|\s+$/g, "");
   if (customerKey) payload.customerKey = customerKey;
 
   var url = _rtBaseUrl + _rtMailEndpoint;
-  var timeout = Number(getValue(rtParams, "Timeout", 10000)) || 10000;
+  var timeout = Number(getParam(op, "Timeout", 10000)) || 10000;
 
   if (typeof _headers === "undefined" || !_headers) _headers = {};
 
@@ -1069,7 +1044,7 @@ function executeSendEmail(op) {
 // kept defined above (dead code) so the twins can be re-enabled by restoring
 // the registerRtdsOperation lines. SetAttributes_vocalls is routed to the same
 // set_variables exit (the canvas setVariables.js handles both).
-//   registerRtdsOperation("SetVariables_vocalls", executeSetVariables);
+registerRtdsOperation("SetVariables_vocalls", executeSetVariables);
 //   registerRtdsOperation("SetAttributes_vocalls", executeSetVariables);
 //   registerRtdsOperation("SendSms_vocalls", executeSendSms);
 //   registerRtdsOperation("SendMail_vocalls", executeSendEmail);

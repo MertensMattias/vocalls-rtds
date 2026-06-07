@@ -56,7 +56,7 @@ describe('rtds-runtime main.js', function () {
         // The only error allowed is the post-load fetchAndStart shape-mismatch
         // warning. The test-harness jsonHttpRequest stub resolves to a fetch-
         // style Response ({ status, ok, json }), but the production runtime
-        // expects the Vocalls shape ({ success, statusCode, body }). That
+        // expects the Vocalls shape ({ success, statusCode, response }). That
         // mismatch is a harness limitation, not a runtime bug — fetchAndStart
         // correctly routes to NextStep_Failure (exit 'disconnect') when it
         // sees no success: true on the result.

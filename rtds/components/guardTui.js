@@ -1,6 +1,6 @@
 <mxGraphModel
-  dx="5558"
-  dy="6643"
+  dx="6215"
+  dy="4341"
   grid="1"
   gridSize="10"
   guides="1"
@@ -10,8 +10,8 @@
   fold="1"
   page="1"
   pageScale="1"
-  pageWidth="850"
-  pageHeight="1100"
+  pageWidth="827"
+  pageHeight="1169"
 >
   <root>
     <object
@@ -24,7 +24,7 @@
       BackgroundNoise="true"
       BreathInEffect="true"
       Languages="{&#39;nl&#39;:{&#39;isDefault&#39;:true,&#39;languageName&#39;:&#39;Dutch (Belgium)&#39;,&#39;ttsLanguageCode&#39;:&#39;nl-BE&#39;,&#39;ttsVoiceName&#39;:&#39;&#39;,&#39;ttsEngine&#39;:&#39;&#39;,&#39;ttsPitch&#39;:&#39;&#39;,&#39;ttsSpeed&#39;:&#39;&#39;,&#39;ttsVolume&#39;:&#39;&#39;,&#39;prosodyBaseEnabled&#39;:true,&#39;prosodyContourEnabled&#39;:false},&#39;fr&#39;:{&#39;languageName&#39;:&#39;French&#39;,&#39;ttsLanguageCode&#39;:&#39;fr-BE&#39;,&#39;ttsVoiceName&#39;:&#39;fr-BE-Luc&#39;,&#39;ttsEngine&#39;:&#39;ElevenLabs&#39;,&#39;prosodyBaseEnabled&#39;:false,&#39;prosodyContourEnabled&#39;:false,&#39;isDefault&#39;:false},&#39;de&#39;:{&#39;languageName&#39;:&#39;German&#39;,&#39;ttsLanguageCode&#39;:&#39;de-DE&#39;,&#39;ttsVoiceName&#39;:&#39;de-DE-KatjaNeural&#39;,&#39;ttsEngine&#39;:&#39;Microsoft&#39;,&#39;prosodyBaseEnabled&#39;:true,&#39;prosodyContourEnabled&#39;:true,&#39;isDefault&#39;:false},&#39;en&#39;:{&#39;languageName&#39;:&#39;English&#39;,&#39;ttsLanguageCode&#39;:&#39;en-GB&#39;,&#39;ttsVoiceName&#39;:&#39;en-GB-Luc&#39;,&#39;ttsEngine&#39;:&#39;ElevenLabs&#39;,&#39;prosodyBaseEnabled&#39;:false,&#39;prosodyContourEnabled&#39;:false,&#39;isDefault&#39;:false}}"
-      Variables='__configJSON = {&#xa;    "Active": true,&#xa;    "ConfigId": 1,&#xa;    "ConfigName": "KLANTWACHT",&#xa;    "PhoneNumberVar": "ani",&#xa;    "Timeout": 10000,&#xa;    "ResultCurrentlyActivated_NL": "You are currently activated on guard configuration ${CustomerProject}",&#xa;    "ResultCurrentlyDeactivated_NL": "You are currently not activated on guard configuration ${CustomerProject}",&#xa;    "PromptActivate_NL": "To activate yourself, press 7.",&#xa;    "PromptDeactivate_NL": "To deactivate yourself, press 3.",&#xa;    "ResultActivated_NL": "Your number is successfully activated.",&#xa;    "ResultDeactivated_NL": "Your number is successfully deactivated.",&#xa;    "ResultOnlyActive_NL": "You are currently the only active member, therefore you are not able to deactivate yourself.",&#xa;    "ResultDenied_NL": "You are not allowed to use this service. If you disagree, contact your administrator. Thank you for calling.",&#xa;    "ResultError_NL": "We encountered a technical issue. Contact your administrator to report this issue.",&#xa;    "NextStep": "00010",&#xa;    "NextStep_Success": "00011",&#xa;    "NextStep_Denied": "00012",&#xa;    "NextStep_Failure": "00099"&#xa;};&#xa;__environment = environment;&#xa;__rtBaseUrl = _rtBaseUrl;&#xa;__rtTuiCheckAccessEndpoint = _rtTuiCheckAccessEndpoint;&#xa;__rtTuiGetStateEndpoint = _rtTuiGetStateEndpoint;&#xa;__rtTuiActivateEndpoint = _rtTuiActivateEndpoint;&#xa;__rtTuiDeactivateEndpoint = _rtTuiDeactivateEndpoint;&#xa;__rtNextStep &amp;= _rtNextStep;'
+      Variables='__configJSON = {&#xa;    "Active": true,&#xa;    "ConfigId": 1,&#xa;    "ConfigName": "KLANTWACHT",&#xa;    "PhoneNumberVar": "ani",&#xa;    "Timeout": 10000,&#xa;    "ResultCurrentlyActivated_NL": "U bent momenteel actief voor de wachtdienst ${CustomerProject}.",&#xa;    "ResultCurrentlyDeactivated_NL": "U bent momenteel niet actief op ${CustomerProject}.",&#xa;    "PromptActivate_NL": "Druk op 7 om uzelf te activeren.",&#xa;    "PromptDeactivate_NL": "Druk op 3 om uzelf te deactiveren.",&#xa;    "ResultActivated_NL": "Uw nummer is succesvol geactiveerd.",&#xa;    "ResultDeactivated_NL": "Uw nummer is succesvol gedeactiveerd.",&#xa;    "ResultOnlyActive_NL": "U bent momenteel als enige geactiveerd. Daarom kunt u zichzelf nu niet deactiveren.",&#xa;    "ResultDenied_NL": "U bent niet bevoegd om van deze dienst gebruik te maken. Gelieve contact op te nemen met uw verantwoordelijke indien u hierover vragen heeft.",&#xa;    "ResultError_NL": "Er is een technische fout opgetreden. Gelieve dit probleem te melden aan uw verantwoordelijke.",&#xa;    "NextStep": "00010",&#xa;    "NextStep_Success": "00011",&#xa;    "NextStep_Denied": "00012",&#xa;    "NextStep_Failure": "00099"&#xa;};&#xa;__environment = environment;&#xa;__rtBaseUrl = _rtBaseUrl;&#xa;__rtTuiCheckAccessEndpoint = _rtTuiCheckAccessEndpoint;&#xa;__rtTuiGetStateEndpoint = _rtTuiGetStateEndpoint;&#xa;__rtTuiActivateEndpoint = _rtTuiActivateEndpoint;&#xa;__rtTuiDeactivateEndpoint = _rtTuiDeactivateEndpoint;&#xa;__rtNextStep &amp;= _rtNextStep;'
       PropertiesDefinition='[&#xa;    {&#xa;        "name": "__configJSON",&#xa;        "title": "Operation config (JSON)",&#xa;        "hint": "Full RTDS operation Params object as JSON. Must include all required Params fields for the operation type.",&#xa;        "controlSettings": {&#xa;            "controlType": "text",&#xa;            "maxLength": 5000,&#xa;            "dataType": "string",&#xa;            "readonly": false&#xa;        }&#xa;    },&#xa;    {&#xa;        "name": "__environment",&#xa;        "title": "Environment",&#xa;        "hint": "Deployment environment. Controls which RTDS API endpoint is called.",&#xa;        "controlSettings": {&#xa;            "controlType": "text",&#xa;            "defaultValue": "environment",&#xa;            "maxLength": 100,&#xa;            "dataType": "string",&#xa;            "readonly": false&#xa;        }&#xa;    },&#xa;    {&#xa;        "name": "__nextStep",&#xa;        "title": "Next step (output variable name)",&#xa;        "hint": "Name of the session variable that will receive the next step Id after execution.",&#xa;        "controlSettings": {&#xa;            "controlType": "text",&#xa;            "defaultValue": "_rtNextStep",&#xa;            "maxLength": 100,&#xa;            "dataType": "string",&#xa;            "readonly": false&#xa;        }&#xa;    }&#xa;]'
       EnableUpdateRelations="true"
       AllowGlobalIntent="false"
@@ -49,7 +49,6 @@
       CompanyInformation_en=""
       GeneralKnowledge_en=""
       Translations_en=""
-      Sections="[]"
       id="vocalls-master-layer"
     >
       <mxCell />
@@ -60,7 +59,7 @@
       style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;"
       parent="baselayer"
       source="0"
-      target="567"
+      target="7"
       edge="1"
     >
       <mxGeometry relative="1" as="geometry" />
@@ -79,12 +78,8 @@
       Parameters=""
       id="0"
     >
-      <mxCell
-        style="transientNode;strokeColor=#666666;"
-        parent="baselayer"
-        vertex="1"
-      >
-        <mxGeometry x="-41" y="-750" width="130" height="40" as="geometry" />
+      <mxCell style="transientNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-10" y="-680" width="130" height="40" as="geometry" />
       </mxCell>
     </object>
     <object
@@ -93,18 +88,14 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code="__rtParams = __setupConfig(__configJSON);&#xa;if (!_headers) { _headers = {}; }&#xa;&#xa;// Outcome contract: scripts record WHICH outcome happened (a Params key name).&#xa;// The step id is resolved once, at the output node, into __rtNextStep, which the&#xa;// master Variables `&amp;=` binding exports to the host _rtNextStep on exit.&#xa;// Safe default: any unhandled path exits as failure.&#xa;__rtOutcome = &#39;NextStep_Failure&#39;;&#xa;__rtNextStep = &#39;&#39;;&#xa;&#xa;__guardTuiGuardId = 0;&#xa;__guardConfigID = null;&#xa;__guardActive = false;&#xa;__guardName = &#39;&#39;;&#xa;&#xa;language = (typeof language === &#39;string&#39; &amp;&amp; language.trim() !== &#39;&#39;)&#xa;    ? language.toUpperCase()&#xa;    : &#39;NL&#39;;&#xa;&#xa;Logger.debug(&#39;[guardTui] config resolved&#39;, { params: __rtParams, outcome: __rtOutcome });"
+      Code="language = (typeof language === &#39;string&#39; &amp;&amp; language.trim() !== &#39;&#39;)&#xa;    ? language.toUpperCase()&#xa;    : &#39;NL&#39;;&#xa;&#xa;__rtParams = __setupConfig(__configJSON);&#xa;if (!_headers) { _headers = {}; }"
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
       id="7"
     >
-      <mxCell
-        style="scriptNode;strokeColor=#999999;"
-        parent="baselayer"
-        vertex="1"
-      >
-        <mxGeometry x="-64" y="-460" width="168" height="80" as="geometry" />
+      <mxCell style="scriptNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-29" y="-540" width="168" height="80" as="geometry" />
       </mxCell>
     </object>
     <mxCell
@@ -219,11 +210,7 @@
       AltTexts_en=""
       id="460"
     >
-      <mxCell
-        style="sayNode;strokeColor=#6AB04E;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
         <mxGeometry x="368" y="730" width="390" height="95" as="geometry" />
       </mxCell>
     </object>
@@ -272,11 +259,7 @@
       AltTexts_en=""
       id="461"
     >
-      <mxCell
-        style="sayNode;strokeColor=#6AB04E;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
         <mxGeometry x="368" y="625" width="390" height="95" as="geometry" />
       </mxCell>
     </object>
@@ -375,11 +358,7 @@
       AltTexts_en=""
       id="561"
     >
-      <mxCell
-        style="sayNode;strokeColor=#6AB04E;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
         <mxGeometry x="1595" y="930" width="390" height="95" as="geometry" />
       </mxCell>
     </object>
@@ -412,18 +391,14 @@
       AltTexts_en=""
       id="170"
     >
-      <mxCell
-        style="sayNode;strokeColor=#6AB04E;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
         <mxGeometry x="2460" y="-180" width="296" height="80" as="geometry" />
       </mxCell>
     </object>
     <object
       label="output"
       Type="transient"
-      OnEnter="__rtNextStep = getValue(__rtParams, __rtOutcome, &#39;&#39;);&#xa;if (!__rtNextStep) {&#xa;    Logger.warn(&#39;[guardTui] outcome key unresolved, falling back to failure&#39;, { outcome: __rtOutcome });&#xa;    __rtNextStep = getValue(__rtParams, &#39;NextStep_Failure&#39;, &#39;&#39;);&#xa;}&#xa;Logger.info(&#39;[guardTui] exit&#39;, { outcome: __rtOutcome, nextStep: __rtNextStep });"
+      OnEnter="_rtNextStep = getValue(__rtParams, __rtOutcome, &#39;&#39;);&#xa;Logger.info(&#39;[guardTui] exit&#39;, { outcome: __rtOutcome, nextStep: _rtNextStep });"
       OnLeave=""
       MaxEntryCount=""
       MaxEntryNodeId=""
@@ -434,11 +409,7 @@
       Parameters=""
       id="6"
     >
-      <mxCell
-        style="transientNode;strokeColor=#666666;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="transientNode" parent="baselayer" vertex="1">
         <mxGeometry x="398" y="1440" width="130" height="40" as="geometry" />
       </mxCell>
     </object>
@@ -548,43 +519,13 @@
       </mxGeometry>
     </mxCell>
     <mxCell
-      id="642"
-      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;"
-      parent="baselayer"
-      source="567"
-      target="7"
-      edge="1"
-    >
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-    <object
-      label="[rtds] start"
-      Type="script"
-      OnEnter=""
-      OnLeave=""
-      DynamicNextId=""
-      Code='Logger.info("[rtds] start");&#xa;&#xa;initializeCallFlowContext("full");&#xa;varObj.phoneNumberVar = varObj.ani;&#xa;// Resolve ${CustomerProject} before init node 7 runs __setupConfig (D9):&#xa;// the token is baked into the config at init time, so customerProject must be&#xa;// final here. Guarded so a real upstream value is never overwritten.&#xa;varObj.customerProject = varObj.customerProject || &#39;KLANTWACHT&#39;;&#xa;Logger.info("[rtds] call context ready", {&#xa;    callGuid: context &amp;&amp; context.callInfo &amp;&amp; context.callInfo.callGuid,&#xa;    direction: context &amp;&amp; context.callInfo &amp;&amp; context.callInfo.direction,&#xa;    language: (context &amp;&amp; context.language) || (varObj &amp;&amp; varObj.language),&#xa;    ani: varObj &amp;&amp; varObj.ani,&#xa;    phoneNumberVar: varObj &amp;&amp; varObj.phoneNumberVar,&#xa;    dnis: varObj &amp;&amp; varObj.dnis,&#xa;    routingId: varObj &amp;&amp; varObj.routingId,&#xa;    environment: varObj &amp;&amp; varObj.environment,&#xa;});&#xa;&#xa;Logger.debug(&#39;language (global): &#39; + language);'
-      MaxEntryNodeId=""
-      MaxEntryCount=""
-      DynamicNextTabGuid=""
-      id="567"
-    >
-      <mxCell
-        style="scriptNode;strokeColor=#999999;"
-        parent="baselayer"
-        vertex="1"
-      >
-        <mxGeometry x="-60" y="-620" width="168" height="80" as="geometry" />
-      </mxCell>
-    </object>
-    <mxCell
       id="585"
       value='&lt;font style="font-size: 27px"&gt;    "Active": true,&lt;br/&gt;    "ConfigId": 1,&lt;br/&gt;    "ConfigName": "KLANTWACHT",&lt;br/&gt;    "PhoneNumberVar": "ani",&lt;br/&gt;    "Timeout": 10000,&lt;br/&gt;    "ResultCurrentlyActivated_NL": "You are currently activated on guard configuration ${CustomerProject}",&lt;br/&gt;    "ResultCurrentlyDeactivated_NL": "Your number is successfully activated.",&lt;br/&gt;    "PromptActivate_NL": "To activate yourself, press 7.",&lt;br/&gt;    "PromptDeactivate_NL": "To deactivate yourself, press 3.",&lt;br/&gt;    "ResultActivated_NL": "Your number is successfully activated.",&lt;br/&gt;    "ResultDeactivated_NL": "Your number is successfully deactivated.",&lt;br/&gt;    "ResultOnlyActive_NL": "You are currently the only active member, therefore you are not able to deactivate yourself.",&lt;br/&gt;    "ResultDenied_NL": "You are not allowed to use this service. If you disagree, contact your administrator. Thank you for calling.",&lt;br/&gt;    "ResultError_NL": "We encountered a technical issue. Contact your administrator to report this issue.",&lt;br/&gt;    "NextStep": "00010",&lt;br/&gt;    "NextStep_Success": "00011",&lt;br/&gt;    "NextStep_Denied": "00012",&lt;br/&gt;    "NextStep_Failure": "00099"&lt;/font&gt;'
       style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=17;connectable=0;allowArrows=0;"
       parent="baselayer"
       vertex="1"
     >
-      <mxGeometry x="560" y="-1700" width="2680" height="580" as="geometry" />
+      <mxGeometry x="510" y="-1169" width="2680" height="580" as="geometry" />
     </mxCell>
     <mxCell
       id="588"
@@ -597,23 +538,19 @@
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
     <object
-      label="Validate incoming number"
+      label="check access"
       Type="script"
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code='__guardTuiGuardId = 0; &#xa;__guardTuiEligible = false; &#xa;_errorMessage = &#39;&#39;; &#xa;__rtOutcome = &#39;NextStep&#39;; &#xa; &#xa;if (String(getValue(__rtParams, &#39;Active&#39;, false)).toLowerCase() !== &#39;true&#39; &amp;&amp; &#xa;    String(getValue(__rtParams, &#39;Active&#39;, false)) !== &#39;1&#39;) { &#xa;    Logger.info(&#39;[guardTui] skipped -- inactive&#39;, { outcome: __rtOutcome }); &#xa;    return; &#xa;} &#xa; &#xa;__ani = getScoped(getValue(__rtParams, &#39;PhoneNumberVar&#39;, varObj.ani), null); &#xa;__configId = getValue(__rtParams, &#39;ConfigId&#39;, &#39;&#39;); &#xa;__originGuardId = 0; &#xa; &#xa;if (!__configId || !__ani) { &#xa;    __rtOutcome = &#39;NextStep_Failure&#39;; &#xa;    Logger.warn(&#39;[guardTui] missing ConfigId or phone number&#39;, { configId: __configId, outcome: __rtOutcome }); &#xa;    return; &#xa;} &#xa; &#xa;__rtOutcome = &#39;NextStep_Failure&#39;; &#xa; &#xa;var __method = &#39;GET&#39;; &#xa;var __timeout = Number(getValue(__rtParams, &#39;Timeout&#39;, 10000)); &#xa;var __headers = _headers; &#xa;var __endpoint = __rtBaseUrl + __rtTuiCheckAccessEndpoint; &#xa;var __queryParameters = &#39;?guardConfigId=&#39; + encodeURIComponent(__configId) + &#xa;    &#39;&amp;phonenumber=&#39; + encodeURIComponent(__ani) + &#xa;    &#39;&amp;originGuardId=&#39; + encodeURIComponent(__originGuardId); &#xa; &#xa;log_debug(&#39;__urlCheck: &#39; + __endpoint + __queryParameters); &#xa; &#xa;__compRequest = jsonHttpRequest( &#xa;    __endpoint + __queryParameters, &#xa;    { method: __method, "timeout": __timeout }, &#xa;    __headers &#xa;); &#xa; &#xa;return __compRequest.then(function (result) { &#xa;    __resultObj = result.response; &#xa;    __callSuccess = result.success; &#xa;    log_debug(&#39;result: &#39; + JSON.stringify(result)); &#xa;    if (!__callSuccess) { &#xa;        _errorMessage = "status: " + result.statusCode + ", error: " + result.error; &#xa;        Logger.warn(&#39;[guardTui] eligibility check failed&#39;, { error: _errorMessage, outcome: __rtOutcome }); &#xa;        return; &#xa;    } &#xa;    if (String(__resultObj).toLowerCase() !== &#39;true&#39;) { &#xa;        __rtOutcome = &#39;NextStep_Denied&#39;; &#xa;        Logger.info(&#39;[guardTui] denied&#39;, { outcome: __rtOutcome }); &#xa;        return; &#xa;    } &#xa;    __guardTuiEligible = true; &#xa;    Logger.info(&#39;[guardTui] eligible -- proceeding to state lookup&#39;, { configId: __configId }); &#xa;});'
+      Code='__guardTuiGuardId = 0; &#xa;__guardTuiEligible = false; &#xa;_errorMessage = &#39;&#39;; &#xa;__rtOutcome = &#39;NextStep&#39;;&#xa;if (String(getValue(__rtParams, &#39;Active&#39;, false)).toLowerCase() !== &#39;true&#39;) {&#xa;    Logger.info(&#39;[guardTui] skipped -- inactive&#39;, { outcome: __rtOutcome });&#xa;    return;&#xa;}&#xa;&#xa;__rtOutcome = &#39;NextStep_Failure&#39;; &#xa;&#xa;&#xa;__ani = getScoped(getValue(__rtParams, &#39;PhoneNumberVar&#39;, varObj.ani), null); &#xa;__configId = getValue(__rtParams, &#39;ConfigId&#39;, &#39;&#39;); &#xa;__originGuardId = 0; &#xa; &#xa;if (!__configId || !__ani) { &#xa;    Logger.warn(&#39;[guardTui] misssing ConfigId or phone number&#39;, { configId: __configId, outcome: __rtOutcome }); &#xa;    return; &#xa;} &#xa; &#xa;&#xa; &#xa;var __method = &#39;GET&#39;; &#xa;var __timeout = Number(getValue(__rtParams, &#39;Timeout&#39;, 10000)); &#xa;var __headers = _headers; &#xa;var __endpoint = __rtBaseUrl + __rtTuiCheckAccessEndpoint; &#xa;var __queryParameters = &#39;?guardConfigId=&#39; + encodeURIComponent(__configId) + &#xa;    &#39;&amp;phonenumber=&#39; + encodeURIComponent(__ani) + &#xa;    &#39;&amp;originGuardId=&#39; + encodeURIComponent(__originGuardId); &#xa; &#xa;log_debug(&#39;__urlCheck: &#39; + __endpoint + __queryParameters); &#xa; &#xa;__compRequest = jsonHttpRequest( &#xa;    __endpoint + __queryParameters, &#xa;    { method: __method, "timeout": __timeout }, &#xa;    __headers &#xa;); &#xa; &#xa;return __compRequest.then(function (result) { &#xa;    __resultObj = result.response; &#xa;    log_debug(&#39;result: &#39; + JSON.stringify(result)); &#xa;    if (result &amp;&amp; !result.success) { &#xa;        _errorMessage = "status: " + result.statusCode + ", error: " + result.error; &#xa;        Logger.warn(&#39;[guardTui] eligibility check failed&#39;, { error: _errorMessage, outcome: __rtOutcome }); &#xa;        return; &#xa;    } &#xa;    if (String(__resultObj).toLowerCase() !== &#39;true&#39;) { &#xa;        __rtOutcome = &#39;NextStep_Denied&#39;; &#xa;        Logger.info(&#39;[guardTui] denied&#39;, { outcome: __rtOutcome }); &#xa;        return; &#xa;    } &#xa;    __guardTuiEligible = true; &#xa;    Logger.info(&#39;[guardTui] eligible -- proceeding to state lookup&#39;, { configId: __configId }); &#xa;});'
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
       id="586"
     >
-      <mxCell
-        style="scriptNode;strokeColor=#999999;"
-        parent="baselayer"
-        vertex="1"
-      >
-        <mxGeometry x="-64" y="-330" width="168" height="80" as="geometry" />
+      <mxCell style="scriptNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-29" y="-390" width="168" height="80" as="geometry" />
       </mxCell>
     </object>
     <mxCell
@@ -627,7 +564,7 @@
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
     <object
-      label="get agentId"
+      label="guard status"
       Type="script"
       OnEnter=""
       OnLeave=""
@@ -638,12 +575,8 @@
       DynamicNextTabGuid=""
       id="587"
     >
-      <mxCell
-        style="scriptNode;strokeColor=#999999;"
-        parent="baselayer"
-        vertex="1"
-      >
-        <mxGeometry x="-64" y="-200" width="168" height="80" as="geometry" />
+      <mxCell style="scriptNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-29" y="-120" width="168" height="80" as="geometry" />
       </mxCell>
     </object>
     <object
@@ -655,11 +588,7 @@
       MaxEntryNodeId=""
       id="450"
     >
-      <mxCell
-        style="caseNode;strokeColor=#999999;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="caseNode" parent="baselayer" vertex="1">
         <mxGeometry x="920" y="625" width="336" height="156" as="geometry" />
       </mxCell>
     </object>
@@ -736,11 +665,7 @@
       MaxEntryNodeId=""
       id="200"
     >
-      <mxCell
-        style="caseNode;strokeColor=#999999;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="caseNode" parent="baselayer" vertex="1">
         <mxGeometry x="-120" y="80" width="350" height="300" as="geometry" />
       </mxCell>
     </object>
@@ -891,11 +816,7 @@
       AltTexts_en=""
       id="600"
     >
-      <mxCell
-        style="sayNode;strokeColor=#6AB04E;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
         <mxGeometry x="690" y="-310" width="390" height="95" as="geometry" />
       </mxCell>
     </object>
@@ -938,11 +859,7 @@
       AltTexts_en=""
       id="601"
     >
-      <mxCell
-        style="sayNode;strokeColor=#6AB04E;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
         <mxGeometry x="690" y="-160" width="390" height="95" as="geometry" />
       </mxCell>
     </object>
@@ -982,11 +899,7 @@
       MaxEntryCount=""
       id="603"
     >
-      <mxCell
-        style="pauseNode;strokeColor=#999999;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="pauseNode" parent="baselayer" vertex="1">
         <mxGeometry x="1191" y="-152.5" width="130" height="80" as="geometry" />
       </mxCell>
     </object>
@@ -1011,11 +924,7 @@
       MaxEntryCount=""
       id="604"
     >
-      <mxCell
-        style="pauseNode;strokeColor=#999999;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="pauseNode" parent="baselayer" vertex="1">
         <mxGeometry x="1191" y="-302.5" width="130" height="80" as="geometry" />
       </mxCell>
     </object>
@@ -1058,11 +967,7 @@
       AltTexts_en=""
       id="615"
     >
-      <mxCell
-        style="sayNode;strokeColor=#6AB04E;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
         <mxGeometry x="1440" y="-160" width="390" height="95" as="geometry" />
       </mxCell>
     </object>
@@ -1105,11 +1010,7 @@
       AltTexts_en=""
       id="616"
     >
-      <mxCell
-        style="sayNode;strokeColor=#6AB04E;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
         <mxGeometry
           x="1430"
           y="-308.75"
@@ -1147,11 +1048,7 @@
       DynamicNextTabGuid=""
       id="635"
     >
-      <mxCell
-        style="scriptNode;strokeColor=#999999;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="scriptNode" parent="baselayer" vertex="1">
         <mxGeometry x="2420" y="-380" width="168" height="80" as="geometry" />
       </mxCell>
     </object>
@@ -1177,11 +1074,7 @@
       DynamicNextTabGuid=""
       id="637"
     >
-      <mxCell
-        style="scriptNode;strokeColor=#999999;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="scriptNode" parent="baselayer" vertex="1">
         <mxGeometry x="2420" y="26" width="168" height="80" as="geometry" />
       </mxCell>
     </object>
@@ -1196,11 +1089,7 @@
       MinTimeout=""
       id="618"
     >
-      <mxCell
-        style="dtmfNode;strokeColor=#559BBF;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="dtmfNode" parent="baselayer" vertex="1">
         <mxGeometry x="2030" y="-90" width="160" height="200" as="geometry" />
       </mxCell>
     </object>
@@ -1240,11 +1129,7 @@
       MinTimeout=""
       id="623"
     >
-      <mxCell
-        style="dtmfNode;strokeColor=#559BBF;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="dtmfNode" parent="baselayer" vertex="1">
         <mxGeometry
           x="2030"
           y="-362.5"
@@ -1318,11 +1203,7 @@
       MaxEntryNodeId=""
       id="550"
     >
-      <mxCell
-        style="caseNode;strokeColor=#999999;"
-        parent="baselayer"
-        vertex="1"
-      >
+      <mxCell style="caseNode" parent="baselayer" vertex="1">
         <mxGeometry x="1630" y="630" width="320" height="126" as="geometry" />
       </mxCell>
     </object>

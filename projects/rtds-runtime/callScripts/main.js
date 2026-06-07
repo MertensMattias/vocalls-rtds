@@ -231,16 +231,17 @@ if (__isRepoRuntime && context && context.session) {
  *      file from rtds/components/ onto the canvas. For
  *      native primitives (say, dtmf, redirect), use Designer's palette.
  *
- *   3. Each component carries its own per-instance config as a Designer
- *      property -- `__configJSON` for Style A components (see
- *      rtds/components/sendSms.js). The component's init
- *      script parses it via __setupConfig(__configJSON), which resolves
- *      ${placeholder} tokens against the global scope. The runtime does NOT
- *      mirror op.Params into session variables; each component is the source
- *      of truth for its own params. The only session vars the runtime writes
- *      on handoff are RTDS_currentOpId, RTDS_currentOpType, and a pre-
- *      populated RTDS_nextStepId (used only as a safety-net fallback in
- *      step 4).
+ *   3. Each component reads its per-instance config from the Designer property
+ *      `__configJSON` for Style A components (see rtds/components/sendSms.js).
+ *      The component's init script parses it via __setupConfig(__configJSON),
+ *      which resolves ${placeholder} tokens against the global scope.
+ *      `__configJSON` is wired one of two ways: either an inline JSON literal
+ *      (fully self-contained / portable), or a reference to
+ *      context.session.variables.RTDS_currentOpConfig -- the op.params object
+ *      that prepareGuiHandoff stages on handoff. The production main flow uses
+ *      the RTDS_currentOpConfig binding. Alongside that config the runtime also
+ *      sets RTDS_currentOpId, RTDS_currentOpType, and a pre-populated
+ *      RTDS_nextStepId (used only as a safety-net fallback in step 4).
  *
  *   4. After every component, drop a Re-Entry Script node. Its entire body
  *      is TWO LINES (assign so the case selector re-routes on the new key):

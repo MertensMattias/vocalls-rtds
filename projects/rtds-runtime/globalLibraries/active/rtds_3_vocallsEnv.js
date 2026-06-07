@@ -282,63 +282,6 @@ function resolveConfigTokens(raw, keyName) {
 }
 
 /**
- * Normalises a raw operation config into the flat { Params } object: a JSON
- * string is parsed; a { Params: {...} } envelope is unwrapped to its Params; a
- * flat object passes through; null/undefined become {}.
- *
- * @param {string|Object} config - Raw operation config.
- * @returns {Object} Flat Params object, never null.
- */
-function extractParams(config) {
-  var parsed = typeof config === "string" ? JSON.parse(config) : config;
-  if (parsed && typeof parsed.Params === "object" && parsed.Params !== null) {
-    return parsed.Params;
-  }
-  return parsed || {};
-}
-
-/**
- * The single config-resolution contract, shared by the JS twins
- * (executeSetVariables / executeSendSms / executeSendEmail) and by the GUI
- * components through their component-local __setupConfig alias -- the same
- * delegation pattern as activeFlag / __activeFlag. Resolves Params into a flat
- * { Key: value } map:
- *   - array-form [value, ...flags] is unwrapped to its first element (GUI flags
- *     isDisplayed/isEditable are runtime-irrelevant);
- *   - Active is coerced to a real boolean via activeFlag;
- *   - every other STRING value is trimmed and has ${name} placeholders resolved
- *     via resolveConfigTokens (varObj first, then global; String.replace only --
- *     the Vocalls runtime disables string-eval);
- *   - non-strings pass through with their native JSON type intact.
- * Active is NOT defaulted here -- the read site decides (SetVariables true,
- * Send and guard default false).
- *
- * @param {string|Object} config - Raw operation config (see extractParams).
- * @returns {Object} Map of Key -> resolved value (no __rt prefix; v2 shape).
- */
-function setupConfig(config) {
-  var params = extractParams(config);
-  var result = {};
-  var keys = Object.keys(params);
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i];
-    var value = params[key];
-    if (Object.prototype.toString.call(value) === "[object Array]") {
-      value = value.length ? value[0] : "";
-    }
-    if (key === "Active") {
-      result.Active = activeFlag(value);
-      continue;
-    }
-    if (typeof value === "string") {
-      value = resolveConfigTokens(value.trim(), key);
-    }
-    result[key] = value;
-  }
-  return result;
-}
-
-/**
  * Resolves the explicit root named by the first segment of a dot-path, when
  * that segment is one the operator can name as a root:
  *   "varObj"               -> varObj
