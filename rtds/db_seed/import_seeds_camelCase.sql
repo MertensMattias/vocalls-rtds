@@ -36,16 +36,19 @@
        sendSms        -- SMS dispatch
        disconnect     -- end the interaction
 
-   NOTE: the operation TYPE names carry a temporary '_vocalls' suffix to avoid
-   colliding with existing RTDS operation types during migration. Drop the
-   suffix here AND in insert_flow_on_sourceId.sql once the migration settles.
+   NOTE: the operation TYPE names are camelCase and suffix-free. They formerly
+   carried a temporary '_vocalls' suffix to avoid colliding with existing RTDS
+   operation types during migration; the migration has settled and the suffix
+   was dropped here AND in insert_flow_on_sourceId.sql.
 
    This is the CATALOGUE counterpart to seed_operations_vocalls.sql (which
    inserts the per-flow Operation/Attribute INSTANCES). It writes ONLY to the
    lookup tables and never touches rtds.Operation or rtds.Attribute:
 
-       rtds.Dic_OperationType
-       rtds.Dic_AttributeType   (string | int | bit)
+       rtds.Dic_OperationType       (SECTION 0 fixed IDs + SECTION 2 by-name)
+       rtds.Dic_PromptApplication   (SECTION 0, fixed IDs)
+       rtds.Dic_PromptLanguage      (SECTION 0, fixed IDs)
+       rtds.Dic_AttributeType       (string | int | bit)
        rtds.Dic_Attribute
 
    ----------------------------------------------------------------------------
@@ -62,16 +65,15 @@
    FIDELITY / CASING  (do not "fix" these)
    ----------------------------------------------------------------------------
    - Type and attribute names are camelCase, matching the import payload in
-     insert_flow_on_sourceId.sql. Types carry the temporary '_vocalls' suffix
-     ('setVariables', 'guard', 'sendMail',
-     'sendSms', 'disconnect'); attribute names do not
+     insert_flow_on_sourceId.sql. Types are suffix-free ('setVariables', 'guard',
+     'sendMail', 'sendSms', 'disconnect'); attribute names follow the same rule
      ('nextStep_Success', 'smsAccountId', ...). RTDS dictionary lookups match by
      exact, case-sensitive value, so the dictionary and the payload MUST line up;
      they were reconciled together.
-   - The '_vocalls'-suffixed types are intentionally DISTINCT from any existing
-     RTDS operation types (e.g. the unsuffixed 'Disconnect' in seed_operations.sql
-     or lowercase 'disconnect' in seed_operations_disconnect.sql). Drop the suffix
-     on both sides once the migration settles.
+   - These camelCase types are intentionally DISTINCT from the legacy PascalCase
+     RTDS operation types (e.g. 'Disconnect' in seed_operations.sql). SECTION 0
+     seeds them at the production IDs via IDENTITY_INSERT so data-table FKs
+     resolve; SECTION 1/2 re-assert them by name (idempotent).
    - DataTypes follow the published contract and are NOT altered:
        bit    : active, dialGuard, recordVoicemail, acceptCallMenu,
                 sendSms, sendMail
@@ -112,6 +114,114 @@ DECLARE @CreatedBy varchar(50) = 'rtds-seed';
 
 BEGIN TRY
 BEGIN TRANSACTION;
+
+/* ============================================================================
+   SECTION 0 -- STRUCTURAL DICTIONARIES (OperationType / PromptApplication /
+                PromptLanguage)
+   ----------------------------------------------------------------------------
+   Seeds the three self-contained lookup tables that carry no FK into the data
+   tables and do not reference each other. Reworked from the PascalCase
+   production seed (seed_rtds_dictionaries_minimal.sql, May 2026 snapshot) into
+   this camelCase contract: every operation TYPE Name is camelCased and the
+   temporary '_vocalls' suffix is dropped (SetAttributes -> setVariables,
+   PlayPrompt -> playPrompt, Schedule -> checkSchedule, GuardTUI -> guardTui,
+   SendSMS -> sendSms, RESTGet -> restGet, ...). Prompt-application names and
+   language keys (NL/FR/...) are DATA, not type strings -- left verbatim, like
+   the language keys elsewhere in this file.
+
+   SET IDENTITY_INSERT preserves the production IDs exactly so existing FKs from
+   the data tables (Operation.DicOperationTypeID, Prompt.DicPromptApplicationID
+   / DicPromptLanguageID) keep resolving. INSERT ... WHERE NOT EXISTS BY ID is
+   idempotent: existing rows (matched by ID) are left untouched, missing rows
+   are inserted. Nothing here is deleted (no @clearFirst path -- this file is
+   purely additive).
+
+   NOTE: SECTION 1/2 below ALSO find-or-create Dic_OperationType BY NAME (without
+   IDENTITY_INSERT). That is harmless and idempotent: the camelCase names seeded
+   here already exist by the time SECTION 2 runs, so its INSERT ... WHERE NOT
+   EXISTS matches them and inserts nothing.
+   ============================================================================ */
+
+PRINT 'Seeding rtds.Dic_OperationType (camelCase contract) ...';
+
+SET IDENTITY_INSERT rtds.Dic_OperationType ON;
+
+INSERT INTO rtds.Dic_OperationType ([DicOperationTypeID], [Name], [DateCreated], [CreatedBy], [DateUpdated], [UpdatedBy])
+SELECT v.* FROM (VALUES
+  (1,  N'setVariables',        N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
+  (2,  N'playPrompt',          N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
+  (3,  N'languageMenu',        N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
+  (4,  N'checkSchedule',       N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
+  (5,  N'emergency',           N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
+  (21, N'guardRouting',        N'2022-04-20 11:47:56.5100000', N'GDG546',        NULL, NULL),
+  (7,  N'menu',                N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
+  (22, N'guardTui',            N'2022-04-20 11:48:35.3830000', N'GDG546',        NULL, NULL),
+  (9,  N'workgroupTransfer',   N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
+  (10, N'externalTransfer',    N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
+  (11, N'guard',               N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
+  (12, N'disconnect',          N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
+  (13, N'playAudio',           N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
+  (14, N'condition',           N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
+  (15, N'skillUpdate',         N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
+  (16, N'flowJump',            N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
+  (17, N'restRequest',         N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
+  (18, N'callerDataEntry',     N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
+  (19, N'voicemailCallback',   N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
+  (20, N'callback',            N'2021-10-29 12:02:57.5000000', N'N-ALLO\GDG546', NULL, NULL),
+  (23, N'sendSms',             N'2022-04-20 11:48:39.7930000', N'GDG546',        NULL, NULL),
+  (24, N'sendEmail',           N'2022-04-20 11:48:43.1100000', N'GDG546',        NULL, NULL),
+  (25, N'restGet',             N'2023-09-27 12:05:14.2930000', N'RZ6189',        NULL, NULL),
+  (26, N'checkAttribute',      N'2023-11-27 15:42:49.9300000', N'GDG546',        NULL, NULL),
+  (27, N'manageCallCapacity',  N'2025-03-11 12:52:49.2470000', N'GDG546',        NULL, NULL)
+) AS v([DicOperationTypeID], [Name], [DateCreated], [CreatedBy], [DateUpdated], [UpdatedBy])
+WHERE NOT EXISTS (
+    SELECT 1 FROM rtds.Dic_OperationType t WHERE t.[DicOperationTypeID] = v.[DicOperationTypeID]
+);
+
+SET IDENTITY_INSERT rtds.Dic_OperationType OFF;
+
+PRINT 'Seeding rtds.Dic_PromptApplication ...';
+
+SET IDENTITY_INSERT rtds.Dic_PromptApplication ON;
+
+INSERT INTO rtds.Dic_PromptApplication ([DicPromptApplicationID], [Name], [FilePrefix], [DateCreated], [CreatedBy], [DateUpdated], [UpdatedBy])
+SELECT v.* FROM (VALUES
+  (1,  N'Scheduler',     N'Scheduler', N'2021-06-30 11:08:13.6400000', N'N-ALLO\EEN503', NULL, NULL),
+  (2,  N'Callback',      N'CB',        N'2021-06-30 11:08:13.6400000', N'N-ALLO\EEN503', NULL, NULL),
+  (3,  N'Survey',        N'Survey',    N'2021-06-30 11:08:13.6400000', N'N-ALLO\EEN503', NULL, NULL),
+  (4,  N'PreQueue',      N'PreQueue',  N'2021-06-30 11:08:13.6400000', N'N-ALLO\EEN503', NULL, NULL),
+  (5,  N'Queue',         N'Queue',     N'2021-06-30 11:08:13.6400000', N'N-ALLO\EEN503', NULL, NULL),
+  (6,  N'AdHocMessages', N'AdHoc',     N'2021-06-30 11:08:13.6400000', N'N-ALLO\EEN503', NULL, NULL),
+  (7,  N'Menu',          N'Menu',      N'2021-07-23 11:26:02.6600000', N'N-ALLO\RZ6189', NULL, NULL),
+  (12, N'Voicemail',     N'Voicemail', N'2021-11-09 14:02:36.2930000', N'N-ALLO\GDG546', NULL, NULL),
+  (11, N'Welcome',       N'Welcome',   N'2021-10-22 11:49:45.7700000', N'N-ALLO\GDG546', NULL, NULL),
+  (13, N'Info',          N'Info',      N'2021-11-22 15:52:00.6030000', N'N-ALLO\GDG546', NULL, NULL),
+  (14, N'Exception',     N'Exception', N'2021-11-29 12:19:10.1300000', N'N-ALLO\GDG546', NULL, NULL),
+  (15, N'Emergency',     N'Emergency', N'2022-06-09 09:35:39.9470000', N'GDG546',        NULL, NULL)
+) AS v([DicPromptApplicationID], [Name], [FilePrefix], [DateCreated], [CreatedBy], [DateUpdated], [UpdatedBy])
+WHERE NOT EXISTS (
+    SELECT 1 FROM rtds.Dic_PromptApplication t WHERE t.[DicPromptApplicationID] = v.[DicPromptApplicationID]
+);
+
+SET IDENTITY_INSERT rtds.Dic_PromptApplication OFF;
+
+PRINT 'Seeding rtds.Dic_PromptLanguage ...';
+
+SET IDENTITY_INSERT rtds.Dic_PromptLanguage ON;
+
+INSERT INTO rtds.Dic_PromptLanguage ([DicPromptLanguageID], [Key], [Language], [DateCreated], [CreatedBy], [DateUpdated], [UpdatedBy])
+SELECT v.* FROM (VALUES
+  (1, N'NL', N'Dutch',       N'2021-06-30 11:08:13.6400000', N'N-ALLO\EEN503',     NULL,                            NULL),
+  (2, N'FR', N'French',      N'2021-06-30 11:08:13.6400000', N'N-ALLO\EEN503',     NULL,                            NULL),
+  (3, N'EN', N'English',     N'2021-06-30 11:08:13.6400000', N'N-ALLO\EEN503',     NULL,                            NULL),
+  (4, N'DE', N'German',      N'2021-06-30 11:08:13.6400000', N'N-ALLO\EEN503',     NULL,                            NULL),
+  (6, N'TF', N'TTS French',  N'2026-05-19 17:07:39.9500000', N'IJG577@engie.com',  N'2026-05-19 17:07:53.2966667',  N'IJG577@engie.com')
+) AS v([DicPromptLanguageID], [Key], [Language], [DateCreated], [CreatedBy], [DateUpdated], [UpdatedBy])
+WHERE NOT EXISTS (
+    SELECT 1 FROM rtds.Dic_PromptLanguage t WHERE t.[DicPromptLanguageID] = v.[DicPromptLanguageID]
+);
+
+SET IDENTITY_INSERT rtds.Dic_PromptLanguage OFF;
 
 /* ============================================================================
    SECTION 1 -- THE CATALOGUE (edit here)
