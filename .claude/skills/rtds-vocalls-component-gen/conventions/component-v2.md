@@ -15,9 +15,9 @@ Every v2 component follows **one** input/validation/output contract, regardless 
 | ----- | -------- |
 | **Input — master `Variables`** | Seed `__configJSON` (literal default Params), `__environment = environment`, `__rtBaseUrl = _rtBaseUrl`, one or more `__rt<Op>Endpoint = _rt<Op>Endpoint` bindings, the `__rtOutcome` seed, and `__rtNextStep &= _rtNextStep` (Designer placeholder-binding — see §4). |
 | **Input — `PropertiesDefinition`** | Three operator-facing props: `__configJSON`, `__environment`, `__nextStep` (§5). |
-| **Init node** | `__rtParams = __setupConfig(__configJSON)`; `if (!_headers) { _headers = {}; }`; seed `__rtOutcome = 'NextStep_Failure'` (§6). Op-specific extras allowed (a `Logger.debug`; `language` normalisation). |
+| **Init node** | `__rtParams = __setupConfig(__configJSON)`; `if (!_headers) { _headers = {}; }`; seed `__rtOutcome = 'NextStep'` — the did-nothing default (§6). Op-specific extras allowed (a `Logger.debug`; `language` normalisation). |
 | **Validation / work** | Active guard → return leaving `__rtOutcome = 'NextStep'`. Precondition checks → warn + return. Pivot `__rtOutcome = 'NextStep_Failure'` before any network call. `jsonHttpRequest(...).then(success, error)` with a mandatory error callback; success stages the chosen `NextStep_*` key (§7). |
-| **Output node** | `global[_rtNextStep] = getValue(__rtParams, __rtOutcome, '')` then a `Logger.info('[<name>] exit', …)` — byte-identical across components except the log tag, fallback `''` (§8). |
+| **Output node** | `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` then a `Logger.info('[<name>] exit', …)` — byte-identical across components except the log tag, fallback `''` (§8). |
 | **Helpers (master `Code`)** | Shared: `__makeLocalNodeId`, `__extractParams`, `__activeFlag`, `__setupConfig`, + guarded fallbacks for `getValue/walk/nowUTC/hasKey/getScoped/resolveConfigTokens`. Op-specific helpers (`__isMobileNumber`, …) as needed (§3). |
 
 A component **never** writes per-key `RTDS_OP_*` and **never** `return`s an exit key — GUI-exit routing is performed by the engine (`prepareGuiHandoff` writes `RTDS_currentOpConfig` and emits the exit key). See §7.
@@ -45,11 +45,11 @@ Composite mode (Designer primitives between id=29 and id=6): the four canonical 
 label, MaxEntryCount, MaxEntryNodeId, SpeechRecognitionEngine, Code,
 Extensions, BackgroundNoise, BreathInEffect, Languages, Variables,
 PropertiesDefinition, EnableUpdateRelations, AllowGlobalIntent, Translations,
-ManualId, RequiredVariables, HintGrammar, LastLanguage, InfoAboutUser_en,
-CompanyInformation_en, GeneralKnowledge_en, Translations_en, id
+ManualId, RequiredVariables, HintGrammar, LastLanguage, InfoAboutUser_nl,
+CompanyInformation_nl, GeneralKnowledge_nl, Translations_nl, Sections, id
 ```
 
-`id` is always `vocalls-master-layer`. `BackgroundNoise="true"`, `BreathInEffect="true"`, `EnableUpdateRelations="true"`, `AllowGlobalIntent="false"`.
+`id` is always `vocalls-master-layer`. `BackgroundNoise="true"`, `BreathInEffect="true"`, `EnableUpdateRelations="true"`, `AllowGlobalIntent="false"`, `Sections="[]"`. The `InfoAboutUser_*` / `CompanyInformation_*` / `GeneralKnowledge_*` / `Translations_*` suffix tracks the **default project language** (`_nl` for the canonical components); a multi-language component (e.g. [guardTui.js](../references/examples/guardTui.js)) repeats the `InfoAboutUser_*` group per language (`_nl`, `_fr`, `_de`, `_en`).
 
 See [sendSms.js:17-43](../references/examples/sendSms.js#L17-L43) for the canonical attribute set.
 
@@ -84,7 +84,7 @@ __rtNextStep &= _rtNextStep;
 
 `&=` is the **documented placeholder-binding operator** — it keeps `__rtNextStep` synced with the flow variable `_rtNextStep`. Use it only on `__rtNextStep`. Everywhere else, `=`.
 
-Keep the `&=` line in master `Variables` for every component — it keeps `__rtNextStep` synced with the flow variable `_rtNextStep` at no cost, and the engine reads `global[_rtNextStep]` on re-entry. It is **not** the resolution path. The step id is resolved **once at the output node** via `global[_rtNextStep] = getValue(__rtParams, __rtOutcome, '')` (see §7–§8) — the work body never writes the step id mid-flight. This holds for *every* v2 component, whether it is reached as a JS-twin-backed op (e.g. [sendSms.js](../references/examples/sendSms.js)) or as a GUI-exit target (e.g. [guardTui.js](../references/examples/guardTui.js), the `guard_tui` target): both are self-contained components on the same contract.
+Keep the `&=` line in master `Variables` for every component — it keeps `__rtNextStep` synced with the flow variable `_rtNextStep` at no cost, and the engine reads `global[_rtNextStep]` on re-entry. It is **not** the resolution path. The step id is resolved **once at the output node** via `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` (a bare assignment to the placeholder-bound flow variable, **not** `global[_rtNextStep] = …`; see §7–§8) — the work body never writes the step id mid-flight. This holds for *every* v2 component, whether it is reached as a JS-twin-backed op (e.g. [sendSms.js](../references/examples/sendSms.js)) or as a GUI-exit target (e.g. [guardTui.js](../references/examples/guardTui.js), the `guard_tui` target): both are self-contained components on the same contract.
 
 See [sendSms.js:27](../references/examples/sendSms.js#L27) for the canonical encoded form.
 
@@ -96,22 +96,22 @@ See [sendSms.js:28](../references/examples/sendSms.js#L28).
 
 ## 6. Init node body — universal
 
-Four lines, always:
+Four lines, always (note the init seed is `'NextStep'`, not `'NextStep_Failure'` — see below):
 
 ```js
+__rtOutcome = 'NextStep';
 __rtParams = __setupConfig(__configJSON);
 if (!_headers) { _headers = {}; }
-__rtOutcome = 'NextStep_Failure';
 Logger.debug('[<componentName>] config resolved', { params: __rtParams, outcome: __rtOutcome });
 ```
 
-`__rtOutcome` is the component-internal **outcome key** — the literal Params key *name* (`'NextStep'`, `'NextStep_Success'`, `'NextStep_Denied'`, `'NextStep_Failure'`, `'NextStep_<State>'`, …) of the branch this execution chose. It is initialised here to the failure key, so any unhandled path exits as failure. The work node stages it (§7); the output node resolves it to `global[_rtNextStep]` (§8). `language` is also normalised here — see [say-text.md](say-text.md).
+`__rtOutcome` is the component-internal **outcome key** — the literal Params key *name* (`'NextStep'`, `'NextStep_Success'`, `'NextStep_Denied'`, `'NextStep_Failure'`, `'NextStep_<State>'`, …) of the branch this execution chose. The init node seeds it to `'NextStep'` (the did-nothing default), so a component that returns before reaching the work body's network pivot exits as a no-op rather than a failure — this matches the shipped [sendSms.js](../references/examples/sendSms.js) and [sendMail.js](../references/examples/sendMail.js). The master `Variables` block (§4) separately seeds `'NextStep_Failure'` as a load-time safety net for any path that never runs the init node. The work node pivots to `'NextStep_Failure'` before any network call and stages the chosen key on success (§7); the output node resolves it to `_rtNextStep` (§8). `language` is also normalised here — see [say-text.md](say-text.md).
 
 ## 7. Work node body — per pattern
 
 Patterns live in [.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/](../references/operation_bodies/): `http_call.md`, `gui_exit.md`, `set_attributes.md`, `condition.md`, `flow_jump.md`, plus `composite.md` modifier.
 
-The work body **stages an outcome key** into `__rtOutcome` — it never writes `global[_rtNextStep]` mid-flight. Each path assigns `__rtOutcome = '<NextStepKey>';` with a plain `=` (not `global[...]` indirection), the literal Params key *name*, at most once per execution path. `__rtOutcome` was pre-seeded to `'NextStep_Failure'` in the init node (§6), so an unhandled path already exits as failure. The output node (§8) is the single place that resolves the key to a step id. In order, the work body:
+The work body **stages an outcome key** into `__rtOutcome` — it never writes `_rtNextStep` mid-flight. Each path assigns `__rtOutcome = '<NextStepKey>';` with a plain `=` (not `global[...]` indirection), the literal Params key *name*, at most once per execution path. `__rtOutcome` was seeded to `'NextStep'` in the init node (§6); the work body pivots it to `'NextStep_Failure'` before any network call, so a failure after that point already exits as failure. The output node (§8) is the single place that resolves the key to a step id. In order, the work body:
 
 1. Active guard — early return + info-level "skipped — inactive" log if `!Active`. The skipped path sets `__rtOutcome = 'NextStep';` (the did-nothing default) before returning.
 2. Validates inputs — warn-level log and return for any failed precondition. A validation failure leaves (or sets) `__rtOutcome = 'NextStep_Failure';`.
@@ -122,16 +122,16 @@ The work body **stages an outcome key** into `__rtOutcome` — it never writes `
 
 ## 8. Output node
 
-The output node `OnEnter` is the **single place** the staged outcome key is resolved to a step id and written to the engine global. Two lines:
+The output node `OnEnter` is the **single place** the staged outcome key is resolved to a step id and written to the engine's flow variable. Two lines:
 
 ```js
-global[_rtNextStep] = getValue(__rtParams, __rtOutcome, '');
-Logger.info('[<componentName>] exit', { outcome: __rtOutcome, nextStep: global[_rtNextStep] });
+_rtNextStep = getValue(__rtParams, __rtOutcome, '');
+Logger.info('[<componentName>] exit', { outcome: __rtOutcome, nextStep: _rtNextStep });
 ```
 
-The exit-key fallback is `''` (empty string) — this matches the shipped components [sendSms.js:99](../references/examples/sendSms.js#L99) and [guardTui.js:401](../references/examples/guardTui.js#L401), which are the source of truth for the contract.
+The write target is the bare flow variable `_rtNextStep`, **not** `global[_rtNextStep]` — `_rtNextStep` is placeholder-bound to the engine global via the `__rtNextStep &= _rtNextStep` line in master `Variables` (§4), so a plain assignment to `_rtNextStep` is what the engine reads on re-entry. The exit-key fallback is `''` (empty string). Both forms match the shipped components [sendSms.js:99](../references/examples/sendSms.js#L99), [sendMail.js:98](../references/examples/sendMail.js#L98) and [guardTui.js:401](../references/examples/guardTui.js#L401), which are the source of truth for the contract.
 
-The engine routes on `global[_rtNextStep]` (`resumeFrom(global[_rtNextStep] || RTDS_nextStepId)` in `rtds_2_runtime.js`); the staging in `__rtOutcome` is purely component-internal. The exit log carries **both** the staged `outcome` and the resolved `nextStep`.
+The engine routes on the resolved `_rtNextStep` value; the staging in `__rtOutcome` is purely component-internal. The exit log carries **both** the staged `outcome` and the resolved `nextStep`.
 
 Every v2 component resolves `__rtOutcome` here — including GUI-exit *target* components (§7). The exit key itself is emitted by the engine's `prepareGuiHandoff`, not by any component.
 
@@ -140,7 +140,7 @@ Every v2 component resolves `__rtOutcome` here — including GUI-exit *target* c
 - **[grep]** Does the component have exactly the four canonical ids (`0`/`7`/`29`/`6`)?
 - **[grep]** Master-attribute order matches §2?
 - **[judgment]** Master `Code` composition matches §3?
-- **[grep]** Init body is the universal four lines (incl. `__rtOutcome = 'NextStep_Failure';`)?
-- **[grep]** Work body stages `__rtOutcome = '<key>'` with plain `=` and never writes `global[_rtNextStep]` mid-flight?
-- **[grep]** Output node resolves `__rtOutcome` to `global[_rtNextStep]` with the `''` fallback and logs both `outcome` and `nextStep`?
+- **[grep]** Init body is the universal four lines (incl. `__rtOutcome = 'NextStep';`)?
+- **[grep]** Work body stages `__rtOutcome = '<key>'` with plain `=` and never writes `_rtNextStep` mid-flight?
+- **[grep]** Output node resolves `__rtOutcome` to `_rtNextStep` (bare, not `global[_rtNextStep]`) with the `''` fallback and logs both `outcome` and `nextStep`?
 - **[grep]** No component work body writes per-key `RTDS_OP_*` or `return`s an exit key — GUI-exit routing is the engine's job (`prepareGuiHandoff`)?

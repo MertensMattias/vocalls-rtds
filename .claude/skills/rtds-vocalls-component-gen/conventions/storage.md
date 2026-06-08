@@ -17,7 +17,7 @@ The `_rt*` family includes — at minimum — flow-control plumbing, HTTP scaffo
 
 | Global                     | Role                         | Notes                                                                                                                                            |
 | -------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `_rtNextStep`              | Flow-control plumbing        | The platform reads `global[_rtNextStep]` to advance the flow. Components write the *next-step id* through `global[_rtNextStep] = …`.             |
+| `_rtNextStep`              | Flow-control plumbing        | The platform reads `global[_rtNextStep]` to advance the flow. v2 components write the *next-step id* once at the output node via a bare `_rtNextStep = …` (placeholder-bound to the global by `__rtNextStep &= _rtNextStep`), never `global[_rtNextStep] = …` directly. See [component-v2.md §8](component-v2.md). |
 | `_rtConfig`                | Project-wide config bag      | Loaded once per call leg.                                                                                                                        |
 | `_rtBaseUrl`               | RTDS API base URL            | Set per `environment`.                                                                                                                           |
 | `_rt<Type>Endpoint`        | Per-operation endpoint paths | `_rtSmsEndpoint`, `_rtMailEndpoint`, `_rtScheduleEndpoint`, `_rtTuiCheckAccessEndpoint`, `_rtRoutingTableEndpoint`, … One per HTTP-calling Type. |

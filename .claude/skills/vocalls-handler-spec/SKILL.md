@@ -1,6 +1,6 @@
 ---
 name: vocalls-handler-spec
-description: Translate a PureConnect Interaction Designer handler XML (e.g. `rtds/pureconnect_handlers/NAllo_RTDS_*.xml`) into a 1–3 page Vocalls-flavoured spec that captures the handler's business intent, inputs, outputs, branches, and any external calls — using Vocalls component terminology (Type, Params, NextStep_*, GUI-exit key, __rtParams, __rtNextStep, getValue, walk, _rtBaseUrl). The output is consumable as the input to the sibling `rtds-vocalls-component-gen` skill. Trigger this skill whenever the user points at a PureConnect handler XML and asks for a spec, a summary, a "translation", an "RTDS spec", a "component spec", a "design doc", an "input for the component builder", or says "I want to port this handler to Vocalls". Also trigger on phrasings like "decode this handler", "what does this handler do", "extract the logic from this handler XML", or "give me the Vocalls version" when the source is a PureConnect handler. Do not trigger on Vocalls XML components (`rtds/components/*.js`) — those go through the rtds-vocalls-component-gen skill directly.
+description: Produce or refresh a Vocalls-flavoured RTDS operation spec (e.g. `rtds/specs/sendSms.spec.md`) in the current `__rtOutcome` staging contract. Two modes. CREATE mode translates a PureConnect Interaction Designer handler XML (`rtds/pureconnect_handlers/NAllo_RTDS_*.xml`) into a 1–3 page spec capturing business intent, Params, NextStep_* outputs, external calls, and the init/script/output component structure. UPDATE mode takes an existing `rtds/specs/*.spec.md` and rewrites it to the latest conventions and standards — fixing stale forms (`global[_rtNextStep]` mid-flight, `-1` fallback, `Active` default false, `return '<exit_key>'`) and adding a Convention-debt note where the shipped component diverges. Uses Vocalls terminology (Type, Params, NextStep_*, __rtParams, __rtOutcome, _rtNextStep, getValue, _rtBaseUrl). Output feeds the sibling `rtds-vocalls-component-gen` skill. Trigger for CREATE when the user points at a PureConnect handler XML and asks for a spec, summary, "translation", "RTDS spec", "component spec", "design doc", "input for the component builder", "port this handler to Vocalls", "decode this handler", "what does this handler do", or "give me the Vocalls version". Trigger for UPDATE when the user points at a `rtds/specs/*.spec.md` and asks to "update this spec", "refactor the spec", "bring this spec to the latest standard", "modernize the spec", "fix the spec conventions", "is this spec up to date", or "apply the latest conventions". Do not trigger on Vocalls XML components (`rtds/components/*.js`) — those go through the rtds-vocalls-component-gen skill directly.
 ---
 
 # Vocalls Handler Spec Generator
@@ -16,17 +16,38 @@ The skill is **not** a line-by-line XML translator. It filters out
 PureConnect plumbing, recognises the recurring idioms, and tells the reader
 what the handler *means* — not what each `<Step>` does.
 
+The canonical output shape is [`rtds/specs/sendSms.spec.md`](../../../rtds/specs/sendSms.spec.md).
+Everything this skill writes — whether created fresh or refreshed — must match
+its section order and the v2 `__rtOutcome` staging contract.
+
+## Two modes
+
+This skill operates in one of two modes. Pick the mode from what the user
+points at:
+
+| Mode | Input | What it does | Process |
+| ---- | ----- | ------------ | ------- |
+| **CREATE** | A PureConnect handler XML (`rtds/pureconnect_handlers/NAllo_RTDS_*.xml`) | Translate the handler into a new spec at `rtds/specs/<componentName>.spec.md`. | Steps 1–6 below. |
+| **UPDATE** | An existing spec (`rtds/specs/*.spec.md`), plus its sibling component if one exists | Audit the spec against the current contract and rewrite it to the latest standard, preserving authored business prose. | "Update mode" section below. |
+
+If the input is ambiguous (the user says "the sendSms spec" without a verb),
+ask which mode they want. A handler path → CREATE; a spec path → UPDATE.
+
 ## When to use this skill
 
 Trigger when the user:
 
 - Points at a file in `rtds/pureconnect_handlers/` (e.g.
   `NAllo_RTDS_SendSMS.xml`, `NAllo_RTDS_Disconnect.xml`) and asks for a
-  spec, summary, design doc, or "translation".
+  spec, summary, design doc, or "translation" (CREATE).
 - Says "port this handler to Vocalls", "give me the Vocalls version",
-  "extract the logic", "what does this handler do".
+  "extract the logic", "what does this handler do" (CREATE).
+- Points at a `rtds/specs/*.spec.md` and asks to "update this spec",
+  "refactor the spec", "bring it to the latest standard", "modernize the
+  spec", "fix the spec conventions", "apply the latest conventions", or "is
+  this spec up to date" (UPDATE).
 - Wants the input artifact for `rtds-vocalls-component-gen` and starts
-  with a PureConnect handler rather than a fresh design.
+  with a PureConnect handler rather than a fresh design (CREATE).
 
 Do **not** trigger when:
 
@@ -124,12 +145,13 @@ Follow [spec_template.md](references/spec_template.md). The template is
 
 1. **Header** — name, target Type, source handler path, pattern. ~6 lines.
 2. **Business purpose** — one paragraph. Why this handler exists from the operator's perspective.
-3. **Inputs (Params)** — table: Param name, type, required, description, default. One row per Param. **No PureConnect-isms** — don't mention `lsAttrValues` or `GetAt`.
-4. **Outputs (NextStep_* keys)** — table: branch key, when taken, default if missing. Always start with `NextStep` then `NextStep_Failure`, then the operation-specific keys.
+3. **Inputs (Params)** — table: Param name, type, required, default, description. One row per Param. `Active` first, default `true`. **No PureConnect-isms** — don't mention `lsAttrValues` or `GetAt`.
+4. **Outputs (NextStep_* keys)** — table: branch key, when taken, `Fallback`. Always start with `NextStep` then `NextStep_Failure`, then the operation-specific keys. Fallback is always `''`. Add the "stages `__rtOutcome` … resolves once at the output node" note after the table.
 5. **External calls** — only if pattern is `http_call`. URL shape, method, payload skeleton, expected `result` shape. Skip section otherwise.
-6. **Pattern + work-body sketch** — name the pattern from
-   [operation_bodies/INDEX.md](../rtds-vocalls-component-gen/references/operation_bodies/INDEX.md), then a 5–15 line JS sketch in Vocalls style (`getValue(__rtParams, …)`, `global[_rtNextStep] = …`, `Logger.info('[<componentName>] …', { nextStep: … })`). This is *not* the final component code — it's enough for the rtds-vocalls-component-gen skill to take it from here.
+6. **Component structure (init / script / output)** — name the pattern from
+   [operation_bodies/INDEX.md](../rtds-vocalls-component-gen/references/operation_bodies/INDEX.md), then the three node bodies in the **v2 `__rtOutcome` staging contract**: `init` seeds `__rtOutcome = 'NextStep'` + `__setupConfig`; `script` stages `__rtOutcome = '<key>'` (plain `=`, `Logger` carrying `{ outcome: __rtOutcome }`, never `_rtNextStep` mid-flight); `output` resolves once via `_rtNextStep = getValue(__rtParams, __rtOutcome, '')`. This is *not* the final component XML — it's enough for the rtds-vocalls-component-gen skill to take it from here.
 7. **Open questions / divergences from the source** — bullet list. Anything in the PureConnect handler that doesn't have a clean Vocalls equivalent, anything you skipped on purpose, anything the user needs to confirm.
+8. **Convention debt** — only when a component already exists and diverges from the target (most often `Active` defaulting `false` in shipped code). Omit otherwise.
 
 **Length discipline.** 1–3 pages, *not* a full handler dump. If you find
 yourself approaching 4 pages, you're including PureConnect plumbing —
@@ -143,26 +165,80 @@ Quick check:
 - No mention of `lsAttrNames`, `lsAttrValues`, `GetAt`, `Find`, `StrEqlNoCase`, `Test()`, `StrLen`, `c_sDsRtPath`, `ATTR_*`, `CallLog`, `Notify Debugger`, `ReplaceAttributes`, `Parse String`, `Assignment`, `creatorModule`, `creatorName`, "Step ID", "Initiator", "Subroutine" (the PureConnect kind).
 - All identifiers carry the right Vocalls prefix per
   [naming.md](../rtds-vocalls-component-gen/conventions/naming.md):
-  `__rtParams`, `__rtBaseUrl`, `__rtEndpoint`, `__rtNextStep`,
+  `__rtParams`, `__rtOutcome`, `__rtBaseUrl`, `__rtEndpoint`, `__rtNextStep`,
   `__configJSON`, `_rtNextStep`, `_rtBaseUrl`, `_headers`.
 - Every NextStep key is named (no "and a few other branches…").
 - Pattern matches the table in
   [operation_bodies/INDEX.md](../rtds-vocalls-component-gen/references/operation_bodies/INDEX.md).
-- Logger lines (if shown in the sketch) carry `{ nextStep: … }`.
+- **Outcome contract:** `init` seeds `__rtOutcome = 'NextStep'`; `script` stages `__rtOutcome` (never `_rtNextStep`/`global[_rtNextStep]` mid-flight) with `{ outcome: __rtOutcome }` logs; `output` resolves once via `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` (empty-string fallback, **not** `-1`) and logs both `{ outcome, nextStep }`. No `return '<exit_key>'` for gui_exit. See the "Disallowed — retired contract" list in [terminology.md](references/terminology.md).
+
+## Update mode — refresh an existing spec to the latest standard
+
+Use this mode when the input is an existing `rtds/specs/*.spec.md` (not a
+handler XML) and the user asks to update / refactor / modernize it. The goal is
+a high-quality spec in the **current** conventions, with authored business prose
+preserved. There is no handler to walk — skip the CREATE-mode triage,
+filter, and pattern-recognition steps.
+
+**Reading order for this mode:** [spec_template.md](references/spec_template.md)
+(the canonical target shape) + [terminology.md](references/terminology.md). Read
+the sibling `rtds/components/<name>.js` if it exists. Do **not** load
+`handler_anatomy.md` / `tool_filter.md` — there's no handler involved.
+
+### Step U1 — Read the spec and its sibling component
+
+Open the target spec and, if present, `rtds/components/<componentName>.js`. The
+component is ground truth for what the operation actually does today — payload
+shape, branch keys, validation, and (importantly) the shipped `Active` default.
+
+### Step U2 — Audit against the current contract
+
+Check the spec against the latest standard. The common drift points (all visible
+to a grep) are:
+
+- **Frontmatter present?** `status:` + the `catalog:` block (see spec_template.md). Add it if missing.
+- **`Active` row default `true`?** Target is `true`. If it reads `false`, fix the table to `true` and capture the shipped-code gap in Convention debt (Step U3).
+- **Outputs `Fallback` column is `''`?** Replace any `-1` with `''`. Rename a `Fallback if Param missing` header to `Fallback`.
+- **`__rtOutcome` staging present?** The Outputs table carries the "stages … resolves once at the output node" note; the structure section shows init/script/output.
+- **Init seeds `'NextStep'`?** Not `'NextStep_Failure'`.
+- **Output writes bare `_rtNextStep`?** `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` — never `global[_rtNextStep] = …`.
+- **Logs carry `outcome`?** Work-node logs `{ outcome: __rtOutcome }`; exit log `{ outcome, nextStep }`. No mid-flight `{ nextStep }`.
+- **gui_exit:** no `return '<exit_key>'`; the engine emits the exit key via `prepareGuiHandoff`.
+- **Section shape** matches sendSms.spec.md: Header → Business purpose → Inputs → Outputs → External call (http_call only) → Component structure → (Open questions) → Convention debt.
+
+### Step U3 — Rewrite, preserving authored prose
+
+Rewrite the mechanical sections to the target shape. **Preserve** the authored
+"Business purpose" paragraph and any operator-confirmed Param descriptions — only
+restructure/normalize, don't re-invent intent. Where the **shipped component**
+still diverges from the target (most often `Active` default `false`), keep the
+target convention in the body and record the gap in a **Convention debt (flagged
+&lt;today&gt;)** section, exactly as [sendSms.spec.md](../../../rtds/specs/sendSms.spec.md)
+does. Don't silently encode the buggy default.
+
+### Step U4 — Validate and save
+
+Run the same Step 6 validation sweep. Confirm before overwriting. After saving,
+if the `catalog:` frontmatter changed, remind the user to run
+`npm run gen:catalog` (per CLAUDE.md, the catalog is generated from spec
+frontmatter). If a Param name changed, `npm run check:lockstep` verifies
+component/spec/seed parity.
 
 ## Output
 
-Save the generated spec to the user's workspace at:
+**CREATE mode** — save the generated spec at
+`rtds/specs/<componentName>.spec.md` (sibling of the future component output
+under `rtds/components/`). Use camelCase `<componentName>` (e.g. `sendSms`,
+`disconnect`, `flowJump`) matching
+[naming.md](../rtds-vocalls-component-gen/conventions/naming.md). Ask before
+overwriting an existing spec.
 
-- `rtds/specs/<componentName>.spec.md` (sibling of the future component output under `rtds/components/`)
+**UPDATE mode** — rewrite the spec in place at its existing path; confirm before
+overwriting.
 
-Use camelCase `<componentName>` (e.g. `sendSms`, `disconnect`, `flowJump`)
-matching the convention from
-[naming.md](../rtds-vocalls-component-gen/conventions/naming.md).
-Ask before overwriting an existing spec.
-
-Provide a path link to the saved file. If the user asks "now build the
-component", chain to
+Either way, provide a path link to the saved file. If the `catalog:` frontmatter
+changed, remind the user to run `npm run gen:catalog`. If the user asks "now
+build the component", chain to
 [rtds-vocalls-component-gen](../rtds-vocalls-component-gen/SKILL.md).
 
 ## Things to avoid
@@ -171,8 +247,11 @@ component", chain to
 - **Don't invent Params.** If a key isn't read in the handler, it's not a Param. List unknowns in "Open questions" instead.
 - **Don't invent endpoint URLs or HTTP payloads.** Derive them from the handler's HTTP step (if any) or mark them as "TBD — confirm with operator".
 - **Don't use PureConnect terminology** in the spec body — that's the whole point of this skill. The PureConnect names appear *only* in the header ("Source handler" path) and the "Open questions" section if there's an unresolvable divergence.
+- **Don't emit the retired outcome contract.** No `global[_rtNextStep]` mid-flight, no `-1` fallback, no `Active` default `false` in the Inputs table, no `return '<exit_key>'` for gui_exit, no `{ nextStep }` on work-node logs. Current contract: stage `__rtOutcome`, resolve once at the output node to bare `_rtNextStep` with the `''` fallback. See [terminology.md](references/terminology.md).
 - **Don't exceed 3 pages.** If you're over, you're including overhead.
 - **Don't emit Vocalls component XML.** That's the next skill's job. This skill outputs only the spec.
+- **Don't (UPDATE mode) re-invent the business purpose.** Preserve the authored prose; only normalize the mechanical sections.
+- **Don't silently match a buggy shipped default.** When the component diverges from the target convention, state the target and flag the gap in Convention debt.
 - **Don't load `references/example_disconnect_spec.md` by default** — only when you need calibration.
 
 ## File layout

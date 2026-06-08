@@ -55,7 +55,7 @@ this signal:
 | One Telephony `Disconnect` step.                                                           | `gui_exit`       | `Disconnect`.                                                        |
 | One HTTP-flavoured step (custom Web Request tool, or any step posting to a URL).           | `http_call`      | `SendSMS` / `RESTRequest` / `RESTGet` / `SkillUpdate` / `Schedule` / `Emergency` — disambiguate by Params present. |
 | One `Condition` with a non-trivial predicate, two terminal branches.                       | `condition`      | `Condition` (queue statistic) or `CheckAttribute` (session variable). Disambiguate by whether the LHS reads `_acdQueueStat*` or a Param. |
-| Multiple `Set Attribute` writing non-routing-scaffold keys sourced from Params.            | `set_attributes` | `SetAttributes`.                                                     |
+| Multiple `Set Attribute` writing non-routing-scaffold keys sourced from Params.            | `set_attributes` | `SetVariables` (formerly `SetAttributes`).                          |
 | The handler updates `RTDS_sourceId` (the call's source-flow ID).                           | `flow_jump`      | `FlowJump` (full re-fetch) or `UpdateSourceId` (lightweight variant). |
 | A step that hands the call off to a native telephony / menu / transfer node (no inline work, just routing onward). | `gui_exit`       | The GUI-exit Type whose name matches the target. The engine routes via `RTDS_currentOpConfig`; the spec needs no component-side projection code. |
 
@@ -74,8 +74,8 @@ authoritative list lives in
 - **`Condition` / `CheckAttribute`**: `Attribute`, `Operator`, `Value`, `NextStep_True`, `NextStep_False`.
 - **`FlowJump`**: `SourceId`, `OperationId` (optional — empty means "go to first op of new flow"), `NextStep`.
 - **`UpdateSourceId`**: `SourceId`, `NextStep`.
-- **`SetAttributes`**: arbitrary keys (one Param per session variable written), plus `NextStep`.
-- **GUI-exit Types**: operation-specific Params (see the per-Type file in `operation_bodies/`) — the work-body sketch ends by returning the exit-key string.
+- **`SetVariables`** (formerly `SetAttributes`): arbitrary keys (one Param per session variable written), plus `NextStep`.
+- **GUI-exit Types**: operation-specific Params (see the per-Type file in `operation_bodies/`). The engine emits the exit key via `prepareGuiHandoff`; the *target* component is an ordinary v2 component that stages `__rtOutcome` and resolves to `_rtNextStep` at its output node. The work body does **not** return an exit-key string.
 
 ## If you can't decide
 

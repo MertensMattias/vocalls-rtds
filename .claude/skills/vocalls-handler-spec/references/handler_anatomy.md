@@ -87,7 +87,7 @@ This is **plumbing**. The actual operation inputs are read from
 "<Key>", 0))`. So:
 
 - The two list parameters are the operation's **Param bag** in serialised form. Each `Find(p_lsAttrNames, "<Key>", 0)` followed by `GetAt(p_lsAttrValues, ...)` reads one Param. **Every distinct `"<Key>"` literal in the handler is a Vocalls Param.**
-- The `p_sNextStep` output is the resolved next-step ID — the Vocalls equivalent is `global[_rtNextStep]`.
+- The `p_sNextStep` output is the resolved next-step ID. In Vocalls the component stages the chosen branch as `__rtOutcome` and resolves it once at the output node into the flow variable `_rtNextStep` (the engine reads `global[_rtNextStep]` on re-entry). The spec doesn't write `p_sNextStep` per branch — it lists each `NextStep_*` key in the Outputs table.
 - Extra parameters past index 3 (e.g. `p_bNextStepForced` on SendSMS, `p_sDsPath` and `bFirstOperationId` on FlowJump) are operation-specific. Note them as Params with a comment in the spec.
 
 ## Walking order — recommended approach

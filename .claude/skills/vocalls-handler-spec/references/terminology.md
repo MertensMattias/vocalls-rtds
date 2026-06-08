@@ -15,8 +15,8 @@ substitution sheet for the Step 6 validation sweep in [SKILL.md](../SKILL.md).
 | Step / Tool / Subroutine                                                 | (Internal to the work node — the spec doesn't enumerate them)                                                     |
 | `lsAttrNames` / `lsAttrValues`                                           | `Params` (the operation's parameter bag — read with `getValue`)                                                   |
 | `GetAt(p_lsAttrValues, Find(p_lsAttrNames, "X", 0))`                     | `getValue(__rtParams, 'X')` (or `getValueOrFalsy` / `hasKey` / `walk`)                                            |
-| `p_sNextStep`                                                            | `global[_rtNextStep]` (write) / `__rtNextStep` (component-scoped read)                                            |
-| `p_lsAttrNames` / `p_lsAttrValues`                                       | `__rtParams` (already a plain object on the Vocalls side)                                                         |
+| `p_sNextStep`                                                            | Staged as `__rtOutcome` (the chosen `NextStep_*` key); resolved once at the output node into the flow var `_rtNextStep` |
+| `p_lsAttrNames` / `p_lsAttrValues`                                       | `__rtParams` (built once in the init node by `__rtParams = __setupConfig(__configJSON)`)                          |
 | `Interaction1`                                                           | (Implicit — Vocalls runtime owns the call object)                                                                 |
 | `c_sDsRtPath`                                                            | (Gone — Vocalls fetches via the RTDS HTTP API)                                                                    |
 | `c_s<BaseUrl>` (handler constant)                                        | `__rtBaseUrl` (component global, sourced from flow var `_rtBaseUrl`)                                              |
@@ -45,13 +45,26 @@ When the spec includes a JS work-body sketch, identifiers MUST follow
 
 | Prefix      | Use for                                                                                                                                                      |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `__`        | Component-authored: `__rtParams`, `__rtBaseUrl`, `__rtEndpoint`, `__rtNextStep`, `__configJSON`, every local var (`__url`, `__payload`, `__to`, `__keys`, …) |
+| `__`        | Component-authored: `__rtParams`, `__rtOutcome`, `__rtBaseUrl`, `__rtEndpoint`, `__rtNextStep`, `__configJSON`, `__setupConfig`, every local var (`__url`, `__payload`, `__to`, `__keys`, …) |
 | `_`         | Platform-supplied flow variables: `_rtNextStep`, `_rtBaseUrl`, `_rt<TypePrefix>Endpoint`, `_headers`                                                          |
 | (no prefix) | Runtime/host APIs: `global`, `environment`, `context`, `Logger`, `getValue`, `walk`, `hasKey`, `jsonHttpRequest`, `nowUTC`                                    |
 
 If a sketch contains a bare `var x = …;` without the `__` prefix, the
 component builder will reject it. The double-underscore is load-bearing —
 see [vocalls-component-double-underscore-prefix.md](../../../../../C:/Users/merte/.claude/projects/c--Users-merte-dev-vocalls-rtds/memory/vocalls-component-double-underscore-prefix.md) (memory).
+
+### The outcome-staging trio — don't confuse the three
+
+| Identifier      | What it is                                                                                                          |
+| --------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `__rtOutcome`   | Component-internal **staged outcome key** — the literal Params key *name* (`'NextStep'`, `'NextStep_Success'`, `'NextStep_Failure'`, `'NextStep_<State>'`, …). Seeded `'NextStep'` in the init node; the work body assigns it with a plain `=`, at most once per path. |
+| `_rtNextStep`   | The engine's **flow variable** (bare, leading single underscore). Written **once**, at the output node, via `_rtNextStep = getValue(__rtParams, __rtOutcome, '')`. Never written mid-flight. **Never** `global[_rtNextStep] = …`. |
+| `__rtNextStep`  | The component-scoped mirror of `_rtNextStep`, kept in sync by the master-`Variables` line `__rtNextStep &= _rtNextStep` (placeholder-binding `&=`). It is **not** the resolution target — don't assign to it in the work body. |
+
+A spec's "Component structure" section shows `__rtOutcome` staged in the
+`script` body and resolved to `_rtNextStep` in the `output` body. If a sketch
+writes `global[_rtNextStep]`, uses a `-1` fallback, or `return`s an exit key,
+it's on the old contract — fix it.
 
 ## Naming the operation
 
@@ -81,6 +94,16 @@ Never let these leak past Step 6's validation sweep:
 - `CallLog`, `Notify Debugger`, `ReplaceAttributes`, `Parse String`, `Assignment`, `creatorModule`, `creatorName`, "Step ID"
 - "Initiator" (the PureConnect kind — Vocalls uses Params)
 - "Subroutine" (the PureConnect kind — Vocalls components are not subroutines)
+
+**Also disallowed — the retired (pre-`__rtOutcome`) contract.** These are not
+PureConnect terms, but they encode the old output convention and must not appear
+in a current spec:
+
+- `global[_rtNextStep] = …` mid-flight (the work body stages `__rtOutcome`; only the `output` node writes, and it writes the bare `_rtNextStep`)
+- a `-1` fallback on a `getValue(__rtParams, …)` step-id read (the fallback is `''`)
+- `Active` defaulting to `false` in the spec's Inputs table (target is `true`; record shipped-code divergence in "Convention debt")
+- `return '<exit_key>';` in a gui_exit work body (the engine emits the exit key via `prepareGuiHandoff`)
+- a work-node log carrying `{ nextStep: … }` (work logs carry `{ outcome: __rtOutcome }`)
 
 If you genuinely cannot describe a behaviour without one of these,
 that's a sign the behaviour doesn't have a clean Vocalls equivalent.

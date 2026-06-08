@@ -29,6 +29,18 @@ in "Open questions".
 ## The resulting spec
 
 ```markdown
+---
+status: planned
+catalog:
+  operation: "disconnect"
+  legacy: false
+  pattern: "`gui_exit`"
+  component: "disconnect.js"
+  componentMark: "⏳"
+  runtimeCell: "—"
+  seed: "⏳"
+---
+
 # Operation Spec — disconnect (Disconnect)
 
 | Field              | Value                                                       |
@@ -50,15 +62,15 @@ target on Emergency / Schedule / Guard branches.
 
 | Param name | Type    | Required | Default | Description                                                                                |
 | ---------- | ------- | -------- | ------- | ------------------------------------------------------------------------------------------ |
-| `Active`   | boolean | no       | `false` | If falsy, the operation logs a skip and exits to `NextStep`. Universal across operations.  |
+| `Active`   | boolean | no       | `true`  | If falsy, the operation logs a skip and exits to `NextStep`. Default `true` (runs unless explicitly disabled). |
 
 ### Outputs
 
-Exit key returned to Vocalls: `"disconnect"`.
+Engine exit key (emitted by `prepareGuiHandoff`): `"disconnect"`.
 
 | Branch key | Taken when                       | Fallback |
 | ---------- | -------------------------------- | -------- |
-| `NextStep` | Operation is inactive — skipped. | `-1`     |
+| `NextStep` | Operation is inactive — skipped. | `''`     |
 
 `Disconnect` is a **native GUI-exit Type** — see
 [operation_bodies/gui_exit.md](../../rtds-vocalls-component-gen/references/operation_bodies/gui_exit.md).

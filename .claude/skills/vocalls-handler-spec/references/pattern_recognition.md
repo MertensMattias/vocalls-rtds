@@ -38,18 +38,22 @@ Step: Condition
 The double-negative-with-`StrEqlNoCase` is PureConnect's way of writing
 "value is not in `{ '0', 'False' }` — i.e. it's enabled".
 
-**Spec equivalent (and the code in the body sketch):**
+**Spec equivalent (the work body's Active guard):**
 
 ```js
-if (!getValue(__rtParams, 'Active', false)) {
-    Logger.info('[<componentName>] skipped — inactive', { nextStep: global[_rtNextStep] });
+if (String(getValue(__rtParams, 'Active', true)).toLowerCase() !== 'true') {
+    Logger.info('[<componentName>] skipped -- inactive', { outcome: __rtOutcome });
     return;
 }
 ```
 
-The default-outcome (`global[_rtNextStep] = getValue(__rtParams,
-'NextStep', -1)`) is pre-assigned **before** the guard. See
-[http_call.md](../../rtds-vocalls-component-gen/references/operation_bodies/http_call.md).
+The did-nothing default (`__rtOutcome = 'NextStep'`) is **staged in the init
+node**, so the skipped path falls through to `'NextStep'` automatically. The
+guard reads `Active` with a target default of `true` (runs unless disabled), and
+logs the staged `outcome`, never `nextStep` (no step id exists until the output
+node). See
+[http_call.md](../../rtds-vocalls-component-gen/references/operation_bodies/http_call.md)
+and [component-v2.md §6–§8](../../../conventions/component-v2.md).
 
 ## 3. The `$(TOKEN)` round-trip
 
@@ -111,11 +115,18 @@ the value of Param `NextStep[_<Branch>]` (which is the operation ID of the
 next step) to the runtime's next-step variable.
 
 **Spec equivalent:** every distinct `"NextStep_<Branch>"` literal you find
-across all such Assignment steps becomes a row in the Outputs table.
+across all such Assignment steps becomes a row in the Outputs table. In the work
+body, the chosen branch is **staged** into `__rtOutcome` (a plain `=`, the
+literal key name), not written to the step variable:
 
 ```js
-global[_rtNextStep] = getValue(__rtParams, 'NextStep_<Branch>', -1);
+__rtOutcome = 'NextStep_<Branch>';
 ```
+
+The output node is the single place that resolves it:
+`_rtNextStep = getValue(__rtParams, __rtOutcome, '')`. Never write
+`_rtNextStep` (or `global[_rtNextStep]`) mid-flight, and never use a `-1`
+fallback.
 
 ## 6. The "Success/Failure" fan-out
 
@@ -181,12 +192,14 @@ Step (later): Assignment
 
 **Vocalls meaning:** "Default the next step to empty (= signal the parent
 to look up its own fallback), then later override with the explicit
-branch value." This is PureConnect's equivalent of pre-assigning a
-default outcome.
+branch value." This is PureConnect's equivalent of the v2 init seed
+`__rtOutcome = 'NextStep'` — the did-nothing default that the work body
+later overrides by staging a more specific `'NextStep_<Branch>'` key.
 
 **Spec equivalent:** the empty default maps to the **`NextStep`** Param
-(no suffix) being used as the catch-all in
-[http_call.md §1 "Pre-assign the 'did nothing' default outcome"](../../rtds-vocalls-component-gen/references/operation_bodies/http_call.md). Note `NextStep` in the Outputs table without a special branch label.
+(no suffix), staged as `__rtOutcome = 'NextStep'` in the init node (see
+[http_call.md](../../rtds-vocalls-component-gen/references/operation_bodies/http_call.md)).
+Note `NextStep` in the Outputs table without a special branch label.
 
 ## How to use this file
 

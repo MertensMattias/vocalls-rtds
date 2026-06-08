@@ -1,6 +1,6 @@
 # Project Conventions — vocalls-rtds
 
-**v0.4 — 2026-06-05**
+**v0.5 — 2026-06-08**
 
 This document is the **reflection benchmark** for the repo. Every file, component, and feature should match what's written here. When a decision in this document and a file in the repo disagree, *one of them is wrong* — flag it and resolve it before continuing.
 
@@ -79,8 +79,8 @@ Copy this into your scratch when reviewing a file. Each row is one rule from one
 | 5.1 | v2 component has the four canonical ids `0`/`7`/`29`/`6`                                                        | [Component]   | grep        | [component-v2.md](conventions/component-v2.md)                            |
 | 5.2 | Master-attribute order matches the canonical 23-attribute list                                                  | [Component]   | grep        | [component-v2.md](conventions/component-v2.md)                            |
 | 5.3 | Master `Code` composition: `__rtParams={}` → 3 canonical helpers → guarded fallbacks → op-specific helpers      | [Component]   | judgment    | [component-v2.md](conventions/component-v2.md)                            |
-| 5.4 | Init body is the universal four lines (incl. `__rtOutcome = 'NextStep_Failure';`)                              | [Component]   | grep        | [component-v2.md](conventions/component-v2.md)                            |
-| 5.5 | Output node resolves `__rtOutcome` → `global[_rtNextStep]` and logs `outcome` + `nextStep` (gui_exit returns a key) | [Component]   | grep        | [component-v2.md](conventions/component-v2.md)                            |
+| 5.4 | Init body is the universal four lines (incl. `__rtOutcome = 'NextStep';`)                                       | [Component]   | grep        | [component-v2.md](conventions/component-v2.md)                            |
+| 5.5 | Output node resolves `__rtOutcome` → bare `_rtNextStep` (not `global[_rtNextStep]`) and logs `outcome` + `nextStep` | [Component]   | grep        | [component-v2.md](conventions/component-v2.md)                            |
 | 6.1 | Visible nodes parent to `baselayer`; only the two root cells (`vocalls-master-layer` + `baselayer`) above       | [Component]   | grep        | [component-mxgraph.md](conventions/component-mxgraph.md)                  |
 | 6.2 | Compound children (case/recognize/component rows) parent to the compound parent's id                            | [Component]   | grep        | [component-mxgraph.md](conventions/component-mxgraph.md)                  |
 | 6.3 | Edges into compound nodes target the parent id; edges out of branches source the child id                       | [Component]   | grep        | [component-mxgraph.md](conventions/component-mxgraph.md)                  |
@@ -126,7 +126,7 @@ Per-operation specs **link to this document** for storage / logging / casing rul
 
 A running list of conventions still being decided. Each entry is either resolved (date) or open. When resolved, fold the conclusion into the relevant conventions file and remove the entry.
 
-- **`_rtNextStep` on varObj?** The flow-control target is currently on global. **Decision: stays on global** (confirmed 2026-05-28). As of 2026-06-05, v2 components **stage** an outcome key into `__rtOutcome` and resolve it to `global[_rtNextStep]` exactly once at the output node (`global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1)`); the engine still reads the global — the staging is purely component-internal. See [component-v2.md §6–§8](conventions/component-v2.md).
+- **`_rtNextStep` on varObj?** The flow-control target is currently on global. **Decision: stays on global** (confirmed 2026-05-28). As of 2026-06-08, v2 components **stage** an outcome key into `__rtOutcome` (seeded `'NextStep'` in init) and resolve it to the bare flow variable `_rtNextStep` exactly once at the output node (`_rtNextStep = getValue(__rtParams, __rtOutcome, '')`, fallback empty string). `_rtNextStep` is placeholder-bound to the engine global via `__rtNextStep &= _rtNextStep`, so the plain assignment is what the engine reads on re-entry — the staging is purely component-internal. See [component-v2.md §6–§8](conventions/component-v2.md).
 - **Per-Param scope target for SetVariables?** **Decision: default is varObj; an explicit dot-path (`globalThis.x`, a named object) opts a single write out.** (confirmed 2026-05-28; `SetAttributes` was hard-cut to `SetVariables`, see [setVariables.spec.md](rtds/specs/setVariables.spec.md).)
 - **Should the runtime's `fetchAndStart` use structured `Logger.error` or bare `log_error`?** Production sync downgraded structured calls to concatenated strings. Open — depends on whether the regression was intentional.
 - **`getScoped` in the env library** — **Resolved: present** in `rtds_3_vocallsEnv.js` (varObj → global → default), alongside its write-side counterpart `setVariable`.

@@ -34,7 +34,7 @@ Three log lines is the floor per component. Most don't need a fourth:
 | Outcome         | `info` / `warn` / `error` | Terminal point of the work node.                                       |
 | Exit            | `info`                    | Output node `OnEnter`.                                                 |
 
-The **`outcome`** field is non-negotiable: outcome (work-node) logs carry the staged outcome key (`outcome: __rtOutcome`), and the exit log carries **both** `outcome` and the resolved `nextStep` (`{ outcome: __rtOutcome, nextStep: global[_rtNextStep] }`). The work body stages only the key (no step id is resolved until the output node — see [component-v2.md §7–§8](component-v2.md)), so a mid-flight `nextStep` value doesn't exist yet; `outcome` is what stitches the trace until the exit log resolves it. (GUI-exit operations `return` the exit key instead of staging `__rtOutcome`; their exit log carries the returned key.)
+The **`outcome`** field is non-negotiable: outcome (work-node) logs carry the staged outcome key (`outcome: __rtOutcome`), and the exit log carries **both** `outcome` and the resolved `nextStep` (`{ outcome: __rtOutcome, nextStep: _rtNextStep }`). The work body stages only the key (no step id is resolved until the output node — see [component-v2.md §7–§8](component-v2.md)), so a mid-flight `nextStep` value doesn't exist yet; `outcome` is what stitches the trace until the exit log resolves it. (GUI-exit *target* components — e.g. guardTui — are ordinary v2 components on this same contract: they stage `__rtOutcome` and resolve to `_rtNextStep` at the output node like any other. The exit *key* that routes the call to the target is emitted by the engine's `prepareGuiHandoff`, not logged by the component.)
 
 ## Level selection
 

@@ -10,7 +10,7 @@ These were valid in v1 and are retired in v2. If you see them in a freshly-gener
 
 - **No `__rt<Key>` / `__rt<TypePrefix><Key>` splay in master `Code`.** Use `__rtParams` + `getValue(__rtParams, '<Key>', default)` instead. The splay produced one master-`Code` const per Param; v2 collapses them into a single dictionary read by `__setupConfig`. See [component-v2.md §3](component-v2.md).
 - **No `__init` helper in master `Code`.** Gone in v2. The init-node body does the work directly — see [component-v2.md §6](component-v2.md).
-- **No `__outputVar` PropertyDefinition.** Gone in v2. The work body **stages** an outcome key into `__rtOutcome` and the output node resolves it to `global[_rtNextStep]` exactly once (`global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1)`). The work body does **not** write `global[_rtNextStep]` mid-flight (gui_exit operations are the exception — they `return` the exit key). See [component-v2.md §6–§8](component-v2.md).
+- **No `__outputVar` PropertyDefinition.** Gone in v2. The work body **stages** an outcome key into `__rtOutcome` (seeded `'NextStep'` in init) and the output node resolves it to the bare flow variable `_rtNextStep` exactly once (`_rtNextStep = getValue(__rtParams, __rtOutcome, '')`, fallback empty string — **not** `global[_rtNextStep]` and **not** `-1`). The work body does **not** write `_rtNextStep` mid-flight. GUI-exit *target* components are no exception — they are ordinary v2 components that stage `__rtOutcome` and resolve at the output node like any other; the exit key that routes to them is emitted by the engine's `prepareGuiHandoff`, never `return`ed by a component body. See [component-v2.md §6–§8](component-v2.md).
 - **Don't copy from `handler_source_file/` or legacy `component_source_file/`.** Those are retired reference directories. The live canonical examples are `sendSms.js` / `sendMail.js` (v2 skill-generated) and `voicemaildetector.js` (hand-built composite).
 
 ## Routing-table contract
@@ -42,7 +42,7 @@ These were valid in v1 and are retired in v2. If you see them in a freshly-gener
 - **[grep]** Any `function name() {}` declarations inside component XML attribute values?
 - **[judgment]** Any `.then(success)` without a paired error callback?
 - **[grep]** Any explicit case-normalisation between a read and a write?
-- **[grep]** Does the work body write `global[_rtNextStep]` mid-flight instead of staging `__rtOutcome` (gui_exit excepted)?
+- **[grep]** Does the work body write `_rtNextStep` (or `global[_rtNextStep]`) mid-flight instead of staging `__rtOutcome` and resolving once at the output node?
 - **[grep]** Any say/TTS text defaulting to `false` instead of `''`?
 - **[grep]** Any HTTP-body decision via `if (x)` or `!== 'true'` instead of `String(x).toLowerCase() === 'true'`?
 - **[grep]** Any `typeof id === 'number'` check on an API-supplied id?
