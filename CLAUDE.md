@@ -23,11 +23,10 @@ Vocalls **development environment** repo (simulate / validate / export). Not the
 - `.claude/skills/rtds-vocalls-component-gen/` — skill for generating Vocalls Designer components
 
 ### `projects/rtds-runtime/` — the committed reference runtime (runnable)
-- `globalLibraries/active/` — `rtds_3_vocallsEnv.js` (env / Logger / helpers), `rtds_2_runtime.js` (dispatch engine), `rtds_1_globalConfig.js` (`varObj` schema). Load order 3 → 2 → 1.
+- `globalLibraries/active/` — `rtds_3_vocallsEnv.js` (env / Logger / helpers), `rtds_2_runtime.js` (dispatch engine: `runStep`, three entry points — `fetchAndStart` / `resumeFrom` / `finalizeFrom`, the last for end-of-call execution completion via the `onCallResult` callback and `RTDS_finalizing` mode), `rtds_1_globalConfig.js` (`varObj` schema). Load order 3 → 2 → 1.
 - `callScript_init/` — `globalCode.js`, `globalVariables.js`
-- `callScripts/` — `main.js`, `main_sourceCode.js`, guard JSON flows
-- `tests/` — Jest (`main.test.js`)
-- `exported_callscripts/` — export staging
+- `callScripts/` — `main.js` (runnable callscript) and `main_sourceCode.js` (the Vocalls Designer mxGraph twin; master-layer `Code`/`Variables` live here)
+- `tests/` — Jest: `main.test.js` (smoke), `finalize.test.js` (end-of-call execution completion), `flowSimulator.smoke.test.js` / `flowSimHttp.test.js` (flow simulator), and `components/` contract tests (`sendSms.test.js`, `setupConfig.test.js`)
 
 Other `projects/<name>/` dirs (e.g. `demo`, or anything from `npm run init`) are local workspaces; `projects/*/.vocalls/` is gitignored. `projects/rtds-runtime/` is the exception: it is the committed reference runtime, and `env.config.json` points the active project at its subpaths.
 
@@ -35,7 +34,7 @@ Other `projects/<name>/` dirs (e.g. `demo`, or anything from `npm run init`) are
 - `rtds/docs/runtime-architecture.md` — how the runtime is wired (**start here**)
 - `rtds/docs/operations-catalog.md` — per-operation inventory (pattern / component / runtime / seed status)
 - `rtds/docs/runtime-spec.md` — field-level contract (Params, endpoints, exit keys); `rtds/docs/logging-design.md`
-- `rtds/specs/` — one `*.spec.md` per operation (source handler + target component in each header)
+- `rtds/specs/` — one `*.spec.md` per operation **that has a component** in `rtds/components/` (source handler + target component in each header). Today: `sendSms`, `sendEmail`, `setVariables`, `guardRouting`, `guardTui`, `scheduler`. Operations without a component carry no spec.
 - `rtds/components/` — Vocalls Designer mxGraph component exports (`*.js`)
 - `rtds/pureconnect_handlers/` — source PureConnect Interaction Designer handler XML (read-only reference)
 - `rtds/api_swagger/` — Swagger/OpenAPI for the RTDS HTTP APIs; `rtds/db_seed/` — dictionary + flow SQL; `rtds/samples/` — sample payloads
@@ -55,7 +54,7 @@ Several artifacts are now **generated** — edit the source, then regenerate; ne
 
 - **Change a component (`rtds/components/X.js`)** → update its spec `rtds/specs/X.spec.md` (incl. `status:` / `catalog:` frontmatter), the runtime twin in `projects/rtds-runtime/globalLibraries/active/rtds_2_runtime.js` if one exists (`executeXxx` — keep payload + branch contract aligned, see [conventions/lockstep.md](conventions/lockstep.md)), the `rtds/db_seed/` SQL if Params changed; then `npm run gen:catalog` and `npm run build:skill` if X is canonical (`sendSms` / `sendMail` / `voicemaildetector`). `npm run check:lockstep` verifies param-name parity across component/spec/seed.
 - **Change the runtime engine (`globalLibraries/active/rtds_*.js`)** → update `rtds/docs/runtime-architecture.md`, `rtds/docs/runtime-spec.md`, the affected `conventions/*.md`, and `npm run build:skill` to resync the bundled runtime snapshot.
-- **Add a new operation** → add the spec (`rtds/specs/`, with frontmatter), the component (`rtds/components/`), seed dictionary/instance SQL (`rtds/db_seed/`), a component contract test (`projects/rtds-runtime/tests/components/`), then `npm run gen:catalog`.
+- **Add a new operation** → add the component (`rtds/components/`), its authored spec (`rtds/specs/`, with `catalog:` frontmatter), a `ROW_ORDER` entry in `scripts/gen_catalog.py` (the catalog lists only operations with a component + spec — a new op must be added there or it won't be catalogued), seed dictionary/instance SQL (`rtds/db_seed/`), a component contract test (`projects/rtds-runtime/tests/components/`), then `npm run gen:catalog`.
 - **Change a convention** → edit `conventions/<topic>.md` and/or `PROJECT_CONVENTIONS.md` (bump its version line), then `npm run build:skill` to resync the skill bundle.
 
 ## Conventions
