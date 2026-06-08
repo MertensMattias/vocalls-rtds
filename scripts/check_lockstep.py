@@ -104,7 +104,7 @@ def spec_param_names(spec_filename):
 # ---- seed Dic_Attribute names ---------------------------------------------
 
 def seed_param_names_by_optype():
-    """Map seed OperationType (e.g. 'SendSms_vocalls') -> set of AttributeName.
+    """Map seed OperationType (e.g. 'SendSms') -> set of AttributeName.
 
     Scoped to the `INSERT INTO @Attribute ... VALUES` block so the earlier
     `@OperationType` VALUES list (type names only) cannot pollute attribute
@@ -207,7 +207,7 @@ def main():
             continue
         comp_names = component_param_names(comp_name)
         spec_names = spec_param_names(fname)
-        # The seed OperationType (e.g. SendSms_vocalls) is named verbatim in the
+        # The seed OperationType (e.g. SendSms) is named verbatim in the
         # runtimeCell — use it directly so the seed key matches the seed file's
         # exact casing without a separate frontmatter field.
         seed_key = None

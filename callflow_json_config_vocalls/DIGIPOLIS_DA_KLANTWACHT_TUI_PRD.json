@@ -9,7 +9,7 @@
   "operations": [
     {
       "id": "00000",
-      "type": "setVariables_vocalls",
+      "type": "setVariables",
       "name": "Call Initialization",
       "isFirstOperation": true,
       "params": {
@@ -24,7 +24,7 @@
     },
     {
       "id": "00001",
-      "type": "guardTui_vocalls",
+      "type": "guardTui",
       "name": "DA_KLANTWACHT_TUI",
       "params": {
         "active": true,
@@ -49,7 +49,7 @@
     },
     {
       "id": "00098",
-      "type": "setVariables_vocalls",
+      "type": "setVariables",
       "name": "Set: Cognos Success",
       "params": {
         "active": true,
@@ -60,7 +60,7 @@
     },
     {
       "id": "00099",
-      "type": "setVariables_vocalls",
+      "type": "setVariables",
       "name": "Set: Cognos Failure",
       "params": {
         "active": true,
@@ -71,7 +71,7 @@
     },
     {
       "id": "00100",
-      "type": "disconnect_vocalls",
+      "type": "disconnect",
       "name": "RTDS: Disconnect",
       "params": {}
     }

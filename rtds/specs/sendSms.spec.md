@@ -6,7 +6,7 @@ catalog:
   pattern: "`http_call`"
   component: "sendSms.js"
   componentMark: "✅"
-  runtimeCell: "JS twin `executeSendSms` (`sendSms_vocalls`)"
+  runtimeCell: "JS twin `executeSendSms` (`sendSms`)"
   seed: "✅"
 ---
 

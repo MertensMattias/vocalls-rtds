@@ -19,11 +19,11 @@ Legend: ✅ present · ⬜ not yet · 🔒 legacy (superseded).
 
 | Operation | Pattern | Spec | Component | Runtime | Seed |
 | --------- | ------- | ---- | --------- | ------- | ---- |
-| sendSms | `http_call` | [spec](../specs/sendSms.spec.md) | ✅ [sendSms.js](../components/sendSms.js) | JS twin `executeSendSms` (`sendSms_vocalls`) | ✅ |
-| sendEmail | `http_call` | [spec](../specs/sendEmail.spec.md) | ✅ [sendMail.js](../components/sendMail.js) | JS twin `executeSendEmail` (`sendMail_vocalls`) | ✅ |
-| setVariables | `set_attributes` | [spec](../specs/setVariables.spec.md) | ✅ [setVariables.js](../components/setVariables.js) | JS twin `executeSetVariables` (`setVariables_vocalls`) | ✅ |
-| guardRouting | `http_call` + multi-node | [spec](../specs/guardRouting.spec.md) | ✅ [guardRouting.js](../components/guardRouting.js) | GUI-exit `guard_routing` (via `guard_vocalls`) | ✅ |
-| guardTui | `http_call` + multi-node | [spec](../specs/guardTui.spec.md) | ✅ [guardTui.js](../components/guardTui.js) | GUI-exit `guard_tui` (`guardTui_vocalls`) | ✅ |
+| sendSms | `http_call` | [spec](../specs/sendSms.spec.md) | ✅ [sendSms.js](../components/sendSms.js) | JS twin `executeSendSms` (`sendSms`) | ✅ |
+| sendEmail | `http_call` | [spec](../specs/sendEmail.spec.md) | ✅ [sendMail.js](../components/sendMail.js) | JS twin `executeSendEmail` (`sendMail`) | ✅ |
+| setVariables | `set_attributes` | [spec](../specs/setVariables.spec.md) | ✅ [setVariables.js](../components/setVariables.js) | JS twin `executeSetVariables` (`setVariables`) | ✅ |
+| guardRouting | `http_call` + multi-node | [spec](../specs/guardRouting.spec.md) | ✅ [guardRouting.js](../components/guardRouting.js) | GUI-exit `guard_routing` (via `guard`) | ✅ |
+| guardTui | `http_call` + multi-node | [spec](../specs/guardTui.spec.md) | ✅ [guardTui.js](../components/guardTui.js) | GUI-exit `guard_tui` (`guardTui`) | ✅ |
 | scheduler | `http_call` (multi-branch) | [spec](../specs/scheduler.spec.md) | ✅ [checkSchedule.js](../components/checkSchedule.js) | ⬜ not registered | ⬜ |
 
 ## Canonical hand-built example (no operation spec)

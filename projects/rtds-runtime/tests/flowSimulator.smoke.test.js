@@ -61,7 +61,7 @@ describe('flow simulator — real GuardTui flow end-to-end (covers AE2, AE4)', f
                 // AE2: a GUI handoff was recorded for the GuardTui op and it
                 // resumed on the op's default NextStep (00098).
                 var guardHandoff = result.handoffs.filter(function (h) {
-                    return h.opType === 'guardTui_vocalls';
+                    return h.opType === 'guardTui';
                 })[0];
                 expect(guardHandoff).toBeTruthy();
                 expect(guardHandoff.exitKey).toBe('guard_tui');
@@ -81,7 +81,7 @@ describe('flow simulator — real GuardTui flow end-to-end (covers AE2, AE4)', f
 
                 // Each step carries the config (params) fed to its component/handler.
                 var guardStep = result.steps.filter(function (s) {
-                    return s.type === 'guardTui_vocalls';
+                    return s.type === 'guardTui';
                 })[0];
                 expect(guardStep).toBeTruthy();
                 expect(guardStep.config).toBeTruthy();
@@ -98,11 +98,11 @@ describe('flow simulator — real GuardTui flow end-to-end (covers AE2, AE4)', f
             .runFlow({ flowPath: REAL_FLOW, silent: true })
             .then(function (result) {
                 var guardHandoff = result.handoffs.filter(function (h) {
-                    return h.opType === 'guardTui_vocalls';
+                    return h.opType === 'guardTui';
                 })[0];
                 expect(guardHandoff.rtdsVars).toBeTruthy();
                 expect(guardHandoff.rtdsVars.RTDS_currentOpId).toBe('00001');
-                expect(guardHandoff.rtdsVars.RTDS_currentOpType).toBe('guardTui_vocalls');
+                expect(guardHandoff.rtdsVars.RTDS_currentOpType).toBe('guardTui');
                 // The config mirrored into the session for the component handoff.
                 expect(guardHandoff.rtdsVars.RTDS_currentOpConfig.configId).toBe(3);
                 expect(guardHandoff.rtdsVars.RTDS_nextStepId).toBe('00098');
@@ -147,7 +147,7 @@ describe('flow simulator — error surfacing', function () {
         var flowPath = writeTempFlow({
             sourceId: '+3200000000',
             operations: [
-                { id: '00000', type: 'setVariables_vocalls', name: 'no-entry', params: { nextStep: '' } },
+                { id: '00000', type: 'setVariables', name: 'no-entry', params: { nextStep: '' } },
             ],
         });
         return simulateFlow.runFlow({ flowPath: flowPath, silent: true }).then(function (result) {
@@ -179,8 +179,8 @@ describe('flow simulator — max-step cap', function () {
         var flowPath = writeTempFlow({
             sourceId: '+3200000001',
             operations: [
-                { id: '00000', type: 'playPrompt_vocalls', name: 'a', isFirstOperation: true, params: { nextStep: '00001' } },
-                { id: '00001', type: 'playPrompt_vocalls', name: 'b', params: { nextStep: '00000' } },
+                { id: '00000', type: 'playPrompt', name: 'a', isFirstOperation: true, params: { nextStep: '00001' } },
+                { id: '00001', type: 'playPrompt', name: 'b', params: { nextStep: '00000' } },
             ],
         });
         return simulateFlow
@@ -208,8 +208,8 @@ describe('flow simulator — terminal GUI op with no NextStep', function () {
         var flowPath = writeTempFlow({
             sourceId: '+3200000002',
             operations: [
-                { id: '00000', type: 'setVariables_vocalls', name: 'init', isFirstOperation: true, params: { nextStep: '00001' } },
-                { id: '00001', type: 'playPrompt_vocalls', name: 'bye', params: { prompt: 'goodbye' } },
+                { id: '00000', type: 'setVariables', name: 'init', isFirstOperation: true, params: { nextStep: '00001' } },
+                { id: '00001', type: 'playPrompt', name: 'bye', params: { prompt: 'goodbye' } },
             ],
         });
         return simulateFlow
@@ -221,7 +221,7 @@ describe('flow simulator — terminal GUI op with no NextStep', function () {
                 // The terminal PlayPrompt handoff was recorded exactly once
                 // (not looped) before the clean stop.
                 var playHandoffs = result.handoffs.filter(function (h) {
-                    return h.opType === 'playPrompt_vocalls';
+                    return h.opType === 'playPrompt';
                 });
                 expect(playHandoffs.length).toBe(1);
             });

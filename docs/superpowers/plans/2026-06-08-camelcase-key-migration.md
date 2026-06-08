@@ -93,9 +93,9 @@ def test_already_camel_is_idempotent():
 
 
 def test_type_keeps_vocalls_suffix():
-    assert m.camel_case_type("SetVariables_vocalls") == "setVariables_vocalls"
-    assert m.camel_case_type("Guard_vocalls") == "guard_vocalls"
-    assert m.camel_case_type("GuardTui_vocalls") == "guardTui_vocalls"
+    assert m.camel_case_type("SetVariables") == "setVariables"
+    assert m.camel_case_type("Guard") == "guard"
+    assert m.camel_case_type("GuardTui") == "guardTui"
 ```
 
 - [ ] **Step 2: Run the tests to verify they fail**
@@ -291,7 +291,7 @@ Open `docs/superpowers/plans/camelcase-mapping-table.md` and confirm at minimum:
 - `OutboundANI -> outboundANI` (trailing acronym untouched)
 - `SmsAccountId -> smsAccountId`
 - every `NextStep_*` row keeps its suffix segment unchanged (`nextStep_Success`, `nextStep_Guard_ICT`)
-- Type rows keep `_vocalls` (`setVariables_vocalls`, `guard_vocalls`, `guardTui_vocalls`, `sendMail_vocalls`, `sendSms_vocalls`, `disconnect_vocalls`)
+- Type rows keep `_vocalls` (`setVariables`, `guard`, `guardTui`, `sendMail`, `sendSms`, `disconnect`)
 
 If any row is wrong, fix `_camel_segment` in `scripts/camelcase_keys.py`, add a regression test in Task 1's test file, re-run Step 1.
 
@@ -419,7 +419,7 @@ Do every occurrence the grep found. The payload property names on the LEFT of ob
 - [ ] **Step 3: Rewrite the registry keys**
 
 Run: `grep -nE "register(RtdsOperation|RtdsExit)\(" projects/rtds-runtime/globalLibraries/active/rtds_2_runtime.js`
-For each `'..._vocalls'` argument, apply `camel_case_type`: `'SetVariables_vocalls'` -> `'setVariables_vocalls'`, `'Guard_vocalls'` -> `'guard_vocalls'`, etc. These keys are matched against the JSON `type` value (now camelCase from Task 3), so they MUST move together.
+For each `'..._vocalls'` argument, apply `camel_case_type`: `'SetVariables'` -> `'setVariables'`, `'Guard'` -> `'guard'`, etc. These keys are matched against the JSON `type` value (now camelCase from Task 3), so they MUST move together.
 
 - [ ] **Step 4: Run the full test suite**
 

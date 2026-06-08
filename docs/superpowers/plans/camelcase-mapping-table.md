@@ -84,9 +84,9 @@ schema; migrated later with the helpdesk-flow port).
 
 | old | new |
 | --- | --- |
-| `Disconnect_vocalls` | `disconnect_vocalls` |
-| `GuardTui_vocalls` | `guardTui_vocalls` |
-| `Guard_vocalls` | `guard_vocalls` |
-| `SendMail_vocalls` | `sendMail_vocalls` |
-| `SendSms_vocalls` | `sendSms_vocalls` |
-| `SetVariables_vocalls` | `setVariables_vocalls` |
+| `Disconnect` | `disconnect` |
+| `GuardTui` | `guardTui` |
+| `Guard` | `guard` |
+| `SendMail` | `sendMail` |
+| `SendSms` | `sendSms` |
+| `SetVariables` | `setVariables` |

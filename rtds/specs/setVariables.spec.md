@@ -6,7 +6,7 @@ catalog:
   pattern: "`set_attributes`"
   component: "setVariables.js"
   componentMark: "✅"
-  runtimeCell: "JS twin `executeSetVariables` (`setVariables_vocalls`)"
+  runtimeCell: "JS twin `executeSetVariables` (`setVariables`)"
   seed: "✅"
 ---
 
@@ -14,7 +14,7 @@ catalog:
 
 | Field          | Value                                                              |
 | -------------- | ------------------------------------------------------------------ |
-| Operation Type | `setVariables_vocalls`                                            |
+| Operation Type | `setVariables`                                            |
 | Component name | `setVariables`                                                    |
 | Pattern        | `set_attributes`                                                  |
 | Supersedes     | `SetAttributes` / `setAttributes` (this spec is the refactor target) |
@@ -264,13 +264,13 @@ use.
 
 ## Migration
 
-`SetAttributes` was a **hard cut** to `setVariables_vocalls` — there is **no back-compat
-alias**. The runtime registers `setVariables_vocalls` only:
-`registerRtdsOperation('setVariables_vocalls', executeSetVariables)`. A routing table that
+`SetAttributes` was a **hard cut** to `setVariables` — there is **no back-compat
+alias**. The runtime registers `setVariables` only:
+`registerRtdsOperation('setVariables', executeSetVariables)`. A routing table that
 still emits `SetAttributes` hits the unregistered-type path (runStep skips it to its
-`nextStep` with a warning), so routing tables **must** be re-pointed to `setVariables_vocalls`.
+`nextStep` with a warning), so routing tables **must** be re-pointed to `setVariables`.
 
-- Re-point every routing table from `SetAttributes` → `setVariables_vocalls` (bare flat keys
+- Re-point every routing table from `SetAttributes` → `setVariables` (bare flat keys
   behave identically; the new dot-path / native-type behavior is purely additive).
 - `setVariables.js` is the forward component; the old `setAttributes.js` is retained
   only for reference until flows are migrated.

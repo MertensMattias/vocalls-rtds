@@ -2,8 +2,9 @@
 """Deterministic camelCase-key codemod for the RTDS import/export contract.
 
 Transforms JSON object KEYS only (never values, never free text) with the
-"lower leading acronym run" rule. Operation `Type` values keep their `_vocalls`
-suffix. See docs/superpowers/specs/2026-06-08-camelcase-key-migration-design.md.
+"lower leading acronym run" rule. Operation `Type` values are camelCased; the
+historical `_vocalls` suffix has been dropped from the contract. See
+docs/superpowers/specs/2026-06-08-camelcase-key-migration-design.md.
 
 Usage:
     python scripts/camelcase_keys.py --dry-run --print-mapping   # gate
@@ -22,9 +23,9 @@ REPO = Path(__file__).resolve().parents[1]
 #
 # rtds/samples/DA-HELPDESK.json is deliberately EXCLUDED: it is legacy
 # pre-migration data on the old PureConnect schema (SetAttributes, SendSMS,
-# ScheduleID, Importance, Attachment) -- not the _vocalls schema. Mechanically
-# camelCasing it produces keys that do not match the _vocalls dictionary
-# (scheduleID vs scheduleId, sendSMS vs sendSms). It is migrated later as part
+# ScheduleID, Importance, Attachment) -- not the migrated camelCase schema.
+# Mechanically camelCasing it produces keys that do not match the migrated
+# dictionary (scheduleID vs scheduleId, sendSMS vs sendSms). It is migrated later as part
 # of the helpdesk-flow port (see callflow_json_config_vocalls/MIGRATION_REPORT.md
 # -- the two helpdesk flows are listed as still pending).
 DATA_FILES = [
@@ -77,10 +78,15 @@ def camel_case_key(key):
 
 
 def camel_case_type(type_value):
-    """camelCase an operation Type value, preserving a trailing _vocalls suffix."""
+    """camelCase an operation Type value.
+
+    The historical `_vocalls` suffix has been dropped from the contract; if a
+    legacy value still carries it, strip it before camelCasing so re-running the
+    codemod converges on the suffix-free name.
+    """
     suffix = "_vocalls"
     if type_value.endswith(suffix):
-        return _camel_segment(type_value[: -len(suffix)]) + suffix
+        type_value = type_value[: -len(suffix)]
     return _camel_segment(type_value)
 
 

@@ -39,7 +39,7 @@ Full end-to-end camelCase for the RTDS import/export contract — **keys only**.
 2. **Transform:** *mechanical lowercasing*, "lower leading acronym run" rule (see below).
    No semantic renaming of keys.
 3. **Type names:** apply the same casing transform, **keep** the `_vocalls` suffix.
-   (`SetVariables_vocalls → setVariables_vocalls`.) Suffix removal is explicitly a
+   (`SetVariables → setVariables`.) Suffix removal is explicitly a
    separate, later concern.
 4. **Value tokens** (`${rtEmailTo}`, `$(rtSmsBody)`, varObj/global names): **untouched.**
    This is strictly a JSON-key migration.
@@ -82,8 +82,8 @@ never to values, never to free text.
 | `ANIConfirmation` | `aniConfirmation` | |
 | `SmsAccountId` | `smsAccountId` | |
 | `OutboundANI` | `outboundANI` | **trailing** acronym untouched |
-| `SetVariables_vocalls` | `setVariables_vocalls` | type, suffix preserved |
-| `Guard_vocalls` | `guard_vocalls` | |
+| `SetVariables` | `setVariables` | type, suffix preserved |
+| `Guard` | `guard` | |
 
 The acronym rule has genuine edge cases (`OutboundANI`, `IVREvent`). The codemod's first run
 prints the full key→key and type→type mapping table so a wrong call is caught **before**

@@ -96,7 +96,7 @@ DECLARE @JsonPayload nvarchar(max) = N'
   "operations": [
     {
       "id": "00000",
-      "type": "setVariables_vocalls",
+      "type": "setVariables",
       "name": "Call Initialization",
       "isFirstOperation": true,
       "params": {
@@ -111,7 +111,7 @@ DECLARE @JsonPayload nvarchar(max) = N'
     },
     {
       "id": "00066",
-      "type": "guard_vocalls",
+      "type": "guard",
       "name": "LPA_LTSU_GUARD",
       "params": {
         "active": true,
@@ -134,7 +134,7 @@ DECLARE @JsonPayload nvarchar(max) = N'
     },
     {
       "id": "00067",
-      "type": "sendMail_vocalls",
+      "type": "sendMail",
       "name": "Mail-To: LPA_LTSU_GUARD",
       "params": {
         "active": true,
@@ -157,7 +157,7 @@ DECLARE @JsonPayload nvarchar(max) = N'
     },
     {
       "id": "00068",
-      "type": "sendSms_vocalls",
+      "type": "sendSms",
       "name": "SMS-To: LPA_LTSU_GUARD",
       "params": {
         "active": true,
@@ -174,7 +174,7 @@ DECLARE @JsonPayload nvarchar(max) = N'
     },
     {
       "id": "00099",
-      "type": "disconnect_vocalls",
+      "type": "disconnect",
       "name": "RTDS: Disconnect",
       "params": {}
     }
@@ -362,7 +362,7 @@ CROSS APPLY (
       AND pp.EffName IN ('Prompt', 'Message')
 ) pn
 WHERE o.TtsJson IS NOT NULL
-  AND o.OpType IN ('PlayPrompt', 'PlayPrompt_vocalls', 'Disconnect_vocalls');
+  AND o.OpType IN ('PlayPrompt', 'PlayPrompt', 'Disconnect');
 
 DECLARE @HasTts bit = CASE WHEN EXISTS (SELECT 1 FROM @Tts) THEN 1 ELSE 0 END;
 

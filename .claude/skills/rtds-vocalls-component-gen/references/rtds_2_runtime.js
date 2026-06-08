@@ -1107,28 +1107,28 @@ function executeSendEmail(op) {
 // are now handled by their Vocalls canvas components (rtds/components/) via the
 // GUI-exit keys below, NOT inline in the runtime. The executeXxx functions are
 // kept defined above (dead code) so the twins can be re-enabled by restoring
-// the registerRtdsOperation lines. SetAttributes_vocalls is routed to the same
+// the registerRtdsOperation lines. SetAttributes is routed to the same
 // set_variables exit (the canvas setVariables.js handles both).
-registerRtdsOperation("setVariables_vocalls", executeSetVariables);
-//   registerRtdsOperation("setAttributes_vocalls", executeSetVariables);
-//   registerRtdsOperation("sendSms_vocalls", executeSendSms);
-//   registerRtdsOperation("sendMail_vocalls", executeSendEmail);
+registerRtdsOperation("setVariables", executeSetVariables);
+//   registerRtdsOperation("setAttributes", executeSetVariables);
+//   registerRtdsOperation("sendSms", executeSendSms);
+//   registerRtdsOperation("sendMail", executeSendEmail);
 
 // --- GUI-exit Types -- handled by Vocalls components on the canvas ---
-registerRtdsExit("setVariables_vocalls", "set_variables");
-registerRtdsExit("setAttributes_vocalls", "set_variables");
-registerRtdsExit("sendSms_vocalls", "send_sms");
-registerRtdsExit("sendMail_vocalls", "send_mail");
-registerRtdsExit("workgroupTransfer_vocalls", "workgroup_transfer");
-registerRtdsExit("externalTransfer_vocalls", "external_transfer");
-registerRtdsExit("menu_vocalls", "menu");
-registerRtdsExit("languageMenu_vocalls", "language_menu");
-registerRtdsExit("playPrompt_vocalls", "play_prompt");
-registerRtdsExit("playAudio_vocalls", "play_audio");
-registerRtdsExit("disconnect_vocalls", "disconnect");
-registerRtdsExit("guard_vocalls", "guard_routing");
-registerRtdsExit("guardTui_vocalls", "guard_tui");
-registerRtdsExit("callback_vocalls", "callback");
+registerRtdsExit("setVariables", "set_variables");
+registerRtdsExit("setAttributes", "set_variables");
+registerRtdsExit("sendSms", "send_sms");
+registerRtdsExit("sendMail", "send_mail");
+registerRtdsExit("workgroupTransfer", "workgroup_transfer");
+registerRtdsExit("externalTransfer", "external_transfer");
+registerRtdsExit("menu", "menu");
+registerRtdsExit("languageMenu", "language_menu");
+registerRtdsExit("playPrompt", "play_prompt");
+registerRtdsExit("playAudio", "play_audio");
+registerRtdsExit("disconnect", "disconnect");
+registerRtdsExit("guard", "guard_routing");
+registerRtdsExit("guardTui", "guard_tui");
+registerRtdsExit("callback", "callback");
 
 Logger.info("[RTDS] registry initialised", {
   types: RTDS_REGISTRY.size,

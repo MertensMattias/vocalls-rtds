@@ -38,10 +38,14 @@ def test_already_camel_is_idempotent():
     assert m.camel_case_key("nextStep_Success") == "nextStep_Success"
 
 
-def test_type_keeps_vocalls_suffix():
-    assert m.camel_case_type("SetVariables_vocalls") == "setVariables_vocalls"
-    assert m.camel_case_type("Guard_vocalls") == "guard_vocalls"
-    assert m.camel_case_type("GuardTui_vocalls") == "guardTui_vocalls"
+def test_type_camelcased_without_suffix():
+    # The historical _vocalls suffix has been dropped from the contract.
+    assert m.camel_case_type("SetVariables") == "setVariables"
+    assert m.camel_case_type("Guard") == "guard"
+    assert m.camel_case_type("GuardTui") == "guardTui"
+    # A legacy value still carrying the suffix converges on the suffix-free name.
+    assert m.camel_case_type("SetVariables_vocalls") == "setVariables"
+    assert m.camel_case_type("Guard_vocalls") == "guard"
 
 
 def test_data_files_exist_and_exclude_legacy_helpdesk():

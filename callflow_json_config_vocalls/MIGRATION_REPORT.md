@@ -34,9 +34,9 @@ All 8 migrated files validated together: well-formed JSON, PascalCase envelope, 
 | `DIGIPOLIS_LPA_ICT_GUARD_TUI_PRD.json` | +3271690041 | tui | 5 | ConfigId 3 |
 | `DIGIPOLIS_LPA_LTSU_GUARD_TUI_PRD.json` | +3271690038 | tui | 5 | ConfigId 4 |
 
-### TUI flows — `GuardTUI_vocalls` mapping
+### TUI flows — `GuardTUI` mapping
 
-Legacy TUI ops carried only `Active / ConfigId / ConfigName / NextStep* `. The `GuardTUI_vocalls`
+Legacy TUI ops carried only `Active / ConfigId / ConfigName / NextStep* `. The `GuardTUI`
 dictionary (and `rtds/components/guardTui.js`) require the spoken slots and a `NextStep_Denied`
 branch, so each was filled from the **component's own `__configJSON` defaults**:
 
@@ -48,7 +48,7 @@ branch, so each was filled from the **component's own `__configJSON` defaults**:
 | `NextStep_Denied` | mapped to the legacy **Failure** node | the component branches on `denied`; legacy had no such branch, so denied falls through to the Cognos-failure node |
 
 The two trailing **Cognos** `SetAttributes` nodes (success `IVREvent 1200 / IVRAction CT`,
-failure `9999 / DC`) → `SetVariables_vocalls` with `IvrEvent`/`IvrAction`. `Active:true` added.
+failure `9999 / DC`) → `SetVariables` with `IvrEvent`/`IvrAction`. `Active:true` added.
 
 > ⚠️ **Spoken text is still English placeholder** (`*_NL` suffix, English copy). Replace with Dutch
 > copy (or add `*_FR` / `*_DE` dictionary rows) before production.
@@ -74,22 +74,22 @@ From `registerRtdsOperation` / `registerRtdsExit` ([rtds_2_runtime.js:1083-1098]
 
 | Legacy `Type` | New `type` | Runtime status |
 | --- | --- | --- |
-| `SetAttributes` | `SetVariables_vocalls` | ✅ JS twin (per your instruction — not `SetAttributes_vocalls`, though that alias also exists) |
-| `SendEmail` | `SendMail_vocalls` | ✅ JS twin + component |
-| `SendSMS` | `SendSms_vocalls` | ✅ JS twin + component |
-| `GuardRouting` | `Guard_vocalls` | ✅ GUI-exit `guard_routing` + component |
-| `GuardTUI` | `GuardTui_vocalls` | ✅ GUI-exit `guard_tui` + component |
-| `Disconnect` | `Disconnect_vocalls` | ✅ GUI-exit (terminal) |
-| `WorkgroupTransfer` | `WorkgroupTransfer_vocalls` | ⚠️ exit registered, **no component** |
-| `ExternalTransfer` | `ExternalTransfer_vocalls` | ⚠️ exit registered, **no component** |
-| `PlayPrompt` | `PlayPrompt_vocalls` | ⚠️ exit registered, **no component** (native `say`) |
-| `PlayAudio` | `PlayAudio_vocalls` | ⚠️ exit registered, **no component** (native `say`) |
-| `Menu` | `Menu_vocalls` | ⚠️ exit registered, **no component** (native `dtmf`) |
-| `Callback` | `Callback_vocalls` | ⚠️ exit registered, **no component** |
-| `Condition` | `Condition_vocalls` | ❌ **not registered, no component, spec-only** |
-| `Emergency` | `Emergency_vocalls` | ❌ **not registered, no component, spec-only** |
-| `Schedule` | `CheckSchedule_vocalls` | ⚠️ component [checkSchedule.js](../rtds/components/checkSchedule.js) exists but **not registered** |
-| `FlowJump` | `FlowJump_vocalls` | ❌ **not registered, spec-only** |
+| `SetAttributes` | `SetVariables` | ✅ JS twin (per your instruction — not `SetAttributes`, though that alias also exists) |
+| `SendEmail` | `SendMail` | ✅ JS twin + component |
+| `SendSMS` | `SendSms` | ✅ JS twin + component |
+| `GuardRouting` | `Guard` | ✅ GUI-exit `guard_routing` + component |
+| `GuardTUI` | `GuardTui` | ✅ GUI-exit `guard_tui` + component |
+| `Disconnect` | `Disconnect` | ✅ GUI-exit (terminal) |
+| `WorkgroupTransfer` | `WorkgroupTransfer` | ⚠️ exit registered, **no component** |
+| `ExternalTransfer` | `ExternalTransfer` | ⚠️ exit registered, **no component** |
+| `PlayPrompt` | `PlayPrompt` | ⚠️ exit registered, **no component** (native `say`) |
+| `PlayAudio` | `PlayAudio` | ⚠️ exit registered, **no component** (native `say`) |
+| `Menu` | `Menu` | ⚠️ exit registered, **no component** (native `dtmf`) |
+| `Callback` | `Callback` | ⚠️ exit registered, **no component** |
+| `Condition` | `Condition` | ❌ **not registered, no component, spec-only** |
+| `Emergency` | `Emergency` | ❌ **not registered, no component, spec-only** |
+| `Schedule` | `CheckSchedule` | ⚠️ component [checkSchedule.js](../rtds/components/checkSchedule.js) exists but **not registered** |
+| `FlowJump` | `FlowJump` | ❌ **not registered, spec-only** |
 
 Files containing any ❌/⚠️-unregistered type (the two helpdesk flows) will be written with a **`_TODO` filename suffix** so it's obvious they reference types the runtime will currently *skip to NextStep with a warning*.
 
@@ -108,7 +108,7 @@ Per your choice, renamed to the `_rt`-style `${name}` vars the existing componen
 
 ### 4. Param-key remaps
 
-**SendEmail → SendMail_vocalls** ([sendMail.js](../rtds/components/sendMail.js) contract):
+**SendEmail → SendMail** ([sendMail.js](../rtds/components/sendMail.js) contract):
 | Legacy | New | Note |
 | --- | --- | --- |
 | `CC` | `Cc` | casing (read is case-insensitive, normalised for clarity) |
@@ -116,14 +116,14 @@ Per your choice, renamed to the `_rt`-style `${name}` vars the existing componen
 | `Attachment: $(ATTR_EmailAttachment)` | `Files: ${rtEmailAttachment}` | component splits `;`-list of file paths (`Files`), or `AttachmentNames`+`AttachmentData` for base64. **Assumed file paths** — change to AttachmentNames/Data if it's base64 |
 | *(added)* | `Timeout: 10000` | component default; not in source |
 
-**SendSMS → SendSms_vocalls** ([sendSms.js](../rtds/components/sendSms.js) contract):
+**SendSMS → SendSms** ([sendSms.js](../rtds/components/sendSms.js) contract):
 | Legacy | New | Note |
 | --- | --- | --- |
 | `ConfigId: 47` | `SmsAccountId: 47` | component key for the SMS account |
 | `Routing` | `Routing` | unchanged |
 | *(added)* | `Timeout: 5000` | component default; not in source |
 
-**GuardRouting → Guard_vocalls** (dictionary keys for `Guard_vocalls`):
+**GuardRouting → Guard** (dictionary keys for `Guard`):
 | Legacy | New | Note |
 | --- | --- | --- |
 | `SendSMS` / `SendMail` | `SendSms` / `SendMail` | casing → dictionary keys |
@@ -131,13 +131,13 @@ Per your choice, renamed to the `_rt`-style `${name}` vars the existing componen
 | `DialGroup: "SIP_TO_..."` | *(dropped)* | not a dictionary key → would throw `UNKNOWN_PARAM`. Legacy SIP trunk routing; the guard models the outbound leg via `OutboundAni`/`Diversion` (both added, empty) |
 | *(added)* | `OutboundAni: ""`, `Diversion: ""`, `AcceptCallMessage: "..."` | dictionary keys present in the reference example |
 
-**SetAttributes → SetVariables_vocalls** (dictionary keys only — importer throws `UNKNOWN_PARAM` otherwise):
+**SetAttributes → SetVariables** (dictionary keys only — importer throws `UNKNOWN_PARAM` otherwise):
 | Legacy | New | Note |
 | --- | --- | --- |
 | `IVREvent` | `IvrEvent` | dictionary uses `IvrEvent` casing |
 | `IVRAction` | `IvrAction` | dictionary uses `IvrAction` casing |
 | `RoutingId` | `RoutingId` | unchanged (dictionary key) |
-| `CallflowId` | *(dropped)* | ⚠️ **not in the dictionary** for `SetVariables_vocalls` → would throw `UNKNOWN_PARAM`. Mapped instead to `CustomerName`/`CustomerProject` (split from the routing id), matching the reference example. Re-add `CallflowId` to the dictionary if it must be preserved |
+| `CallflowId` | *(dropped)* | ⚠️ **not in the dictionary** for `SetVariables` → would throw `UNKNOWN_PARAM`. Mapped instead to `CustomerName`/`CustomerProject` (split from the routing id), matching the reference example. Re-add `CallflowId` to the dictionary if it must be preserved |
 | `LogAttributes` | *(dropped)* | dictionary *does* allow `LogAttributes`, but the value is a PureConnect Cognos pipe-list with no runtime consumer — omitted. Re-add verbatim if Cognos logging is still needed |
 | *(added)* | `Active: true`, `CustomerName`, `CustomerProject` | dictionary keys from the reference example |
 

@@ -9,7 +9,7 @@
   "operations": [
     {
       "id": "00000",
-      "type": "setVariables_vocalls",
+      "type": "setVariables",
       "name": "Call Initialization",
       "isFirstOperation": true,
       "params": {
@@ -24,7 +24,7 @@
     },
     {
       "id": "00001",
-      "type": "guard_vocalls",
+      "type": "guard",
       "name": "DA_SYSTEEMWACHT",
       "params": {
         "active": true,
@@ -47,7 +47,7 @@
     },
     {
       "id": "00002",
-      "type": "sendMail_vocalls",
+      "type": "sendMail",
       "name": "Mail-To: DA_SYSTEEMWACHT",
       "params": {
         "active": true,
@@ -70,7 +70,7 @@
     },
     {
       "id": "00003",
-      "type": "sendSms_vocalls",
+      "type": "sendSms",
       "name": "SMS-To: DA_SYSTEEMWACHT",
       "params": {
         "active": true,
@@ -87,7 +87,7 @@
     },
     {
       "id": "00099",
-      "type": "disconnect_vocalls",
+      "type": "disconnect",
       "name": "RTDS: Disconnect",
       "params": {}
     }

@@ -7,12 +7,12 @@
    their configurable attributes are available within RTDS (GUI builder +
    import/export + runtime type resolution).
 
-       SetVariables_vocalls   -- session-variable writer (replaces SetAttributes)
-       Guard_vocalls          -- guard / on-call dial-out
-       GuardTui_vocalls       -- self-service guard activate/deactivate line
-       SendMail_vocalls       -- mail dispatch
-       SendSms_vocalls        -- SMS dispatch
-       Disconnect_vocalls     -- end the interaction
+       SetVariables   -- session-variable writer (replaces SetAttributes)
+       Guard          -- guard / on-call dial-out
+       GuardTui       -- self-service guard activate/deactivate line
+       SendMail       -- mail dispatch
+       SendSms        -- SMS dispatch
+       Disconnect     -- end the interaction
 
    NOTE: the operation TYPE names carry a temporary '_vocalls' suffix to avoid
    colliding with existing RTDS operation types during migration. Drop the
@@ -41,8 +41,8 @@
    ----------------------------------------------------------------------------
    - Type and attribute names are PascalCase, matching the import payload in
      insert_flow_on_sourceId.sql. Types carry the temporary '_vocalls' suffix
-     ('SetVariables_vocalls', 'Guard_vocalls', 'SendMail_vocalls',
-     'SendSms_vocalls', 'Disconnect_vocalls'); attribute names do not
+     ('SetVariables', 'Guard', 'SendMail',
+     'SendSms', 'Disconnect'); attribute names do not
      ('NextStep_Success', 'SmsAccountId', ...). RTDS dictionary lookups match by
      exact, case-sensitive value, so the dictionary and the payload MUST line up;
      they were reconciled together.
@@ -107,25 +107,25 @@ BEGIN TRANSACTION;
 DECLARE @OperationType TABLE (Name varchar(255) NOT NULL PRIMARY KEY);
 
 INSERT INTO @OperationType (Name) VALUES
-    ('SetVariables_vocalls'),
-    ('Guard_vocalls'),
-    ('GuardTui_vocalls'),
-    ('SendMail_vocalls'),
-    ('SendSms_vocalls'),
-    ('Disconnect_vocalls'),
+    ('SetVariables'),
+    ('Guard'),
+    ('GuardTui'),
+    ('SendMail'),
+    ('SendSms'),
+    ('Disconnect'),
 
     /* ---- helpdesk-flow types (DA_HELDPESK + LPA_ICT_HELDPESK) ---- */
-    ('PlayAudio_vocalls'),
-    ('ExternalTransfer_vocalls'),
-    ('PlayPrompt_vocalls'),
-    ('Menu_vocalls'),
-    ('WorkgroupTransfer_vocalls'),
+    ('PlayAudio'),
+    ('ExternalTransfer'),
+    ('PlayPrompt'),
+    ('Menu'),
+    ('WorkgroupTransfer'),
 
-    ('Condition_vocalls'),
-    ('Emergency_vocalls'),
-    ('CheckSchedule_vocalls'),
-    ('Callback_vocalls'),
-    ('FlowJump_vocalls');
+    ('Condition'),
+    ('Emergency'),
+    ('CheckSchedule'),
+    ('Callback'),
+    ('FlowJump');
 
 DECLARE @Attribute TABLE (
     OperationType  varchar(255)  NOT NULL,
@@ -151,32 +151,32 @@ INSERT INTO @Attribute
        dictionary has no default-value column, so the default lives in the
        runtime twin (executeSetVariables, getParam(...,true)) and the component
        (getValue(...,true)) — see rtds/specs/setVariables.spec.md.              */
-    ('SetVariables_vocalls', 'Active',           'bit', 0, 0, 1, 1),
-    ('SetVariables_vocalls', 'NextStep',         'string',  1, 1, 1, 1),
-    ('SetVariables_vocalls', 'RoutingId',        'string',  0, 0, 1, 1),
-    ('SetVariables_vocalls', 'CustomerName',     'string',  0, 0, 1, 1),
-    ('SetVariables_vocalls', 'CustomerProject',  'string',  0, 0, 1, 1),
-    ('SetVariables_vocalls', 'IvrEvent',         'string',  0, 0, 1, 1),
-    ('SetVariables_vocalls', 'IvrAction',        'string',  0, 0, 1, 1),
-    ('SetVariables_vocalls', 'LogAttributes',    'string',  0, 0, 1, 1),
+    ('SetVariables', 'Active',           'bit', 0, 0, 1, 1),
+    ('SetVariables', 'NextStep',         'string',  1, 1, 1, 1),
+    ('SetVariables', 'RoutingId',        'string',  0, 0, 1, 1),
+    ('SetVariables', 'CustomerName',     'string',  0, 0, 1, 1),
+    ('SetVariables', 'CustomerProject',  'string',  0, 0, 1, 1),
+    ('SetVariables', 'IvrEvent',         'string',  0, 0, 1, 1),
+    ('SetVariables', 'IvrAction',        'string',  0, 0, 1, 1),
+    ('SetVariables', 'LogAttributes',    'string',  0, 0, 1, 1),
 
     /* ---- Guard ---- (guard / on-call dial-out)                                */
-    ('Guard_vocalls', 'Active',            'bit', 1, 0, 1, 1),
-    ('Guard_vocalls', 'ConfigId',          'int', 1, 0, 1, 1),
-    ('Guard_vocalls', 'ConfigName',        'string',  1, 0, 1, 1),
-    ('Guard_vocalls', 'DialGuard',         'bit', 1, 0, 1, 1),
-    ('Guard_vocalls', 'OutboundAni',       'string',  1, 0, 1, 1),
-    ('Guard_vocalls', 'Diversion',         'string',  1, 0, 1, 1),
-    ('Guard_vocalls', 'OnHoldAudioUrl',    'string',  1, 0, 1, 1),
-    ('Guard_vocalls', 'Timeout',           'int', 1, 0, 1, 1),
-    ('Guard_vocalls', 'RecordVoicemail',   'bit', 1, 0, 1, 1),
-    ('Guard_vocalls', 'AcceptCallMenu',    'bit', 1, 0, 1, 1),
-    ('Guard_vocalls', 'AcceptCallMessage', 'string',  1, 0, 1, 1),
-    ('Guard_vocalls', 'SendSms',           'bit', 1, 0, 1, 1),
-    ('Guard_vocalls', 'SendMail',          'bit', 1, 0, 1, 1),
-    ('Guard_vocalls', 'NextStep',          'string',  1, 1, 1, 1),
-    ('Guard_vocalls', 'NextStep_Success',  'string',  1, 1, 1, 1),
-    ('Guard_vocalls', 'NextStep_Failure',  'string',  1, 1, 1, 1),
+    ('Guard', 'Active',            'bit', 1, 0, 1, 1),
+    ('Guard', 'ConfigId',          'int', 1, 0, 1, 1),
+    ('Guard', 'ConfigName',        'string',  1, 0, 1, 1),
+    ('Guard', 'DialGuard',         'bit', 1, 0, 1, 1),
+    ('Guard', 'OutboundAni',       'string',  1, 0, 1, 1),
+    ('Guard', 'Diversion',         'string',  1, 0, 1, 1),
+    ('Guard', 'OnHoldAudioUrl',    'string',  1, 0, 1, 1),
+    ('Guard', 'Timeout',           'int', 1, 0, 1, 1),
+    ('Guard', 'RecordVoicemail',   'bit', 1, 0, 1, 1),
+    ('Guard', 'AcceptCallMenu',    'bit', 1, 0, 1, 1),
+    ('Guard', 'AcceptCallMessage', 'string',  1, 0, 1, 1),
+    ('Guard', 'SendSms',           'bit', 1, 0, 1, 1),
+    ('Guard', 'SendMail',          'bit', 1, 0, 1, 1),
+    ('Guard', 'NextStep',          'string',  1, 1, 1, 1),
+    ('Guard', 'NextStep_Success',  'string',  1, 1, 1, 1),
+    ('Guard', 'NextStep_Failure',  'string',  1, 1, 1, 1),
 
     /* ---- GuardTUI ---- (self-service guard activate/deactivate line)
        Factored from rtds/samples/sourceCode_guardTui.js (__configJSON + say
@@ -184,66 +184,66 @@ INSERT INTO @Attribute
        the component resolves getValue(__rtParams, base + '_' + language).
        ConfigName is carried for parity with the flow header but is not consumed
        by the component. Add *_FR / *_DE rows when a flow supports more langs.   */
-    ('GuardTui_vocalls', 'Active',                       'bit', 0, 0, 1, 1),
-    ('GuardTui_vocalls', 'ConfigId',                     'int', 1, 0, 1, 1),
-    ('GuardTui_vocalls', 'ConfigName',                   'string',  0, 0, 1, 1),
-    ('GuardTui_vocalls', 'PhoneNumberVar',               'string',  0, 0, 1, 1),
-    ('GuardTui_vocalls', 'Timeout',                      'int', 0, 0, 1, 1),
-    ('GuardTui_vocalls', 'ResultCurrentlyActivated_NL',  'string',  1, 0, 1, 1),
-    ('GuardTui_vocalls', 'ResultCurrentlyDeactivated_NL','string',  1, 0, 1, 1),
-    ('GuardTui_vocalls', 'PromptActivate_NL',            'string',  1, 0, 1, 1),
-    ('GuardTui_vocalls', 'PromptDeactivate_NL',          'string',  1, 0, 1, 1),
-    ('GuardTui_vocalls', 'ResultActivated_NL',           'string',  1, 0, 1, 1),
-    ('GuardTui_vocalls', 'ResultDeactivated_NL',         'string',  1, 0, 1, 1),
-    ('GuardTui_vocalls', 'ResultOnlyActive_NL',          'string',  1, 0, 1, 1),
-    ('GuardTui_vocalls', 'ResultDenied_NL',              'string',  1, 0, 1, 1),
-    ('GuardTui_vocalls', 'ResultError_NL',               'string',  1, 0, 1, 1),
-    ('GuardTui_vocalls', 'NextStep',           'string',  1, 1, 1, 1),
-    ('GuardTui_vocalls', 'NextStep_Success',   'string',  1, 1, 1, 1),
-    ('GuardTui_vocalls', 'NextStep_Denied',    'string',  1, 1, 1, 1),
-    ('GuardTui_vocalls', 'NextStep_Failure',   'string',  1, 1, 1, 1),
+    ('GuardTui', 'Active',                       'bit', 0, 0, 1, 1),
+    ('GuardTui', 'ConfigId',                     'int', 1, 0, 1, 1),
+    ('GuardTui', 'ConfigName',                   'string',  0, 0, 1, 1),
+    ('GuardTui', 'PhoneNumberVar',               'string',  0, 0, 1, 1),
+    ('GuardTui', 'Timeout',                      'int', 0, 0, 1, 1),
+    ('GuardTui', 'ResultCurrentlyActivated_NL',  'string',  1, 0, 1, 1),
+    ('GuardTui', 'ResultCurrentlyDeactivated_NL','string',  1, 0, 1, 1),
+    ('GuardTui', 'PromptActivate_NL',            'string',  1, 0, 1, 1),
+    ('GuardTui', 'PromptDeactivate_NL',          'string',  1, 0, 1, 1),
+    ('GuardTui', 'ResultActivated_NL',           'string',  1, 0, 1, 1),
+    ('GuardTui', 'ResultDeactivated_NL',         'string',  1, 0, 1, 1),
+    ('GuardTui', 'ResultOnlyActive_NL',          'string',  1, 0, 1, 1),
+    ('GuardTui', 'ResultDenied_NL',              'string',  1, 0, 1, 1),
+    ('GuardTui', 'ResultError_NL',               'string',  1, 0, 1, 1),
+    ('GuardTui', 'NextStep',           'string',  1, 1, 1, 1),
+    ('GuardTui', 'NextStep_Success',   'string',  1, 1, 1, 1),
+    ('GuardTui', 'NextStep_Denied',    'string',  1, 1, 1, 1),
+    ('GuardTui', 'NextStep_Failure',   'string',  1, 1, 1, 1),
 
     /* ---- SendMail ---- (mail dispatch)
        Cc / Bcc : semicolon lists; Priority 1 high / 2 normal / 3 low;
        Files    : semicolon URL list; Timeout : HTTP timeout (ms).               */
-    ('SendMail_vocalls', 'Active',           'bit', 0, 0, 1, 1),
-    ('SendMail_vocalls', 'Subject',          'string',  1, 0, 1, 1),
-    ('SendMail_vocalls', 'From',             'string',  1, 0, 1, 1),
-    ('SendMail_vocalls', 'To',               'string',  1, 0, 1, 1),
-    ('SendMail_vocalls', 'Cc',               'string',  0, 0, 1, 1),
-    ('SendMail_vocalls', 'Bcc',              'string',  0, 0, 1, 1),
-    ('SendMail_vocalls', 'Body',             'string',  1, 0, 1, 1),
-    ('SendMail_vocalls', 'Priority',         'int', 0, 0, 1, 1),
-    ('SendMail_vocalls', 'Files',            'string',  0, 0, 1, 1),
-    ('SendMail_vocalls', 'AttachmentNames',  'string',  0, 0, 1, 1),
-    ('SendMail_vocalls', 'AttachmentData',   'string',  0, 0, 1, 1),
-    ('SendMail_vocalls', 'CustomerKey',      'string',  0, 0, 1, 1),
-    ('SendMail_vocalls', 'Timeout',          'int', 0, 0, 1, 1),
-    ('SendMail_vocalls', 'NextStep',         'string',  1, 1, 1, 1),
-    ('SendMail_vocalls', 'NextStep_Success', 'string',  1, 1, 1, 1),
-    ('SendMail_vocalls', 'NextStep_Failure', 'string',  1, 1, 1, 1),
+    ('SendMail', 'Active',           'bit', 0, 0, 1, 1),
+    ('SendMail', 'Subject',          'string',  1, 0, 1, 1),
+    ('SendMail', 'From',             'string',  1, 0, 1, 1),
+    ('SendMail', 'To',               'string',  1, 0, 1, 1),
+    ('SendMail', 'Cc',               'string',  0, 0, 1, 1),
+    ('SendMail', 'Bcc',              'string',  0, 0, 1, 1),
+    ('SendMail', 'Body',             'string',  1, 0, 1, 1),
+    ('SendMail', 'Priority',         'int', 0, 0, 1, 1),
+    ('SendMail', 'Files',            'string',  0, 0, 1, 1),
+    ('SendMail', 'AttachmentNames',  'string',  0, 0, 1, 1),
+    ('SendMail', 'AttachmentData',   'string',  0, 0, 1, 1),
+    ('SendMail', 'CustomerKey',      'string',  0, 0, 1, 1),
+    ('SendMail', 'Timeout',          'int', 0, 0, 1, 1),
+    ('SendMail', 'NextStep',         'string',  1, 1, 1, 1),
+    ('SendMail', 'NextStep_Success', 'string',  1, 1, 1, 1),
+    ('SendMail', 'NextStep_Failure', 'string',  1, 1, 1, 1),
 
     /* ---- SendSms ---- (SMS dispatch)
        SmsAccountId : numeric SMS account id; Timeout : HTTP timeout (ms).        */
-    ('SendSms_vocalls', 'Active',           'bit', 0, 0, 1, 1),
-    ('SendSms_vocalls', 'SmsAccountId',     'int', 1, 0, 1, 1),
-    ('SendSms_vocalls', 'Routing',          'string',  0, 0, 1, 1),
-    ('SendSms_vocalls', 'From',             'string',  1, 0, 1, 1),
-    ('SendSms_vocalls', 'To',               'string',  1, 0, 1, 1),
-    ('SendSms_vocalls', 'Body',             'string',  1, 0, 1, 1),
-    ('SendSms_vocalls', 'Timeout',          'int', 0, 0, 1, 1),
-    ('SendSms_vocalls', 'NextStep',         'string',  1, 1, 1, 1),
-    ('SendSms_vocalls', 'NextStep_Success', 'string',  1, 1, 1, 1),
-    ('SendSms_vocalls', 'NextStep_Failure', 'string',  1, 1, 1, 1),
+    ('SendSms', 'Active',           'bit', 0, 0, 1, 1),
+    ('SendSms', 'SmsAccountId',     'int', 1, 0, 1, 1),
+    ('SendSms', 'Routing',          'string',  0, 0, 1, 1),
+    ('SendSms', 'From',             'string',  1, 0, 1, 1),
+    ('SendSms', 'To',               'string',  1, 0, 1, 1),
+    ('SendSms', 'Body',             'string',  1, 0, 1, 1),
+    ('SendSms', 'Timeout',          'int', 0, 0, 1, 1),
+    ('SendSms', 'NextStep',         'string',  1, 1, 1, 1),
+    ('SendSms', 'NextStep_Success', 'string',  1, 1, 1, 1),
+    ('SendSms', 'NextStep_Failure', 'string',  1, 1, 1, 1),
 
     /* ---- Disconnect ---- (ends the interaction)
        Params: {} in this contract -> no NextStep. Only the universal 'Active'
        control flag is catalogued by default. The helpdesk flows have a
        prompt-playing disconnect variant (e.g. 'RTDS: MaxQueue Disconnect',
        'RTDS: IVR Error'), so 'Prompt' and 'ApplicationId' are catalogued too.    */
-    ('Disconnect_vocalls', 'Active',         'bit', 0, 0, 1, 1),
-    ('Disconnect_vocalls', 'Prompt',         'string',  0, 0, 1, 1),
-    ('Disconnect_vocalls', 'ApplicationId',  'int', 0, 0, 1, 1),
+    ('Disconnect', 'Active',         'bit', 0, 0, 1, 1),
+    ('Disconnect', 'Prompt',         'string',  0, 0, 1, 1),
+    ('Disconnect', 'ApplicationId',  'int', 0, 0, 1, 1),
 
     /* ========================================================================
        HELPDESK-FLOW TYPES  (DA_HELDPESK +3233387777, LPA_ICT_HELDPESK +3233389999)
@@ -267,114 +267,114 @@ INSERT INTO @Attribute
        ======================================================================== */
 
     /* ---- PlayPrompt ---- (TTS / prompt-library playback)                       */
-    ('PlayPrompt_vocalls', 'Active',         'bit', 0, 0, 1, 1),
-    ('PlayPrompt_vocalls', 'ApplicationId',  'int', 0, 0, 1, 1),
-    ('PlayPrompt_vocalls', 'Prompt',         'string',  1, 0, 1, 1),
-    ('PlayPrompt_vocalls', 'NextStep',       'string',  1, 1, 1, 1),
+    ('PlayPrompt', 'Active',         'bit', 0, 0, 1, 1),
+    ('PlayPrompt', 'ApplicationId',  'int', 0, 0, 1, 1),
+    ('PlayPrompt', 'Prompt',         'string',  1, 0, 1, 1),
+    ('PlayPrompt', 'NextStep',       'string',  1, 1, 1, 1),
 
     /* ---- PlayAudio ---- (named audio-source playback)                          */
-    ('PlayAudio_vocalls', 'Active',          'bit', 0, 0, 1, 1),
-    ('PlayAudio_vocalls', 'AudioSource',     'string',  1, 0, 1, 1),
-    ('PlayAudio_vocalls', 'Timeout',         'int', 0, 0, 1, 1),
-    ('PlayAudio_vocalls', 'NextStep',        'string',  1, 1, 1, 1),
+    ('PlayAudio', 'Active',          'bit', 0, 0, 1, 1),
+    ('PlayAudio', 'AudioSource',     'string',  1, 0, 1, 1),
+    ('PlayAudio', 'Timeout',         'int', 0, 0, 1, 1),
+    ('PlayAudio', 'NextStep',        'string',  1, 1, 1, 1),
 
     /* ---- Menu ---- (DTMF menu; per-choice NextStep_<digit> branches)           */
-    ('Menu_vocalls', 'Active',                  'bit', 0, 0, 1, 1),
-    ('Menu_vocalls', 'ApplicationId',           'int', 0, 0, 1, 1),
-    ('Menu_vocalls', 'StaticPrompt',            'string',  0, 0, 1, 1),
-    ('Menu_vocalls', 'Timeout',                 'int', 0, 0, 1, 1),
-    ('Menu_vocalls', 'MaxTries',                'int', 0, 0, 1, 1),
-    ('Menu_vocalls', 'NextStep_0',              'string',  0, 1, 1, 1),
-    ('Menu_vocalls', 'NextStep_1',              'string',  0, 1, 1, 1),
-    ('Menu_vocalls', 'NextStep_2',              'string',  0, 1, 1, 1),
-    ('Menu_vocalls', 'NextStep_3',              'string',  0, 1, 1, 1),
-    ('Menu_vocalls', 'NextStep_4',              'string',  0, 1, 1, 1),
-    ('Menu_vocalls', 'NextStep_5',              'string',  0, 1, 1, 1),
-    ('Menu_vocalls', 'NextStep_6',              'string',  0, 1, 1, 1),
-    ('Menu_vocalls', 'NextStep_7',              'string',  0, 1, 1, 1),
-    ('Menu_vocalls', 'NextStep_8',              'string',  0, 1, 1, 1),
-    ('Menu_vocalls', 'NextStep_9',              'string',  0, 1, 1, 1),
-    ('Menu_vocalls', 'NextStep_DefaultChoice',  'string',  0, 1, 1, 1),
-    ('Menu_vocalls', 'NextStep',                'string',  1, 1, 1, 1),
+    ('Menu', 'Active',                  'bit', 0, 0, 1, 1),
+    ('Menu', 'ApplicationId',           'int', 0, 0, 1, 1),
+    ('Menu', 'StaticPrompt',            'string',  0, 0, 1, 1),
+    ('Menu', 'Timeout',                 'int', 0, 0, 1, 1),
+    ('Menu', 'MaxTries',                'int', 0, 0, 1, 1),
+    ('Menu', 'NextStep_0',              'string',  0, 1, 1, 1),
+    ('Menu', 'NextStep_1',              'string',  0, 1, 1, 1),
+    ('Menu', 'NextStep_2',              'string',  0, 1, 1, 1),
+    ('Menu', 'NextStep_3',              'string',  0, 1, 1, 1),
+    ('Menu', 'NextStep_4',              'string',  0, 1, 1, 1),
+    ('Menu', 'NextStep_5',              'string',  0, 1, 1, 1),
+    ('Menu', 'NextStep_6',              'string',  0, 1, 1, 1),
+    ('Menu', 'NextStep_7',              'string',  0, 1, 1, 1),
+    ('Menu', 'NextStep_8',              'string',  0, 1, 1, 1),
+    ('Menu', 'NextStep_9',              'string',  0, 1, 1, 1),
+    ('Menu', 'NextStep_DefaultChoice',  'string',  0, 1, 1, 1),
+    ('Menu', 'NextStep',                'string',  1, 1, 1, 1),
 
     /* ---- WorkgroupTransfer ---- (queue to an ACD workgroup)                    */
-    ('WorkgroupTransfer_vocalls', 'Active',             'bit', 0, 0, 1, 1),
-    ('WorkgroupTransfer_vocalls', 'QueueName',          'string',  1, 0, 1, 1),
-    ('WorkgroupTransfer_vocalls', 'Skills',             'string',  0, 0, 1, 1),
-    ('WorkgroupTransfer_vocalls', 'Priority',           'int', 0, 0, 1, 1),
-    ('WorkgroupTransfer_vocalls', 'EscapeKey',          'int', 0, 0, 1, 1),
-    ('WorkgroupTransfer_vocalls', 'NextStep_EscapeKey', 'string',  0, 1, 1, 1),
-    ('WorkgroupTransfer_vocalls', 'NextStep',           'string',  1, 1, 1, 1),
+    ('WorkgroupTransfer', 'Active',             'bit', 0, 0, 1, 1),
+    ('WorkgroupTransfer', 'QueueName',          'string',  1, 0, 1, 1),
+    ('WorkgroupTransfer', 'Skills',             'string',  0, 0, 1, 1),
+    ('WorkgroupTransfer', 'Priority',           'int', 0, 0, 1, 1),
+    ('WorkgroupTransfer', 'EscapeKey',          'int', 0, 0, 1, 1),
+    ('WorkgroupTransfer', 'NextStep_EscapeKey', 'string',  0, 1, 1, 1),
+    ('WorkgroupTransfer', 'NextStep',           'string',  1, 1, 1, 1),
 
     /* ---- ExternalTransfer ---- (transfer to an external phone number)          */
-    ('ExternalTransfer_vocalls', 'Active',              'bit', 0, 0, 1, 1),
-    ('ExternalTransfer_vocalls', 'PhoneNumber',         'string',  1, 0, 1, 1),
-    ('ExternalTransfer_vocalls', 'OutboundANI',         'string',  0, 0, 1, 1),
-    ('ExternalTransfer_vocalls', 'PerformCallAnalysis', 'string',  0, 0, 1, 1),
-    ('ExternalTransfer_vocalls', 'DiversionReason',     'int', 0, 0, 1, 1),
-    ('ExternalTransfer_vocalls', 'Timeout',             'int', 0, 0, 1, 1),
-    ('ExternalTransfer_vocalls', 'NextStep_Busy',       'string',  0, 1, 1, 1),
-    ('ExternalTransfer_vocalls', 'NextStep_RNA',        'string',  0, 1, 1, 1),
-    ('ExternalTransfer_vocalls', 'NextStep',            'string',  1, 1, 1, 1),
+    ('ExternalTransfer', 'Active',              'bit', 0, 0, 1, 1),
+    ('ExternalTransfer', 'PhoneNumber',         'string',  1, 0, 1, 1),
+    ('ExternalTransfer', 'OutboundANI',         'string',  0, 0, 1, 1),
+    ('ExternalTransfer', 'PerformCallAnalysis', 'string',  0, 0, 1, 1),
+    ('ExternalTransfer', 'DiversionReason',     'int', 0, 0, 1, 1),
+    ('ExternalTransfer', 'Timeout',             'int', 0, 0, 1, 1),
+    ('ExternalTransfer', 'NextStep_Busy',       'string',  0, 1, 1, 1),
+    ('ExternalTransfer', 'NextStep_RNA',        'string',  0, 1, 1, 1),
+    ('ExternalTransfer', 'NextStep',            'string',  1, 1, 1, 1),
 
     /* ---- Condition ---- (branch on an ACD statistic; NOT yet runtime-wired)    */
-    ('Condition_vocalls', 'Active',          'bit', 0, 0, 1, 1),
-    ('Condition_vocalls', 'Statistic',       'string',  1, 0, 1, 1),
-    ('Condition_vocalls', 'Workgroup',       'string',  1, 0, 1, 1),
-    ('Condition_vocalls', 'Operator',        'string',  1, 0, 1, 1),
-    ('Condition_vocalls', 'Value',           'string',  1, 0, 1, 1),
-    ('Condition_vocalls', 'NextStep_True',   'string',  1, 1, 1, 1),
-    ('Condition_vocalls', 'NextStep_False',  'string',  1, 1, 1, 1),
+    ('Condition', 'Active',          'bit', 0, 0, 1, 1),
+    ('Condition', 'Statistic',       'string',  1, 0, 1, 1),
+    ('Condition', 'Workgroup',       'string',  1, 0, 1, 1),
+    ('Condition', 'Operator',        'string',  1, 0, 1, 1),
+    ('Condition', 'Value',           'string',  1, 0, 1, 1),
+    ('Condition', 'NextStep_True',   'string',  1, 1, 1, 1),
+    ('Condition', 'NextStep_False',  'string',  1, 1, 1, 1),
 
     /* ---- Emergency ---- (emergency-prompt check; NOT yet runtime-wired)        */
-    ('Emergency_vocalls', 'Active',               'bit', 0, 0, 1, 1),
-    ('Emergency_vocalls', 'EmergencyId',          'string',  1, 0, 1, 1),
-    ('Emergency_vocalls', 'NextStep_Transfer',    'string',  0, 1, 1, 1),
-    ('Emergency_vocalls', 'NextStep_Disconnect',  'string',  0, 1, 1, 1),
-    ('Emergency_vocalls', 'NextStep_Continue',    'string',  0, 1, 1, 1),
-    ('Emergency_vocalls', 'NextStep_Failure',     'string',  0, 1, 1, 1),
-    ('Emergency_vocalls', 'NextStep',             'string',  1, 1, 1, 1),
+    ('Emergency', 'Active',               'bit', 0, 0, 1, 1),
+    ('Emergency', 'EmergencyId',          'string',  1, 0, 1, 1),
+    ('Emergency', 'NextStep_Transfer',    'string',  0, 1, 1, 1),
+    ('Emergency', 'NextStep_Disconnect',  'string',  0, 1, 1, 1),
+    ('Emergency', 'NextStep_Continue',    'string',  0, 1, 1, 1),
+    ('Emergency', 'NextStep_Failure',     'string',  0, 1, 1, 1),
+    ('Emergency', 'NextStep',             'string',  1, 1, 1, 1),
 
     /* ---- CheckSchedule ---- (open/closed/guard routing; NOT yet runtime-wired.
        Component checkSchedule.js exists. Guard branches are per-flow:
        Guard_ICT (LPA_ICT), Guard_Klantwacht/Guard_Systeemwacht (DA).)            */
-    ('CheckSchedule_vocalls', 'Active',                       'bit', 0, 0, 1, 1),
-    ('CheckSchedule_vocalls', 'ApplicationId',                'int', 0, 0, 1, 1),
-    ('CheckSchedule_vocalls', 'ScheduleId',                   'int', 1, 0, 1, 1),
-    ('CheckSchedule_vocalls', 'NextStep_Open',                'string',  0, 1, 1, 1),
-    ('CheckSchedule_vocalls', 'NextStep_Closed',              'string',  0, 1, 1, 1),
-    ('CheckSchedule_vocalls', 'NextStep_Transfer',            'string',  0, 1, 1, 1),
-    ('CheckSchedule_vocalls', 'NextStep_Guard_ICT',           'string',  0, 1, 1, 1),
-    ('CheckSchedule_vocalls', 'NextStep_Guard_Klantwacht',    'string',  0, 1, 1, 1),
-    ('CheckSchedule_vocalls', 'NextStep_Guard_Systeemwacht',  'string',  0, 1, 1, 1),
-    ('CheckSchedule_vocalls', 'NextStep_Failure',             'string',  0, 1, 1, 1),
-    ('CheckSchedule_vocalls', 'NextStep',                     'string',  1, 1, 1, 1),
+    ('CheckSchedule', 'Active',                       'bit', 0, 0, 1, 1),
+    ('CheckSchedule', 'ApplicationId',                'int', 0, 0, 1, 1),
+    ('CheckSchedule', 'ScheduleId',                   'int', 1, 0, 1, 1),
+    ('CheckSchedule', 'NextStep_Open',                'string',  0, 1, 1, 1),
+    ('CheckSchedule', 'NextStep_Closed',              'string',  0, 1, 1, 1),
+    ('CheckSchedule', 'NextStep_Transfer',            'string',  0, 1, 1, 1),
+    ('CheckSchedule', 'NextStep_Guard_ICT',           'string',  0, 1, 1, 1),
+    ('CheckSchedule', 'NextStep_Guard_Klantwacht',    'string',  0, 1, 1, 1),
+    ('CheckSchedule', 'NextStep_Guard_Systeemwacht',  'string',  0, 1, 1, 1),
+    ('CheckSchedule', 'NextStep_Failure',             'string',  0, 1, 1, 1),
+    ('CheckSchedule', 'NextStep',                     'string',  1, 1, 1, 1),
 
     /* ---- Callback ---- (queue callback; DA_HELDPESK only)                      */
-    ('Callback_vocalls', 'Active',               'bit', 0, 0, 1, 1),
-    ('Callback_vocalls', 'ConfigId',             'int', 1, 0, 1, 1),
-    ('Callback_vocalls', 'CallbackOnANI',        'int', 0, 0, 1, 1),
-    ('Callback_vocalls', 'ANIConfirmation',      'int', 0, 0, 1, 1),
-    ('Callback_vocalls', 'AllowManualInput',     'int', 0, 0, 1, 1),
-    ('Callback_vocalls', 'ManualInputRetries',   'int', 0, 0, 1, 1),
-    ('Callback_vocalls', 'LocationFilter',       'string',  0, 0, 1, 1),
-    ('Callback_vocalls', 'ANIClassifications',   'string',  0, 0, 1, 1),
-    ('Callback_vocalls', 'ANIAttribute',         'string',  0, 0, 1, 1),
-    ('Callback_vocalls', 'CustomSkills',         'string',  0, 0, 1, 1),
-    ('Callback_vocalls', 'InheritSkills',        'int', 0, 0, 1, 1),
-    ('Callback_vocalls', 'CustomPriority',       'int', 0, 0, 1, 1),
-    ('Callback_vocalls', 'InheritPriority',      'int', 0, 0, 1, 1),
-    ('Callback_vocalls', 'PromptFolder',         'string',  0, 0, 1, 1),
-    ('Callback_vocalls', 'Workgroup',            'string',  0, 0, 1, 1),
-    ('Callback_vocalls', 'NextStep_Accepted',    'string',  0, 1, 1, 1),
-    ('Callback_vocalls', 'NextStep_Rejected',    'string',  0, 1, 1, 1),
-    ('Callback_vocalls', 'NextStep_Failure',     'string',  0, 1, 1, 1),
-    ('Callback_vocalls', 'NextStep',             'string',  1, 1, 1, 1),
+    ('Callback', 'Active',               'bit', 0, 0, 1, 1),
+    ('Callback', 'ConfigId',             'int', 1, 0, 1, 1),
+    ('Callback', 'CallbackOnANI',        'int', 0, 0, 1, 1),
+    ('Callback', 'ANIConfirmation',      'int', 0, 0, 1, 1),
+    ('Callback', 'AllowManualInput',     'int', 0, 0, 1, 1),
+    ('Callback', 'ManualInputRetries',   'int', 0, 0, 1, 1),
+    ('Callback', 'LocationFilter',       'string',  0, 0, 1, 1),
+    ('Callback', 'ANIClassifications',   'string',  0, 0, 1, 1),
+    ('Callback', 'ANIAttribute',         'string',  0, 0, 1, 1),
+    ('Callback', 'CustomSkills',         'string',  0, 0, 1, 1),
+    ('Callback', 'InheritSkills',        'int', 0, 0, 1, 1),
+    ('Callback', 'CustomPriority',       'int', 0, 0, 1, 1),
+    ('Callback', 'InheritPriority',      'int', 0, 0, 1, 1),
+    ('Callback', 'PromptFolder',         'string',  0, 0, 1, 1),
+    ('Callback', 'Workgroup',            'string',  0, 0, 1, 1),
+    ('Callback', 'NextStep_Accepted',    'string',  0, 1, 1, 1),
+    ('Callback', 'NextStep_Rejected',    'string',  0, 1, 1, 1),
+    ('Callback', 'NextStep_Failure',     'string',  0, 1, 1, 1),
+    ('Callback', 'NextStep',             'string',  1, 1, 1, 1),
 
     /* ---- FlowJump ---- (jump to another routing table by SourceId; NOT yet
        runtime-wired. Only the target SourceId is carried.)                       */
-    ('FlowJump_vocalls', 'Active',           'bit', 0, 0, 1, 1),
-    ('FlowJump_vocalls', 'SourceId',         'string',  1, 0, 1, 1);
+    ('FlowJump', 'Active',           'bit', 0, 0, 1, 1),
+    ('FlowJump', 'SourceId',         'string',  1, 0, 1, 1);
 
 /* ============================================================================
    SECTION 2 -- SEED THE DICTIONARY (no need to edit below this line)
@@ -485,6 +485,6 @@ SELECT  ot.Name                              AS OperationType,
 FROM    rtds.Dic_OperationType ot
 JOIN    rtds.Dic_Attribute     da ON da.DicOperationTypeID = ot.DicOperationTypeID
 JOIN    rtds.Dic_AttributeType at ON at.DicAttributeTypeID = da.DicAttributeTypeID
-WHERE   ot.Name IN ('SetVariables_vocalls', 'Guard_vocalls', 'GuardTui_vocalls', 'SendMail_vocalls', 'SendSms_vocalls', 'Disconnect_vocalls')
+WHERE   ot.Name IN ('SetVariables', 'Guard', 'GuardTui', 'SendMail', 'SendSms', 'Disconnect')
 ORDER BY ot.Name, da.IsNext, da.Name;
 */

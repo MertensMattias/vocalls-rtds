@@ -23,7 +23,7 @@ Frontmatter contract (catalog-relevant fields)::
       pattern: "`http_call`"      # rendered verbatim into the Pattern cell
       component: sendSms.js       # filename in rtds/components, or null
       componentMark: "✅"          # ✅ | 🔒 | — | ⬜  (mark before the component link)
-      runtimeCell: "JS twin `executeSendSms` (`SendSms_vocalls`)"  # verbatim Runtime cell
+      runtimeCell: "JS twin `executeSendSms` (`SendSms`)"  # verbatim Runtime cell
       seed: "✅"                   # ✅ | ⬜ | 🔒
 
 Specs that are not catalog operations (the ``_*`` dispatcher/helper specs) carry

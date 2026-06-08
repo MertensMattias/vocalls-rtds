@@ -111,11 +111,11 @@ real, repeated, and thrown away every time.
 ## Acceptance Examples
 
 - AE1. **Covers R1, R3, R4, R5.** Given a `callflow_json_config_vocalls/*.json` whose
-  first op is `SetVariables_vocalls`, when simulated, then the production `fetchAndStart`
+  first op is `SetVariables`, when simulated, then the production `fetchAndStart`
   receives the adapted (camelCase) flow as a `{ success, statusCode, response }`
   response, `parseFlow` builds the op index, and the run reaches the first op without a
   shape-mismatch error.
-- AE2. **Covers R6.** Given a flow that reaches a GUI-exit op (e.g. `GuardTUI_vocalls`),
+- AE2. **Covers R6.** Given a flow that reaches a GUI-exit op (e.g. `GuardTUI`),
   when the engine returns its exit key, then the simulator records the handoff and
   resumes on that op's default NextStep, continuing until a terminal `disconnect`.
 - AE3. **Covers R5.** Given a flow file with a malformed/missing `Operations` array,
