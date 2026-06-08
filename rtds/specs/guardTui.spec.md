@@ -6,7 +6,7 @@ catalog:
   pattern: "`http_call` + multi-node"
   component: "guardTui.js"
   componentMark: "✅"
-  runtimeCell: "GUI-exit `guard_tui` (`GuardTui_vocalls`)"
+  runtimeCell: "GUI-exit `guard_tui` (`guardTui_vocalls`)"
   seed: "✅"
 ---
 

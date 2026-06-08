@@ -80,100 +80,103 @@ DECLARE @CreatedBy varchar(50) = 'rtds-import';
    (rtds_full_json_tts) but was 'Message' in older flows. Both are accepted
    when resolving the TTS prompt name below. */
 
+/* Sample payload uses the camelCase contract (see
+   docs/superpowers/plans/camelcase-mapping-table.md). The importer's $.path
+   JSON_VALUE expressions are owned by the SQL team's reset and are NOT edited here. */
 DECLARE @JsonPayload nvarchar(max) = N'
 
 {
-  "SourceId": "+3257351115",
-  "Name": "DIGIPOLIS - LPA_LTSU_GUARD",
-  "ProjectId": "117",
-  "Project": "LPA ICT",
-  "PromptLibraryId": "82",
-  "PromptLibrary": "LPA_LTSU_GUARD",
-  "SupportedLanguages": "NL",
-  "Operations": [
+  "sourceId": "+3257351115",
+  "name": "DIGIPOLIS - LPA_LTSU_GUARD",
+  "projectId": "117",
+  "project": "LPA ICT",
+  "promptLibraryId": "82",
+  "promptLibrary": "LPA_LTSU_GUARD",
+  "supportedLanguages": "NL",
+  "operations": [
     {
-      "Id": "00000",
-      "Type": "SetVariables_vocalls",
-      "Name": "Call Initialization",
-      "IsFirstOperation": true,
-      "Params": {
-        "Active": true,
-        "RoutingId": "LPA_LTSU_GUARD",
-        "CustomerName": "LPA",
-        "CustomerProject": "LTSU_GUARD",
-        "IvrEvent": "9999",
-        "IvrAction": "CT",
-        "NextStep": "00066"
+      "id": "00000",
+      "type": "setVariables_vocalls",
+      "name": "Call Initialization",
+      "isFirstOperation": true,
+      "params": {
+        "active": true,
+        "routingId": "LPA_LTSU_GUARD",
+        "customerName": "LPA",
+        "customerProject": "LTSU_GUARD",
+        "ivrEvent": "9999",
+        "ivrAction": "CT",
+        "nextStep": "00066"
       }
     },
     {
-      "Id": "00066",
-      "Type": "Guard_vocalls",
-      "Name": "LPA_LTSU_GUARD",
-      "Params": {
-        "Active": true,
-        "ConfigId": 11,
-        "ConfigName": "LPA_LTSU_GUARD",
-        "DialGuard": true,
-        "OutboundAni": "",
-        "Diversion": "",
-        "OnHoldAudioUrl": "https://data.freetouse.com/music/tracks/60974ab4-afa7-211d-3ffc-09fdbaff8e58/file/mp3",
-        "Timeout": 15,
-        "RecordVoicemail": true,
-        "AcceptCallMenu": true,
-        "AcceptCallMessage": "Press 1 to accept the call.",
-        "SendSms": true,
-        "SendMail": true,
-        "NextStep": "00067",
-        "NextStep_Success": "00067",
-        "NextStep_Failure": "00067"
+      "id": "00066",
+      "type": "guard_vocalls",
+      "name": "LPA_LTSU_GUARD",
+      "params": {
+        "active": true,
+        "configId": 11,
+        "configName": "LPA_LTSU_GUARD",
+        "dialGuard": true,
+        "outboundAni": "",
+        "diversion": "",
+        "onHoldAudioUrl": "https://data.freetouse.com/music/tracks/60974ab4-afa7-211d-3ffc-09fdbaff8e58/file/mp3",
+        "timeout": 15,
+        "recordVoicemail": true,
+        "acceptCallMenu": true,
+        "acceptCallMessage": "Press 1 to accept the call.",
+        "sendSms": true,
+        "sendMail": true,
+        "nextStep": "00067",
+        "nextStep_Success": "00067",
+        "nextStep_Failure": "00067"
       }
     },
     {
-      "Id": "00067",
-      "Type": "SendMail_vocalls",
-      "Name": "Mail-To: LPA_LTSU_GUARD",
-      "Params": {
-        "Active": true,
-        "Subject": "LPA_LTSU_GUARD: Call Report",
-        "From": "IVR_EVENTS@n-allo.be",
-        "To": "$(ATTR_EmailTo)",
-        "Cc": "",
-        "Bcc": "",
-        "Body": "$(ATTR_EmailBody)",
-        "Priority": 2,
-        "Files": "$(ATTR_EmailAttachment)",
-        "AttachmentNames": "",
-        "AttachmentData": "",
-        "CustomerKey": "",
-        "Timeout": 10000,
-        "NextStep_Success": "00068",
-        "NextStep_Failure": "00068",
-        "NextStep": "00068"
+      "id": "00067",
+      "type": "sendMail_vocalls",
+      "name": "Mail-To: LPA_LTSU_GUARD",
+      "params": {
+        "active": true,
+        "subject": "LPA_LTSU_GUARD: Call Report",
+        "from": "IVR_EVENTS@n-allo.be",
+        "to": "$(ATTR_EmailTo)",
+        "cc": "",
+        "bcc": "",
+        "body": "$(ATTR_EmailBody)",
+        "priority": 2,
+        "files": "$(ATTR_EmailAttachment)",
+        "attachmentNames": "",
+        "attachmentData": "",
+        "customerKey": "",
+        "timeout": 10000,
+        "nextStep_Success": "00068",
+        "nextStep_Failure": "00068",
+        "nextStep": "00068"
       }
     },
     {
-      "Id": "00068",
-      "Type": "SendSms_vocalls",
-      "Name": "SMS-To: LPA_LTSU_GUARD",
-      "Params": {
-        "Active": true,
-        "SmsAccountId": 47,
-        "Routing": "LPA_LTSU_GUARD",
-        "From": "8850",
-        "To": "$(ATTR_SMSTo)",
-        "Body": "$(ATTR_SMSBody)",
-        "Timeout": 5000,
-        "NextStep_Failure": "00099",
-        "NextStep_Success": "00099",
-        "NextStep": "00099"
+      "id": "00068",
+      "type": "sendSms_vocalls",
+      "name": "SMS-To: LPA_LTSU_GUARD",
+      "params": {
+        "active": true,
+        "smsAccountId": 47,
+        "routing": "LPA_LTSU_GUARD",
+        "from": "8850",
+        "to": "$(ATTR_SMSTo)",
+        "body": "$(ATTR_SMSBody)",
+        "timeout": 5000,
+        "nextStep_Failure": "00099",
+        "nextStep_Success": "00099",
+        "nextStep": "00099"
       }
     },
     {
-      "Id": "00099",
-      "Type": "Disconnect_vocalls",
-      "Name": "RTDS: Disconnect",
-      "Params": {}
+      "id": "00099",
+      "type": "disconnect_vocalls",
+      "name": "RTDS: Disconnect",
+      "params": {}
     }
   ]
 }';

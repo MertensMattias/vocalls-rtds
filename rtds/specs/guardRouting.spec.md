@@ -6,7 +6,7 @@ catalog:
   pattern: "`http_call` + multi-node"
   component: "guardRouting.js"
   componentMark: "✅"
-  runtimeCell: "GUI-exit `guard_routing` (via `Guard_vocalls`)"
+  runtimeCell: "GUI-exit `guard_routing` (via `guard_vocalls`)"
   seed: "✅"
 ---
 

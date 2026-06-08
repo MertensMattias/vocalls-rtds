@@ -393,7 +393,7 @@ function resolveNextStep(op, resultKey) {
       return String(specific);
     }
   }
-  var fallback = getParam(op, "NextStep", null);
+  var fallback = getParam(op, "nextStep", null);
   if (fallback) {
     return String(fallback);
   }
@@ -423,7 +423,7 @@ function executeSetVariables(op) {
   // Active defaults to true for SetVariables: a large body of older config
   // never sets the key, and historically those ops always wrote. Only an
   // explicit Active:false skips. (Send* ops default false -- opt-in.)
-  if (!activeFlag(getParam(op, "Active", true))) {
+  if (!activeFlag(getParam(op, "active", true))) {
     var skipNext = resolveNextStep(op, null);
     Logger.info("[RTDS] SetVariables skipped -- inactive", {
       nextStep: skipNext ? skipNext : "(none)",
@@ -929,12 +929,12 @@ function resolveFilesList(raw) {
 function executeSendSms(op) {
   var skipNext = resolveNextStep(op, null);
 
-  if (!activeFlag(getParam(op, "Active", false))) {
+  if (!activeFlag(getParam(op, "active", false))) {
     Logger.info("[RTDS] SendSMS skipped -- inactive", { nextStep: skipNext });
     return { nextStepId: skipNext };
   }
 
-  var to = String(resolveTokens(getParam(op, "To", "")));
+  var to = String(resolveTokens(getParam(op, "to", "")));
   if (!to || !isMobileNumber(to)) {
     Logger.warn("[RTDS] SendSMS invalid phone number", {
       to: to,
@@ -954,13 +954,13 @@ function executeSendSms(op) {
   }
 
   var url = _rtBaseUrl + _rtSmsEndpoint;
-  var timeout = Number(getParam(op, "Timeout", 10000)) || 10000;
+  var timeout = Number(getParam(op, "timeout", 10000)) || 10000;
   var payload = {
-    smsAccountId: Number(getParam(op, "SmsAccountId", -1)),
-    routing: resolveTokens(getParam(op, "Routing", "")),
-    from: resolveTokens(getParam(op, "From", "")),
+    smsAccountId: Number(getParam(op, "smsAccountId", -1)),
+    routing: resolveTokens(getParam(op, "routing", "")),
+    from: resolveTokens(getParam(op, "from", "")),
     to: to,
-    content: resolveTokens(getParam(op, "Body", "")),
+    content: resolveTokens(getParam(op, "body", "")),
     plannedTime: nowUTC(),
   };
 
@@ -1001,16 +1001,16 @@ function executeSendSms(op) {
 function executeSendEmail(op) {
   var skipNext = resolveNextStep(op, null);
 
-  if (!activeFlag(getParam(op, "Active", false))) {
+  if (!activeFlag(getParam(op, "active", false))) {
     Logger.info("[RTDS] SendEmail skipped -- inactive", { nextStep: skipNext });
     return { nextStepId: skipNext };
   }
 
-  var from = String(resolveTokens(getParam(op, "From", ""))).replace(
+  var from = String(resolveTokens(getParam(op, "from", ""))).replace(
     /^\s+|\s+$/g,
     "",
   );
-  var to = splitSemicolonList(resolveTokens(getParam(op, "To", "")));
+  var to = splitSemicolonList(resolveTokens(getParam(op, "to", "")));
   if (!from || to.length === 0) {
     Logger.warn("[RTDS] SendEmail missing From or To", {
       from: from,
@@ -1030,35 +1030,35 @@ function executeSendEmail(op) {
     return { nextStepId: failureNext };
   }
 
-  var priority = Number(getParam(op, "Priority", 2));
+  var priority = Number(getParam(op, "priority", 2));
   if (priority !== 1 && priority !== 2 && priority !== 3) priority = 2;
 
   var payload = {
     from: from,
-    subject: resolveTokens(getParam(op, "Subject", "")),
+    subject: resolveTokens(getParam(op, "subject", "")),
     to: to,
-    body: resolveTokens(getParam(op, "Body", "")),
+    body: resolveTokens(getParam(op, "body", "")),
     priority: priority,
   };
 
-  var cc = splitSemicolonList(resolveTokens(getParam(op, "Cc", "")));
+  var cc = splitSemicolonList(resolveTokens(getParam(op, "cc", "")));
   if (cc.length) payload.cc = cc;
-  var bcc = splitSemicolonList(resolveTokens(getParam(op, "Bcc", "")));
+  var bcc = splitSemicolonList(resolveTokens(getParam(op, "bcc", "")));
   if (bcc.length) payload.bcc = bcc;
-  var files = resolveFilesList(resolveTokens(getParam(op, "Files", "")));
+  var files = resolveFilesList(resolveTokens(getParam(op, "files", "")));
   if (files.length) payload.files = files;
   var attachments = buildAttachments(
-    getParam(op, "AttachmentNames", ""),
-    getParam(op, "AttachmentData", ""),
+    getParam(op, "attachmentNames", ""),
+    getParam(op, "attachmentData", ""),
   );
   if (attachments.length) payload.attachments = attachments;
   var customerKey = String(
-    resolveTokens(getParam(op, "CustomerKey", "")),
+    resolveTokens(getParam(op, "customerKey", "")),
   ).replace(/^\s+|\s+$/g, "");
   if (customerKey) payload.customerKey = customerKey;
 
   var url = _rtBaseUrl + _rtMailEndpoint;
-  var timeout = Number(getParam(op, "Timeout", 10000)) || 10000;
+  var timeout = Number(getParam(op, "timeout", 10000)) || 10000;
 
   if (typeof _headers === "undefined" || !_headers) _headers = {};
 
@@ -1109,26 +1109,26 @@ function executeSendEmail(op) {
 // kept defined above (dead code) so the twins can be re-enabled by restoring
 // the registerRtdsOperation lines. SetAttributes_vocalls is routed to the same
 // set_variables exit (the canvas setVariables.js handles both).
-registerRtdsOperation("SetVariables_vocalls", executeSetVariables);
-//   registerRtdsOperation("SetAttributes_vocalls", executeSetVariables);
-//   registerRtdsOperation("SendSms_vocalls", executeSendSms);
-//   registerRtdsOperation("SendMail_vocalls", executeSendEmail);
+registerRtdsOperation("setVariables_vocalls", executeSetVariables);
+//   registerRtdsOperation("setAttributes_vocalls", executeSetVariables);
+//   registerRtdsOperation("sendSms_vocalls", executeSendSms);
+//   registerRtdsOperation("sendMail_vocalls", executeSendEmail);
 
 // --- GUI-exit Types -- handled by Vocalls components on the canvas ---
-registerRtdsExit("SetVariables_vocalls", "set_variables");
-registerRtdsExit("SetAttributes_vocalls", "set_variables");
-registerRtdsExit("SendSms_vocalls", "send_sms");
-registerRtdsExit("SendMail_vocalls", "send_mail");
-registerRtdsExit("WorkgroupTransfer_vocalls", "workgroup_transfer");
-registerRtdsExit("ExternalTransfer_vocalls", "external_transfer");
-registerRtdsExit("Menu_vocalls", "menu");
-registerRtdsExit("LanguageMenu_vocalls", "language_menu");
-registerRtdsExit("PlayPrompt_vocalls", "play_prompt");
-registerRtdsExit("PlayAudio_vocalls", "play_audio");
-registerRtdsExit("Disconnect_vocalls", "disconnect");
-registerRtdsExit("Guard_vocalls", "guard_routing");
-registerRtdsExit("GuardTui_vocalls", "guard_tui");
-registerRtdsExit("Callback_vocalls", "callback");
+registerRtdsExit("setVariables_vocalls", "set_variables");
+registerRtdsExit("setAttributes_vocalls", "set_variables");
+registerRtdsExit("sendSms_vocalls", "send_sms");
+registerRtdsExit("sendMail_vocalls", "send_mail");
+registerRtdsExit("workgroupTransfer_vocalls", "workgroup_transfer");
+registerRtdsExit("externalTransfer_vocalls", "external_transfer");
+registerRtdsExit("menu_vocalls", "menu");
+registerRtdsExit("languageMenu_vocalls", "language_menu");
+registerRtdsExit("playPrompt_vocalls", "play_prompt");
+registerRtdsExit("playAudio_vocalls", "play_audio");
+registerRtdsExit("disconnect_vocalls", "disconnect");
+registerRtdsExit("guard_vocalls", "guard_routing");
+registerRtdsExit("guardTui_vocalls", "guard_tui");
+registerRtdsExit("callback_vocalls", "callback");
 
 Logger.info("[RTDS] registry initialised", {
   types: RTDS_REGISTRY.size,

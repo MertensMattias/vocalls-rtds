@@ -1,95 +1,95 @@
 {
-  "SourceId": "+3257351123",
-  "Name": "DIGIPOLIS - DA_SYSTEEMWACHT",
-  "ProjectId": "127",
-  "Project": "DA HELPDESK",
-  "PromptLibraryId": "",
-  "PromptLibrary": "DIGIPOLIS\\DA\\SYSTEEMWACHT",
-  "SupportedLanguages": "NL",
-  "Operations": [
+  "sourceId": "+3257351123",
+  "name": "DIGIPOLIS - DA_SYSTEEMWACHT",
+  "projectId": "127",
+  "project": "DA HELPDESK",
+  "promptLibraryId": "",
+  "promptLibrary": "DIGIPOLIS\\DA\\SYSTEEMWACHT",
+  "supportedLanguages": "NL",
+  "operations": [
     {
-      "Id": "00000",
-      "Type": "SetVariables_vocalls",
-      "Name": "Call Initialization",
-      "IsFirstOperation": true,
-      "Params": {
-        "Active": true,
-        "RoutingId": "DA_SYSTEEMWACHT",
-        "CustomerName": "DA",
-        "CustomerProject": "SYSTEEMWACHT",
-        "IvrEvent": "9999",
-        "IvrAction": "CT",
-        "NextStep": "00001"
+      "id": "00000",
+      "type": "setVariables_vocalls",
+      "name": "Call Initialization",
+      "isFirstOperation": true,
+      "params": {
+        "active": true,
+        "routingId": "DA_SYSTEEMWACHT",
+        "customerName": "DA",
+        "customerProject": "SYSTEEMWACHT",
+        "ivrEvent": "9999",
+        "ivrAction": "CT",
+        "nextStep": "00001"
       }
     },
     {
-      "Id": "00001",
-      "Type": "Guard_vocalls",
-      "Name": "DA_SYSTEEMWACHT",
-      "Params": {
-        "Active": true,
-        "ConfigId": 2,
-        "ConfigName": "SYSTEEMWACHT",
-        "DialGuard": false,
-        "OutboundAni": "",
-        "Diversion": "",
-        "OnHoldAudioUrl": "https://data.freetouse.com/music/tracks/60974ab4-afa7-211d-3ffc-09fdbaff8e58/file/mp3",
-        "Timeout": 15,
-        "RecordVoicemail": true,
-        "AcceptCallMenu": false,
-        "AcceptCallMessage": "Press 1 to accept the call.",
-        "SendSms": true,
-        "SendMail": true,
-        "NextStep_Success": "00002",
-        "NextStep_Failure": "00002",
-        "NextStep": "00002"
+      "id": "00001",
+      "type": "guard_vocalls",
+      "name": "DA_SYSTEEMWACHT",
+      "params": {
+        "active": true,
+        "configId": 2,
+        "configName": "SYSTEEMWACHT",
+        "dialGuard": false,
+        "outboundAni": "",
+        "diversion": "",
+        "onHoldAudioUrl": "https://data.freetouse.com/music/tracks/60974ab4-afa7-211d-3ffc-09fdbaff8e58/file/mp3",
+        "timeout": 15,
+        "recordVoicemail": true,
+        "acceptCallMenu": false,
+        "acceptCallMessage": "Press 1 to accept the call.",
+        "sendSms": true,
+        "sendMail": true,
+        "nextStep_Success": "00002",
+        "nextStep_Failure": "00002",
+        "nextStep": "00002"
       }
     },
     {
-      "Id": "00002",
-      "Type": "SendMail_vocalls",
-      "Name": "Mail-To: DA_SYSTEEMWACHT",
-      "Params": {
-        "Active": true,
-        "Subject": "DA_SYSTEEMWACHT: Call Report",
-        "From": "IVR_EVENTS@n-allo.be",
-        "To": "mattias.mertens@n-allo.be;da_systeemwacht@digipolis.be;bart.dexelle@digipolis.be;digipoliswacht@gmail.com",
-        "Cc": "",
-        "Bcc": "",
-        "Body": "${rtEmailBody}",
-        "Priority": 2,
-        "Files": "${rtEmailAttachment}",
-        "AttachmentNames": "",
-        "AttachmentData": "",
-        "CustomerKey": "",
-        "Timeout": 10000,
-        "NextStep_Success": "00003",
-        "NextStep_Failure": "00003",
-        "NextStep": "00003"
+      "id": "00002",
+      "type": "sendMail_vocalls",
+      "name": "Mail-To: DA_SYSTEEMWACHT",
+      "params": {
+        "active": true,
+        "subject": "DA_SYSTEEMWACHT: Call Report",
+        "from": "IVR_EVENTS@n-allo.be",
+        "to": "mattias.mertens@n-allo.be;da_systeemwacht@digipolis.be;bart.dexelle@digipolis.be;digipoliswacht@gmail.com",
+        "cc": "",
+        "bcc": "",
+        "body": "${rtEmailBody}",
+        "priority": 2,
+        "files": "${rtEmailAttachment}",
+        "attachmentNames": "",
+        "attachmentData": "",
+        "customerKey": "",
+        "timeout": 10000,
+        "nextStep_Success": "00003",
+        "nextStep_Failure": "00003",
+        "nextStep": "00003"
       }
     },
     {
-      "Id": "00003",
-      "Type": "SendSms_vocalls",
-      "Name": "SMS-To: DA_SYSTEEMWACHT",
-      "Params": {
-        "Active": true,
-        "SmsAccountId": 47,
-        "Routing": "SYSTEEMWACHT",
-        "From": "8850",
-        "To": "${rtSmsTo}",
-        "Body": "${rtSmsBody}",
-        "Timeout": 5000,
-        "NextStep_Success": "00099",
-        "NextStep_Failure": "00099",
-        "NextStep": "00099"
+      "id": "00003",
+      "type": "sendSms_vocalls",
+      "name": "SMS-To: DA_SYSTEEMWACHT",
+      "params": {
+        "active": true,
+        "smsAccountId": 47,
+        "routing": "SYSTEEMWACHT",
+        "from": "8850",
+        "to": "${rtSmsTo}",
+        "body": "${rtSmsBody}",
+        "timeout": 5000,
+        "nextStep_Success": "00099",
+        "nextStep_Failure": "00099",
+        "nextStep": "00099"
       }
     },
     {
-      "Id": "00099",
-      "Type": "Disconnect_vocalls",
-      "Name": "RTDS: Disconnect",
-      "Params": {}
+      "id": "00099",
+      "type": "disconnect_vocalls",
+      "name": "RTDS: Disconnect",
+      "params": {}
     }
   ]
 }

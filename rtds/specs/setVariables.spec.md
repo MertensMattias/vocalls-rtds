@@ -6,7 +6,7 @@ catalog:
   pattern: "`set_attributes`"
   component: "setVariables.js"
   componentMark: "✅"
-  runtimeCell: "JS twin `executeSetVariables` (`SetVariables_vocalls`)"
+  runtimeCell: "JS twin `executeSetVariables` (`setVariables_vocalls`)"
   seed: "✅"
 ---
 

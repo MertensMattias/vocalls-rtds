@@ -6,7 +6,7 @@ catalog:
   pattern: "`http_call`"
   component: "sendMail.js"
   componentMark: "✅"
-  runtimeCell: "JS twin `executeSendEmail` (`SendMail_vocalls`)"
+  runtimeCell: "JS twin `executeSendEmail` (`sendMail_vocalls`)"
   seed: "✅"
 ---
 

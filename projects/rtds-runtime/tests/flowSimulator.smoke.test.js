@@ -61,7 +61,7 @@ describe('flow simulator — real GuardTui flow end-to-end (covers AE2, AE4)', f
                 // AE2: a GUI handoff was recorded for the GuardTui op and it
                 // resumed on the op's default NextStep (00098).
                 var guardHandoff = result.handoffs.filter(function (h) {
-                    return h.opType === 'GuardTui_vocalls';
+                    return h.opType === 'guardTui_vocalls';
                 })[0];
                 expect(guardHandoff).toBeTruthy();
                 expect(guardHandoff.exitKey).toBe('guard_tui');
@@ -81,12 +81,12 @@ describe('flow simulator — real GuardTui flow end-to-end (covers AE2, AE4)', f
 
                 // Each step carries the config (params) fed to its component/handler.
                 var guardStep = result.steps.filter(function (s) {
-                    return s.type === 'GuardTui_vocalls';
+                    return s.type === 'guardTui_vocalls';
                 })[0];
                 expect(guardStep).toBeTruthy();
                 expect(guardStep.config).toBeTruthy();
-                expect(guardStep.config.ConfigId).toBe(3);
-                expect(guardStep.config.NextStep_Success).toBe('00098');
+                expect(guardStep.config.configId).toBe(3);
+                expect(guardStep.config.nextStep_Success).toBe('00098');
 
                 // No error-level logs on a clean run.
                 expect(result.errors).toHaveLength(0);
@@ -98,13 +98,13 @@ describe('flow simulator — real GuardTui flow end-to-end (covers AE2, AE4)', f
             .runFlow({ flowPath: REAL_FLOW, silent: true })
             .then(function (result) {
                 var guardHandoff = result.handoffs.filter(function (h) {
-                    return h.opType === 'GuardTui_vocalls';
+                    return h.opType === 'guardTui_vocalls';
                 })[0];
                 expect(guardHandoff.rtdsVars).toBeTruthy();
                 expect(guardHandoff.rtdsVars.RTDS_currentOpId).toBe('00001');
-                expect(guardHandoff.rtdsVars.RTDS_currentOpType).toBe('GuardTui_vocalls');
+                expect(guardHandoff.rtdsVars.RTDS_currentOpType).toBe('guardTui_vocalls');
                 // The config mirrored into the session for the component handoff.
-                expect(guardHandoff.rtdsVars.RTDS_currentOpConfig.ConfigId).toBe(3);
+                expect(guardHandoff.rtdsVars.RTDS_currentOpConfig.configId).toBe(3);
                 expect(guardHandoff.rtdsVars.RTDS_nextStepId).toBe('00098');
                 expect(guardHandoff.rtdsVars.RTDS_sourceId).toBe(
                     expectedSourceIdFromFlowFile(REAL_FLOW)
@@ -147,7 +147,7 @@ describe('flow simulator — error surfacing', function () {
         var flowPath = writeTempFlow({
             sourceId: '+3200000000',
             operations: [
-                { id: '00000', type: 'SetVariables_vocalls', name: 'no-entry', params: { NextStep: '' } },
+                { id: '00000', type: 'setVariables_vocalls', name: 'no-entry', params: { nextStep: '' } },
             ],
         });
         return simulateFlow.runFlow({ flowPath: flowPath, silent: true }).then(function (result) {
@@ -179,8 +179,8 @@ describe('flow simulator — max-step cap', function () {
         var flowPath = writeTempFlow({
             sourceId: '+3200000001',
             operations: [
-                { id: '00000', type: 'PlayPrompt_vocalls', name: 'a', isFirstOperation: true, params: { NextStep: '00001' } },
-                { id: '00001', type: 'PlayPrompt_vocalls', name: 'b', params: { NextStep: '00000' } },
+                { id: '00000', type: 'playPrompt_vocalls', name: 'a', isFirstOperation: true, params: { nextStep: '00001' } },
+                { id: '00001', type: 'playPrompt_vocalls', name: 'b', params: { nextStep: '00000' } },
             ],
         });
         return simulateFlow
@@ -208,8 +208,8 @@ describe('flow simulator — terminal GUI op with no NextStep', function () {
         var flowPath = writeTempFlow({
             sourceId: '+3200000002',
             operations: [
-                { id: '00000', type: 'SetVariables_vocalls', name: 'init', isFirstOperation: true, params: { NextStep: '00001' } },
-                { id: '00001', type: 'PlayPrompt_vocalls', name: 'bye', params: { Prompt: 'goodbye' } },
+                { id: '00000', type: 'setVariables_vocalls', name: 'init', isFirstOperation: true, params: { nextStep: '00001' } },
+                { id: '00001', type: 'playPrompt_vocalls', name: 'bye', params: { prompt: 'goodbye' } },
             ],
         });
         return simulateFlow
@@ -221,7 +221,7 @@ describe('flow simulator — terminal GUI op with no NextStep', function () {
                 // The terminal PlayPrompt handoff was recorded exactly once
                 // (not looped) before the clean stop.
                 var playHandoffs = result.handoffs.filter(function (h) {
-                    return h.opType === 'PlayPrompt_vocalls';
+                    return h.opType === 'playPrompt_vocalls';
                 });
                 expect(playHandoffs.length).toBe(1);
             });
