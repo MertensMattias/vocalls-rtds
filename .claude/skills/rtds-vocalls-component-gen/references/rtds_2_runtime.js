@@ -68,9 +68,10 @@ function registerRtdsOperation(type, handler) {
 }
 
 /**
- * Registers a GUI-exit Type. The runtime mirrors op.params to
- * RTDS_OP_<Key> session variables, sets RTDS_currentOpId/Type, and returns
- * exitKey to Vocalls so the call routes to the matching component.
+ * Registers a GUI-exit Type. At handoff the runtime (prepareGuiHandoff) sets
+ * RTDS_currentOpId/Type and RTDS_currentOpConfig (the whole op.params object),
+ * pre-populates RTDS_nextStepId with the default NextStep, and returns exitKey
+ * to Vocalls so the call routes to the matching component.
  *
  * @param {string} type    - Operation Type string (e.g. 'PlayPrompt').
  * @param {string} exitKey - Exit-key string emitted to Vocalls.

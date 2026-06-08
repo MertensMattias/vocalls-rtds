@@ -65,7 +65,7 @@ flowchart TD
     RS --> L{"RTDS_REGISTRY.get(type)?"}
     L -->|"kind: js"| H["handler runs inline\n→ { nextStepId }"]
     H --> RS
-    L -->|"kind: gui"| G["mirror Params → RTDS_OP_*\nreturn exitKey to canvas"]
+    L -->|"kind: gui"| G["write RTDS_currentOpConfig (whole params)\nreturn exitKey to canvas"]
     L -->|"unregistered"| W["warn + skip to NextStep"]
     W --> RS
     G --> C["Vocalls GUI component runs\nwrites chosen outcome → _rtNextStep"]
@@ -91,10 +91,14 @@ flowchart TD
 
 - **JS-inline** operations (e.g. `SetVariables`, `SendSms`, `SendMail`) execute entirely in the
   runtime and return `{ nextStepId }`; the loop never leaves `rtds_2_runtime.js`.
-- **GUI-exit** operations mirror their Params into `RTDS_OP_<Key>` session variables and return a
-  Type-specific **exit key** string to Vocalls. The matching canvas component runs, writes its
-  chosen outcome Id into the master-layer global **`_rtNextStep`**, and the call re-enters through
-  `resumeFrom(RTDS_nextStepId)`.
+- **GUI-exit** operations hand off via `prepareGuiHandoff`, which writes the whole Params object to
+  `RTDS_currentOpConfig` (plus `RTDS_currentOpId/Type` and a default `RTDS_nextStepId`) and returns a
+  Type-specific **exit key** string to Vocalls. The matching canvas target runs — a native Designer
+  node (transfer / menu / disconnect / …), or a self-contained v2 component such as `guard_tui`
+  ([guardTui.js](../components/guardTui.js)) that reads `RTDS_currentOpConfig` like any other
+  component. It writes its chosen outcome Id into the master-layer global **`_rtNextStep`**, and the
+  call re-enters through `resumeFrom(RTDS_nextStepId)`. The engine does **not** write per-key
+  `RTDS_OP_*` variables.
 
 A GUI component and its JS twin (where both exist) must keep the **same payload + branch
 contract** — this is the lockstep rule (see [lockstep](../../conventions/lockstep.md)). Three

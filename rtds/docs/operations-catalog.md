@@ -22,31 +22,9 @@ Legend: ✅ present · ⬜ not yet · 🔒 legacy (superseded).
 | sendSms | `http_call` | [spec](../specs/sendSms.spec.md) | ✅ [sendSms.js](../components/sendSms.js) | JS twin `executeSendSms` (`SendSms_vocalls`) | ✅ |
 | sendEmail | `http_call` | [spec](../specs/sendEmail.spec.md) | ✅ [sendMail.js](../components/sendMail.js) | JS twin `executeSendEmail` (`SendMail_vocalls`) | ✅ |
 | setVariables | `set_attributes` | [spec](../specs/setVariables.spec.md) | ✅ [setVariables.js](../components/setVariables.js) | JS twin `executeSetVariables` (`SetVariables_vocalls`) | ✅ |
-| setAttributes 🔒 | `set_attributes` | [spec](../specs/setAttributes.spec.md) | 🔒 component removed — use [setVariables.js](../components/setVariables.js) | aliased to `executeSetVariables` (`SetAttributes_vocalls`) | 🔒 |
 | guardRouting | `http_call` + multi-node | [spec](../specs/guardRouting.spec.md) | ✅ [guardRouting.js](../components/guardRouting.js) | GUI-exit `guard_routing` (via `Guard_vocalls`) | ✅ |
 | guardTui | `http_call` + multi-node | [spec](../specs/guardTui.spec.md) | ✅ [guardTui.js](../components/guardTui.js) | GUI-exit `guard_tui` (`GuardTui_vocalls`) | ✅ |
-| guard | `gui_exit` (dispatcher → GuardRouting) | [spec](../specs/guard.spec.md) | — | GUI-exit `guard_routing` (`Guard_vocalls`) | ✅ |
 | scheduler | `http_call` (multi-branch) | [spec](../specs/scheduler.spec.md) | ✅ [checkSchedule.js](../components/checkSchedule.js) | ⬜ not registered | ⬜ |
-| menu | `gui_exit` (multi-node) | [spec](../specs/menu.spec.md) | ⬜ | GUI-exit `menu` (`Menu_vocalls`) | ✅ |
-| languageMenu | `gui_exit` (multi-node) | [spec](../specs/languageMenu.spec.md) | ⬜ | GUI-exit `language_menu` (`LanguageMenu_vocalls`) | ⬜ |
-| playPrompt | `gui_exit` | [spec](../specs/playPrompt.spec.md) | ⬜ | GUI-exit `play_prompt` (`PlayPrompt_vocalls`) | ✅ |
-| playAudio | `gui_exit` | [spec](../specs/playAudio.spec.md) | ⬜ | GUI-exit `play_audio` (`PlayAudio_vocalls`) | ⬜ |
-| disconnect | `gui_exit` (terminal) | [spec](../specs/disconnect.spec.md) | ⬜ | GUI-exit `disconnect` (`Disconnect_vocalls`) | ✅ |
-| workgroupTransfer | `gui_exit` | [spec](../specs/workgroupTransfer.spec.md) | ⬜ | GUI-exit `workgroup_transfer` (`WorkgroupTransfer_vocalls`) | ⬜ |
-| externalTransfer | `gui_exit` | [spec](../specs/externalTransfer.spec.md) | ⬜ | GUI-exit `external_transfer` (`ExternalTransfer_vocalls`) | ⬜ |
-| callback | `http_call` + multi-node | [spec](../specs/callback.spec.md) | ⬜ | GUI-exit `callback` (`Callback_vocalls`) | ⬜ |
-| condition | `condition` | [spec](../specs/condition.spec.md) | ⬜ | ⬜ not registered | ⬜ |
-| checkAttribute | `condition` | [spec](../specs/checkAttribute.spec.md) | ⬜ | ⬜ not registered | ⬜ |
-| emergency | `http_call` (multi-branch) | [spec](../specs/emergency.spec.md) | ⬜ | ⬜ not registered | ⬜ |
-| flowJump | `flow_jump` | [spec](../specs/flowJump.spec.md) | ⬜ | ⬜ not registered | ⬜ |
-| manageCallCapacity | `condition` (counter-driven) | [spec](../specs/manageCallCapacity.spec.md) | ⬜ | ⬜ not registered | ⬜ |
-| updateSourceId | `set_attributes` (variant) | [spec](../specs/updateSourceId.spec.md) | ⬜ | ⬜ not registered | ⬜ |
-| ivrLogging | `http_call` | [spec](../specs/ivrLogging.spec.md) | ⬜ | ⬜ not registered | ⬜ |
-| callerDataEntry | `gui_exit` (multi-node) | [spec](../specs/callerDataEntry.spec.md) | ⬜ | ⬜ not registered | ⬜ |
-| callbackAddRecord | `http_call` | [spec](../specs/callbackAddRecord.spec.md) | ⬜ | ⬜ not registered | ⬜ |
-| callbackInputPhoneNumber | `gui_exit` (multi-node) | [spec](../specs/callbackInputPhoneNumber.spec.md) | ⬜ | ⬜ not registered | ⬜ |
-| callbackMenuParticipate | `gui_exit` (multi-node) | [spec](../specs/callbackMenuParticipate.spec.md) | ⬜ | ⬜ not registered | ⬜ |
-| callbackTimeSlot | `gui_exit` (multi-node) | [spec](../specs/callbackTimeSlot.spec.md) | ⬜ | ⬜ not registered | ⬜ |
 
 ## Canonical hand-built example (no operation spec)
 
@@ -54,17 +32,7 @@ Legend: ✅ present · ⬜ not yet · 🔒 legacy (superseded).
 | ---- | ------- |
 | [voicemaildetector.js](../components/voicemaildetector.js) | Reference hand-built mxGraph component cited throughout [component-mxgraph.md](../../conventions/component-mxgraph.md). Not a routing-table operation. |
 
-## Runtime-internal / non-operation handlers
-
-These specs describe the PureConnect dispatcher and helper sub-handlers, not RTDS operations —
-the Vocalls runtime owns their behaviour natively (see
-[runtime-architecture.md](runtime-architecture.md)). They have no component or registry entry.
-
-- [_nalloRtds.spec.md](../specs/_nalloRtds.spec.md) — top-level dispatcher; replaced by the
-  runtime's Script-node entry points.
-- [_play.spec.md](../specs/_play.spec.md), [_promptLibraryGetDirList.spec.md](../specs/_promptLibraryGetDirList.spec.md),
-  [events.spec.md](../specs/events.spec.md), [queueHandling.spec.md](../specs/queueHandling.spec.md).
-
-> Keep this catalog in sync when you add/modify a component, wire a runtime handler, or add seed
-> rows — see the "What to update when you change X" section in
+> Only operations with a component in [`rtds/components/`](../components/) and an authored spec
+> in [`rtds/specs/`](../specs/) are catalogued above. Add a row (and its spec) when a new
+> component lands — see the "What to update when you change X" section in
 > [CLAUDE.md](../../CLAUDE.md).

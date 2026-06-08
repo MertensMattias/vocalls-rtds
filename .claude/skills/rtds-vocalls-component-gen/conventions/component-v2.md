@@ -7,6 +7,21 @@
 
 For the *primitive wiring* used when a v2 component embeds Designer primitives (case/recognize/component) between Script and output, see [component-mxgraph.md](component-mxgraph.md).
 
+## 0. The one contract every component shares
+
+Every v2 component follows **one** input/validation/output contract, regardless of how the engine reaches it (JS-twin-backed op like `sendSms`, or GUI-exit target like `guardTui`). The stages below are identical across components; only operation-specific detail (which preconditions, how many endpoints, how many `NextStep_*` outcomes) varies.
+
+| Stage | Contract |
+| ----- | -------- |
+| **Input — master `Variables`** | Seed `__configJSON` (literal default Params), `__environment = environment`, `__rtBaseUrl = _rtBaseUrl`, one or more `__rt<Op>Endpoint = _rt<Op>Endpoint` bindings, the `__rtOutcome` seed, and `__rtNextStep &= _rtNextStep` (Designer placeholder-binding — see §4). |
+| **Input — `PropertiesDefinition`** | Three operator-facing props: `__configJSON`, `__environment`, `__nextStep` (§5). |
+| **Init node** | `__rtParams = __setupConfig(__configJSON)`; `if (!_headers) { _headers = {}; }`; seed `__rtOutcome = 'NextStep_Failure'` (§6). Op-specific extras allowed (a `Logger.debug`; `language` normalisation). |
+| **Validation / work** | Active guard → return leaving `__rtOutcome = 'NextStep'`. Precondition checks → warn + return. Pivot `__rtOutcome = 'NextStep_Failure'` before any network call. `jsonHttpRequest(...).then(success, error)` with a mandatory error callback; success stages the chosen `NextStep_*` key (§7). |
+| **Output node** | `global[_rtNextStep] = getValue(__rtParams, __rtOutcome, '')` then a `Logger.info('[<name>] exit', …)` — byte-identical across components except the log tag, fallback `''` (§8). |
+| **Helpers (master `Code`)** | Shared: `__makeLocalNodeId`, `__extractParams`, `__activeFlag`, `__setupConfig`, + guarded fallbacks for `getValue/walk/nowUTC/hasKey/getScoped/resolveConfigTokens`. Op-specific helpers (`__isMobileNumber`, …) as needed (§3). |
+
+A component **never** writes per-key `RTDS_OP_*` and **never** `return`s an exit key — GUI-exit routing is performed by the engine (`prepareGuiHandoff` writes `RTDS_currentOpConfig` and emits the exit key). See §7.
+
 ## 1. Node graph — four nodes, three edges
 
 | id   | label  | Type      | Kind   | style           | geometry                 |
@@ -69,7 +84,7 @@ __rtNextStep &= _rtNextStep;
 
 `&=` is the **documented placeholder-binding operator** — it keeps `__rtNextStep` synced with the flow variable `_rtNextStep`. Use it only on `__rtNextStep`. Everywhere else, `=`.
 
-The `&=` binding is **reserved for self-contained embedded Style-B flows** (e.g. [guardTui.js](../references/examples/guardTui.js)), where `__rtNextStep` must stay synced for an embedded sub-flow to route on it. It is **not** the general routing mechanism. For a general v2 routing-table component, the step id is resolved **once at the output node** via `global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1)` (see §7–§8) — the work body never writes the step id mid-flight. Keep the `&=` line in master `Variables` regardless (it costs nothing and the engine still reads `global[_rtNextStep]`); just don't treat it as the resolution path.
+Keep the `&=` line in master `Variables` for every component — it keeps `__rtNextStep` synced with the flow variable `_rtNextStep` at no cost, and the engine reads `global[_rtNextStep]` on re-entry. It is **not** the resolution path. The step id is resolved **once at the output node** via `global[_rtNextStep] = getValue(__rtParams, __rtOutcome, '')` (see §7–§8) — the work body never writes the step id mid-flight. This holds for *every* v2 component, whether it is reached as a JS-twin-backed op (e.g. [sendSms.js](../references/examples/sendSms.js)) or as a GUI-exit target (e.g. [guardTui.js](../references/examples/guardTui.js), the `guard_tui` target): both are self-contained components on the same contract.
 
 See [sendSms.js:27](../references/examples/sendSms.js#L27) for the canonical encoded form.
 
@@ -103,20 +118,22 @@ The work body **stages an outcome key** into `__rtOutcome` — it never writes `
 3. Builds payload, fires `jsonHttpRequest(...).then(success, error)`. **Error callback is mandatory.** The success callback sets `__rtOutcome` to the chosen branch key (`'NextStep_Success'`, `'NextStep_<State>'`, the default `'NextStep'`, …); the error callback leaves it at `'NextStep_Failure'` (or sets it explicitly).
 4. Three log lines total: skipped (info) / validation (warn) / outcome (info, warn, or error). Work-body logs carry `outcome` (the staged key); see [logging.md](logging.md).
 
-**`gui_exit` exception:** GUI-exit operations do **not** use `__rtOutcome`. They `return '<exit_key>';` directly — the engine routes on the returned string via `prepareGuiHandoff`. Don't stage or resolve `__rtOutcome` in a gui_exit work body. See [.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/gui_exit.md](../references/operation_bodies/gui_exit.md).
+**GUI-exit routing is the engine's job, not a component pattern.** When the routing table hits a GUI-exit Type, the **runtime** (`prepareGuiHandoff` in `rtds_2_runtime.js`) writes `RTDS_currentOpConfig` (the whole `op.params` object) plus `RTDS_currentOpId/Type`, pre-populates `RTDS_nextStepId`, and emits the Type's exit key — routing the call to the matching canvas component. The **target** component (e.g. [guardTui.js](../references/examples/guardTui.js) for `guard_tui`) is then a normal self-contained v2 component: it reads `__configJSON → __rtParams`, stages `__rtOutcome`, and resolves once at the output node — exactly like an HTTP-call component. A component work body never writes per-key `RTDS_OP_*` and never `return`s an exit key. See [.claude/skills/rtds-vocalls-component-gen/references/operation_bodies/gui_exit.md](../references/operation_bodies/gui_exit.md).
 
 ## 8. Output node
 
 The output node `OnEnter` is the **single place** the staged outcome key is resolved to a step id and written to the engine global. Two lines:
 
 ```js
-global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1);
+global[_rtNextStep] = getValue(__rtParams, __rtOutcome, '');
 Logger.info('[<componentName>] exit', { outcome: __rtOutcome, nextStep: global[_rtNextStep] });
 ```
 
+The exit-key fallback is `''` (empty string) — this matches the shipped components [sendSms.js:99](../references/examples/sendSms.js#L99) and [guardTui.js:401](../references/examples/guardTui.js#L401), which are the source of truth for the contract.
+
 The engine routes on `global[_rtNextStep]` (`resumeFrom(global[_rtNextStep] || RTDS_nextStepId)` in `rtds_2_runtime.js`); the staging in `__rtOutcome` is purely component-internal. The exit log carries **both** the staged `outcome` and the resolved `nextStep`.
 
-GUI-exit operations are the exception — they `return` the exit key from the work node and have no `__rtOutcome` resolve here (§7).
+Every v2 component resolves `__rtOutcome` here — including GUI-exit *target* components (§7). The exit key itself is emitted by the engine's `prepareGuiHandoff`, not by any component.
 
 ## Reflect on
 
@@ -124,5 +141,6 @@ GUI-exit operations are the exception — they `return` the exit key from the wo
 - **[grep]** Master-attribute order matches §2?
 - **[judgment]** Master `Code` composition matches §3?
 - **[grep]** Init body is the universal four lines (incl. `__rtOutcome = 'NextStep_Failure';`)?
-- **[grep]** Work body stages `__rtOutcome = '<key>'` with plain `=` and never writes `global[_rtNextStep]` mid-flight (gui_exit excepted)?
-- **[grep]** Output node resolves `__rtOutcome` to `global[_rtNextStep]` and logs both `outcome` and `nextStep`?
+- **[grep]** Work body stages `__rtOutcome = '<key>'` with plain `=` and never writes `global[_rtNextStep]` mid-flight?
+- **[grep]** Output node resolves `__rtOutcome` to `global[_rtNextStep]` with the `''` fallback and logs both `outcome` and `nextStep`?
+- **[grep]** No component work body writes per-key `RTDS_OP_*` or `return`s an exit key — GUI-exit routing is the engine's job (`prepareGuiHandoff`)?

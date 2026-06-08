@@ -37,20 +37,15 @@ REPO = Path(__file__).resolve().parents[1]
 SPECS = REPO / "rtds" / "specs"
 CATALOG = REPO / "rtds" / "docs" / "operations-catalog.md"
 
-# Curated row order (matches the hand-authored catalog).
+# Curated row order. Only operations with a real component (rtds/components/*.js)
+# and an authored spec are catalogued. Operations without a component were dropped
+# along with their specs; add a row back here when its component + spec land.
 ROW_ORDER = [
-    "sendSms", "sendEmail", "setVariables", "setAttributes",
-    "guardRouting", "guardTui", "guard", "scheduler",
-    "menu", "languageMenu", "playPrompt", "playAudio", "disconnect",
-    "workgroupTransfer", "externalTransfer", "callback",
-    "condition", "checkAttribute", "emergency", "flowJump",
-    "manageCallCapacity", "updateSourceId", "ivrLogging", "callerDataEntry",
-    "callbackAddRecord", "callbackInputPhoneNumber", "callbackMenuParticipate",
-    "callbackTimeSlot",
+    "sendSms", "sendEmail", "setVariables",
+    "guardRouting", "guardTui", "scheduler",
 ]
 
-# Map operation name -> spec filename (most are name.spec.md; scheduler is the
-# exception, its spec is scheduler.spec.md but it renders as the checkSchedule row).
+# Map operation name -> spec filename (all are name.spec.md today).
 SPEC_FILE = {name: f"{name}.spec.md" for name in ROW_ORDER}
 
 HEADER = """\
@@ -85,19 +80,9 @@ TAIL = """\
 | ---- | ------- |
 | [voicemaildetector.js](../components/voicemaildetector.js) | Reference hand-built mxGraph component cited throughout [component-mxgraph.md](../../conventions/component-mxgraph.md). Not a routing-table operation. |
 
-## Runtime-internal / non-operation handlers
-
-These specs describe the PureConnect dispatcher and helper sub-handlers, not RTDS operations —
-the Vocalls runtime owns their behaviour natively (see
-[runtime-architecture.md](runtime-architecture.md)). They have no component or registry entry.
-
-- [_nalloRtds.spec.md](../specs/_nalloRtds.spec.md) — top-level dispatcher; replaced by the
-  runtime's Script-node entry points.
-- [_play.spec.md](../specs/_play.spec.md), [_promptLibraryGetDirList.spec.md](../specs/_promptLibraryGetDirList.spec.md),
-  [events.spec.md](../specs/events.spec.md), [queueHandling.spec.md](../specs/queueHandling.spec.md).
-
-> Keep this catalog in sync when you add/modify a component, wire a runtime handler, or add seed
-> rows — see the "What to update when you change X" section in
+> Only operations with a component in [`rtds/components/`](../components/) and an authored spec
+> in [`rtds/specs/`](../specs/) are catalogued above. Add a row (and its spec) when a new
+> component lands — see the "What to update when you change X" section in
 > [CLAUDE.md](../../CLAUDE.md).
 """
 
