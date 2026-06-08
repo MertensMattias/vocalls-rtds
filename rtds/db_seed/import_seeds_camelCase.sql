@@ -124,17 +124,30 @@ BEGIN TRANSACTION;
    production seed (seed_rtds_dictionaries_minimal.sql, May 2026 snapshot) into
    this camelCase contract: every operation TYPE Name is camelCased and the
    temporary '_vocalls' suffix is dropped (SetAttributes -> setVariables,
-   PlayPrompt -> playPrompt, Schedule -> checkSchedule, GuardTUI -> guardTui,
-   SendSMS -> sendSms, RESTGet -> restGet, ...). Prompt-application names and
-   language keys (NL/FR/...) are DATA, not type strings -- left verbatim, like
-   the language keys elsewhere in this file.
+   Schedule -> checkSchedule, GuardTUI -> guardTui, SendSMS -> sendSms, ...).
+   Prompt-application names and language keys (NL/FR/...) are DATA, not type
+   strings -- left verbatim, like the language keys elsewhere in this file.
 
-   SET IDENTITY_INSERT preserves the production IDs exactly so existing FKs from
-   the data tables (Operation.DicOperationTypeID, Prompt.DicPromptApplicationID
-   / DicPromptLanguageID) keep resolving. INSERT ... WHERE NOT EXISTS BY ID is
-   idempotent: existing rows (matched by ID) are left untouched, missing rows
-   are inserted. Nothing here is deleted (no @clearFirst path -- this file is
-   purely additive).
+   CLEAN ID NUMBERING: this is a clean-DB seed. The dictionary IDs are assigned
+   fresh and CONTIGUOUS from 1, in listed order -- they are NOT the historical
+   production IDs (the old scattered ids -- guardRouting 21, guardTui 22, prompt
+   app Welcome 11, ... -- have been collapsed to 1..N). Because the IDs moved, any
+   payload that references a dictionary row by numeric id (e.g. a flow's prompt
+   'applicationId') must use these new ids; rtds/samples/n-allo_reception.json was
+   updated in lockstep (Welcome 11 -> 8).
+
+   SEMANTIC RENAMES (deliberate, not casing fixes):
+     - 'languageMenu' -> 'getLanguage'
+     - 'playPrompt'   -> 'say'   (the single prompt-playing type)
+     - 'playAudio'    -> 'play'
+   The runtime registration (registerRtdsExit) and the Designer twin track these
+   names in lockstep. On a DB that still carries an old name, SECTION 2 renames it
+   in place by NAME (see the step-0 UPDATE block) so no duplicate row is created.
+
+   SET IDENTITY_INSERT lets this clean seed assign the contiguous ids explicitly.
+   INSERT ... WHERE NOT EXISTS BY ID is idempotent: existing rows (matched by ID)
+   are left untouched, missing rows are inserted. Nothing here is deleted (no
+   @clearFirst path -- this file is purely additive).
 
    NOTE: SECTION 1/2 below ALSO find-or-create Dic_OperationType BY NAME (without
    IDENTITY_INSERT). That is harmless and idempotent: the camelCase names seeded
@@ -148,31 +161,30 @@ SET IDENTITY_INSERT rtds.Dic_OperationType ON;
 
 INSERT INTO rtds.Dic_OperationType ([DicOperationTypeID], [Name], [DateCreated], [CreatedBy], [DateUpdated], [UpdatedBy])
 SELECT v.* FROM (VALUES
-  (1,  N'setVariables',        N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
-  (2,  N'playPrompt',          N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
-  (3,  N'languageMenu',        N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
-  (4,  N'checkSchedule',       N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
-  (5,  N'emergency',           N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
-  (21, N'guardRouting',        N'2022-04-20 11:47:56.5100000', N'GDG546',        NULL, NULL),
-  (7,  N'menu',                N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
-  (22, N'guardTui',            N'2022-04-20 11:48:35.3830000', N'GDG546',        NULL, NULL),
-  (9,  N'workgroupTransfer',   N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
-  (10, N'externalTransfer',    N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
-  (11, N'guard',               N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
-  (12, N'disconnect',          N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
-  (13, N'playAudio',           N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
-  (14, N'condition',           N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
-  (15, N'skillUpdate',         N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
-  (16, N'flowJump',            N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
-  (17, N'restRequest',         N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
-  (18, N'callerDataEntry',     N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
-  (19, N'voicemailCallback',   N'2021-06-30 11:07:51.4330000', N'N-ALLO\EEN503', NULL, NULL),
-  (20, N'callback',            N'2021-10-29 12:02:57.5000000', N'N-ALLO\GDG546', NULL, NULL),
-  (23, N'sendSms',             N'2022-04-20 11:48:39.7930000', N'GDG546',        NULL, NULL),
-  (24, N'sendEmail',           N'2022-04-20 11:48:43.1100000', N'GDG546',        NULL, NULL),
-  (25, N'restGet',             N'2023-09-27 12:05:14.2930000', N'RZ6189',        NULL, NULL),
-  (26, N'checkAttribute',      N'2023-11-27 15:42:49.9300000', N'GDG546',        NULL, NULL),
-  (27, N'manageCallCapacity',  N'2025-03-11 12:52:49.2470000', N'GDG546',        NULL, NULL)
+  (1,  N'setVariables',        N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (2,  N'checkVariable',       N'2023-11-27 15:42:49.9300000', N'rtds-seed', NULL, NULL),
+  (3,  N'say',                 N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (4,  N'getLanguage',         N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (5,  N'checkSchedule',       N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (6,  N'emergency',           N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (7,  N'guardRouting',        N'2022-04-20 11:47:56.5100000', N'rtds-seed', NULL, NULL),
+  (8,  N'menu',                N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (9,  N'guardTui',            N'2022-04-20 11:48:35.3830000', N'rtds-seed', NULL, NULL),
+  (10, N'workgroupTransfer',   N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (11, N'guard',               N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (12, N'disconnect',          N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (13, N'play',                N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (14, N'condition',           N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (15, N'skillUpdate',         N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (16, N'flowJump',            N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (17, N'callerDataEntry',     N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (18, N'voicemailCallback',   N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (19, N'callback',            N'2021-10-29 12:02:57.5000000', N'rtds-seed', NULL, NULL),
+  (20, N'sendSms',             N'2022-04-20 11:48:39.7930000', N'rtds-seed', NULL, NULL),
+  (21, N'sendEmail',           N'2022-04-20 11:48:43.1100000', N'rtds-seed', NULL, NULL),
+  (22, N'manageCallCapacity',  N'2025-03-11 12:52:49.2470000', N'rtds-seed', NULL, NULL),
+  (23, N'externalTransfer',    N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (24, N'internalTransfer',    N'2026-06-08 00:00:00.0000000', N'rtds-seed', NULL, NULL)
 ) AS v([DicOperationTypeID], [Name], [DateCreated], [CreatedBy], [DateUpdated], [UpdatedBy])
 WHERE NOT EXISTS (
     SELECT 1 FROM rtds.Dic_OperationType t WHERE t.[DicOperationTypeID] = v.[DicOperationTypeID]
@@ -186,18 +198,18 @@ SET IDENTITY_INSERT rtds.Dic_PromptApplication ON;
 
 INSERT INTO rtds.Dic_PromptApplication ([DicPromptApplicationID], [Name], [FilePrefix], [DateCreated], [CreatedBy], [DateUpdated], [UpdatedBy])
 SELECT v.* FROM (VALUES
-  (1,  N'Scheduler',     N'Scheduler', N'2021-06-30 11:08:13.6400000', N'N-ALLO\EEN503', NULL, NULL),
-  (2,  N'Callback',      N'CB',        N'2021-06-30 11:08:13.6400000', N'N-ALLO\EEN503', NULL, NULL),
-  (3,  N'Survey',        N'Survey',    N'2021-06-30 11:08:13.6400000', N'N-ALLO\EEN503', NULL, NULL),
-  (4,  N'PreQueue',      N'PreQueue',  N'2021-06-30 11:08:13.6400000', N'N-ALLO\EEN503', NULL, NULL),
-  (5,  N'Queue',         N'Queue',     N'2021-06-30 11:08:13.6400000', N'N-ALLO\EEN503', NULL, NULL),
-  (6,  N'AdHocMessages', N'AdHoc',     N'2021-06-30 11:08:13.6400000', N'N-ALLO\EEN503', NULL, NULL),
-  (7,  N'Menu',          N'Menu',      N'2021-07-23 11:26:02.6600000', N'N-ALLO\RZ6189', NULL, NULL),
-  (12, N'Voicemail',     N'Voicemail', N'2021-11-09 14:02:36.2930000', N'N-ALLO\GDG546', NULL, NULL),
-  (11, N'Welcome',       N'Welcome',   N'2021-10-22 11:49:45.7700000', N'N-ALLO\GDG546', NULL, NULL),
-  (13, N'Info',          N'Info',      N'2021-11-22 15:52:00.6030000', N'N-ALLO\GDG546', NULL, NULL),
-  (14, N'Exception',     N'Exception', N'2021-11-29 12:19:10.1300000', N'N-ALLO\GDG546', NULL, NULL),
-  (15, N'Emergency',     N'Emergency', N'2022-06-09 09:35:39.9470000', N'GDG546',        NULL, NULL)
+  (1,  N'scheduler',     N'Scheduler', N'2021-06-30 11:08:13.6400000', N'rtds-seed', NULL, NULL),
+  (2,  N'callback',      N'CB',        N'2021-06-30 11:08:13.6400000', N'rtds-seed', NULL, NULL),
+  (3,  N'survey',        N'Survey',    N'2021-06-30 11:08:13.6400000', N'rtds-seed', NULL, NULL),
+  (4,  N'preQueue',      N'PreQueue',  N'2021-06-30 11:08:13.6400000', N'rtds-seed', NULL, NULL),
+  (5,  N'queue',         N'Queue',     N'2021-06-30 11:08:13.6400000', N'rtds-seed', NULL, NULL),
+  (6,  N'adHocMessages', N'AdHoc',     N'2021-06-30 11:08:13.6400000', N'rtds-seed', NULL, NULL),
+  (7,  N'menu',          N'Menu',      N'2021-07-23 11:26:02.6600000', N'rtds-seed', NULL, NULL),
+  (8,  N'welcome',       N'Welcome',   N'2021-10-22 11:49:45.7700000', N'rtds-seed', NULL, NULL),
+  (9,  N'voicemail',     N'Voicemail', N'2021-11-09 14:02:36.2930000', N'rtds-seed', NULL, NULL),
+  (10, N'info',          N'Info',      N'2021-11-22 15:52:00.6030000', N'rtds-seed', NULL, NULL),
+  (11, N'exception',     N'Exception', N'2021-11-29 12:19:10.1300000', N'rtds-seed', NULL, NULL),
+  (12, N'emergency',     N'Emergency', N'2022-06-09 09:35:39.9470000', N'rtds-seed', NULL, NULL)
 ) AS v([DicPromptApplicationID], [Name], [FilePrefix], [DateCreated], [CreatedBy], [DateUpdated], [UpdatedBy])
 WHERE NOT EXISTS (
     SELECT 1 FROM rtds.Dic_PromptApplication t WHERE t.[DicPromptApplicationID] = v.[DicPromptApplicationID]
@@ -211,11 +223,10 @@ SET IDENTITY_INSERT rtds.Dic_PromptLanguage ON;
 
 INSERT INTO rtds.Dic_PromptLanguage ([DicPromptLanguageID], [Key], [Language], [DateCreated], [CreatedBy], [DateUpdated], [UpdatedBy])
 SELECT v.* FROM (VALUES
-  (1, N'NL', N'Dutch',       N'2021-06-30 11:08:13.6400000', N'N-ALLO\EEN503',     NULL,                            NULL),
-  (2, N'FR', N'French',      N'2021-06-30 11:08:13.6400000', N'N-ALLO\EEN503',     NULL,                            NULL),
-  (3, N'EN', N'English',     N'2021-06-30 11:08:13.6400000', N'N-ALLO\EEN503',     NULL,                            NULL),
-  (4, N'DE', N'German',      N'2021-06-30 11:08:13.6400000', N'N-ALLO\EEN503',     NULL,                            NULL),
-  (6, N'TF', N'TTS French',  N'2026-05-19 17:07:39.9500000', N'IJG577@engie.com',  N'2026-05-19 17:07:53.2966667',  N'IJG577@engie.com')
+  (1, N'NL', N'Dutch',       N'2021-06-30 11:08:13.6400000', N'rtds-seed',  NULL,  NULL),
+  (2, N'FR', N'French',      N'2021-06-30 11:08:13.6400000', N'rtds-seed',  NULL,  NULL),
+  (3, N'EN', N'English',     N'2021-06-30 11:08:13.6400000', N'rtds-seed',  NULL,  NULL),
+  (4, N'DE', N'German',      N'2021-06-30 11:08:13.6400000', N'rtds-seed',  NULL,  NULL),
 ) AS v([DicPromptLanguageID], [Key], [Language], [DateCreated], [CreatedBy], [DateUpdated], [UpdatedBy])
 WHERE NOT EXISTS (
     SELECT 1 FROM rtds.Dic_PromptLanguage t WHERE t.[DicPromptLanguageID] = v.[DicPromptLanguageID]
@@ -247,9 +258,9 @@ INSERT INTO @OperationType (Name) VALUES
     ('disconnect'),
 
     /* ---- helpdesk-flow types (DA_HELDPESK + LPA_ICT_HELDPESK) ---- */
-    ('playAudio'),
+    ('play'),
     ('externalTransfer'),
-    ('playPrompt'),
+    ('say'),
     ('menu'),
     ('workgroupTransfer'),
 
@@ -257,7 +268,17 @@ INSERT INTO @OperationType (Name) VALUES
     ('emergency'),
     ('checkSchedule'),
     ('callback'),
-    ('flowJump');
+    ('flowJump'),
+
+    /* ---- n-allo_reception flow types (sourceId +3224581030) ----
+       internalTransfer is a NEW type. getLanguage is the renamed languageMenu.
+       voicemailCallback gains its first catalogued attributes here. The prompt-
+       playing type 'say' (formerly playPrompt) and 'play' (formerly playAudio)
+       are catalogued above. None are runtime-wired as inline twins (getLanguage
+       keeps its GUI-exit). */
+    ('getLanguage'),
+    ('internalTransfer'),
+    ('voicemailCallback');
 
 DECLARE @Attribute TABLE (
     OperationType  varchar(255)  NOT NULL,
@@ -283,7 +304,7 @@ INSERT INTO @Attribute
        dictionary has no default-value column, so the default lives in the
        runtime twin (executeSetVariables, getParam(...,true)) and the component
        (getValue(...,true)) — see rtds/specs/setVariables.spec.md.              */
-    ('setVariables', 'active',           'bit', 0, 0, 1, 1),
+    ('setVariables', 'active',           'bit',     0, 0, 1, 1),
     ('setVariables', 'nextStep',         'string',  1, 1, 1, 1),
     ('setVariables', 'routingId',        'string',  0, 0, 1, 1),
     ('setVariables', 'customerName',     'string',  0, 0, 1, 1),
@@ -398,17 +419,17 @@ INSERT INTO @Attribute
        unregistered four is separate work.
        ======================================================================== */
 
-    /* ---- PlayPrompt ---- (TTS / prompt-library playback)                       */
-    ('playPrompt', 'active',         'bit', 0, 0, 1, 1),
-    ('playPrompt', 'applicationId',  'int', 0, 0, 1, 1),
-    ('playPrompt', 'prompt',         'string',  1, 0, 1, 1),
-    ('playPrompt', 'nextStep',       'string',  1, 1, 1, 1),
+    /* ---- Say ---- (TTS / prompt-library playback; formerly playPrompt)         */
+    ('say', 'active',         'bit', 0, 0, 1, 1),
+    ('say', 'applicationId',  'int', 0, 0, 1, 1),
+    ('say', 'prompt',         'string',  1, 0, 1, 1),
+    ('say', 'nextStep',       'string',  1, 1, 1, 1),
 
-    /* ---- PlayAudio ---- (named audio-source playback)                          */
-    ('playAudio', 'active',          'bit', 0, 0, 1, 1),
-    ('playAudio', 'audioSource',     'string',  1, 0, 1, 1),
-    ('playAudio', 'timeout',         'int', 0, 0, 1, 1),
-    ('playAudio', 'nextStep',        'string',  1, 1, 1, 1),
+    /* ---- Play ---- (named audio-source playback; formerly playAudio)           */
+    ('play', 'active',          'bit', 0, 0, 1, 1),
+    ('play', 'audioSource',     'string',  1, 0, 1, 1),
+    ('play', 'timeout',         'int', 0, 0, 1, 1),
+    ('play', 'nextStep',        'string',  1, 1, 1, 1),
 
     /* ---- Menu ---- (DTMF menu; per-choice nextStep_<digit> branches)           */
     ('menu', 'active',                  'bit', 0, 0, 1, 1),
@@ -506,7 +527,46 @@ INSERT INTO @Attribute
     /* ---- FlowJump ---- (jump to another routing table by SourceId; NOT yet
        runtime-wired. Only the target SourceId is carried.)                       */
     ('flowJump', 'active',           'bit', 0, 0, 1, 1),
-    ('flowJump', 'sourceId',         'string',  1, 0, 1, 1);
+    ('flowJump', 'sourceId',         'string',  1, 0, 1, 1),
+
+    /* ========================================================================
+       N-ALLO_RECEPTION FLOW TYPES  (sourceId +3224581030)
+       ------------------------------------------------------------------------
+       Catalogued from rtds/samples/n-allo_reception.json. 'internalTransfer' is a
+       NEW type; 'getLanguage' is the renamed 'languageMenu'; 'voicemailCallback'
+       gains its first attributes. The flow's prompt-playing nodes use 'say'
+       (formerly playPrompt), catalogued above. None are runtime-wired as inline
+       twins (getLanguage keeps its GUI-exit).
+       ======================================================================== */
+
+    /* ---- GetLanguage ---- (NL/FR language selector; renamed from languageMenu).
+       Branches per chosen language via exact-match nextStep_<langKey> keys
+       (NL/FR for this flow), plus the fallthrough nextStep. Add a nextStep_<key>
+       row if a flow supports more languages (exact-match, else 54016).           */
+    ('getLanguage', 'active',        'bit', 0, 0, 1, 1),
+    ('getLanguage', 'staticPrompt',  'string',  0, 0, 1, 1),
+    ('getLanguage', 'languages',     'string',  1, 0, 1, 1),
+    ('getLanguage', 'maxTries',      'int', 0, 0, 1, 1),
+    ('getLanguage', 'nextStep_NL',   'string',  0, 1, 1, 1),
+    ('getLanguage', 'nextStep_FR',   'string',  0, 1, 1, 1),
+    ('getLanguage', 'nextStep',      'string',  1, 1, 1, 1),
+
+    /* ---- InternalTransfer ---- (skills/priority queue transfer; NEW type, not
+       yet runtime-wired; Params carried verbatim from the flow.)                 */
+    ('internalTransfer', 'active',                   'bit', 0, 0, 1, 1),
+    ('internalTransfer', 'remoteDestination',        'string',  1, 0, 1, 1),
+    ('internalTransfer', 'transferHeader_priority',  'string',  0, 0, 1, 1),
+    ('internalTransfer', 'transferHeader_skills',    'string',  0, 0, 1, 1),
+    ('internalTransfer', 'timeout',                  'int', 0, 0, 1, 1),
+    ('internalTransfer', 'nextStep_Failure',         'string',  0, 1, 1, 1),
+    ('internalTransfer', 'nextStep',                 'string',  1, 1, 1, 1),
+
+    /* ---- VoicemailCallback ---- (control keys only; the recording content params
+       are passthrough and intentionally NOT catalogued -- the flow drops them.)  */
+    ('voicemailCallback', 'active',           'bit', 0, 0, 1, 1),
+    ('voicemailCallback', 'nextStep_Escape',  'string',  0, 1, 1, 1),
+    ('voicemailCallback', 'nextStep_Error',   'string',  0, 1, 1, 1),
+    ('voicemailCallback', 'nextStep',         'string',  1, 1, 1, 1);
 
 /* ============================================================================
    SECTION 2 -- SEED THE DICTIONARY (no need to edit below this line)
@@ -522,6 +582,27 @@ DECLARE @opTypeNew   int = 0;
 DECLARE @attrTypeNew int = 0;
 DECLARE @attrNew     int = 0;
 DECLARE @attrUpd     int = 0;
+
+/* -- 0. rename legacy Dic_OperationType names in place -----------------------
+   Semantic renames: languageMenu -> getLanguage, playPrompt -> say,
+   playAudio -> play. Mirrors the boolean->bit rename below: run BEFORE step 1 so
+   a DB that still carries an old name is renamed in place instead of step 1
+   adding a second row under the new name. Each is guarded by NOT EXISTS so it is
+   a no-op once the new name is already present.                                 */
+UPDATE d SET Name = N'getLanguage'
+FROM   rtds.Dic_OperationType d
+WHERE  d.Name = N'languageMenu'
+AND    NOT EXISTS (SELECT 1 FROM rtds.Dic_OperationType x WHERE x.Name = N'getLanguage');
+
+UPDATE d SET Name = N'say'
+FROM   rtds.Dic_OperationType d
+WHERE  d.Name = N'playPrompt'
+AND    NOT EXISTS (SELECT 1 FROM rtds.Dic_OperationType x WHERE x.Name = N'say');
+
+UPDATE d SET Name = N'play'
+FROM   rtds.Dic_OperationType d
+WHERE  d.Name = N'playAudio'
+AND    NOT EXISTS (SELECT 1 FROM rtds.Dic_OperationType x WHERE x.Name = N'play');
 
 /* -- 1. find-or-create Dic_OperationType ------------------------------------ */
 INSERT INTO rtds.Dic_OperationType (Name, DateCreated, CreatedBy)
@@ -617,6 +698,7 @@ SELECT  ot.Name                              AS OperationType,
 FROM    rtds.Dic_OperationType ot
 JOIN    rtds.Dic_Attribute     da ON da.DicOperationTypeID = ot.DicOperationTypeID
 JOIN    rtds.Dic_AttributeType at ON at.DicAttributeTypeID = da.DicAttributeTypeID
-WHERE   ot.Name IN ('setVariables', 'guard', 'guardTui', 'sendMail', 'sendSms', 'disconnect')
+WHERE   ot.Name IN ('setVariables', 'guard', 'guardTui', 'sendMail', 'sendSms', 'disconnect',
+                    'say', 'getLanguage', 'internalTransfer', 'voicemailCallback')
 ORDER BY ot.Name, da.IsNext, da.Name;
 */

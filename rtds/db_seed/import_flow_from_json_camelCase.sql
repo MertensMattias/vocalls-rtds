@@ -78,10 +78,10 @@ SET @json = N'
   "operations": [
     {"id":"00000","type":"setAttributes","name":"Call Initialization","isFirstOperation":true,
      "params":{"logAttributes":"RTDS_ProjectName|Eic_RemoteId|ATTR_RoutingId|ATTR_CallflowId","callflowId":"RECEPTION","routingId":"RECEPTION","nextStep":"00001"}},
-    {"id":"00001","type":"playPrompt","name":"Play: Welcome",
-     "params":{"active":["1","isDisplayed","isEditable"],"applicationId":"11","prompt":["welcome","isDisplayed","isEditable"],"nextStep":"00002"},
+    {"id":"00001","type":"say","name":"Play: Welcome",
+     "params":{"active":["1","isDisplayed","isEditable"],"applicationId":"8","prompt":["welcome","isDisplayed","isEditable"],"nextStep":"00002"},
      "ttsMessages":{"NL":"Goeidag, test","FR":"Bonjour, ceci est un test"}},
-    {"id":"00051","type":"playPrompt","name":"Queue: Message 1",
+    {"id":"00051","type":"say","name":"Queue: Message 1",
      "params":{"prompt":"queue_waitmessage01","nextStep":"00052"}},
     {"id":"00100","type":"disconnect","name":"RTDS: Disconnect","params":{}}
   ]

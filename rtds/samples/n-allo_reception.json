@@ -25,7 +25,7 @@
       "name": "Say: Welcome",
       "params": {
         "active": true,
-        "applicationId": 11,
+        "applicationId": 8,
         "prompt": "Welcome",
         "nextStep": "00002"
       },
@@ -36,7 +36,7 @@
     },
     {
       "id": "00002",
-      "type": "languageMenu",
+      "type": "getLanguage",
       "name": "Choose Dutch or French",
       "params": {
         "active": true,
@@ -108,7 +108,7 @@
       "name": "Queue: Message 1",
       "params": {
         "active": true,
-        "applicationId": 11,
+        "applicationId": 8,
         "prompt": "Queue_Waitmessage01",
         "nextStep": "00052"
       }
@@ -125,11 +125,11 @@
     },
     {
       "id": "00090",
-      "type": "transfer",
+      "type": "externalTransfer",
       "name": "Route-To: External Number",
       "params": {
         "active": true,
-        "remoteDestination": "",
+        "phoneNumber": "",
         "outboundANI": "",
         "diversionReason": 8,
         "timeout": 30,
@@ -144,17 +144,6 @@
       "name": "Leave voicemail",
       "params": {
         "active": true,
-        "prompt": "Voicemail_LeaveMessage.wav",
-        "readyPrompt": "Voicemail_MessageRecorded",
-        "terminationKeys": "#",
-        "maxDuration": 120,
-        "recordingFilePrefix": "Reception",
-        "workgroup": "N-ALLO_Reception_VM",
-        "skills": "$(RTDS_ChosenLanguage)|Reception",
-        "callbackNumber": "$(Eic_RemoteId)",
-        "callbackFrom": "Voicemail from Customer",
-        "callbackSubject": "Voicemail Recorded",
-        "transferAttributes": "Eic_Language",
         "nextStep_Escape": "00093",
         "nextStep_Error": "00093",
         "nextStep": "00094"
@@ -162,7 +151,7 @@
     },
     {
       "id": "00093",
-      "type": "playPrompt",
+      "type": "say",
       "name": "Play: Voicemail Error",
       "params": {
         "active": true,
@@ -172,7 +161,7 @@
     },
     {
       "id": "00094",
-      "type": "playPrompt",
+      "type": "say",
       "name": "Play: Voicemail Disconnect",
       "params": {
         "active": true,
