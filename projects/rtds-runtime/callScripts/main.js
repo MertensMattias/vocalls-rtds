@@ -114,6 +114,44 @@ _rtPhonebookEndpoint = `/phonebookapi-${environment}`;
 // stable across iterations. Initialised here once; never reassigned at runtime.
 _rtNextStep = "_rtNextStep";
 
+// Termination-callback state (see the onCallResult section below).
+//   _endFlowSemaphore -- idempotency guard; onCallResult runs once per call.
+//   RTDS_finalizing   -- set by finalizeFrom so runStep filters out GUI ops and
+//                        runs only the data tail. Starts false every call.
+_endFlowSemaphore = 0;
+RTDS_finalizing = false;
+
+// ============================================================================
+// SC  MASTER-LAYER CODE -- the onCallResult termination callback
+//     In production this is the Vocalls flow's master-layer `Code` attribute
+//     (set in Designer); the platform invokes it on every end-of-call path.
+//     Declared here so the simulator's VM sandbox has it in scope. Mirrors the
+//     entity-encoded block in main_sourceCode.js verbatim.
+// ============================================================================
+
+function onCallResult() {
+  // Platform termination callback -- fires on every end-of-call path.
+  // _endFlowSemaphore guards against the platform invoking it more than once.
+  if (_endFlowSemaphore > 0) {
+    return;
+  }
+  _endFlowSemaphore++;
+
+  // Resume the RTDS flow from where the call stopped and run the data-only
+  // tail (call-report SendEmail/SendSMS, attribute writes, API calls).
+  // RTDS_nextStepId is the step after the node that was mid-handoff;
+  // RTDS_currentOpId is the fallback. Both are staged by prepareGuiHandoff.
+  var resumeAt =
+    context.session.variables.RTDS_nextStepId ||
+    context.session.variables.RTDS_currentOpId;
+
+  // finalizeFrom returns the runStep task; returning it here makes the
+  // platform await the data tail (incl. async SendSMS/SendEmail POSTs)
+  // before tearing the session down.
+  return finalizeFrom(resumeAt);
+  // Sequential finaliser slot (separate effort): KeyLog(); SegmentLog();
+}
+
 // +==========================================================================+
 // | S3  ENTRY SCRIPT BODY -- paste exactly the lines below this banner into  |
 // |     the Vocalls Designer Entry Script node. Nothing above is needed     |
