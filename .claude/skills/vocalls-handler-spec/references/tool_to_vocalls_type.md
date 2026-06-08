@@ -57,7 +57,7 @@ this signal:
 | One `Condition` with a non-trivial predicate, two terminal branches.                       | `condition`      | `Condition` (queue statistic) or `CheckAttribute` (session variable). Disambiguate by whether the LHS reads `_acdQueueStat*` or a Param. |
 | Multiple `Set Attribute` writing non-routing-scaffold keys sourced from Params.            | `set_attributes` | `SetAttributes`.                                                     |
 | The handler updates `RTDS_sourceId` (the call's source-flow ID).                           | `flow_jump`      | `FlowJump` (full re-fetch) or `UpdateSourceId` (lightweight variant). |
-| Several `Set Attribute` writing `RTDS_OP_*`-shaped keys (Params projected for a GUI node). | `gui_exit`       | The GUI-exit Type whose name matches the keys.                       |
+| A step that hands the call off to a native telephony / menu / transfer node (no inline work, just routing onward). | `gui_exit`       | The GUI-exit Type whose name matches the target. The engine routes via `RTDS_currentOpConfig`; the spec needs no component-side projection code. |
 
 ## What Params each Type carries
 

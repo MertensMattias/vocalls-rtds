@@ -28,7 +28,7 @@ Send an outbound email via the RTDS mail gateway with optional CC/BCC, file atta
 
 | Param name         | Type                              | Required | Default | Description                                                                                                                       |
 | ------------------ | --------------------------------- | -------- | ------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `Active`           | boolean                           | no       | `false` | If falsy, the operation logs a skip and exits to `NextStep`. Universal across operations.                                         |
+| `Active`           | boolean                           | no       | `true`  | If falsy, the operation logs a skip and exits to `NextStep`. Default `true` (runs unless explicitly disabled). **⚠ The shipped `sendMail.js` currently defaults `false` — flagged for a code fix; see [Convention debt](#convention-debt).** |
 | `From`             | string (email address)            | yes      | —       | Sender address.                                                                                                                    |
 | `To`               | string (`;`-separated emails)     | yes      | —       | Recipient list.                                                                                                                    |
 | `Cc`               | string (`;`-separated emails)     | no       | `''`    | CC recipients. Omitted from the payload when empty.                                                                                |
@@ -49,9 +49,11 @@ Send an outbound email via the RTDS mail gateway with optional CC/BCC, file atta
 
 | Branch key         | Taken when                                                       | Fallback |
 | ------------------ | ---------------------------------------------------------------- | -------- |
-| `NextStep`         | Operation is inactive, or `From`/`To` is empty (skip).           | `-1`     |
-| `NextStep_Success` | Mail gateway returned `success: true`.                           | `-1`     |
-| `NextStep_Failure` | Gateway returned a non-success or the HTTP call errored.         | `-1`     |
+| `NextStep`         | Operation is inactive (skip — outcome stays `NextStep`).         | `''`     |
+| `NextStep_Failure` | `From` empty, `To` empty, gateway non-success, or HTTP error.    | `''`     |
+| `NextStep_Success` | Mail gateway returned `success: true`.                           | `''`     |
+
+The component stages `__rtOutcome` and resolves it **once** at the output node — `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` — empty-string fallback ([conventions/component-v2.md](../../conventions/component-v2.md) §7–§8). Note: validation failures (`From`/`To` empty) route to `NextStep_Failure`, not `NextStep` — the work body pivots to `NextStep_Failure` immediately after the Active guard.
 
 ### External call
 
@@ -83,71 +85,85 @@ Payload shape (omitted keys are dropped, not sent as empty):
 
 Standard `http_call` shape. The component declares three helpers in the master `Code` block: `__splitSemicolonList`, `__buildAttachments`, and `__resolveFilesList`.
 
-`init`:
+`init` (seeds `__rtOutcome = 'NextStep'`; master `Variables` pre-seeds `'NextStep_Failure'`):
 
 ```js
+__rtOutcome = 'NextStep';
 __rtParams = __setupConfig(__configJSON);
 if (!_headers) { _headers = {}; }
-Logger.debug('[sendMail] config resolved', { params: __rtParams });
+Logger.debug('[sendMail] config resolved', { params: __rtParams, outcome: __rtOutcome });
 ```
 
-`script` (work body):
+`script` (work body) — `From` and `To` are validated **separately** (distinct warn logs); list payload fields are added only when `__splitSemicolonList` / helper returns non-`null` (empty input → `null`, so the key is dropped). Stages `__rtOutcome`, never writes `_rtNextStep` mid-flight:
 
 ```js
-global[_rtNextStep] = getValue(__rtParams, 'NextStep', -1);
-
-if (!getValue(__rtParams, 'Active', false)) {
-    Logger.info('[sendMail] skipped — inactive', { nextStep: global[_rtNextStep] });
+if (String(getValue(__rtParams, 'Active', true)).toLowerCase() !== 'true') {   // target: default true
+    Logger.info('[sendMail] skipped -- inactive', { outcome: __rtOutcome });
     return;
 }
 
-var __from = String(getValue(__rtParams, 'From', '')).trim();
-var __to = __splitSemicolonList(getValue(__rtParams, 'To', ''));
-if (!__from || __to.length === 0) {
-    Logger.warn('[sendMail] missing From or To', { from: __from, toCount: __to.length, nextStep: global[_rtNextStep] });
+__rtOutcome = 'NextStep_Failure';
+
+var __from = getValue(__rtParams, 'From', '');
+if (!__from || String(__from).trim() === '') {
+    Logger.warn('[sendMail] From field is empty', { outcome: __rtOutcome });
     return;
 }
 
-global[_rtNextStep] = getValue(__rtParams, 'NextStep_Failure', -1);
+var __toList = __splitSemicolonList(getValue(__rtParams, 'To', ''));
+if (__toList === null) {
+    Logger.warn('[sendMail] To field is empty', { outcome: __rtOutcome });
+    return;
+}
+
+var __ccList = __splitSemicolonList(getValue(__rtParams, 'Cc', ''));
+var __bccList = __splitSemicolonList(getValue(__rtParams, 'Bcc', ''));
+var __filesList = __resolveFilesList(getValue(__rtParams, 'Files', ''));
+var __attachmentsList = __buildAttachments(getValue(__rtParams, 'AttachmentNames', ''), getValue(__rtParams, 'AttachmentData', ''));
 
 var __priority = Number(getValue(__rtParams, 'Priority', 2));
 if (__priority !== 1 && __priority !== 2 && __priority !== 3) __priority = 2;
 
-var __payload = { from: __from, subject: getValue(__rtParams, 'Subject', ''), to: __to, body: getValue(__rtParams, 'Body', ''), priority: __priority };
-var __cc          = __splitSemicolonList(getValue(__rtParams, 'Cc', ''));          if (__cc.length)          __payload.cc          = __cc;
-var __bcc         = __splitSemicolonList(getValue(__rtParams, 'Bcc', ''));         if (__bcc.length)         __payload.bcc         = __bcc;
-var __files       = __resolveFilesList(getValue(__rtParams, 'Files', ''));         if (__files.length)       __payload.files       = __files;
-var __attachments = __buildAttachments(getValue(__rtParams, 'AttachmentNames', ''), getValue(__rtParams, 'AttachmentData', ''));
-if (__attachments.length) __payload.attachments = __attachments;
-var __customerKey = String(getValue(__rtParams, 'CustomerKey', '')).trim();        if (__customerKey)        __payload.customerKey = __customerKey;
+var __customerKey = getValue(__rtParams, 'CustomerKey', '');
+__customerKey = (__customerKey && String(__customerKey).trim() !== '') ? String(__customerKey).trim() : null;
 
 var __url = __rtBaseUrl + __rtEndpoint;
-var __timeout = getValue(__rtParams, 'Timeout', 10000);
+var __payload = { from: __from, subject: getValue(__rtParams, 'Subject', ''), to: __toList, body: getValue(__rtParams, 'Body', ''), priority: __priority };
+if (__ccList !== null) __payload.cc = __ccList;
+if (__bccList !== null) __payload.bcc = __bccList;
+if (__filesList !== null) __payload.files = __filesList;
+if (__attachmentsList !== null) __payload.attachments = __attachmentsList;
+if (__customerKey !== null) __payload.customerKey = __customerKey;
 
-return jsonHttpRequest(__url, { method: 'POST', "timeout": __timeout }, _headers, __payload).then(
+return jsonHttpRequest(__url, { method: 'POST', "timeout": Number(getValue(__rtParams, 'Timeout', 10000)) }, _headers, __payload).then(
     function (result) {
         if (result && result.success === true) {
-            global[_rtNextStep] = getValue(__rtParams, 'NextStep_Success', -1);
-            Logger.info('[sendMail] success', { nextStep: global[_rtNextStep] });
+            __rtOutcome = 'NextStep_Success';
+            Logger.info('[sendMail] success', { outcome: __rtOutcome });
             return;
         }
-        Logger.warn('[sendMail] gateway failure', { statusCode: result && result.statusCode, nextStep: global[_rtNextStep] });
+        Logger.warn('[sendMail] request failed', { statusCode: result && result.statusCode, outcome: __rtOutcome });
     },
     function (err) {
-        Logger.error('[sendMail] request error', { nextStep: global[_rtNextStep] }, err);
+        Logger.error('[sendMail] request error', { outcome: __rtOutcome }, err);
     }
 );
 ```
 
-`output`:
+`output` (`OnEnter`):
 
 ```js
-OnEnter: Logger.info('[sendMail] exit', { nextStep: __rtNextStep });
+_rtNextStep = getValue(__rtParams, __rtOutcome, '');
+Logger.info('[sendMail] exit', { outcome: __rtOutcome, nextStep: _rtNextStep });
 ```
 
-### Open questions
+### Convention debt (flagged 2026-06-08)
 
-None — this spec captures the existing reference component verbatim.
+This spec states the **target** contract. The shipped `sendMail.js` conforms except:
+
+- **`Active` default.** The component reads `getValue(__rtParams, 'Active', false)` — default **false**. The target is **true**. Change the component's Active guard to default `true`.
+
+Otherwise conformant: v2 `__rtOutcome` staging, single-resolve at output with the `''` fallback.
 
 ### Notes on naming
 

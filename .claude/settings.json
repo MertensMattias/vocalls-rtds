@@ -5,7 +5,11 @@
       "WebFetch(domain:help.genesys.com)",
       "mcp__context7__resolve-library-id",
       "Edit(/.claude/skills/vocalls-handler-spec/**)",
-      "Edit(/.claude/skills/rtds-vocalls-component-gen/**)"
+      "Edit(/.claude/skills/rtds-vocalls-component-gen/**)",
+      "PowerShell(git -C \"c:\\\\Users\\\\merte\\\\dev\\\\vocalls-rtds\" log --oneline -30 -- conventions/ PROJECT_CONVENTIONS.md)",
+      "PowerShell(git -C \"c:\\\\Users\\\\merte\\\\dev\\\\vocalls-rtds\" log --oneline -15 -- .claude/skills/vocalls-handler-spec/)",
+      "PowerShell(git -C \"c:\\\\Users\\\\merte\\\\dev\\\\vocalls-rtds\" show 9de4594 --stat)",
+      "PowerShell(head -30)"
     ]
   }
 }

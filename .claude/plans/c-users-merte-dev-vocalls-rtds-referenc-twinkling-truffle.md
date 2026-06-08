@@ -1,3 +1,5 @@
+> **⚠️ Legacy / historical (2026-06-08).** This plan predates the unified v2 component contract and describes the retired "Style B" `RTDS_OP_*` GUI-handoff convention (e.g. `RTDS_OP_GuardId`). The live runtime does **not** write per-key `RTDS_OP_*` variables — `prepareGuiHandoff` writes the whole params object to `RTDS_currentOpConfig`, and a GUI-exit target like `guard_tui` is a normal self-contained v2 component (see the shipped [guardTui.js](../../dev/vocalls-rtds/rtds/components/guardTui.js) and [conventions/component-v2.md](../../dev/vocalls-rtds/conventions/component-v2.md)). Kept for historical reference only; do not follow the `RTDS_OP_*` parts.
+
 # GuardTUI Component Specification
 
 ## Context

@@ -60,34 +60,14 @@ Exit key returned to Vocalls: `"disconnect"`.
 | ---------- | -------------------------------- | -------- |
 | `NextStep` | Operation is inactive — skipped. | `-1`     |
 
-Once the work body returns `"disconnect"`, Vocalls routes to the
-Disconnect GUI node. There is no `NextStep_*` after the GUI handoff —
-the call is terminated.
-
-### Work-body sketch
-
-Pattern: `gui_exit` (terminal variant) — see [operation_bodies/gui_exit.md](../../rtds-vocalls-component-gen/references/operation_bodies/gui_exit.md).
-
-\`\`\`js
-global[_rtNextStep] = getValue(__rtParams, 'NextStep', -1);
-
-if (!getValue(__rtParams, 'Active', false)) {
-    Logger.info('[disconnect] skipped — inactive', { nextStep: global[_rtNextStep] });
-    return;
-}
-
-// Project Params onto context.session.variables for the GUI node.
-// (Disconnect has no Params to project beyond Active; the loop here is
-// a no-op, but the shape stays consistent with the other GUI-exit ops.)
-var __paramKeys = ['Active'];
-var __i;
-for (__i = 0; __i < __paramKeys.length; __i++) {
-    walk(context.session.variables, 'RTDS_OP_' + __paramKeys[__i], getValue(__rtParams, __paramKeys[__i]));
-}
-
-Logger.info('[disconnect] handoff', { exit: 'disconnect' });
-return 'disconnect';
-\`\`\`
+`Disconnect` is a **native GUI-exit Type** — see
+[operation_bodies/gui_exit.md](../../rtds-vocalls-component-gen/references/operation_bodies/gui_exit.md).
+The engine (`prepareGuiHandoff`) writes `RTDS_currentOpConfig` and emits the
+`disconnect` exit key; Vocalls routes to the native Disconnect node and the
+call is terminated. There is no `NextStep_*` after the handoff, and there is
+**no component to generate** — the routing-table entry plus the native node
+are the whole implementation. No `walk`, no `RTDS_OP_*`, no exit-key `return`
+in any component body.
 
 ### Open questions
 

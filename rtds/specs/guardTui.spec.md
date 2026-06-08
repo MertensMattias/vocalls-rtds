@@ -28,7 +28,7 @@ Self-service guard administration line. A guard calls in, the operation checks w
 
 | Param name        | Type             | Required | Default | Description                                                                                                                          |
 | ----------------- | ---------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `Active`          | boolean          | no       | `false` | If falsy, the operation logs a skip and exits to `NextStep`. Universal across operations.                                            |
+| `Active`          | boolean          | no       | `true`  | If falsy, the operation logs a skip and exits to `NextStep`. Default `true` (runs unless explicitly disabled). The `__configJSON` seed is already `true`, but the runtime read fallback is `false` — **⚠ flagged for a code fix; see [Convention debt](#open-questions--convention-debt-flagged-2026-06-08).** |
 | `ConfigId`        | number           | yes      | —       | Guard pool identifier passed to the Guard API.                                                                                        |
 | `PhoneNumberVar`  | string           | no       | `'ani'` | Name of the session variable holding the caller's phone number (defaults to `varObj.ani`).                                            |
 | `Timeout`         | number (ms)      | no       | `10000` | HTTP request timeout for each backend call.                                                                                            |
@@ -51,21 +51,25 @@ Self-service guard administration line. A guard calls in, the operation checks w
 
 | Branch key         | Taken when                                                                                      | Fallback |
 | ------------------ | ----------------------------------------------------------------------------------------------- | -------- |
-| `NextStep`         | Operation is inactive, or the menu was served and the caller exited cleanly.                    | `-1`     |
-| `NextStep_Success` | Activation or deactivation succeeded.                                                            | `-1`     |
-| `NextStep_Denied`  | Eligibility check returned non-true (number not registered for this pool).                       | `-1`     |
-| `NextStep_Failure` | Any backend call failed, state lookup failed, or the caller exhausted the dtmf retry budget.    | `-1`     |
+| `NextStep`         | Operation is inactive, or the menu was served and the caller exited cleanly.                    | `''`     |
+| `NextStep_Success` | Activation or deactivation succeeded.                                                            | `''`     |
+| `NextStep_Denied`  | Eligibility check returned non-true (number not registered for this pool).                       | `''`     |
+| `NextStep_Failure` | Any backend call failed, state lookup failed, or the caller exhausted the dtmf retry budget.    | `''`     |
+
+This is a **v2-composite** component: the canonical four-node trunk (input/init/script/output) with embedded say/dtmf/case primitives between the script work and the **single** output node. It follows the unified contract — stages `__rtOutcome` across its script nodes and resolves it once at the output node via `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` (empty-string fallback, [conventions/component-v2.md](../../conventions/component-v2.md) §7–§8).
 
 ### External calls
 
 This component makes up to **four** HTTP calls in sequence (two up-front, then one of activate/deactivate per menu pick):
 
-| Step             | Method | URL shape                                                                | Purpose                                                                |
+| Step             | Method | URL shape (as shipped)                                                   | Purpose                                                                |
 | ---------------- | ------ | ------------------------------------------------------------------------ | ---------------------------------------------------------------------- |
-| eligibility check| GET    | `__rtBaseUrl + __rtTuiCheckAccessEndpoint + '/' + ConfigId + '/' + ani + '/0'` | Body returns `"true"` / `"false"` as a string.                          |
-| state lookup     | GET    | `__rtBaseUrl + __rtTuiGetStateEndpoint + '/' + ani + '/' + ConfigId`     | Body returns `{ id: <guardId>, ... }`.                                  |
-| activate         | POST   | `__rtBaseUrl + __rtTuiActivateEndpoint + '/' + guardId`                  | Body returns `"true"` on success.                                       |
-| deactivate       | POST   | `__rtBaseUrl + __rtTuiDeactivateEndpoint + '/' + guardId`                | Body returns `"true"` on success, `"false"` on only-active-member case. |
+| eligibility check| GET    | `__rtBaseUrl + __rtTuiCheckAccessEndpoint + '?guardConfigId=' + ConfigId + '&phonenumber=' + ani + '&originGuardId=0'` | `result.response` is `"true"` / `"false"` as a string.            |
+| state lookup     | GET    | `__rtBaseUrl + __rtTuiGetStateEndpoint + '?guardConfigId=' + ConfigId + '&phonenumber=' + ani` | `result.response` is an array; reads `[0].guardID` / `guardConfigID` / `guardActive` / `guardName`. |
+| activate         | POST   | `__rtBaseUrl + __rtTuiActivateEndpoint + '/' + guardId`                  | `result.response` is `"true"` on success.                              |
+| deactivate       | POST   | `__rtBaseUrl + __rtTuiDeactivateEndpoint + '/' + guardId`                | `result.response` is `"true"` on success; `"false"` → only-active-member, routes to `NextStep`. |
+
+All query params are `encodeURIComponent`-escaped. The state-lookup response is `JSON.parse`d when it arrives as a string.
 
 All four endpoint vars are projected into `__rt*Endpoint` variables in the component (`__rtTuiCheckAccessEndpoint`, etc.).
 
@@ -75,21 +79,24 @@ Multi-node component — see [`rtds/components/guardTui.js`](../components/guard
 
 - **input** → **init** → **prepare** (eligibility check + state lookup) → **route** (case: denied / failure / menu / no-choice) → **denied** (say) → **error** (say) → **prompt** (say) → **menu** (dtmf: keys 3, 7, no-input, not-recognized) → **toggleDeactivate** (work script) → **routeDeactivate** (case) → result prompts → **toggleActivate** (work script) → **routeActivate** (case) → result prompts → **output**.
 
-`init`:
+`init` (as shipped — normalises `language`, then the universal config resolve):
 
 ```js
+language = (typeof language === 'string' && language.trim() !== '')
+    ? language.toUpperCase()
+    : 'NL';
+
 __rtParams = __setupConfig(__configJSON);
 if (!_headers) { _headers = {}; }
-__guardTuiGuardId = '';
-Logger.debug('[guardTui] config resolved', { params: __rtParams });
 ```
 
-The `prepare` work body runs the eligibility check + state lookup, sets `__guardTuiGuardId` on success, and uses the case `route` node to fan out to `NextStep_Denied`, `NextStep_Failure`, the prompt-and-menu branch, or the no-choice (skip) branch.
+The `check access` work body runs the eligibility check (sets `__rtOutcome = 'NextStep_Denied'` when not eligible, `'NextStep_Failure'` on HTTP error, `__guardTuiEligible = true` on success); the `guard status` body then fetches state, sets `__guardTuiGuardId` and resets `__rtOutcome = 'NextStep'` for the menu. The case nodes fan out on `__rtOutcome` / `__guardActive` to the say prompts, the dtmf menu (keys 7/3), and the toggleActivate / toggleDeactivate POST scripts.
 
-`output`:
+`output` (`OnEnter`) — resolves the staged outcome once:
 
 ```js
-OnEnter: Logger.info('[guardTui] exit', { nextStep: __rtNextStep });
+_rtNextStep = getValue(__rtParams, __rtOutcome, '');
+Logger.info('[guardTui] exit', { outcome: __rtOutcome, nextStep: _rtNextStep });
 ```
 
 Variables block:
@@ -105,6 +112,11 @@ __rtTuiDeactivateEndpoint = _rtTuiDeactivateEndpoint;
 __rtNextStep &= _rtNextStep;
 ```
 
-### Open questions
+### Open questions / convention debt (flagged 2026-06-08)
 
-None — this spec captures the existing reference component verbatim.
+This spec now matches the shipped component, but the component has two convention gaps worth a follow-up code pass (not fixed here):
+
+- **Bare `log_debug` calls** in the `check access`, `guard status`, `toggleActivate`, and `toggleDeactivate` nodes (8 total). Convention ([conventions/logging.md](../../conventions/logging.md)) requires `Logger.debug` outside the env library. Replace each `log_debug(...)` with `Logger.debug(...)`.
+- **Init node omits the `Logger.debug('[guardTui] config resolved', …)` floor log** ([conventions/logging.md](../../conventions/logging.md) three-line floor) and does not re-seed `__rtOutcome` (it relies on the master `Variables` seed `'NextStep_Failure'`). The `check access` body re-stages `__rtOutcome` before use, so behavior is correct, but the init floor log is missing.
+- Cross-script work vars (`__guardTuiEligible`, `__guardTuiGuardId`, `__guardActive`, `__guardName`, `_errorMessage`) are assigned in work nodes but not pre-declared in master `Variables` ([conventions/naming.md](../../conventions/naming.md) cross-script rule).
+- **`Active` read fallback.** The `check access` node reads `getValue(__rtParams, 'Active', false)` — default **false**. The target is **true** (run unless explicitly disabled). The `__configJSON` seed is already `true`, but the read fallback should also be `true` to match the convention.

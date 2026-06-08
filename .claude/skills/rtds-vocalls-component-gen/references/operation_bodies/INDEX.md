@@ -27,12 +27,14 @@ Does the operation call an HTTP endpoint?
 │          jsonHttpRequest)
 └── No
     │
-    Does it hand off to a downstream GUI node?
+    Is it a GUI-exit Type (routed off the table by the engine)?
     ├── Yes → gui_exit.md
-    │         (covers WorkgroupTransfer, ExternalTransfer, Menu,
-    │          LanguageMenu, PlayPrompt, PlayAudio, Disconnect,
-    │          GuardRouting, GuardTUI, Callback, SendEmail)
-    │         The Type → exit-key lookup table is in that file.
+    │         (WorkgroupTransfer, ExternalTransfer, Menu, LanguageMenu,
+    │          PlayPrompt, PlayAudio, Disconnect, GuardRouting, Callback,
+    │          SendEmail → native canvas target, usually NOTHING to generate.
+    │          GuardTUI → self-contained v2 component: generate it like an
+    │          http_call component. gui_exit.md explains both cases and holds
+    │          the Type → exit-key registry.)
     └── No
         │
         Does it write Param values out to globals?
@@ -74,9 +76,9 @@ Does the operation call an HTTP endpoint?
 | `LanguageMenu`       | `gui_exit.md`             |
 | `PlayPrompt`         | `gui_exit.md`             |
 | `PlayAudio`          | `gui_exit.md`             |
-| `Disconnect`         | `gui_exit.md` (terminal variant — no `RTDS_nextStepId` line) |
+| `Disconnect`         | `gui_exit.md` (native terminal target — nothing to generate) |
 | `GuardRouting`       | `gui_exit.md`             |
-| `GuardTUI`           | `gui_exit.md`             |
+| `GuardTUI`           | `gui_exit.md` → self-contained v2 component (`http_call.md` body + `composite.md` for the DTMF menu) |
 | `Callback`           | `gui_exit.md`             |
 | `SendEmail`          | `gui_exit.md`             |
 | *(any Type above) + in-component primitives* | `composite.md` **layered on top of** the Script-body pattern from this table. See [composite.md](composite.md) and the per-Type primitive catalogue [../node_types.md](../node_types.md). |

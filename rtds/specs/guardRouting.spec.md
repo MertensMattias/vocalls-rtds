@@ -19,7 +19,7 @@ catalog:
 | Pattern        | `http_call` + multi-node — fetch the active guard list, then loop: call each guard, play menu, transfer on accept, otherwise advance. Optional post-call SMS / email / voicemail. |
 | Source handler | `rtds/pureconnect_handlers/NAllo_RTDS_GuardRouting.xml`  |
 | Target file    | `rtds/components/guardRouting.js`              |
-| Component style | **Hand-built / Style B** — governed by [conventions/component-mxgraph.md](../../conventions/component-mxgraph.md), NOT the v2 four-node trunk. It diverges deliberately: an `input → getEnvironment component` entry, an embedded endpoint-config script node, and embedded auth / globalLibrary nodes. Do not hold it to the v2 skeleton. Open follow-ups: move the node-319 endpoint map into the env library; externalise the node-321 hardcoded client-IDs / token-URL / tenant-GUID. |
+| Component style | **Hand-built / non-v2** — governed by [conventions/component-mxgraph.md](../../conventions/component-mxgraph.md), NOT the v2 four-node trunk. It diverges deliberately: an `input → getEnvironment component` entry, an embedded endpoint-config script node (id 319), embedded auth (`nalOktaAuth`, id 321) and `globalLibrary` nodes (ids 329/331/333), and **multiple** output nodes. Routes via direct `global[_rtNextStep]` writes (no `__rtOutcome` staging). Do not hold it to the v2 skeleton. ("Style B" was the old name for this — retired; it used to mean "reads `RTDS_OP_*`", which is now purged.) |
 
 ## Business purpose
 
@@ -32,113 +32,80 @@ Find an on-call guard willing to take the call. The runtime fetches the list of 
 
 If the entire list is exhausted, optionally records a voicemail, optionally sends an SMS and/or email to a fallback number/address, then falls through.
 
+> **🔒 Security / config-externalisation debt (flagged 2026-06-08 — unresolved).** The shipped component carries **hardcoded secrets and endpoints in the component source**:
+> - **Node 321 (`nalOktaAuth`)**: MS tenant GUID `24139d14-…-ea1d50cf`, OAuth token URL (embedding that tenant GUID), and OAuth client-IDs for both `acc` (`29ff6118-…`) and `prd` (`487c3298-…`) environments — all inline as component defaults.
+> - **Node 319 (endpoint-config script)**: the full `_rt*Endpoint` map (`_rtBaseUrl = 'https://api.n-allo.be'` + every API path) hardcoded rather than sourced from the env library.
+>
+> These must move to the env library / a secrets mechanism, not component defaults. This is a code fix (out of scope for this spec pass) — flagged here with exact node refs so it isn't lost.
+
 ### Inputs (Params)
+
+Params below match the **shipped `__configJSON`** in `guardRouting.js` (this table was previously a design draft and has been reconciled to the component).
 
 | Param name           | Type             | Required | Default | Description                                                                                                                          |
 | -------------------- | ---------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `Active`             | boolean          | no       | `false` | If falsy, the operation logs a skip and exits to `NextStep`. Universal across operations.                                            |
-| `ConfigId`           | string           | yes      | —       | Guard pool identifier passed to the Guard API.                                                                                        |
-| `DialGroup`          | string           | yes      | —       | Dial group (outbound line group) used to place calls to the guards.                                                                   |
-| `Timeout`            | number (seconds) | no       | `30`    | Per-guard ring timeout before giving up on that guard and trying the next.                                                            |
-| `RequestTimeout`     | number (ms)      | no       | `10000` | HTTP timeout when fetching the guard list.                                                                                            |
-| `OnHoldAudio`        | string           | no       | `''`    | Audio asset played to the inbound caller while the runtime is dialling guards.                                                        |
-| `SendSMS`            | boolean          | no       | `false` | If true and all guards declined / no-answered, send an SMS to a fallback number (Params on a downstream `SendSMS` operation).         |
-| `SendMail`           | boolean          | no       | `false` | If true and all guards exhausted, send a notification email (Params on a downstream `SendEmail` operation).                           |
-| `RecordVoicemail`    | boolean          | no       | `false` | If true and all guards exhausted, record a voicemail from the caller before continuing.                                               |
-| `VoicemailPrompt`    | string           | no       | `''`    | Prompt played before voicemail recording.                                                                                              |
-| `VoicemailMaxSecs`   | number           | no       | `120`   | Maximum voicemail duration in seconds.                                                                                                |
-| `NextStep`           | string (step ID) | yes      | —       | Continuation when the operation is inactive, or all guards have been tried without success.                                           |
-| `NextStep_Failure`   | string (step ID) | no       | `-1`    | Continuation on HTTP error fetching the guard list.                                                                                    |
+| `Active`             | boolean          | no       | `true`  | If falsy, the operation logs a skip and exits to `NextStep`. Default `true` (runs unless explicitly disabled). **⚠ component reads `Active`-fallback `false` — see [Convention debt](#convention-debt).** |
+| `ConfigId`           | number           | yes      | `1`     | Guard pool identifier passed to the Guard API.                                                                                        |
+| `ConfigName`         | string           | no       | `'KLANTWACHT'` | Pool label; carried for flow-header parity.                                                                                   |
+| `DialGuard`          | boolean          | no       | `true`  | Whether to place outbound calls to guards (vs. notify-only).                                                                         |
+| `OutboundAni`        | string           | no       | `''`    | ANI override for the outbound leg to the guard.                                                                                       |
+| `Diversion`          | string           | no       | `''`    | Call-diversion code on the outbound leg.                                                                                              |
+| `OnHoldAudioUrl`     | string (URL)     | no       | `'https://audio-${environment}.n-allo.be/on-hold.wav'` | On-hold audio played to the inbound caller while dialling. **Note: a full URL, not an asset id.** |
+| `Timeout`            | number (seconds) | no       | `15`    | Per-guard ring timeout before advancing to the next guard.                                                                           |
+| `AcceptCallMenu`     | boolean          | no       | `true`  | Whether to play the accept/decline DTMF menu to the guard.                                                                           |
+| `AcceptCallMessage`  | string           | no       | `'Press 1 to accept the call.'` | The accept-menu prompt text.                                                                                |
+| `RecordVoicemail`    | boolean          | no       | `true`  | If all guards exhausted, record a voicemail from the caller before continuing.                                                       |
+| `SendSms`            | boolean          | no       | `true`  | If all guards exhausted, route on to a downstream SMS hop. **Note the casing — `SendSms`, not `SendSMS`.**                           |
+| `SendMail`           | boolean          | no       | `true`  | If all guards exhausted, route on to a downstream email hop.                                                                          |
+| `NextStep`           | string (step ID) | yes      | `'00005'` | Continuation when inactive, or all guards tried without success.                                                                    |
+| `NextStep_Success`   | string (step ID) | no       | `'00002'` | Continuation on a successful guard accept (the component **does** stage a success branch — see Outputs).                            |
+| `NextStep_Failure`   | string (step ID) | no       | `'00099'` | Continuation on HTTP / dial failure.                                                                                                |
+
+**Spec-only params that the shipped component does NOT read** (present in the earlier draft, absent in `guardRouting.js`): `DialGroup`, `RequestTimeout` (HTTP timeout is hardcoded to `10000` in the fetch node), `OnHoldAudio` (replaced by `OnHoldAudioUrl`), `SendSMS` (replaced by `SendSms`), `VoicemailPrompt`, `VoicemailMaxSecs`.
 
 ### Outputs
 
 | Branch key         | Taken when                                                                          | Fallback |
 | ------------------ | ----------------------------------------------------------------------------------- | -------- |
-| `NextStep`         | Operation inactive, or guard loop exhausted (with optional voicemail/SMS/email taken). | `-1`  |
-| `NextStep_Failure` | HTTP error fetching the guard list.                                                  | `-1`     |
+| `NextStep`         | Operation inactive, or guard loop exhausted (with optional voicemail/SMS/email taken). | `''`  |
+| `NextStep_Success` | A guard accepted and the inbound caller was bridged through.                         | `''`     |
+| `NextStep_Failure` | HTTP error fetching the guard list, or an outbound-dial failure.                     | `''`     |
 
-A successful guard accept ends the IVR session (the inbound caller is bridged to the guard's leg). There is no post-success branch.
+The component **does** stage a `NextStep_Success` branch (the earlier draft's claim of "no post-success branch" was wrong). Routing **today** is via direct `global[_rtNextStep]` writes in the work scripts (no `__rtOutcome` staging), across **multiple output nodes** each logging `[guardRouting] exit`. The fallback is `''`. The **target** is `__rtOutcome` staging resolved once at output, like every other operation — see [Convention debt](#convention-debt) (this is a larger change here because the graph is multi-output and hand-built).
 
 ### External call
 
-| Field        | Value                                              |
-| ------------ | -------------------------------------------------- |
-| Base URL var | `_rtBaseUrl` → `__rtBaseUrl`                        |
-| Endpoint var | `_rtGuardEndpoint` → `__rtEndpoint`                 |
-| Method       | `GET`                                              |
-| Timeout      | `getValue(__rtParams, 'RequestTimeout', 10000)` ms |
+| Field        | Value                                                                 |
+| ------------ | --------------------------------------------------------------------- |
+| Base URL var | `_rtBaseUrl` → `__rtBaseUrl` (hardcoded to `https://api.n-allo.be` in node 319 — see security flag) |
+| Endpoint var | `_rtActiveGuardByConfigEndpoint` (Digipolis `/Guard/GetAllCurrentActiveGuardsByGuardConfig`), defined in node 319 |
+| Method       | `GET`                                                                 |
+| Timeout      | hardcoded `10000` ms in the fetch node (no `RequestTimeout` Param)     |
+| Auth         | OAuth via the embedded `nalOktaAuth` component (node 321) — see security flag |
 
-URL shape: `__rtBaseUrl + __rtEndpoint + '/' + ConfigId + '/active'`.
-
-Expected response:
-
-```json
-{
-  "success": true,
-  "statusCode": 200,
-  "body": [
-    { "id": "...", "phoneNumber": "+32...", "name": "..." },
-    ...
-  ]
-}
-```
+Guard-list response is read off **`result.response`** (the `jsonHttpRequest` `{ success, response }` shape — not `result.body`); it is an array of active-guard records (id / phone number / name fields).
 
 ### Component structure
 
-Multi-node component (most complex in the operation catalog — borrows the shape from `guardTui` but extends it with an outbound dial + transfer per iteration).
+Hand-built, multi-node, **non-v2** component — the most complex in the catalog. The description below reflects the **shipped** `guardRouting.js` (the earlier draft `init` / `fetch` code blocks were aspirational and have been removed; read the component for exact bodies).
 
-- **input** → **init** → **fetch** (http_call to load the guard list) → **loop** (per-guard) → **dial-outbound** → **menu-prompt** → **dtmf-collect** → **case** (1 = transfer, 2/busy/RNA = next guard) → **transfer** (terminal) → **exhausted** (case node) → **voicemail / sendSMS / sendMail** (optional) → **output**.
+Actual node shape (decoded from the mxGraph):
 
-`init`:
+- **input (0)** → **init (7)** (`__setupConfig`, `Logger.debug`) → **getGuards (29)** (HTTP fetch of the active-guard list; `.then`/error) → **hasGuards (case)** → **guardLoop (counter)** → **dialGuard (script)** → **redirect (NestedJob outbound)** → **appendLog (script)** → **answered (case)** → loop-back or → **recordVoicemail (case)** → say/recognize → **prepareMsg (script)** → **output**.
+- Embedded infrastructure nodes (the non-v2 divergence): **getEnvironment** (`Type="component"`, id 326/325), **nalOktaAuth** (`Type="component"`, id 321 — OAuth), endpoint-config **script (id 319)**, and three **globalLibrary** nodes (ids 329/331/333: `rtds_1_globalConfig` / `rtds_2_runtime` / `rtds_3_vocallsEnv`).
+- **Multiple output nodes** (ids 6, 726, 737), each logging `[guardRouting] exit`.
 
-```js
-__rtParams = __setupConfig(__configJSON);
-if (!_headers) { _headers = {}; }
-__guardIndex = 0;
-__guardList = [];
-__guardId = '';
-Logger.debug('[guardRouting] config resolved', { params: __rtParams });
-```
+Routing is by **direct `global[_rtNextStep]` writes** in the work scripts (`getGuards`, `dialGuard`, `appendLog`, `prepareMsg`) — there is no `__rtOutcome` staging and no single output-node resolution. Logging is clean (`Logger.*` throughout; no bare `log_*`). No `RTDS_OP_*` usage.
 
-`fetch` (work script):
+### Convention debt (flagged 2026-06-08)
 
-```js
-global[_rtNextStep] = getValue(__rtParams, 'NextStep', -1);
+This spec states the **target** contract; the hand-built `guardRouting.js` diverges on:
 
-if (!getValue(__rtParams, 'Active', false)) {
-    Logger.info('[guardRouting] skipped — inactive', { nextStep: global[_rtNextStep] });
-    return;
-}
+1. **`Active` read fallback `false` → `true`.** The fetch node reads `getValue(__rtParams, 'Active', false)`; target is `true`.
+2. **`__rtOutcome` staging.** The component routes via direct `global[_rtNextStep]` writes across multiple output nodes. The target is single-resolve `__rtOutcome` staging ([conventions/component-v2.md](../../conventions/component-v2.md) §7–§8) — a larger refactor here given the multi-output, hand-built graph; track as a follow-up rather than a quick fix.
+3. **Hardcoded secrets / endpoints** (nodes 319/321) — see the 🔒 security flag above. Highest priority.
 
-var __cfg = getValue(__rtParams, 'ConfigId', '');
-if (!__cfg) { Logger.warn('[guardRouting] missing ConfigId', { nextStep: global[_rtNextStep] }); return; }
-
-global[_rtNextStep] = getValue(__rtParams, 'NextStep_Failure', -1);
-
-var __url = __rtBaseUrl + __rtEndpoint + '/' + encodeURIComponent(__cfg) + '/active';
-var __timeout = getValue(__rtParams, 'RequestTimeout', 10000);
-
-return jsonHttpRequest(__url, { method: 'GET', "timeout": __timeout }, _headers, null).then(
-    function (result) {
-        if (!result || result.success !== true || !Array.isArray(result.response)) {
-            Logger.warn('[guardRouting] fetch failed', { statusCode: result && result.statusCode, nextStep: global[_rtNextStep] });
-            return;
-        }
-        __guardList = result.response;
-        global[_rtNextStep] = getValue(__rtParams, 'NextStep', -1);
-        Logger.info('[guardRouting] list ready', { count: __guardList.length, nextStep: global[_rtNextStep] });
-    },
-    function (err) { Logger.error('[guardRouting] fetch error', { nextStep: global[_rtNextStep] }, err); }
-);
-```
-
-The dial / menu / transfer / loop logic is wired through the mxGraph's case nodes — the component-builder skill will materialise each as a separate `script` / `dtmf` / `case` / `say` node, similar to how `guardTui.js` is structured.
-
-`output`:
-
-```js
-OnEnter: Logger.info('[guardRouting] exit', { nextStep: __rtNextStep });
-```
+(Logging is already clean — `Logger.*` throughout, no bare `log_*`; no `RTDS_OP_*`.)
 
 ### Open questions
 

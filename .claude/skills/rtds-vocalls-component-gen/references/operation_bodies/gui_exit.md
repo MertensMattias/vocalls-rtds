@@ -1,122 +1,73 @@
-# Pattern: GUI-exit operation
+# Pattern: GUI-exit Types
 
-Use for any Type whose work body **hands off to a downstream GUI node**
-rather than doing the work itself. The runtime detects the returned exit
-key and routes the call to the matching GUI node, which reads
-`RTDS_OP_<Key>` to get its parameters.
+GUI-exit is **not a Script-body pattern that generates a component**. It is
+how the **runtime engine** routes a call off the routing table and onto the
+canvas. Read this file to understand what to generate (often nothing) when a
+Type is registered as a GUI-exit Type — do not emit the old
+`walk(...) → RTDS_OP_*; return '<exit_key>'` skeleton. That model is retired.
 
-All 11 GUI-exit Types share one skeleton. The only things that vary are
-the `RTDS_currentOpType` value (PascalCase Type name) and the returned
-exit key (snake_case string). The table below is the source of truth.
+## How GUI-exit actually works
 
-**GUI-exit bypasses `__rtOutcome`.** Unlike the other patterns, GUI-exit
-operations do NOT stage `__rtOutcome` — they `return '<exit_key>'` and the
-engine routes on the returned string directly, so there is no outcome key
-to resolve at the output node.
+When `runStep` hits a Type registered with `registerRtdsExit(type, exitKey)`,
+the engine calls `prepareGuiHandoff(op)` in `rtds_2_runtime.js`, which:
 
-Logging discipline lives in [logging.md](../../conventions/logging.md).
-Two logs is enough here: skip (info) and the GUI handoff (info). The
-output node's exit log fires on resumption.
+- writes `context.session.variables.RTDS_currentOpId` and `RTDS_currentOpType`,
+- writes `context.session.variables.RTDS_currentOpConfig = op.params` — the
+  **whole** Params object, not per-key `RTDS_OP_*` variables,
+- pre-populates `RTDS_nextStepId` with the default `NextStep`,
+- returns the Type's **exit key** string to Vocalls, which routes the call to
+  the matching canvas target.
 
-## Skeleton
+The component author writes **none** of this. There is no `walk`, no
+`RTDS_OP_<Key>` splay, and no `return '<exit_key>'` in any component body.
 
-```js
-if (!getValue(__rtParams, 'Active', false)) {
-    Logger.info('[<componentName>] skipped — inactive', { outcome: 'NextStep' });
-    return;
-}
+## What you generate for a GUI-exit Type
 
-var __nextStepId = getValue(__rtParams, 'NextStep', -1);
+Two cases — decide which the target is:
 
-walk(__rtParams, function (key, value) {
-    context.session.variables['RTDS_OP_' + key] = value;
-});
-context.session.variables.RTDS_currentOpType = '<TypeName>';
-context.session.variables.RTDS_nextStepId    = __nextStepId;
+1. **Vocalls-native target (most GUI-exit Types).** WorkgroupTransfer,
+   ExternalTransfer, Menu, LanguageMenu, PlayPrompt, PlayAudio, Disconnect,
+   GuardRouting, Callback, SendEmail are handled by **native Designer nodes**
+   on the canvas (a transfer node, a menu node, an email node, …). The node
+   reads `RTDS_currentOpConfig` for its parameters. **There is no v2
+   component to generate** — the routing table entry plus the native canvas
+   node are the whole implementation. Confirm the Type is registered with
+   `registerRtdsExit` and stop.
 
-Logger.info('[<componentName>] handing off', { exitKey: '<exit_key>', nextStep: __nextStepId });
+2. **Self-contained v2 component target.** GuardTUI is the example: the
+   `guard_tui` exit key routes to a generated component
+   ([guardTui.js](../examples/)) that does real work — HTTP eligibility/state
+   calls plus a DTMF activate/deactivate menu — and resolves its own outcome.
+   This is an **ordinary v2 component**: generate it exactly like an
+   HTTP-call component (init → `__setupConfig` → `__rtParams`, validate, stage
+   `__rtOutcome`, resolve once at the output node with the `''` fallback). It
+   reads its config from `RTDS_currentOpConfig` via `__configJSON`/`__setupConfig`
+   like any other component; it does **not** read `RTDS_OP_*`. Use
+   [http_call.md](http_call.md) (plus [composite.md](composite.md) for the
+   DTMF menu) as the Script-body pattern.
 
-return '<exit_key>';
-```
+## Type → exit-key registry (reference)
 
-**Why this shape**
+The engine emits these exit keys; the table is the source of truth for the
+`registerRtdsExit` registrations, **not** for any component code.
 
-- `walk` writes every Param to `RTDS_OP_<Key>` with operator-chosen casing
-  preserved. That's the contract the downstream GUI node reads.
-- The `Active` guard returns early *without* writing `RTDS_OP_*`. The skip
-  log records `{ outcome: 'NextStep' }` — no exit key has been chosen yet,
-  so the call falls through on the default next step.
-- `__nextStepId` is hoisted into a local so the handoff log and the
-  session-variable assignment use the same value. The `__` prefix is
-  mandatory — see [naming.md](../../conventions/naming.md). `walk`'s callback
-  parameters (`key`, `value`) stay bare because they're function-signature
-  bindings, not `var` declarations.
-- The handoff log is the terminal event — it records which GUI node the
-  call is heading to and the next step it'll resume on. One line.
-- The return value triggers the routing. Anything other than the
-  canonical exit-key string is undefined behaviour.
-- `Disconnect` is the exception — see the variant below.
-
-## Type → TypeName + exit-key lookup
-
-| Type                 | `RTDS_currentOpType` value | Returned exit key      | Notes                                                                       |
-| -------------------- | -------------------------- | ---------------------- | --------------------------------------------------------------------------- |
-| `WorkgroupTransfer`  | `'WorkgroupTransfer'`      | `'workgroup_transfer'` | Transfer to an ACD queue.                                                   |
-| `ExternalTransfer`   | `'ExternalTransfer'`       | `'external_transfer'`  | Transfer to an external number.                                             |
-| `Menu`               | `'Menu'`                   | `'menu'`               | DTMF / speech menu. Params often include `NextStep_<n>` per option.         |
-| `LanguageMenu`       | `'LanguageMenu'`           | `'language_menu'`      | Language-selection variant of `Menu`.                                       |
-| `PlayPrompt`         | `'PlayPrompt'`             | `'play_prompt'`        | TTS/dynamic prompt playback.                                                |
-| `PlayAudio`          | `'PlayAudio'`              | `'play_audio'`         | Static audio file playback.                                                 |
-| `Disconnect`         | `'Disconnect'`             | `'disconnect'`         | Terminal — **omit the `RTDS_nextStepId` line** (no next step).              |
-| `GuardRouting`       | `'GuardRouting'`           | `'guard_routing'`      | On-call / guard rota routing.                                               |
-| `GuardTUI`           | `'GuardTUI'`               | `'guard_tui'`          | Guard variant with TUI (accept/decline DTMF on the guard's leg).            |
-| `Callback`           | `'Callback'`               | `'callback'`           | Callback scheduling; GUI node persists the request and ends the call leg.   |
-| `SendEmail`          | `'SendEmail'`              | `'send_email'`         | Email dispatch; GUI node calls the email service.                            |
-
-## Worked example — WorkgroupTransfer
-
-```js
-if (!getValue(__rtParams, 'Active', false)) {
-    Logger.info('[workgroupTransfer] skipped — inactive', { outcome: 'NextStep' });
-    return;
-}
-
-var __nextStepId = getValue(__rtParams, 'NextStep', -1);
-
-walk(__rtParams, function (key, value) {
-    context.session.variables['RTDS_OP_' + key] = value;
-});
-context.session.variables.RTDS_currentOpType = 'WorkgroupTransfer';
-context.session.variables.RTDS_nextStepId    = __nextStepId;
-
-Logger.info('[workgroupTransfer] handing off', { exitKey: 'workgroup_transfer', nextStep: __nextStepId });
-
-return 'workgroup_transfer';
-```
-
-## Worked example — Disconnect (terminal variant)
-
-`Disconnect` drops the `RTDS_nextStepId` line and the handoff log gets a
-"call ending" wording — there's no next step to record:
-
-```js
-if (!getValue(__rtParams, 'Active', false)) {
-    Logger.info('[disconnect] skipped — inactive', { outcome: 'NextStep' });
-    return;
-}
-
-walk(__rtParams, function (key, value) {
-    context.session.variables['RTDS_OP_' + key] = value;
-});
-context.session.variables.RTDS_currentOpType = 'Disconnect';
-
-Logger.info('[disconnect] call ending');
-
-return 'disconnect';
-```
+| Type                 | `RTDS_currentOpType` value | Exit key emitted       | Target                                                              |
+| -------------------- | -------------------------- | ---------------------- | ------------------------------------------------------------------ |
+| `WorkgroupTransfer`  | `'WorkgroupTransfer'`      | `'workgroup_transfer'` | Native transfer node.                                               |
+| `ExternalTransfer`   | `'ExternalTransfer'`       | `'external_transfer'`  | Native transfer node.                                              |
+| `Menu`               | `'Menu'`                   | `'menu'`               | Native menu node. Params often include `NextStep_<n>` per option.  |
+| `LanguageMenu`       | `'LanguageMenu'`           | `'language_menu'`      | Native language-menu node.                                         |
+| `PlayPrompt`         | `'PlayPrompt'`             | `'play_prompt'`        | Native prompt node.                                               |
+| `PlayAudio`          | `'PlayAudio'`              | `'play_audio'`         | Native audio node.                                               |
+| `Disconnect`         | `'Disconnect'`             | `'disconnect'`         | Native disconnect (terminal — no next step).                      |
+| `GuardRouting`       | `'GuardRouting'`           | `'guard_routing'`      | Native guard-routing node.                                        |
+| `GuardTUI`           | `'GuardTUI'`               | `'guard_tui'`          | **Self-contained v2 component** (guardTui.js) — see case 2 above.  |
+| `Callback`           | `'Callback'`               | `'callback'`           | Native callback node.                                            |
+| `SendEmail`          | `'SendEmail'`              | `'send_email'`         | Native email node.                                              |
 
 ## Params
 
 Do **not** invent a "typical Params" list. The runtime spec
 [`../RTDS_runtime_spec.md §1.5`](../RTDS_runtime_spec.md) is the source of
-truth for what Params a given Type accepts.
+truth for what Params a given Type accepts. The engine delivers them whole on
+`RTDS_currentOpConfig`.

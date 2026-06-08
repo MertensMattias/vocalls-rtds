@@ -110,10 +110,11 @@ production-reference id-numbering observation.
   output's `OnEnter` log fires exactly once per run, regardless of which
   primitive branch was taken. For `__rtOutcome`-staging Script bodies that
   output node also resolves the staged key once
-  (`global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1);
+  (`global[_rtNextStep] = getValue(__rtParams, __rtOutcome, '');
   Logger.info('[<componentName>] exit', { outcome: __rtOutcome, nextStep: global[_rtNextStep] });`).
-  GUI-exit Script bodies return an exit key directly and don't stage
-  `__rtOutcome`.
+  Every composite component is a self-contained v2 component on this
+  contract — there is no exit-key-returning Script body (GUI-exit routing is
+  the engine's job; see [gui_exit.md](gui_exit.md)).
 
 ## Edge contract — rules summary
 
@@ -212,32 +213,30 @@ Retry loops must always be bounded — set `MaxEntryCount` on the looping
 primitive and `MaxEntryNodeId` to id=6 so the loop is guaranteed to
 terminate.
 
-## Worked example — `Menu` GUI-exit with say + dtmf collect + recognize fallback
+## Worked example — self-contained component with say + dtmf collect + recognize fallback
 
-The Script body is the canonical `gui_exit.md` Menu skeleton, **emitted
-unchanged**:
+Composite mode applies to a **self-contained v2 component** that embeds
+Designer primitives — e.g. the `guard_tui` target ([guardTui.js](../examples/)),
+which collects a DTMF activate/deactivate choice. The Script body is an
+ordinary [http_call.md](http_call.md)-style body that stages `__rtOutcome`;
+it does **not** `walk` Params into `RTDS_OP_*` and does **not** `return` an
+exit key (GUI-exit routing is the engine's job — see [gui_exit.md](gui_exit.md)):
 
 ```js
 if (!getValue(__rtParams, 'Active', false)) {
-    Logger.info('[menu] skipped — inactive', { outcome: 'NextStep' });
+    Logger.info('[<componentName>] skipped — inactive', { outcome: 'NextStep' });
     return;
 }
 
-var __nextStepId = getValue(__rtParams, 'NextStep', -1);
-
-walk(__rtParams, function (key, value) {
-    context.session.variables['RTDS_OP_' + key] = value;
-});
-context.session.variables.RTDS_currentOpType = 'Menu';
-context.session.variables.RTDS_nextStepId    = __nextStepId;
-
-Logger.info('[menu] handing off', { exitKey: 'menu', nextStep: __nextStepId });
-
-return 'menu';
+// ... validate inputs, pivot __rtOutcome = 'NextStep_Failure',
+//     fire jsonHttpRequest(...).then(success, error), stage the chosen
+//     'NextStep_*' key into __rtOutcome ...
 ```
 
-That is the **entire** JS contribution of this component. The primitives
-below sit between id=29 and id=6 and are wired purely in XML.
+`__rtOutcome` is resolved once at the output node (id=6) with the `''`
+fallback, exactly as in every other v2 component. The primitives below sit
+between id=29 and id=6 and are wired purely in XML; the per-key DTMF/recognize
+branches route to the relevant says or back into the flow.
 
 ### Graph additions (XML excerpt)
 

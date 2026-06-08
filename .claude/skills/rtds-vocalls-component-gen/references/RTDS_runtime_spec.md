@@ -133,7 +133,7 @@ Call arrives
     |       getFirstOperation(operations) --> firstOp
     |       runStep(firstOp.Id)
     |         --> JS-handled: execute, get nextStepId, loop
-    |         --> GUI-exit:   write RTDS_OP_* params, return exit key string
+    |         --> GUI-exit:   write RTDS_currentOpConfig (whole params), return exit key string
     |
     v
 [GUI Node] executes (transfer, play, menu, ...)
@@ -164,7 +164,7 @@ All state is stored on `context.session.variables`. No separate "context" object
 | `RTDS_currentOpType` | Before GUI handoff | Type of the operation being handed off |
 | `RTDS_nextStepId` | Before GUI handoff | Default next step Id (GUI node overwrites this with its outcome) |
 | `RTDS_error` | On error | Error code string |
-| `RTDS_OP_*` | Before GUI handoff | Prefixed copy of each Param key/value for the GUI node to read |
+| `RTDS_currentOpConfig` | Before GUI handoff | The whole `op.params` object, for the GUI target to read |
 | Any SetAttributes param key | During SetAttributes | The param value, token-resolved |
 
 ---
@@ -218,7 +218,7 @@ Returns `{ nextStepId }`.
 
 ### 4.8 `prepareGuiHandoff(op)`
 
-Before returning an exit key, writes all `op.Params` to `context.session.variables` with the `RTDS_OP_` prefix (tokens resolved), sets `RTDS_currentOpId`, `RTDS_currentOpType`, and pre-populates `RTDS_nextStepId` with the default `NextStep`. The GUI node reads `RTDS_OP_*` to configure itself and overwrites `RTDS_nextStepId` with its branching outcome.
+Before returning an exit key, writes the whole `op.params` object to `context.session.variables.RTDS_currentOpConfig`, sets `RTDS_currentOpId`, `RTDS_currentOpType`, and pre-populates `RTDS_nextStepId` with the default `NextStep`. The GUI target reads `RTDS_currentOpConfig` to configure itself and overwrites `RTDS_nextStepId` with its branching outcome. It does **not** write per-key `RTDS_OP_*` variables.
 
 ### 4.9 `runStep(startOpId)`
 
