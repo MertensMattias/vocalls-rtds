@@ -44,6 +44,16 @@ def test_type_keeps_vocalls_suffix():
     assert m.camel_case_type("GuardTui_vocalls") == "guardTui_vocalls"
 
 
+def test_data_files_exist_and_exclude_legacy_helpdesk():
+    names = [p.name for p in m.DATA_FILES]
+    # legacy pre-migration sample must NOT be in scope (old PureConnect schema)
+    assert "DA-HELPDESK.json" not in names
+    # the 8 migrated _vocalls flows are all present and on disk
+    assert len(m.DATA_FILES) == 8
+    for p in m.DATA_FILES:
+        assert p.exists(), "missing data file: %s" % p
+
+
 if __name__ == "__main__":
     # Allow running without pytest: execute every test_* and report.
     import traceback

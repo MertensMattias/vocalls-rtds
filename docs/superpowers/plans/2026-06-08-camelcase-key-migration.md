@@ -21,7 +21,7 @@
 
 **Modified (Tier A — data):**
 - `callflow_json_config_vocalls/DIGIPOLIS_DA_KLANTWACHT_GUARD_PRD.json` and 7 siblings (8 total)
-- `rtds/samples/DA-HELPDESK.json`
+- ~~`rtds/samples/DA-HELPDESK.json`~~ — **EXCLUDED** (legacy pre-migration PureConnect schema; the mapping-table gate revealed it produces dictionary-incompatible keys `scheduleID`/`sendSMS`. Migrated later with the helpdesk-flow port.)
 - `rtds/db_seed/insert_flow_on_sourceId.sql` — only the embedded `@JsonPayload` sample literal
 
 **Modified (Tier B — code literals):**
@@ -141,7 +141,7 @@ DATA_FILES = [
         "DIGIPOLIS_LPA_ICT_GUARD_TUI_PRD.json",
         "DIGIPOLIS_DA_SYSTEEMWACHT_TUI_PRD.json",
     ]
-] + [REPO / "rtds" / "samples" / "DA-HELPDESK.json"]
+]  # DA-HELPDESK.json EXCLUDED: legacy pre-migration PureConnect schema
 
 
 def _camel_segment(seg):
@@ -186,7 +186,7 @@ def camel_case_type(type_value):
     return _camel_segment(type_value)
 
 
-def transform(obj, mapping, is_type_context=False):
+def transform(obj, mapping):
     """Recursively rewrite dict KEYS (and Type VALUES). Records every distinct
     transform into `mapping` (an OrderedDict old->new) for the gate table."""
     if isinstance(obj, list):
@@ -330,7 +330,7 @@ Surface the table to the user and the SQL team. Do not proceed to Task 3 until t
 ## Task 3: Apply the codemod to Tier A data + verify in isolation
 
 **Files:**
-- Modify: the 9 JSON files in `DATA_FILES`
+- Modify: the 8 JSON files in `DATA_FILES`
 - Modify: `rtds/db_seed/insert_flow_on_sourceId.sql` (embedded `@JsonPayload` only)
 
 - [ ] **Step 1: Snapshot the before-state for diff sanity**
@@ -349,7 +349,7 @@ Expected: exits 0, prints the mapping table. The 9 JSON files now have camelCase
 
 Run:
 ```bash
-python -c "import json,glob; [json.load(open(f,encoding='utf-8')) for f in glob.glob('callflow_json_config_vocalls/*.json')+['rtds/samples/DA-HELPDESK.json']]; print('all parse OK')"
+python -c "import json,glob; [json.load(open(f,encoding='utf-8')) for f in glob.glob('callflow_json_config_vocalls/*.json')]; print('all parse OK')"
 ```
 Expected: `all parse OK`. (Duplicate keys would have collided during the codemod's OrderedDict rebuild and surfaced as lost data — verify the next step catches that.)
 
@@ -359,7 +359,7 @@ Run:
 ```bash
 python - <<'PY'
 import json, glob
-for f in glob.glob('callflow_json_config_vocalls/*.json') + ['rtds/samples/DA-HELPDESK.json']:
+for f in glob.glob('callflow_json_config_vocalls/*.json'):
     d = json.load(open(f, encoding='utf-8'))
     ops = d.get('operations', [])
     ids = {o.get('id') for o in ops}
@@ -384,7 +384,7 @@ In `rtds/db_seed/insert_flow_on_sourceId.sql`, the `@JsonPayload nvarchar(max)` 
 - [ ] **Step 6: Commit Tier A**
 
 ```bash
-git add callflow_json_config_vocalls/*.json rtds/samples/DA-HELPDESK.json rtds/db_seed/insert_flow_on_sourceId.sql
+git add callflow_json_config_vocalls/*.json rtds/db_seed/insert_flow_on_sourceId.sql
 git commit -m "refactor(data): camelCase keys + types across RTDS flow JSON
 
 Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
@@ -593,7 +593,7 @@ Expected: `Tests: 113 passed, 113 total`.
 
 Run:
 ```bash
-grep -rnE '"(SourceId|Operations|IsFirstOperation|NextStep_|SmsAccountId|IVREvent|IVRAction)"' callflow_json_config_vocalls rtds/samples rtds/components || echo "no residual PascalCase keys"
+grep -rnE '"(SourceId|Operations|IsFirstOperation|NextStep_|SmsAccountId|IvrEvent|IvrAction)"' callflow_json_config_vocalls rtds/components || echo "no residual PascalCase keys"
 ```
 Expected: `no residual PascalCase keys`. Any hit is a missed key — fix it and re-run Tasks 4-8 for that file.
 

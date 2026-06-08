@@ -19,6 +19,14 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 
 # Tier A data files (keys-only rewrite). Type values are camelCased too.
+#
+# rtds/samples/DA-HELPDESK.json is deliberately EXCLUDED: it is legacy
+# pre-migration data on the old PureConnect schema (SetAttributes, SendSMS,
+# ScheduleID, Importance, Attachment) -- not the _vocalls schema. Mechanically
+# camelCasing it produces keys that do not match the _vocalls dictionary
+# (scheduleID vs scheduleId, sendSMS vs sendSms). It is migrated later as part
+# of the helpdesk-flow port (see callflow_json_config_vocalls/MIGRATION_REPORT.md
+# -- the two helpdesk flows are listed as still pending).
 DATA_FILES = [
     REPO / "callflow_json_config_vocalls" / name
     for name in [
@@ -31,7 +39,7 @@ DATA_FILES = [
         "DIGIPOLIS_LPA_ICT_GUARD_TUI_PRD.json",
         "DIGIPOLIS_DA_SYSTEEMWACHT_TUI_PRD.json",
     ]
-] + [REPO / "rtds" / "samples" / "DA-HELPDESK.json"]
+]
 
 
 def _camel_segment(seg):
