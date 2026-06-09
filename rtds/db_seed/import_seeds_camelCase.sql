@@ -112,8 +112,79 @@ GO
 DECLARE @now       datetime2   = SYSUTCDATETIME();
 DECLARE @CreatedBy varchar(50) = 'rtds-seed';
 
+/* ----------------------------------------------------------------------------
+   MODE TOGGLE
+   ----------------------------------------------------------------------------
+   @reset = 0  -->  INSERT/UPDATE only (idempotent: find-or-create + sync).
+                    Existing rows are kept; ids are NOT renumbered. Safe to
+                    re-run any time. This is the default.
+   @reset = 1  -->  WIPE + RESEED the five dictionary tables first, then seed.
+                    Gives contiguous ids from 1 in catalogue order (Dic_Attribute
+                    follows @Attribute.Ord). REQUIREMENTS / WARNINGS:
+                      * The data tables that FK into the dictionary
+                        (rtds.Operation, rtds.Attribute, rtds.Prompt,
+                        rtds.PromptVersion) MUST be empty, or the DELETEs fail
+                        with a FK violation and the whole run rolls back. Use
+                        @resetFull = 1 to clear Operation + Attribute for you.
+                      * Needs ALTER (db_ddladmin/db_owner): both IDENTITY_INSERT
+                        and DBCC CHECKIDENT require it.
+                      * DBCC CHECKIDENT reseed is NOT transactional -- if a later
+                        step throws and the tran rolls back, the row DELETEs are
+                        undone but the reseed is not. Re-run once the cause is
+                        fixed; a clean full run leaves everything consistent.
+
+   @resetFull = 1 -> Everything @reset does (forces @reset = 1) AND wipes +
+                    reseeds the flow INSTANCE tables rtds.Operation and
+                    rtds.Attribute. The prompt subsystem is deliberately kept
+                    independent and untouched: rtds.Prompt, rtds.PromptVersion
+                    and rtds.PromptLibrary are NOT cleared, and neither is
+                    rtds.RoutingTable. NOTE: because @reset still wipes the prompt
+                    dictionaries (Dic_PromptApplication/Language), rtds.Prompt and
+                    rtds.PromptVersion must still be empty for the run to succeed.
+                    If you carry live prompt data, say so and the prompt
+                    dictionaries can be scoped out of the wipe so the whole prompt
+                    level stays fully independent.
+   ---------------------------------------------------------------------------- */
+DECLARE @reset     bit = 0;
+DECLARE @resetFull bit = 0;
+
+IF @resetFull = 1 SET @reset = 1;   -- a full reset implies the dictionary reset
+
 BEGIN TRY
 BEGIN TRANSACTION;
+
+IF @resetFull = 1
+BEGIN
+    PRINT 'RESET FULL enabled -- also clearing rtds.Operation + rtds.Attribute (prompts + routing tables left intact) ...';
+
+    -- Clear flow instance data, children first, and BEFORE the dictionary wipe
+    -- below: rtds.Attribute FKs Operation + Dic_Attribute; rtds.Operation FKs
+    -- RoutingTable (kept) + Dic_OperationType. Prompt tables are not touched.
+    DELETE FROM rtds.Attribute;
+    DELETE FROM rtds.Operation;
+
+    DBCC CHECKIDENT ('rtds.Attribute', RESEED, 0) WITH NO_INFOMSGS;
+    DBCC CHECKIDENT ('rtds.Operation', RESEED, 0) WITH NO_INFOMSGS;
+END
+
+IF @reset = 1
+BEGIN
+    PRINT 'RESET enabled -- wiping + reseeding the five dictionary tables ...';
+
+    -- Delete children before parents (Dic_Attribute FKs Dic_OperationType + Dic_AttributeType).
+    DELETE FROM rtds.Dic_Attribute;
+    DELETE FROM rtds.Dic_OperationType;
+    DELETE FROM rtds.Dic_AttributeType;
+    DELETE FROM rtds.Dic_PromptApplication;
+    DELETE FROM rtds.Dic_PromptLanguage;
+
+    -- Reseed so the next identity value is 1 (RESEED, 0 => first row gets 1).
+    DBCC CHECKIDENT ('rtds.Dic_Attribute',         RESEED, 0) WITH NO_INFOMSGS;
+    DBCC CHECKIDENT ('rtds.Dic_OperationType',     RESEED, 0) WITH NO_INFOMSGS;
+    DBCC CHECKIDENT ('rtds.Dic_AttributeType',     RESEED, 0) WITH NO_INFOMSGS;
+    DBCC CHECKIDENT ('rtds.Dic_PromptApplication', RESEED, 0) WITH NO_INFOMSGS;
+    DBCC CHECKIDENT ('rtds.Dic_PromptLanguage',    RESEED, 0) WITH NO_INFOMSGS;
+END
 
 /* ============================================================================
    SECTION 0 -- STRUCTURAL DICTIONARIES (OperationType / PromptApplication /
@@ -141,13 +212,14 @@ BEGIN TRANSACTION;
      - 'playPrompt'   -> 'say'   (the single prompt-playing type)
      - 'playAudio'    -> 'play'
    The runtime registration (registerRtdsExit) and the Designer twin track these
-   names in lockstep. On a DB that still carries an old name, SECTION 2 renames it
-   in place by NAME (see the step-0 UPDATE block) so no duplicate row is created.
+   names in lockstep. This clean contiguous-ID seed inserts the new names directly
+   by ID above, so no in-place rename step is needed.
 
    SET IDENTITY_INSERT lets this clean seed assign the contiguous ids explicitly.
    INSERT ... WHERE NOT EXISTS BY ID is idempotent: existing rows (matched by ID)
-   are left untouched, missing rows are inserted. Nothing here is deleted (no
-   @clearFirst path -- this file is purely additive).
+   are left untouched, missing rows are inserted. With @reset = 0 nothing here is
+   deleted (purely additive); with @reset = 1 the MODE TOGGLE block above has
+   already wiped + reseeded these tables, so the inserts land on fresh ids 1..N.
 
    NOTE: SECTION 1/2 below ALSO find-or-create Dic_OperationType BY NAME (without
    IDENTITY_INSERT). That is harmless and idempotent: the camelCase names seeded
@@ -170,21 +242,19 @@ SELECT v.* FROM (VALUES
   (7,  N'guardRouting',        N'2022-04-20 11:47:56.5100000', N'rtds-seed', NULL, NULL),
   (8,  N'menu',                N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
   (9,  N'guardTui',            N'2022-04-20 11:48:35.3830000', N'rtds-seed', NULL, NULL),
-  (10, N'workgroupTransfer',   N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (11, N'guard',               N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (12, N'disconnect',          N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (13, N'play',                N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (14, N'condition',           N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (15, N'skillUpdate',         N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (16, N'flowJump',            N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (17, N'callerDataEntry',     N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (18, N'voicemailCallback',   N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (19, N'callback',            N'2021-10-29 12:02:57.5000000', N'rtds-seed', NULL, NULL),
-  (20, N'sendSms',             N'2022-04-20 11:48:39.7930000', N'rtds-seed', NULL, NULL),
-  (21, N'sendEmail',           N'2022-04-20 11:48:43.1100000', N'rtds-seed', NULL, NULL),
-  (22, N'manageCallCapacity',  N'2025-03-11 12:52:49.2470000', N'rtds-seed', NULL, NULL),
-  (23, N'externalTransfer',    N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (24, N'internalTransfer',    N'2026-06-08 00:00:00.0000000', N'rtds-seed', NULL, NULL)
+  (10, N'guard',               N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (11, N'disconnect',          N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (12, N'play',                N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (13, N'condition',           N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (14, N'skillUpdate',         N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (15, N'flowJump',            N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (16, N'callerDataEntry',     N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (17, N'voicemailCallback',   N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (18, N'callback',            N'2021-10-29 12:02:57.5000000', N'rtds-seed', NULL, NULL),
+  (19, N'sendSms',             N'2022-04-20 11:48:39.7930000', N'rtds-seed', NULL, NULL),
+  (20, N'manageCallCapacity',  N'2025-03-11 12:52:49.2470000', N'rtds-seed', NULL, NULL),
+  (21, N'externalTransfer',    N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  (22, N'internalTransfer',    N'2026-06-08 00:00:00.0000000', N'rtds-seed', NULL, NULL)
 ) AS v([DicOperationTypeID], [Name], [DateCreated], [CreatedBy], [DateUpdated], [UpdatedBy])
 WHERE NOT EXISTS (
     SELECT 1 FROM rtds.Dic_OperationType t WHERE t.[DicOperationTypeID] = v.[DicOperationTypeID]
@@ -209,7 +279,7 @@ SELECT v.* FROM (VALUES
   (9,  N'voicemail',     N'Voicemail', N'2021-11-09 14:02:36.2930000', N'rtds-seed', NULL, NULL),
   (10, N'info',          N'Info',      N'2021-11-22 15:52:00.6030000', N'rtds-seed', NULL, NULL),
   (11, N'exception',     N'Exception', N'2021-11-29 12:19:10.1300000', N'rtds-seed', NULL, NULL),
-  (12, N'emergency',     N'Emergency', N'2022-06-09 09:35:39.9470000', N'rtds-seed', NULL, NULL)
+  (12, N'disconnect',    N'Disconnect', N'2022-06-09 09:35:39.9470000', N'rtds-seed', NULL, NULL)
 ) AS v([DicPromptApplicationID], [Name], [FilePrefix], [DateCreated], [CreatedBy], [DateUpdated], [UpdatedBy])
 WHERE NOT EXISTS (
     SELECT 1 FROM rtds.Dic_PromptApplication t WHERE t.[DicPromptApplicationID] = v.[DicPromptApplicationID]
@@ -226,7 +296,7 @@ SELECT v.* FROM (VALUES
   (1, N'NL', N'Dutch',       N'2021-06-30 11:08:13.6400000', N'rtds-seed',  NULL,  NULL),
   (2, N'FR', N'French',      N'2021-06-30 11:08:13.6400000', N'rtds-seed',  NULL,  NULL),
   (3, N'EN', N'English',     N'2021-06-30 11:08:13.6400000', N'rtds-seed',  NULL,  NULL),
-  (4, N'DE', N'German',      N'2021-06-30 11:08:13.6400000', N'rtds-seed',  NULL,  NULL),
+  (4, N'DE', N'German',      N'2021-06-30 11:08:13.6400000', N'rtds-seed',  NULL,  NULL)
 ) AS v([DicPromptLanguageID], [Key], [Language], [DateCreated], [CreatedBy], [DateUpdated], [UpdatedBy])
 WHERE NOT EXISTS (
     SELECT 1 FROM rtds.Dic_PromptLanguage t WHERE t.[DicPromptLanguageID] = v.[DicPromptLanguageID]
@@ -243,8 +313,8 @@ SET IDENTITY_INSERT rtds.Dic_PromptLanguage OFF;
      AttributeType  -> Dic_AttributeType.Name (string | int | bit)
      IsRequired     -> caller must supply (1)
      IsNext         -> value is a step id / branch target (NextStep* family)
-     IsDisplayed    -> GUI shows the field by default
-     IsEditable     -> GUI lets you edit the field by default
+     IsDisplayed    -> GUI shows the field (production: always 0)
+     IsEditable     -> GUI lets you edit the field (production: always 0)
    ============================================================================ */
 
 DECLARE @OperationType TABLE (Name varchar(255) NOT NULL PRIMARY KEY);
@@ -259,9 +329,9 @@ INSERT INTO @OperationType (Name) VALUES
 
     /* ---- helpdesk-flow types (DA_HELDPESK + LPA_ICT_HELDPESK) ---- */
     ('play'),
-    ('externalTransfer'),
     ('say'),
     ('menu'),
+    ('externalTransfer'),
     ('workgroupTransfer'),
 
     ('condition'),
@@ -281,6 +351,7 @@ INSERT INTO @OperationType (Name) VALUES
     ('voicemailCallback');
 
 DECLARE @Attribute TABLE (
+    Ord            int           IDENTITY(1,1) NOT NULL,  -- catalogue order (drives DicAttributeID assignment)
     OperationType  varchar(255)  NOT NULL,
     AttributeName  varchar(255)  NOT NULL,
     AttributeType  varchar(255)  NOT NULL,
@@ -304,32 +375,34 @@ INSERT INTO @Attribute
        dictionary has no default-value column, so the default lives in the
        runtime twin (executeSetVariables, getParam(...,true)) and the component
        (getValue(...,true)) — see rtds/specs/setVariables.spec.md.              */
-    ('setVariables', 'active',           'bit',     0, 0, 1, 1),
-    ('setVariables', 'nextStep',         'string',  1, 1, 1, 1),
-    ('setVariables', 'routingId',        'string',  0, 0, 1, 1),
-    ('setVariables', 'customerName',     'string',  0, 0, 1, 1),
-    ('setVariables', 'customerProject',  'string',  0, 0, 1, 1),
-    ('setVariables', 'ivrEvent',         'string',  0, 0, 1, 1),
-    ('setVariables', 'ivrAction',        'string',  0, 0, 1, 1),
-    ('setVariables', 'logAttributes',    'string',  0, 0, 1, 1),
+    ('setVariables', 'active',           'bit',     1, 0, 0, 0),
+    ('setVariables', 'routingId',        'string',  0, 0, 0, 0),
+    ('setVariables', 'customerName',     'string',  0, 0, 0, 0),
+    ('setVariables', 'customerProject',  'string',  0, 0, 0, 0),
+    ('setVariables', 'ivrEvent',         'string',  0, 0, 0, 0),
+    ('setVariables', 'ivrAction',        'string',  0, 0, 0, 0),
+    ('setVariables', 'logAttributes',    'string',  0, 0, 0, 0),
+    ('setVariables', 'nextStep',         'string',  1, 1, 0, 0),
+
 
     /* ---- Guard ---- (guard / on-call dial-out)                                */
-    ('guard', 'active',            'bit', 1, 0, 1, 1),
-    ('guard', 'configId',          'int', 1, 0, 1, 1),
-    ('guard', 'configName',        'string',  1, 0, 1, 1),
-    ('guard', 'dialGuard',         'bit', 1, 0, 1, 1),
-    ('guard', 'outboundAni',       'string',  1, 0, 1, 1),
-    ('guard', 'diversion',         'string',  1, 0, 1, 1),
-    ('guard', 'onHoldAudioUrl',    'string',  1, 0, 1, 1),
-    ('guard', 'timeout',           'int', 1, 0, 1, 1),
-    ('guard', 'recordVoicemail',   'bit', 1, 0, 1, 1),
-    ('guard', 'acceptCallMenu',    'bit', 1, 0, 1, 1),
-    ('guard', 'acceptCallMessage', 'string',  1, 0, 1, 1),
-    ('guard', 'sendSms',           'bit', 1, 0, 1, 1),
-    ('guard', 'sendMail',          'bit', 1, 0, 1, 1),
-    ('guard', 'nextStep',          'string',  1, 1, 1, 1),
-    ('guard', 'nextStep_Success',  'string',  1, 1, 1, 1),
-    ('guard', 'nextStep_Failure',  'string',  1, 1, 1, 1),
+    ('guard', 'active',            'bit', 1, 0, 0, 0),
+    ('guard', 'configId',          'int', 1, 0, 0, 0),
+    ('guard', 'configName',        'string',  1, 0, 0, 0),
+    ('guard', 'dialGuard',         'bit', 1, 0, 0, 0),
+    ('guard', 'outboundANI',       'string',  1, 0, 0, 0),
+    ('guard', 'diversion',         'string',  1, 0, 0, 0),
+    ('guard', 'onHoldAudioUrl',    'string',  1, 0, 0, 0),
+    ('guard', 'timeout',           'int', 1, 0, 0, 0),
+    ('guard', 'recordVoicemail',   'bit', 1, 0, 0, 0),
+    ('guard', 'acceptCallMenu',    'bit', 1, 0, 0, 0),
+    ('guard', 'acceptCallMessage', 'string',  1, 0, 0, 0),
+    ('guard', 'sendSms',           'bit', 1, 0, 0, 0),
+    ('guard', 'sendMail',          'bit', 1, 0, 0, 0),
+    ('guard', 'nextStep_Success',  'string',  1, 1, 0, 0),
+    ('guard', 'nextStep_Failure',  'string',  1, 1, 0, 0),
+    ('guard', 'nextStep',          'string',  1, 1, 0, 0)
+
 
     /* ---- GuardTUI ---- (self-service guard activate/deactivate line)
        Factored from rtds/samples/sourceCode_guardTui.js (__configJSON + say
@@ -337,66 +410,68 @@ INSERT INTO @Attribute
        the component resolves getValue(__rtParams, base + '_' + language).
        configName is carried for parity with the flow header but is not consumed
        by the component. Add *_FR / *_DE rows when a flow supports more langs.   */
-    ('guardTui', 'active',                       'bit', 0, 0, 1, 1),
-    ('guardTui', 'configId',                     'int', 1, 0, 1, 1),
-    ('guardTui', 'configName',                   'string',  0, 0, 1, 1),
-    ('guardTui', 'phoneNumberVar',               'string',  0, 0, 1, 1),
-    ('guardTui', 'timeout',                      'int', 0, 0, 1, 1),
-    ('guardTui', 'resultCurrentlyActivated_NL',  'string',  1, 0, 1, 1),
-    ('guardTui', 'resultCurrentlyDeactivated_NL','string',  1, 0, 1, 1),
-    ('guardTui', 'promptActivate_NL',            'string',  1, 0, 1, 1),
-    ('guardTui', 'promptDeactivate_NL',          'string',  1, 0, 1, 1),
-    ('guardTui', 'resultActivated_NL',           'string',  1, 0, 1, 1),
-    ('guardTui', 'resultDeactivated_NL',         'string',  1, 0, 1, 1),
-    ('guardTui', 'resultOnlyActive_NL',          'string',  1, 0, 1, 1),
-    ('guardTui', 'resultDenied_NL',              'string',  1, 0, 1, 1),
-    ('guardTui', 'resultError_NL',               'string',  1, 0, 1, 1),
-    ('guardTui', 'nextStep',           'string',  1, 1, 1, 1),
-    ('guardTui', 'nextStep_Success',   'string',  1, 1, 1, 1),
-    ('guardTui', 'nextStep_Denied',    'string',  1, 1, 1, 1),
-    ('guardTui', 'nextStep_Failure',   'string',  1, 1, 1, 1),
+    ('guardTui', 'active',                       'bit', 0, 0, 0, 0),
+    ('guardTui', 'configId',                     'int', 1, 0, 0, 0),
+    ('guardTui', 'configName',                   'string',  0, 0, 0, 0),
+    ('guardTui', 'phoneNumberVar',               'string',  0, 0, 0, 0),
+    ('guardTui', 'timeout',                      'int', 0, 0, 0, 0),
+    ('guardTui', 'resultCurrentlyActivated_NL',  'string',  1, 0, 0, 0),
+    ('guardTui', 'resultCurrentlyDeactivated_NL','string',  1, 0, 0, 0),
+    ('guardTui', 'promptActivate_NL',            'string',  1, 0, 0, 0),
+    ('guardTui', 'promptDeactivate_NL',          'string',  1, 0, 0, 0),
+    ('guardTui', 'resultActivated_NL',           'string',  1, 0, 0, 0),
+    ('guardTui', 'resultDeactivated_NL',         'string',  1, 0, 0, 0),
+    ('guardTui', 'resultOnlyActive_NL',          'string',  1, 0, 0, 0),
+    ('guardTui', 'resultDenied_NL',              'string',  1, 0, 0, 0),
+    ('guardTui', 'resultError_NL',               'string',  1, 0, 0, 0),
+    ('guardTui', 'nextStep_Success',   'string',  1, 1, 0, 0),
+    ('guardTui', 'nextStep_Denied',    'string',  1, 1, 0, 0),
+    ('guardTui', 'nextStep_Failure',   'string',  1, 1, 0, 0),
+    ('guardTui', 'nextStep',           'string',  1, 1, 0, 0),
+
 
     /* ---- SendMail ---- (mail dispatch)
        cc / bcc : semicolon lists; priority 1 high / 2 normal / 3 low;
        files    : semicolon URL list; timeout : HTTP timeout (ms).               */
-    ('sendMail', 'active',           'bit', 0, 0, 1, 1),
-    ('sendMail', 'subject',          'string',  1, 0, 1, 1),
-    ('sendMail', 'from',             'string',  1, 0, 1, 1),
-    ('sendMail', 'to',               'string',  1, 0, 1, 1),
-    ('sendMail', 'cc',               'string',  0, 0, 1, 1),
-    ('sendMail', 'bcc',              'string',  0, 0, 1, 1),
-    ('sendMail', 'body',             'string',  1, 0, 1, 1),
-    ('sendMail', 'priority',         'int', 0, 0, 1, 1),
-    ('sendMail', 'files',            'string',  0, 0, 1, 1),
-    ('sendMail', 'attachmentNames',  'string',  0, 0, 1, 1),
-    ('sendMail', 'attachmentData',   'string',  0, 0, 1, 1),
-    ('sendMail', 'customerKey',      'string',  0, 0, 1, 1),
-    ('sendMail', 'timeout',          'int', 0, 0, 1, 1),
-    ('sendMail', 'nextStep',         'string',  1, 1, 1, 1),
-    ('sendMail', 'nextStep_Success', 'string',  1, 1, 1, 1),
-    ('sendMail', 'nextStep_Failure', 'string',  1, 1, 1, 1),
+    ('sendMail', 'active',           'bit', 1, 0, 0, 0),
+    ('sendMail', 'subject',          'string',  1, 0, 0, 0),
+    ('sendMail', 'from',             'string',  1, 0, 0, 0),
+    ('sendMail', 'to',               'string',  1, 0, 0, 0),
+    ('sendMail', 'cc',               'string',  0, 0, 0, 0),
+    ('sendMail', 'bcc',              'string',  0, 0, 0, 0),
+    ('sendMail', 'body',             'string',  1, 0, 0, 0),
+    ('sendMail', 'priority',         'int', 0, 0, 0, 0),
+    ('sendMail', 'files',            'string',  0, 0, 0, 0),
+    ('sendMail', 'attachmentNames',  'string',  0, 0, 0, 0),
+    ('sendMail', 'attachmentData',   'string',  0, 0, 0, 0),
+    ('sendMail', 'customerKey',      'string',  0, 0, 0, 0),
+    ('sendMail', 'timeout',          'int', 0, 0, 0, 0),
+    ('sendMail', 'nextStep_Success', 'string',  1, 1, 0, 0),
+    ('sendMail', 'nextStep_Failure', 'string',  1, 1, 0, 0),
+    ('sendMail', 'nextStep',         'string',  1, 1, 0, 0),
+
 
     /* ---- SendSms ---- (SMS dispatch)
        smsAccountId : numeric SMS account id; timeout : HTTP timeout (ms).        */
-    ('sendSms', 'active',           'bit', 0, 0, 1, 1),
-    ('sendSms', 'smsAccountId',     'int', 1, 0, 1, 1),
-    ('sendSms', 'routing',          'string',  0, 0, 1, 1),
-    ('sendSms', 'from',             'string',  1, 0, 1, 1),
-    ('sendSms', 'to',               'string',  1, 0, 1, 1),
-    ('sendSms', 'body',             'string',  1, 0, 1, 1),
-    ('sendSms', 'timeout',          'int', 0, 0, 1, 1),
-    ('sendSms', 'nextStep',         'string',  1, 1, 1, 1),
-    ('sendSms', 'nextStep_Success', 'string',  1, 1, 1, 1),
-    ('sendSms', 'nextStep_Failure', 'string',  1, 1, 1, 1),
+    ('sendSms', 'active',           'bit', 1, 0, 0, 0),
+    ('sendSms', 'smsAccountId',     'int', 1, 0, 0, 0),
+    ('sendSms', 'routing',          'string',  0, 0, 0, 0),
+    ('sendSms', 'from',             'string',  1, 0, 0, 0),
+    ('sendSms', 'to',               'string',  1, 0, 0, 0),
+    ('sendSms', 'body',             'string',  1, 0, 0, 0),
+    ('sendSms', 'timeout',          'int', 0, 0, 0, 0),
+    ('sendSms', 'nextStep_Success', 'string',  1, 1, 0, 0),
+    ('sendSms', 'nextStep_Failure', 'string',  1, 1, 0, 0),
+    ('sendSms', 'nextStep',         'string',  1, 1, 0, 0),
 
     /* ---- Disconnect ---- (ends the interaction)
        Params: {} in this contract -> no nextStep. Only the universal 'active'
        control flag is catalogued by default. The helpdesk flows have a
        prompt-playing disconnect variant (e.g. 'RTDS: MaxQueue Disconnect',
        'RTDS: IVR Error'), so 'prompt' and 'applicationId' are catalogued too.    */
-    ('disconnect', 'active',         'bit', 0, 0, 1, 1),
-    ('disconnect', 'prompt',         'string',  0, 0, 1, 1),
-    ('disconnect', 'applicationId',  'int', 0, 0, 1, 1),
+    ('disconnect', 'active',         'bit', 0, 0, 0, 0),
+    ('disconnect', 'prompt',         'string',  0, 0, 0, 0),
+    ('disconnect', 'applicationId',  'int', 0, 0, 0, 0),
 
     /* ========================================================================
        HELPDESK-FLOW TYPES  (DA_HELDPESK +3233387777, LPA_ICT_HELDPESK +3233389999)
@@ -420,114 +495,115 @@ INSERT INTO @Attribute
        ======================================================================== */
 
     /* ---- Say ---- (TTS / prompt-library playback; formerly playPrompt)         */
-    ('say', 'active',         'bit', 0, 0, 1, 1),
-    ('say', 'applicationId',  'int', 0, 0, 1, 1),
-    ('say', 'prompt',         'string',  1, 0, 1, 1),
-    ('say', 'nextStep',       'string',  1, 1, 1, 1),
+    ('say', 'active',         'bit', 1, 0, 0, 0),
+    ('say', 'applicationId',  'int', 0, 0, 0, 0),
+    ('say', 'prompt',         'string',  1, 0, 0, 0),
+    ('say', 'nextStep',       'string',  1, 1, 0, 0),
 
     /* ---- Play ---- (named audio-source playback; formerly playAudio)           */
-    ('play', 'active',          'bit', 0, 0, 1, 1),
-    ('play', 'audioSource',     'string',  1, 0, 1, 1),
-    ('play', 'timeout',         'int', 0, 0, 1, 1),
-    ('play', 'nextStep',        'string',  1, 1, 1, 1),
+    ('play', 'active',          'bit', 1, 0, 0, 0),
+    ('play', 'audioSource',     'string',  1, 0, 0, 0),
+    ('play', 'timeout',         'int', 0, 0, 0, 0),
+    ('play', 'nextStep',        'string',  1, 1, 0, 0),
 
     /* ---- Menu ---- (DTMF menu; per-choice nextStep_<digit> branches)           */
-    ('menu', 'active',                  'bit', 0, 0, 1, 1),
-    ('menu', 'applicationId',           'int', 0, 0, 1, 1),
-    ('menu', 'staticPrompt',            'string',  0, 0, 1, 1),
-    ('menu', 'timeout',                 'int', 0, 0, 1, 1),
-    ('menu', 'maxTries',                'int', 0, 0, 1, 1),
-    ('menu', 'nextStep_0',              'string',  0, 1, 1, 1),
-    ('menu', 'nextStep_1',              'string',  0, 1, 1, 1),
-    ('menu', 'nextStep_2',              'string',  0, 1, 1, 1),
-    ('menu', 'nextStep_3',              'string',  0, 1, 1, 1),
-    ('menu', 'nextStep_4',              'string',  0, 1, 1, 1),
-    ('menu', 'nextStep_5',              'string',  0, 1, 1, 1),
-    ('menu', 'nextStep_6',              'string',  0, 1, 1, 1),
-    ('menu', 'nextStep_7',              'string',  0, 1, 1, 1),
-    ('menu', 'nextStep_8',              'string',  0, 1, 1, 1),
-    ('menu', 'nextStep_9',              'string',  0, 1, 1, 1),
-    ('menu', 'nextStep_DefaultChoice',  'string',  0, 1, 1, 1),
-    ('menu', 'nextStep',                'string',  1, 1, 1, 1),
+    ('menu', 'active',                  'bit', 1, 0, 0, 0),
+    ('menu', 'applicationId',           'int', 0, 0, 0, 0),
+    ('menu', 'staticPrompt',            'string',  0, 0, 0, 0),
+    ('menu', 'timeout',                 'int', 0, 0, 0, 0),
+    ('menu', 'maxTries',                'int', 0, 0, 0, 0),
+    ('menu', 'nextStep_0',              'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_1',              'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_2',              'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_3',              'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_4',              'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_5',              'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_6',              'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_7',              'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_8',              'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_9',              'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_DefaultChoice',  'string',  0, 1, 0, 0),
+    ('menu', 'nextStep',                'string',  1, 1, 0, 0),
 
     /* ---- WorkgroupTransfer ---- (queue to an ACD workgroup)                    */
-    ('workgroupTransfer', 'active',             'bit', 0, 0, 1, 1),
-    ('workgroupTransfer', 'queueName',          'string',  1, 0, 1, 1),
-    ('workgroupTransfer', 'skills',             'string',  0, 0, 1, 1),
-    ('workgroupTransfer', 'priority',           'int', 0, 0, 1, 1),
-    ('workgroupTransfer', 'escapeKey',          'int', 0, 0, 1, 1),
-    ('workgroupTransfer', 'nextStep_EscapeKey', 'string',  0, 1, 1, 1),
-    ('workgroupTransfer', 'nextStep',           'string',  1, 1, 1, 1),
+    ('workgroupTransfer', 'active',             'bit', 1, 0, 0, 0),
+    ('workgroupTransfer', 'queueName',          'string',  1, 0, 0, 0),
+    ('workgroupTransfer', 'skills',             'string',  0, 0, 0, 0),
+    ('workgroupTransfer', 'priority',           'int', 0, 0, 0, 0),
+    ('workgroupTransfer', 'escapeKey',          'int', 0, 0, 0, 0),
+    ('workgroupTransfer', 'nextStep_EscapeKey', 'string',  0, 1, 0, 0),
+    ('workgroupTransfer', 'nextStep',           'string',  1, 1, 0, 0),
 
     /* ---- ExternalTransfer ---- (transfer to an external phone number)          */
-    ('externalTransfer', 'active',              'bit', 0, 0, 1, 1),
-    ('externalTransfer', 'phoneNumber',         'string',  1, 0, 1, 1),
-    ('externalTransfer', 'outboundANI',         'string',  0, 0, 1, 1),
-    ('externalTransfer', 'performCallAnalysis', 'string',  0, 0, 1, 1),
-    ('externalTransfer', 'diversionReason',     'int', 0, 0, 1, 1),
-    ('externalTransfer', 'timeout',             'int', 0, 0, 1, 1),
-    ('externalTransfer', 'nextStep_Busy',       'string',  0, 1, 1, 1),
-    ('externalTransfer', 'nextStep_RNA',        'string',  0, 1, 1, 1),
-    ('externalTransfer', 'nextStep',            'string',  1, 1, 1, 1),
+    ('externalTransfer', 'active',              'bit', 1, 0, 0, 0),
+    ('externalTransfer', 'phoneNumber',         'string',  1, 0, 0, 0),
+    ('externalTransfer', 'outboundANI',         'string',  0, 0, 0, 0),
+    ('externalTransfer', 'performCallAnalysis', 'string',  0, 0, 0, 0),
+    ('externalTransfer', 'diversionReason',     'int', 0, 0, 0, 0),
+    ('externalTransfer', 'timeout',             'int', 0, 0, 0, 0),
+    ('externalTransfer', 'nextStep_Busy',       'string',  0, 1, 0, 0),
+    ('externalTransfer', 'nextStep_RNA',        'string',  0, 1, 0, 0),
+    ('externalTransfer', 'nextStep',            'string',  1, 1, 0, 0),
 
     /* ---- Condition ---- (branch on an ACD statistic; NOT yet runtime-wired)    */
-    ('condition', 'active',          'bit', 0, 0, 1, 1),
-    ('condition', 'statistic',       'string',  1, 0, 1, 1),
-    ('condition', 'workgroup',       'string',  1, 0, 1, 1),
-    ('condition', 'operator',        'string',  1, 0, 1, 1),
-    ('condition', 'value',           'string',  1, 0, 1, 1),
-    ('condition', 'nextStep_True',   'string',  1, 1, 1, 1),
-    ('condition', 'nextStep_False',  'string',  1, 1, 1, 1),
+    ('condition', 'active',          'bit', 1, 0, 0, 0),
+    ('condition', 'statistic',       'string',  1, 0, 0, 0),
+    ('condition', 'workgroup',       'string',  1, 0, 0, 0),
+    ('condition', 'operator',        'string',  1, 0, 0, 0),
+    ('condition', 'value',           'string',  1, 0, 0, 0),
+    ('condition', 'nextStep_True',   'string',  1, 1, 0, 0),
+    ('condition', 'nextStep_False',  'string',  1, 1, 0, 0),
+    ('condition', 'nextStep',        'string',  1, 1, 0, 0),
 
     /* ---- Emergency ---- (emergency-prompt check; NOT yet runtime-wired)        */
-    ('emergency', 'active',               'bit', 0, 0, 1, 1),
-    ('emergency', 'emergencyId',          'string',  1, 0, 1, 1),
-    ('emergency', 'nextStep_Transfer',    'string',  0, 1, 1, 1),
-    ('emergency', 'nextStep_Disconnect',  'string',  0, 1, 1, 1),
-    ('emergency', 'nextStep_Continue',    'string',  0, 1, 1, 1),
-    ('emergency', 'nextStep_Failure',     'string',  0, 1, 1, 1),
-    ('emergency', 'nextStep',             'string',  1, 1, 1, 1),
+    ('emergency', 'active',               'bit', 1, 0, 0, 0),
+    ('emergency', 'emergencyId',          'string',  1, 0, 0, 0),
+    ('emergency', 'nextStep_Transfer',    'string',  0, 1, 0, 0),
+    ('emergency', 'nextStep_Disconnect',  'string',  0, 1, 0, 0),
+    ('emergency', 'nextStep_Continue',    'string',  0, 1, 0, 0),
+    ('emergency', 'nextStep_Failure',     'string',  0, 1, 0, 0),
+    ('emergency', 'nextStep',             'string',  1, 1, 0, 0),
 
     /* ---- CheckSchedule ---- (open/closed/guard routing; NOT yet runtime-wired.
        Component checkSchedule.js exists. Guard branches are per-flow:
        Guard_ICT (LPA_ICT), Guard_Klantwacht/Guard_Systeemwacht (DA).)            */
-    ('checkSchedule', 'active',                       'bit', 0, 0, 1, 1),
-    ('checkSchedule', 'applicationId',                'int', 0, 0, 1, 1),
-    ('checkSchedule', 'scheduleId',                   'int', 1, 0, 1, 1),
-    ('checkSchedule', 'nextStep_Open',                'string',  0, 1, 1, 1),
-    ('checkSchedule', 'nextStep_Closed',              'string',  0, 1, 1, 1),
-    ('checkSchedule', 'nextStep_Transfer',            'string',  0, 1, 1, 1),
-    ('checkSchedule', 'nextStep_Guard_ICT',           'string',  0, 1, 1, 1),
-    ('checkSchedule', 'nextStep_Guard_Klantwacht',    'string',  0, 1, 1, 1),
-    ('checkSchedule', 'nextStep_Guard_Systeemwacht',  'string',  0, 1, 1, 1),
-    ('checkSchedule', 'nextStep_Failure',             'string',  0, 1, 1, 1),
-    ('checkSchedule', 'nextStep',                     'string',  1, 1, 1, 1),
+    ('checkSchedule', 'active',                       'bit', 1, 0, 0, 0),
+    ('checkSchedule', 'applicationId',                'int', 0, 0, 0, 0),
+    ('checkSchedule', 'scheduleId',                   'int', 1, 0, 0, 0),
+    ('checkSchedule', 'nextStep_Open',                'string',  0, 1, 0, 0),
+    ('checkSchedule', 'nextStep_Closed',              'string',  0, 1, 0, 0),
+    ('checkSchedule', 'nextStep_Transfer',            'string',  0, 1, 0, 0),
+    ('checkSchedule', 'nextStep_Guard_ICT',           'string',  0, 1, 0, 0),
+    ('checkSchedule', 'nextStep_Guard_Klantwacht',    'string',  0, 1, 0, 0),
+    ('checkSchedule', 'nextStep_Guard_Systeemwacht',  'string',  0, 1, 0, 0),
+    ('checkSchedule', 'nextStep_Failure',             'string',  0, 1, 0, 0),
+    ('checkSchedule', 'nextStep',                     'string',  1, 1, 0, 0),
 
     /* ---- Callback ---- (queue callback; DA_HELDPESK only)                      */
-    ('callback', 'active',               'bit', 0, 0, 1, 1),
-    ('callback', 'configId',             'int', 1, 0, 1, 1),
-    ('callback', 'callbackOnANI',        'int', 0, 0, 1, 1),
-    ('callback', 'aniConfirmation',      'int', 0, 0, 1, 1),
-    ('callback', 'allowManualInput',     'int', 0, 0, 1, 1),
-    ('callback', 'manualInputRetries',   'int', 0, 0, 1, 1),
-    ('callback', 'locationFilter',       'string',  0, 0, 1, 1),
-    ('callback', 'aniClassifications',   'string',  0, 0, 1, 1),
-    ('callback', 'aniAttribute',         'string',  0, 0, 1, 1),
-    ('callback', 'customSkills',         'string',  0, 0, 1, 1),
-    ('callback', 'inheritSkills',        'int', 0, 0, 1, 1),
-    ('callback', 'customPriority',       'int', 0, 0, 1, 1),
-    ('callback', 'inheritPriority',      'int', 0, 0, 1, 1),
-    ('callback', 'promptFolder',         'string',  0, 0, 1, 1),
-    ('callback', 'workgroup',            'string',  0, 0, 1, 1),
-    ('callback', 'nextStep_Accepted',    'string',  0, 1, 1, 1),
-    ('callback', 'nextStep_Rejected',    'string',  0, 1, 1, 1),
-    ('callback', 'nextStep_Failure',     'string',  0, 1, 1, 1),
-    ('callback', 'nextStep',             'string',  1, 1, 1, 1),
+    ('callback', 'active',               'bit', 1, 0, 0, 0),
+    ('callback', 'configId',             'int', 1, 0, 0, 0),
+    ('callback', 'callbackOnANI',        'int', 1, 0, 0, 0),
+    ('callback', 'aniConfirmation',      'int', 1, 0, 0, 0),
+    ('callback', 'allowManualInput',     'int', 1, 0, 0, 0),
+    ('callback', 'manualInputRetries',   'int', 1, 0, 0, 0),
+    ('callback', 'locationFilter',       'string',  0, 0, 0, 0),
+    ('callback', 'aniClassifications',   'string',  0, 0, 0, 0),
+    ('callback', 'aniAttribute',         'string',  0, 0, 0, 0),
+    ('callback', 'customSkills',         'string',  0, 0, 0, 0),
+    ('callback', 'inheritSkills',        'int', 0, 0, 0, 0),
+    ('callback', 'customPriority',       'int', 0, 0, 0, 0),
+    ('callback', 'inheritPriority',      'int', 0, 0, 0, 0),
+    ('callback', 'promptFolder',         'string',  0, 0, 0, 0),
+    ('callback', 'workgroup',            'string',  0, 0, 0, 0),
+    ('callback', 'nextStep_Accepted',    'string',  0, 1, 0, 0),
+    ('callback', 'nextStep_Rejected',    'string',  0, 1, 0, 0),
+    ('callback', 'nextStep_Failure',     'string',  0, 1, 0, 0),
+    ('callback', 'nextStep',             'string',  1, 1, 0, 0),
 
     /* ---- FlowJump ---- (jump to another routing table by SourceId; NOT yet
        runtime-wired. Only the target SourceId is carried.)                       */
-    ('flowJump', 'active',           'bit', 0, 0, 1, 1),
-    ('flowJump', 'sourceId',         'string',  1, 0, 1, 1),
+    ('flowJump', 'active',           'bit', 0, 0, 0, 0),
+    ('flowJump', 'sourceId',         'string',  1, 0, 0, 0),
 
     /* ========================================================================
        N-ALLO_RECEPTION FLOW TYPES  (sourceId +3224581030)
@@ -543,30 +619,29 @@ INSERT INTO @Attribute
        Branches per chosen language via exact-match nextStep_<langKey> keys
        (NL/FR for this flow), plus the fallthrough nextStep. Add a nextStep_<key>
        row if a flow supports more languages (exact-match, else 54016).           */
-    ('getLanguage', 'active',        'bit', 0, 0, 1, 1),
-    ('getLanguage', 'staticPrompt',  'string',  0, 0, 1, 1),
-    ('getLanguage', 'languages',     'string',  1, 0, 1, 1),
-    ('getLanguage', 'maxTries',      'int', 0, 0, 1, 1),
-    ('getLanguage', 'nextStep_NL',   'string',  0, 1, 1, 1),
-    ('getLanguage', 'nextStep_FR',   'string',  0, 1, 1, 1),
-    ('getLanguage', 'nextStep',      'string',  1, 1, 1, 1),
+    ('getLanguage', 'active', 'bit', 1, 0, 0, 0),
+    ('getLanguage', 'applicationId',  'int', 0, 0, 0, 0),
+    ('getLanguage', 'prompt',  'string',  0, 0, 0, 0),
+    ('getLanguage', 'languages',     'string',  1, 0, 0, 0),
+    ('getLanguage', 'maxTries',      'int', 0, 0, 0, 0),
+    ('getLanguage', 'nextStep',      'string',  1, 1, 0, 0),
 
     /* ---- InternalTransfer ---- (skills/priority queue transfer; NEW type, not
        yet runtime-wired; Params carried verbatim from the flow.)                 */
-    ('internalTransfer', 'active',                   'bit', 0, 0, 1, 1),
-    ('internalTransfer', 'remoteDestination',        'string',  1, 0, 1, 1),
-    ('internalTransfer', 'transferHeader_priority',  'string',  0, 0, 1, 1),
-    ('internalTransfer', 'transferHeader_skills',    'string',  0, 0, 1, 1),
-    ('internalTransfer', 'timeout',                  'int', 0, 0, 1, 1),
-    ('internalTransfer', 'nextStep_Failure',         'string',  0, 1, 1, 1),
-    ('internalTransfer', 'nextStep',                 'string',  1, 1, 1, 1),
+    ('internalTransfer', 'active',                   'bit', 1, 0, 0, 0),
+    ('internalTransfer', 'remoteDestination',        'string',  1, 0, 0, 0),
+    ('internalTransfer', 'transferHeader_priority',  'string',  0, 0, 0, 0),
+    ('internalTransfer', 'transferHeader_skills',    'string',  0, 0, 0, 0),
+    ('internalTransfer', 'timeout',                  'int', 0, 0, 0, 0),
+    ('internalTransfer', 'nextStep_Failure',         'string',  0, 1, 0, 0),
+    ('internalTransfer', 'nextStep',                 'string',  1, 1, 0, 0),
 
     /* ---- VoicemailCallback ---- (control keys only; the recording content params
        are passthrough and intentionally NOT catalogued -- the flow drops them.)  */
-    ('voicemailCallback', 'active',           'bit', 0, 0, 1, 1),
-    ('voicemailCallback', 'nextStep_Escape',  'string',  0, 1, 1, 1),
-    ('voicemailCallback', 'nextStep_Error',   'string',  0, 1, 1, 1),
-    ('voicemailCallback', 'nextStep',         'string',  1, 1, 1, 1);
+    ('voicemailCallback', 'active',           'bit', 1, 0, 0, 0),
+    ('voicemailCallback', 'nextStep_Escape',  'string',  0, 1, 0, 0),
+    ('voicemailCallback', 'nextStep_Error',   'string',  0, 1, 0, 0),
+    ('voicemailCallback', 'nextStep',         'string',  1, 1, 0, 0);
 
 /* ============================================================================
    SECTION 2 -- SEED THE DICTIONARY (no need to edit below this line)
@@ -582,27 +657,6 @@ DECLARE @opTypeNew   int = 0;
 DECLARE @attrTypeNew int = 0;
 DECLARE @attrNew     int = 0;
 DECLARE @attrUpd     int = 0;
-
-/* -- 0. rename legacy Dic_OperationType names in place -----------------------
-   Semantic renames: languageMenu -> getLanguage, playPrompt -> say,
-   playAudio -> play. Mirrors the boolean->bit rename below: run BEFORE step 1 so
-   a DB that still carries an old name is renamed in place instead of step 1
-   adding a second row under the new name. Each is guarded by NOT EXISTS so it is
-   a no-op once the new name is already present.                                 */
-UPDATE d SET Name = N'getLanguage'
-FROM   rtds.Dic_OperationType d
-WHERE  d.Name = N'languageMenu'
-AND    NOT EXISTS (SELECT 1 FROM rtds.Dic_OperationType x WHERE x.Name = N'getLanguage');
-
-UPDATE d SET Name = N'say'
-FROM   rtds.Dic_OperationType d
-WHERE  d.Name = N'playPrompt'
-AND    NOT EXISTS (SELECT 1 FROM rtds.Dic_OperationType x WHERE x.Name = N'say');
-
-UPDATE d SET Name = N'play'
-FROM   rtds.Dic_OperationType d
-WHERE  d.Name = N'playAudio'
-AND    NOT EXISTS (SELECT 1 FROM rtds.Dic_OperationType x WHERE x.Name = N'play');
 
 /* -- 1. find-or-create Dic_OperationType ------------------------------------ */
 INSERT INTO rtds.Dic_OperationType (Name, DateCreated, CreatedBy)
@@ -649,10 +703,11 @@ JOIN   rtds.Dic_AttributeType at ON at.Name = a.AttributeType
 WHERE  NOT EXISTS (
     SELECT 1 FROM rtds.Dic_Attribute d
     WHERE  d.DicOperationTypeID = ot.DicOperationTypeID
-    AND    d.Name               = a.AttributeName);
+    AND    d.Name               = a.AttributeName)
+ORDER BY a.Ord;   -- assign DicAttributeID in SECTION 1 catalogue (listed) order
 SET @attrNew = @@ROWCOUNT;
 
-/* -- 4. sync existing Dic_Attribute when SECTION 1 catalogue values drift --- */
+/* -- 5. sync existing Dic_Attribute when SECTION 1 catalogue values drift --- */
 UPDATE d
 SET    d.DicAttributeTypeID = at.DicAttributeTypeID,
        d.IsRequired         = a.IsRequired,

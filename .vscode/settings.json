@@ -1,0 +1,13 @@
+{
+  // SQL files in this repo are hand-aligned (notably the rtds/db_seed/*.sql
+  // dictionary seeds, whose VALUES tuples are column-aligned on purpose).
+  // VS Code SQL formatters (ms-mssql.mssql, mtxr.sqltools) reflow those tuples
+  // onto multiple lines and collapse the box comments, which destroys the
+  // intended layout. Disable format-on-save and unset the default formatter for
+  // SQL so the files are never auto-reformatted. Format manually if ever needed.
+  "[sql]": {
+    "editor.formatOnSave": false,
+    "editor.formatOnPaste": false,
+    "editor.defaultFormatter": null
+  }
+}

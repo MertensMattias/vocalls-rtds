@@ -1,10 +1,10 @@
 {
-  "sourceId": "+3271690039",
-  "name": "DIGIPOLIS - DA_SYSTEEMWACHT_TUI",
-  "projectId": "127",
-  "project": "DA HELPDESK",
+  "sourceId": "+3257351121",
+  "name": "DIGIPOLIS - LPA_ICT_GUARD_TUI",
+  "projectId": "",
+  "project": "LPA ICT",
   "promptLibraryId": "",
-  "promptLibrary": "DIGIPOLIS\\DA\\SYSTEEMWACHT",
+  "promptLibrary": "DIGIPOLIS\\LPA\\ICT_HELPDESK",
   "supportedLanguages": "NL",
   "operations": [
     {
@@ -14,9 +14,9 @@
       "isFirstOperation": true,
       "params": {
         "active": true,
-        "routingId": "DA_SYSTEEMWACHT_TUI",
-        "customerName": "DA",
-        "customerProject": "SYSTEEMWACHT",
+        "customerName": "LPA",
+        "customerProject": "ICT_GUARD",
+        "routingId": "LPA_ICT_GUARD_TUI",
         "ivrEvent": "9999",
         "ivrAction": "CT",
         "nextStep": "00001"
@@ -25,11 +25,11 @@
     {
       "id": "00001",
       "type": "guardTui",
-      "name": "DA_SYSTEEMWACHT_TUI",
+      "name": "LPA_ICT_GUARD_TUI",
       "params": {
         "active": true,
-        "configId": 2,
-        "configName": "SYSTEEMWACHT",
+        "configId": 3,
+        "configName": "LPA_ICT_GUARD",
         "phoneNumberVar": "ani",
         "timeout": 10000,
         "resultCurrentlyActivated_NL": "U bent momenteel actief voor de wachtdienst ${CustomerProject}.",

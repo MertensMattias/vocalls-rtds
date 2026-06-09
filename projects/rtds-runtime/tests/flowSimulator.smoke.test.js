@@ -179,8 +179,8 @@ describe('flow simulator — max-step cap', function () {
         var flowPath = writeTempFlow({
             sourceId: '+3200000001',
             operations: [
-                { id: '00000', type: 'playPrompt', name: 'a', isFirstOperation: true, params: { nextStep: '00001' } },
-                { id: '00001', type: 'playPrompt', name: 'b', params: { nextStep: '00000' } },
+                { id: '00000', type: 'say', name: 'a', isFirstOperation: true, params: { nextStep: '00001' } },
+                { id: '00001', type: 'say', name: 'b', params: { nextStep: '00000' } },
             ],
         });
         return simulateFlow
@@ -200,7 +200,7 @@ describe('flow simulator — max-step cap', function () {
 
 describe('flow simulator — terminal GUI op with no NextStep', function () {
     it('ends cleanly (no error, no cap) at a non-Disconnect GUI op with no NextStep', function () {
-        // A final GUI-exit op (PlayPrompt) with no NextStep is end-of-flow. In
+        // A final GUI-exit op (say) with no NextStep is end-of-flow. In
         // production the component writes _rtNextStep = -1; here prepareGuiHandoff
         // leaves RTDS_nextStepId stale (it only writes when a default exists), so
         // a naive resume would loop on the stale id until the cap. The simulator
@@ -209,7 +209,7 @@ describe('flow simulator — terminal GUI op with no NextStep', function () {
             sourceId: '+3200000002',
             operations: [
                 { id: '00000', type: 'setVariables', name: 'init', isFirstOperation: true, params: { nextStep: '00001' } },
-                { id: '00001', type: 'playPrompt', name: 'bye', params: { prompt: 'goodbye' } },
+                { id: '00001', type: 'say', name: 'bye', params: { prompt: 'goodbye' } },
             ],
         });
         return simulateFlow
@@ -218,10 +218,10 @@ describe('flow simulator — terminal GUI op with no NextStep', function () {
                 expect(result.finalExitKey).toBe('disconnect');
                 // Clean stop: no max-step cap error, no other errors.
                 expect(result.errors).toHaveLength(0);
-                // The terminal PlayPrompt handoff was recorded exactly once
+                // The terminal say handoff was recorded exactly once
                 // (not looped) before the clean stop.
                 var playHandoffs = result.handoffs.filter(function (h) {
-                    return h.opType === 'playPrompt';
+                    return h.opType === 'say';
                 });
                 expect(playHandoffs.length).toBe(1);
             });

@@ -1,5 +1,5 @@
 {
-  "sourceId": "+3257351122",
+  "sourceId": "+3257351222",
   "name": "DIGIPOLIS - DA_KLANTWACHT",
   "projectId": "127",
   "project": "DA HELPDESK",
@@ -14,9 +14,9 @@
       "isFirstOperation": true,
       "params": {
         "active": true,
-        "routingId": "DA_KLANTWACHT",
         "customerName": "DA",
         "customerProject": "KLANTWACHT",
+        "routingId": "DA_KLANTWACHT",
         "ivrEvent": "9999",
         "ivrAction": "CT",
         "nextStep": "00001"
@@ -31,7 +31,7 @@
         "configId": 1,
         "configName": "KLANTWACHT",
         "dialGuard": true,
-        "outboundAni": "",
+        "outboundANI": "",
         "diversion": "",
         "onHoldAudioUrl": "https://data.freetouse.com/music/tracks/60974ab4-afa7-211d-3ffc-09fdbaff8e58/file/mp3",
         "timeout": 15,

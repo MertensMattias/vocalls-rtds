@@ -98,7 +98,7 @@ describe('rtds-runtime main.js', function () {
                 expect(result.sandbox.RTDS_EXIT_KEYS.get('setVariables')).toBe('set_variables');
                 expect(result.sandbox.RTDS_EXIT_KEYS.get('setAttributes')).toBe('set_variables');
                 expect(typeof result.sandbox.RTDS_EXIT_KEYS.get).toBe('function');
-                expect(result.sandbox.RTDS_EXIT_KEYS.get('playPrompt')).toBe('play_prompt');
+                expect(result.sandbox.RTDS_EXIT_KEYS.get('say')).toBe('play_prompt');
                 expect(result.sandbox.OP_VAR_PREFIX).toBeUndefined();
                 expect(typeof result.sandbox.fetchAndStart).toBe('function');
                 expect(typeof result.sandbox.resumeFrom).toBe('function');
@@ -464,7 +464,7 @@ describe('rtds-runtime main.js', function () {
                 // GUI-exit op. runStep must await the promise and return the key.
                 var ops = [
                     { id: '1', type: 'asyncProbe', name: 'a', isFirstOperation: true, params: { nextStep: '2' } },
-                    { id: '2', type: 'playPrompt', name: 'p', params: {} }
+                    { id: '2', type: 'say', name: 'p', params: {} }
                 ];
                 sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
                 sb.registerRtdsOperation('asyncProbe', function (op) {
@@ -504,7 +504,7 @@ describe('rtds-runtime main.js', function () {
                 // NextStep '2' (a GUI-exit op) rather than hard-disconnect.
                 var ops = [
                     { id: '1', type: 'condition', name: 'c', isFirstOperation: true, params: { nextStep: '2' } },
-                    { id: '2', type: 'playPrompt', name: 'p', params: {} }
+                    { id: '2', type: 'say', name: 'p', params: {} }
                 ];
                 sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
                 expect(sb.RTDS_REGISTRY.has('condition')).toBe(false);

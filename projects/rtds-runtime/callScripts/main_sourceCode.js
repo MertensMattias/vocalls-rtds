@@ -490,12 +490,12 @@
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
     <object
-      label="playPrompt"
+      label="say"
       Type="label"
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Title="playPrompt"
+      Title="say"
       MaxEntryNodeId=""
       MaxEntryCount=""
       id="394"
@@ -521,12 +521,12 @@
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
     <object
-      label="playAudio"
+      label="play"
       Type="label"
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Title="playAudio"
+      Title="play"
       MaxEntryNodeId=""
       MaxEntryCount=""
       id="396"
@@ -577,12 +577,12 @@
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
     <object
-      label="languageMenu"
+      label="getLanguage"
       Type="label"
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Title="languageMenu"
+      Title="getLanguage"
       MaxEntryNodeId=""
       MaxEntryCount=""
       id="398"

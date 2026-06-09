@@ -1,5 +1,5 @@
 {
-  "sourceId": "+3271690038",
+  "sourceId": "+3257351231",
   "name": "DIGIPOLIS - LPA_LTSU_GUARD_TUI",
   "projectId": "",
   "project": "LPA ICT",
@@ -14,9 +14,9 @@
       "isFirstOperation": true,
       "params": {
         "active": true,
-        "routingId": "LPA_LTSU_GUARD_TUI",
         "customerName": "LPA",
         "customerProject": "LTSU_GUARD",
+        "routingId": "LPA_LTSU_GUARD_TUI",
         "ivrEvent": "9999",
         "ivrAction": "CT",
         "nextStep": "00001"
@@ -28,7 +28,7 @@
       "name": "LPA_LTSU_GUARD_TUI",
       "params": {
         "active": true,
-        "configId": 4,
+        "configId": 24,
         "configName": "LPA_LTSU_GUARD",
         "phoneNumberVar": "ani",
         "timeout": 10000,

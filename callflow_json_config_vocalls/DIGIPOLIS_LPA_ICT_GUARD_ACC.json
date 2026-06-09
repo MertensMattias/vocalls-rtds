@@ -14,9 +14,9 @@
       "isFirstOperation": true,
       "params": {
         "active": true,
-        "routingId": "LPA_ICT_GUARD",
         "customerName": "LPA",
         "customerProject": "ICT_GUARD",
+        "routingId": "LPA_ICT_GUARD",
         "ivrEvent": "9999",
         "ivrAction": "CT",
         "nextStep": "00071"
@@ -31,7 +31,7 @@
         "configId": 3,
         "configName": "LPA_ICT_GUARD",
         "dialGuard": true,
-        "outboundAni": "",
+        "outboundANI": "",
         "diversion": "",
         "onHoldAudioUrl": "https://data.freetouse.com/music/tracks/60974ab4-afa7-211d-3ffc-09fdbaff8e58/file/mp3",
         "timeout": 30,

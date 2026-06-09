@@ -29,7 +29,9 @@
    Changes vs the original:
      1. PromptLibrary is FIND-OR-CREATEd on CompanyProjectID (one library per
         project). BasePath is stored from JSON but never used as a lookup key.
-        (Original required promptLibraryId to pre-exist.)
+        A SECONDARY same-project promptLibraryId fallback binds an explicit id
+        before create (cross-project ids are rejected by guard). (Original
+        required promptLibraryId to pre-exist.)
      2. P2 stamps Prompt.DicPromptApplicationID from the TTS-bearing operation's
         ApplicationId param, so publish-created prompts appear in the
         application-filtered dropdown. Pre-existing prompts are re-stamped when
@@ -45,7 +47,13 @@
      5. camelCase JSON contract: SourceId / Name / Project / PromptLibrary /
         SupportedLanguages / Operations[].Id / Type / Name / IsFirstOperation /
         Params / TtsMessages. CompanyProjectID is resolved by Project NAME
-        (Dic_CompanyProject.IAConfigCustomerName); ProjectId is informational.
+        (Dic_CompanyProject.IAConfigCustomerName) PRIMARY, then by ProjectId as a
+        SECONDARY fallback (announced as a WARN) when the name does not resolve --
+        so renamed projects still re-import via the stable id. Likewise
+        PromptLibraryID is find-by-CompanyProjectID PRIMARY, with a same-project
+        PromptLibraryId fallback (the guard rejects a cross-project id) before
+        find-or-create. ProjectId / PromptLibraryId are therefore informational on
+        the happy path but load-bearing on these fallback paths.
 
    Naming note: prompt name is unique per library; key = (PromptLibraryID, Name).
    ApplicationId is the integer Dic_PromptApplication.DicPromptApplicationID and
@@ -64,26 +72,212 @@ SET XACT_ABORT ON;
 -- -----------------------------------------------------------------------------
 DECLARE @json    NVARCHAR(MAX);
 DECLARE @replace BIT = 1;                  -- 1 = overwrite, 0 = fail on dup
-DECLARE @dryRun  BIT = 0;                  -- 1 = roll back at the end (preview)
+DECLARE @dryRun  BIT = 1;                  -- 1 = roll back at the end (preview)
 
 SET @json = N'
 {
-  "sourceId": "+3224581030",
+  "sourceId": "+3257351240",
   "name": "N-ALLO - RECEPTION",
-  "projectId": "83",
+  "projectId": 83,
   "project": "NALLO",
-  "promptLibraryId": "1",
+  "promptLibraryId": 1,
   "promptLibrary": "N-Allo\\RECEPTION",
   "supportedLanguages": "NL|FR",
   "operations": [
-    {"id":"00000","type":"setAttributes","name":"Call Initialization","isFirstOperation":true,
-     "params":{"logAttributes":"RTDS_ProjectName|Eic_RemoteId|ATTR_RoutingId|ATTR_CallflowId","callflowId":"RECEPTION","routingId":"RECEPTION","nextStep":"00001"}},
-    {"id":"00001","type":"say","name":"Play: Welcome",
-     "params":{"active":["1","isDisplayed","isEditable"],"applicationId":"8","prompt":["welcome","isDisplayed","isEditable"],"nextStep":"00002"},
-     "ttsMessages":{"NL":"Goeidag, test","FR":"Bonjour, ceci est un test"}},
-    {"id":"00051","type":"say","name":"Queue: Message 1",
-     "params":{"prompt":"queue_waitmessage01","nextStep":"00052"}},
-    {"id":"00100","type":"disconnect","name":"RTDS: Disconnect","params":{}}
+    {
+      "id": "00000",
+      "type": "setVariables",
+      "name": "Call Initialization",
+      "isFirstOperation": true,
+      "params": {
+        "active": true,
+        "customerName": "N-ALLO",
+        "customerProject": "RECEPTION",
+        "logAttributes": "RTDS_ProjectName|Eic_RemoteId|ATTR_RoutingId|ATTR_CallflowId",
+        "routingId": "RECEPTION",
+        "nextStep": "00001"
+      }
+    },
+    {
+      "id": "00001",
+      "type": "say",
+      "name": "Say: Welcome",
+      "params": {
+        "active": true,
+        "applicationId": 8,
+        "prompt": "Welcome",
+        "nextStep": "00002"
+      },
+      "ttsMessages": {
+        "NL": "Welkom bij N-Allo. U wordt zo dadelijk verder geholpen.",
+        "FR": "Bienvenue chez N-Allo. Nous traitons votre appel dans un instant."
+      }
+    },
+    {
+      "id": "00002",
+      "type": "getLanguage",
+      "name": "Choose Dutch or French",
+      "params": {
+        "active": true,
+        "applicationId": 7,
+        "prompt": "LanguageMenu",
+        "languages": "$(RTDS_SupportedLanguages)",
+        "maxTries": 2,
+        "nextStep": "00003"
+      },
+      "ttsMessages": {
+        "NL": "Voor Nederlands, druk op 1. Pour le français, appuyez sur le 2.",
+        "FR": "Voor Nederlands, druk op 1. Pour le français, appuyez sur le 2."
+      }
+    },
+    {
+      "id": "00003",
+      "type": "checkSchedule",
+      "name": "Check: Scheduler",
+      "params": {
+        "active": true,
+        "applicationId": 1,
+        "scheduleId": 51,
+        "nextStep_Open": "00040",
+        "nextStep_Transfer": "00090",
+        "nextStep_Closed": "00100",
+        "nextStep": "00100"
+      }
+    },
+    {
+      "id": "00040",
+      "type": "condition",
+      "name": "Check: Staffing",
+      "params": {
+        "active": true,
+        "statistic": "AgentsLoggedIn",
+        "workgroup": "N-ALLO_Reception_V",
+        "operator": "gt",
+        "value": 0,
+        "nextStep_True": "00043",
+        "nextStep_False": "00091"
+      }
+    },
+    {
+      "id": "00043",
+      "type": "condition",
+      "name": "Check: MaxQueue",
+      "params": {
+        "active": true,
+        "statistic": "CallsWaiting",
+        "workgroup": "N-ALLO_Reception_V",
+        "operator": "gt",
+        "value": 39,
+        "nextStep_True": "00091",
+        "nextStep_False": "00050"
+      }
+    },
+    {
+      "id": "00050",
+      "type": "internalTransfer",
+      "name": "Route-To: LPA REGIO",
+      "params": {
+        "active": true,
+        "remoteDestination": "${remoteDestination}",
+        "transferHeader_priority": "${transferHeader_priority}",
+        "transferHeader_skills": "${transferHeader_skills}",
+        "timeout": 150,
+        "nextStep": "00051",
+        "nextStep_Failure": "00100"
+      }
+    },
+    {
+      "id": "00051",
+      "type": "say",
+      "name": "Queue: Message 1",
+      "params": {
+        "active": true,
+        "applicationId": 5,
+        "prompt": "Waitmessage01",
+        "nextStep": "00052"
+      },
+      "ttsMessages": {
+        "NL": "Alle medewerkers zijn momenteel in gesprek. Blijf aan de lijn, wij verbinden u zo snel mogelijk door.",
+        "FR": "Tous nos collaborateurs sont actuellement en ligne. Restez à l''écoute, nous vous mettons en relation dès que possible."
+      }
+    },
+    {
+      "id": "00052",
+      "type": "say",
+      "name": "Play: NoBodyAvailable",
+      "params": {
+        "active": true,
+        "applicationId": 5,
+        "prompt": "NoBodyAvailable",
+        "nextStep": "00091"
+      },
+      "ttsMessages": {
+        "NL": "Onze medewerkers kunnen u op dit moment niet te woord staan. U kunt een boodschap inspreken en wij bellen u zo snel mogelijk terug.",
+        "FR": "Nos collaborateurs ne sont pas en mesure de vous répondre pour le moment. Vous pouvez laisser un message et nous vous rappellerons dès que possible."
+      }
+    },
+    {
+      "id": "00090",
+      "type": "externalTransfer",
+      "name": "Route-To: External Number",
+      "params": {
+        "active": true,
+        "phoneNumber": "",
+        "outboundANI": "",
+        "diversionReason": 8,
+        "timeout": 30,
+        "nextStep_Busy": "00093",
+        "nextStep_RNA": "00093",
+        "nextStep": "00100"
+      }
+    },
+    {
+      "id": "00091",
+      "type": "voicemailCallback",
+      "name": "Leave voicemail",
+      "params": {
+        "active": true,
+        "nextStep_Escape": "00093",
+        "nextStep_Error": "00093",
+        "nextStep": "00094"
+      }
+    },
+    {
+      "id": "00093",
+      "type": "say",
+      "name": "Play: Voicemail Error",
+      "params": {
+        "active": true,
+        "applicationId": 9,
+        "prompt": "error",
+        "nextStep": "00094"
+      },
+      "ttsMessages": {
+        "NL": "Er is iets misgegaan bij het opnemen van uw boodschap. Onze excuses voor het ongemak.",
+        "FR": "Une erreur s''est produite lors de l''enregistrement de votre message. Nous vous prions de nous en excuser."
+      }
+    },
+    {
+      "id": "00094",
+      "type": "say",
+      "name": "play: voicemail disconnect",
+      "params": {
+        "active": true,
+        "applicationId": 9,
+        "prompt": "disconnect",
+        "nextStep": "00100"
+      },
+      "ttsMessages": {
+        "NL": "Bedankt voor uw oproep. Wij nemen zo snel mogelijk contact met u op. Tot ziens.",
+        "FR": "Merci pour votre appel. Nous vous recontacterons dans les plus brefs délais. Au revoir."
+      }
+    },
+    {
+      "id": "00100",
+      "type": "disconnect",
+      "name": "RTDS: Disconnect",
+      "params": {}
+    }
   ]
 }';
 
@@ -121,12 +315,31 @@ IF @Project            IS NULL THROW 60003, 'MISSING_FIELD: Project',           
 IF @BasePath           IS NULL THROW 60004, 'MISSING_FIELD: PromptLibrary',      1;
 IF @SupportedLanguages IS NULL THROW 60005, 'MISSING_FIELD: SupportedLanguages', 1;
 
--- Resolve CompanyProjectID by Project NAME (locked decision: ProjectId in the
--- JSON is informational only). UNKNOWN_PROJECT when the name is not catalogued.
+-- Resolve CompanyProjectID. PRIMARY key is Project NAME. SECONDARY (fallback)
+-- is the otherwise-informational projectId, used only when the name does not
+-- resolve -- this keeps round-tripped exports resilient to a project rename
+-- (the name lookup misses, but the stable CompanyProjectID still binds). When
+-- the fallback fires it is announced as a WARN so by-id binding is never silent;
+-- a stale numeric projectId would otherwise mis-bind without a trace. An empty
+-- projectId ('' -> TRY_CAST NULL) correctly skips the fallback. UNKNOWN_PROJECT
+-- only when neither name nor id resolves.
+DECLARE @ProjectIdJson INT = TRY_CAST(JSON_VALUE(@json, '$.projectId') AS INT);
+
 SELECT @CompanyProjectID = CompanyProjectID
 FROM   rtds.Dic_CompanyProject
 WHERE  IAConfigCustomerName = @Project;
--- by-id alternative: SET @CompanyProjectID = TRY_CAST(JSON_VALUE(@json, '$.projectId') AS INT);
+
+IF @CompanyProjectID IS NULL AND @ProjectIdJson IS NOT NULL
+BEGIN
+    SELECT @CompanyProjectID = CompanyProjectID
+    FROM   rtds.Dic_CompanyProject
+    WHERE  CompanyProjectID = @ProjectIdJson;
+
+    IF @CompanyProjectID IS NOT NULL
+        PRINT '[RTDS][WARN] PROJECT_RESOLVED_BY_ID: name=''' + @Project
+            + ''' not found in Dic_CompanyProject; used projectId='
+            + CAST(@ProjectIdJson AS VARCHAR(20)) + '.';
+END;
 
 IF @CompanyProjectID IS NULL
     THROW 60006, 'UNKNOWN_PROJECT', 1;
@@ -177,6 +390,7 @@ END;
 DECLARE @params TABLE (
     OpKey               NVARCHAR(255)   NOT NULL,
     DicOperationTypeID  INT             NOT NULL,
+    Ordinal             INT             NOT NULL,  -- param position within its operation (authored JSON order)
     ParamName           NVARCHAR(255)   NOT NULL,
     JsonType            INT             NOT NULL,
     RawValue            NVARCHAR(MAX)   NULL,
@@ -188,8 +402,10 @@ DECLARE @params TABLE (
     IsEditable          BIT             NULL
 );
 
-INSERT INTO @params (OpKey, DicOperationTypeID, ParamName, JsonType, RawValue)
-SELECT op.OpKey, op.DicOperationTypeID, p.[key], p.[type], p.[value]
+INSERT INTO @params (OpKey, DicOperationTypeID, Ordinal, ParamName, JsonType, RawValue)
+SELECT op.OpKey, op.DicOperationTypeID,
+       ROW_NUMBER() OVER (PARTITION BY op.OpKey ORDER BY (SELECT NULL)),
+       p.[key], p.[type], p.[value]
 FROM   @ops op
 CROSS APPLY OPENJSON(op.ParamsJson) p;
 
@@ -407,9 +623,27 @@ BEGIN TRY
         DELETE rtds.RoutingTable WHERE RoutingTableID = @ExistingRtId;
     END;
 
-    -- Find-or-create PromptLibrary keyed on CompanyProjectID (BasePath stored only)
+    -- PromptLibrary resolution. The invariant is ONE library per project, so the
+    -- PRIMARY lookup is find-by-CompanyProjectID (BasePath stored only). The
+    -- SECONDARY (fallback) honours the otherwise-informational promptLibraryId,
+    -- but ONLY a row that already belongs to THIS CompanyProjectID -- adopting a
+    -- different project's library by id would attach foreign Prompt rows (keyed on
+    -- PromptLibraryID) to this flow and silently break the one-library-per-project
+    -- invariant, so the same-project guard rejects that cross-project case rather
+    -- than accepting it. With the guard the fallback is near-redundant by design
+    -- (the primary already finds the project's library); it exists only to bind an
+    -- explicit, same-project promptLibraryId verbatim. TERTIARY: create.
+    DECLARE @PromptLibraryIdJson INT = TRY_CAST(JSON_VALUE(@json, '$.promptLibraryId') AS INT);
+
     SELECT @PromptLibraryID = PromptLibraryID
     FROM   rtds.PromptLibrary WHERE CompanyProjectID = @CompanyProjectID;
+
+    IF @PromptLibraryID IS NULL AND @PromptLibraryIdJson IS NOT NULL
+        SELECT @PromptLibraryID = PromptLibraryID
+        FROM   rtds.PromptLibrary
+        WHERE  PromptLibraryID  = @PromptLibraryIdJson
+          AND  CompanyProjectID = @CompanyProjectID;   -- guard: never cross projects
+
     IF @PromptLibraryID IS NULL
     BEGIN
         INSERT INTO rtds.PromptLibrary (CompanyProjectID, BasePath, DateCreated, CreatedBy)
@@ -425,25 +659,30 @@ BEGIN TRY
         (@SourceID, @Name, @CompanyProjectID, @PromptLibraryID, @SupportedLanguages, @now, @user);
     SET @RoutingTableID = SCOPE_IDENTITY();
 
-    -- Insert Operations, capturing (OpKey -> OperationID) via MERGE OUTPUT
-    DECLARE @opMap TABLE (OpKey NVARCHAR(255) NOT NULL, OperationID INT NOT NULL);
-    MERGE rtds.Operation AS tgt
-    USING (SELECT Ordinal, OpKey, DicOperationTypeID, OpName, IsFirst FROM @ops) AS src
-    ON 1 = 0
-    WHEN NOT MATCHED BY TARGET THEN
-        INSERT (RoutingTableID, DicOperationTypeID, Name, [Key], IsFirstOperation, DateCreated, CreatedBy)
-        VALUES (@RoutingTableID, src.DicOperationTypeID, src.OpName, src.OpKey, src.IsFirst, @now, @user)
-    OUTPUT src.OpKey, inserted.OperationID INTO @opMap (OpKey, OperationID);
+    -- Insert Operations in document order: INSERT ... SELECT ... ORDER BY assigns
+    -- OperationID (identity) in @ops.Ordinal order, so the export (which emits
+    -- operations ORDER BY OperationID) round-trips the authored order. OpKey is
+    -- persisted in Operation.[Key], so the OpKey -> OperationID map is recovered by
+    -- joining back on (RoutingTableID, [Key]) -- no MERGE/OUTPUT needed.
+    INSERT INTO rtds.Operation
+        (RoutingTableID, DicOperationTypeID, Name, [Key], IsFirstOperation, DateCreated, CreatedBy)
+    SELECT @RoutingTableID, src.DicOperationTypeID, src.OpName, src.OpKey, src.IsFirst, @now, @user
+    FROM   @ops src
+    ORDER BY src.Ordinal;
 
-    UPDATE op SET op.OperationID = m.OperationID
-    FROM @ops op JOIN @opMap m ON m.OpKey = op.OpKey;
+    UPDATE op SET op.OperationID = o.OperationID
+    FROM @ops op
+    JOIN rtds.Operation o ON o.RoutingTableID = @RoutingTableID AND o.[Key] = op.OpKey;
 
-    -- Insert Attributes set-based
+    -- Insert Attributes set-based, in authored order: ORDER BY assigns AttributeID
+    -- (identity) by operation order then param order, so the export (params ordered
+    -- WITHIN GROUP BY AttributeID) reproduces the order params appeared in the JSON.
     INSERT INTO rtds.Attribute
         (DicAttributeID, OperationID, Value, IsDisplayed, IsEditable, DateCreated, CreatedBy)
     SELECT p.DicAttributeID, op.OperationID, ISNULL(p.Scalar, ''), p.IsDisplayed, p.IsEditable, @now, @user
     FROM   @params p
-    JOIN   @ops op ON op.OpKey = p.OpKey;
+    JOIN   @ops op ON op.OpKey = p.OpKey
+    ORDER BY op.Ordinal, p.Ordinal;
 
     -- ---------------------------------------------------------------------
     -- P2: TTS messages (only if any present)

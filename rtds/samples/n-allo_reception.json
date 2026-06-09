@@ -14,6 +14,8 @@
       "isFirstOperation": true,
       "params": {
         "active": true,
+        "customerName": "N-ALLO",
+        "customerProject": "RECEPTION",
         "logAttributes": "RTDS_ProjectName|Eic_RemoteId|ATTR_RoutingId|ATTR_CallflowId",
         "routingId": "RECEPTION",
         "nextStep": "00001"
@@ -30,8 +32,8 @@
         "nextStep": "00002"
       },
       "ttsMessages": {
-        "NL": "test NL",
-        "FR": "test FR"
+        "NL": "Welkom bij N-Allo. U wordt zo dadelijk verder geholpen.",
+        "FR": "Bienvenue chez N-Allo. Nous traitons votre appel dans un instant."
       }
     },
     {
@@ -40,10 +42,15 @@
       "name": "Choose Dutch or French",
       "params": {
         "active": true,
-        "staticPrompt": "Menu_LanguageMenu.wav",
+        "applicationId": 7,
+        "prompt": "LanguageMenu",
         "languages": "$(RTDS_SupportedLanguages)",
         "maxTries": 2,
         "nextStep": "00003"
+      },
+      "ttsMessages": {
+        "NL": "Voor Nederlands, druk op 1. Pour le français, appuyez sur le 2.",
+        "FR": "Voor Nederlands, druk op 1. Pour le français, appuyez sur le 2."
       }
     },
     {
@@ -108,9 +115,13 @@
       "name": "Queue: Message 1",
       "params": {
         "active": true,
-        "applicationId": 8,
-        "prompt": "Queue_Waitmessage01",
+        "applicationId": 5,
+        "prompt": "Waitmessage01",
         "nextStep": "00052"
+      },
+      "ttsMessages": {
+        "NL": "Alle medewerkers zijn momenteel in gesprek. Blijf aan de lijn, wij verbinden u zo snel mogelijk door.",
+        "FR": "Tous nos collaborateurs sont actuellement en ligne. Restez à l'écoute, nous vous mettons en relation dès que possible."
       }
     },
     {
@@ -119,8 +130,13 @@
       "name": "Play: NoBodyAvailable",
       "params": {
         "active": true,
-        "prompt": "Queue_NoBodyAvailable.wav",
+        "applicationId": 5,
+        "prompt": "NoBodyAvailable",
         "nextStep": "00091"
+      },
+      "ttsMessages": {
+        "NL": "Onze medewerkers kunnen u op dit moment niet te woord staan. U kunt een boodschap inspreken en wij bellen u zo snel mogelijk terug.",
+        "FR": "Nos collaborateurs ne sont pas en mesure de vous répondre pour le moment. Vous pouvez laisser un message et nous vous rappellerons dès que possible."
       }
     },
     {
@@ -155,18 +171,28 @@
       "name": "Play: Voicemail Error",
       "params": {
         "active": true,
-        "prompt": "Voicemail_Error.wav",
+        "applicationId": 9,
+        "prompt": "error",
         "nextStep": "00094"
+      },
+      "ttsMessages": {
+        "NL": "Er is iets misgegaan bij het opnemen van uw boodschap. Onze excuses voor het ongemak.",
+        "FR": "Une erreur s'est produite lors de l'enregistrement de votre message. Nous vous prions de nous en excuser."
       }
     },
     {
       "id": "00094",
       "type": "say",
-      "name": "Play: Voicemail Disconnect",
+      "name": "play: voicemail disconnect",
       "params": {
         "active": true,
-        "prompt": "Voicemail_Disconnect.wav",
+        "applicationId": 9,
+        "prompt": "disconnect",
         "nextStep": "00100"
+      },
+      "ttsMessages": {
+        "NL": "Bedankt voor uw oproep. Wij nemen zo snel mogelijk contact met u op. Tot ziens.",
+        "FR": "Merci pour votre appel. Nous vous recontacterons dans les plus brefs délais. Au revoir."
       }
     },
     {
