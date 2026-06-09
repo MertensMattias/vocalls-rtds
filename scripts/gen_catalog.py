@@ -43,6 +43,7 @@ CATALOG = REPO / "rtds" / "docs" / "operations-catalog.md"
 ROW_ORDER = [
     "sendSms", "sendEmail", "setVariables",
     "guardRouting", "guardTui", "scheduler",
+    "say",
 ]
 
 # Map operation name -> spec filename (all are name.spec.md today).

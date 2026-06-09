@@ -20,7 +20,7 @@ var vm = require('vm');
 
 // Every v2 component shares one __setupConfig body — run the full matrix against
 // each so a future divergence in any single component is caught.
-var COMPONENTS = ['checkSchedule', 'setVariables', 'guardRouting', 'guardTui', 'sendMail', 'sendSms'];
+var COMPONENTS = ['checkSchedule', 'setVariables', 'guardRouting', 'guardTui', 'sendMail', 'sendSms', 'say'];
 
 // Call __setupConfig(__cfg) inside a loaded sandbox and return the plain object.
 function runSetup(sb) {

@@ -56,6 +56,31 @@ function readMasterCode(componentName) {
     return decodeEntities(raw.slice(start, end));
 }
 
+// Extract and decode a named attribute (e.g. Code / OnEnter) of the <object>
+// with the given id from a component .js (mxGraph XML) file. Lets a test run a
+// specific node's body in isolation — a GUI-exit component such as `say` has no
+// runtime twin, so its init/work/output node bodies are exercised directly.
+// Returns '' when the attribute is absent on the object, null when no object
+// with that id exists.
+function readNodeAttr(componentName, objectId, attrName) {
+    var file = path.join(process.cwd(), 'rtds', 'components', componentName + '.js');
+    var raw = fs.readFileSync(file, 'utf8');
+    var chunks = raw.split('<object');
+    for (var i = 1; i < chunks.length; i++) {
+        // Attribute values entity-encode '<' and '>', so the first literal '>'
+        // is the end of the opening tag — header holds just this object's attrs.
+        var header = chunks[i].slice(0, chunks[i].indexOf('>'));
+        if (header.indexOf('id="' + objectId + '"') === -1) continue;
+        var k = header.indexOf(attrName + '=');
+        if (k === -1) return '';
+        var delim = header.charAt(k + attrName.length + 1); // the quote after '='
+        var start = k + attrName.length + 2;
+        var end = header.indexOf(delim, start);             // delimiter is escaped inside
+        return decodeEntities(header.slice(start, end));
+    }
+    return null;
+}
+
 /**
  * Run a component's master Code in an isolated sandbox WITHOUT the env library,
  * so only the component's own inline fallbacks are available. Returns the
@@ -208,5 +233,6 @@ module.exports = {
     withGateway: withGateway,
     forbidGateway: forbidGateway,
     loadMasterCode: loadMasterCode,
-    readMasterCode: readMasterCode
+    readMasterCode: readMasterCode,
+    readNodeAttr: readNodeAttr
 };
