@@ -24,7 +24,7 @@ Legend: ✅ present · ⬜ not yet · 🔒 legacy (superseded).
 | setVariables | `set_attributes` | [spec](../specs/setVariables.spec.md) | ✅ [setVariables.js](../components/setVariables.js) | JS twin `executeSetVariables` (`setVariables`) | ✅ |
 | guardRouting | `http_call` + multi-node | [spec](../specs/guardRouting.spec.md) | ✅ [guardRouting.js](../components/guardRouting.js) | GUI-exit `guard_routing` (via `guard`) | ✅ |
 | guardTui | `http_call` + multi-node | [spec](../specs/guardTui.spec.md) | ✅ [guardTui.js](../components/guardTui.js) | GUI-exit `guard_tui` (`guardTui`) | ✅ |
-| scheduler | `http_call` (multi-branch) | [spec](../specs/scheduler.spec.md) | ✅ [checkSchedule.js](../components/checkSchedule.js) | ⬜ not registered | ⬜ |
+| scheduler | `http_call` (multi-branch, two-call: status → prompt resolve) | [spec](../specs/scheduler.spec.md) | ✅ [checkSchedule.js](../components/checkSchedule.js) | ⬜ not registered | ⬜ |
 | say | `gui_exit` + say primitive | [spec](../specs/say.spec.md) | ✅ [say.js](../components/say.js) | GUI-exit `play_prompt` (`say`) | ✅ |
 
 ## Canonical hand-built example (no operation spec)
