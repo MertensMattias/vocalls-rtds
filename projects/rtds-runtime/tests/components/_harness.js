@@ -14,8 +14,10 @@
  *   var h = require('./_harness');
  *   return h.loadRuntime().then(function (sb) {
  *       var gw = h.withGateway(sb, { success: true, statusCode: 200 });
- *       return sb.executeSendSms({ ... }).then(function (out) {
- *           expect(out.nextStepId).toBe('00011');
+ *       // Twins stage __rtOutcome (the engine resolves the step id); they
+ *       // return a thenable (async) or undefined (sync), not { nextStepId }.
+ *       return Promise.resolve(sb.executeSendSms({ ... })).then(function () {
+ *           expect(sb.__rtOutcome).toBe('nextStep_Success');
  *           expect(gw.lastBody.to).toBe('+32478306999');
  *       });
  *   });

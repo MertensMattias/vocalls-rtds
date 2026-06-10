@@ -52,6 +52,20 @@ RTDS_MAX_STEPS = 1000;
 RTDS_finalizing = false;
 
 /**
+ * Unified-outcome staging globals, shared by JS twins and GUI components.
+ * A JS handler assigns __rtParams (resolved config, via setupConfig) and stages
+ * __rtOutcome (a Params key name); the engine resolves _rtNextStep =
+ * getValue(__rtParams, __rtOutcome, '') after the handler settles. Seeded here
+ * so the engine can read them even before any handler has run (a bare
+ * undeclared read would throw, not yield undefined). A component re-seeds them
+ * in its master-layer Variables, exactly like RTDS_finalizing.
+ * @type {Object}
+ */
+__rtParams = {};
+/** @type {string} */
+__rtOutcome = "nextStep";
+
+/**
  * Read-only view over RTDS_REGISTRY filtered to JS-handled types.
  * Maps Type string -> handler function. Kept for back-compat.
  * @type {Map<string, Function>}
@@ -413,58 +427,46 @@ function resolveNextStep(op, resultKey) {
 
 // ===========================================================================
 // executeSetVariables(op)
-//   JS-handled operation (supersedes SetAttributes). Writes each non-control
-//   Param to its dot-path target via setVariable -- a bare key lands on varObj
-//   (the call-scoped store, see conventions/storage.md), a dotted key targets
-//   varObj/globalThis/a named reachable object. Values keep their native JSON
-//   type; only strings are token-resolved. Control keys (Active, NextStep) are
-//   never stored. NextStep controls flow only. Returns { nextStepId }.
+//   JS-handled operation (supersedes SetAttributes). Mirrors the canvas
+//   component rtds/components/setVariables.js under the unified __rtOutcome
+//   contract: builds __rtParams via setupConfig, stages __rtOutcome, and writes
+//   each non-control Param to its dot-path target via setVariable -- a bare key
+//   lands on varObj (conventions/storage.md), a dotted key targets
+//   varObj/globalThis/a named reachable object. Values keep their resolved type.
+//   Control keys (active, nextStep) are never stored. The engine resolves
+//   _rtNextStep from __rtOutcome after this returns; the handler returns nothing.
+//   Active defaults FALSE (requester decision -- diverges from the component's
+//   true default; see the unified-contract design doc).
 // ===========================================================================
 
 /**
  * @param {Object} op
- * @returns {{ nextStepId: ?string }}
+ * @returns {void}
  */
 function executeSetVariables(op) {
-  var params = op.params;
-  if (!params) {
-    return { nextStepId: null };
-  }
+  __rtParams = setupConfig(op.params);
+  __rtOutcome = "nextStep";
 
-  // Active defaults to true for SetVariables: a large body of older config
-  // never sets the key, and historically those ops always wrote. Only an
-  // explicit Active:false skips. (Send* ops default false -- opt-in.)
-  if (!activeFlag(getParam(op, "active", true))) {
-    var skipNext = resolveNextStep(op, null);
+  if (!activeFlag(getValue(__rtParams, "active", false))) {
     Logger.info("[RTDS] SetVariables skipped -- inactive", {
-      nextStep: skipNext ? skipNext : "(none)",
+      outcome: __rtOutcome,
     });
-    return { nextStepId: skipNext };
+    return;
   }
 
   var CONTROL = { active: 1, nextstep: 1 };
-
-  var keys = Object.keys(params);
   var written = 0;
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i];
-    if (CONTROL[String(key).toLowerCase()]) {
-      continue;
-    }
-
-    var raw = getParam(op, key, null); // unwrap array form, keep native type
-    var value = typeof raw === "string" ? resolveTokens(raw) : raw; // strings only
+  walk(__rtParams, function (key, value) {
+    if (CONTROL[String(key).toLowerCase()]) return;
     setVariable(key, value); // dot-path write; varObj by default
     written++;
-  }
-
-  var nextStepId = resolveNextStep(op, null);
-  Logger.debug("[RTDS] SetVariables done", {
-    opName: op.name,
-    count: written,
-    nextStep: nextStepId ? nextStepId : "(none)",
   });
-  return { nextStepId: nextStepId };
+
+  Logger.info("[RTDS] SetVariables wrote variables", {
+    count: written,
+    outcome: __rtOutcome,
+  });
+  // sync: returns undefined -- engine resolves _rtNextStep from __rtOutcome.
 }
 
 // ===========================================================================
@@ -600,11 +602,19 @@ function runStep(startOpId, stepBudget) {
       continue;
     }
 
-    // JS-handled operation.
+    // JS-handled operation. The handler stages __rtParams + __rtOutcome (the
+    // same contract a GUI component uses); the engine is the SINGLE resolver --
+    // after the handler settles it runs the output-node-equivalent line
+    // _rtNextStep = getValue(__rtParams, __rtOutcome, '') and advances. The
+    // handler's return value is used only for sync-vs-async timing, never for
+    // routing: Promise.resolve normalises undefined (sync) and a thenable
+    // (async) into one awaitable, so runStep returns a promise for every JS op
+    // (sync ops gain one microtask hop). The remaining step budget is carried
+    // into the re-entry so the cycle cap spans sync and async hops as one run.
     if (entry.kind === "js") {
-      var result;
+      var jsTask;
       try {
-        result = entry.handler(current);
+        jsTask = Promise.resolve(entry.handler(current));
       } catch (err) {
         log_error(
           "[RTDS] ERROR in " +
@@ -618,45 +628,29 @@ function runStep(startOpId, stepBudget) {
         return "disconnect";
       }
 
-      // Async handler -- returns a thenable resolving to { nextStepId }.
-      // Chain off it and resume the loop from the resolved step. The whole
-      // call to runStep then resolves to a promise of the exit key, exactly
-      // like fetchAndStart does. Synchronous handlers fall through unchanged.
-      if (result && typeof result.then === "function") {
-        return result.then(
-          function (resolved) {
-            var asyncNext = resolved && resolved.nextStepId;
-            if (!asyncNext) {
-              Logger.info("[RTDS] end of flow", { lastStep: current.id });
-              return "disconnect";
-            }
-            // Carry the remaining budget into the async re-entry so the cap
-            // spans this run's sync and async hops as one, not a fresh cap per
-            // async hop (which would leave async cycles unprotected).
-            return runStep(String(asyncNext), remaining);
-          },
-          function (err) {
-            log_error(
-              "[RTDS] ERROR in async " +
-                type +
-                " step " +
-                current.id +
-                ": " +
-                (err && err.message),
-            );
-            context.session.variables.RTDS_error = err && err.message;
+      var jsCurrentId = current.id;
+      return jsTask.then(
+        function () {
+          _rtNextStep = getValue(__rtParams, __rtOutcome, "");
+          if (!_rtNextStep) {
+            Logger.info("[RTDS] end of flow", { lastStep: jsCurrentId });
             return "disconnect";
-          },
-        );
-      }
-
-      var nextStepId = result && result.nextStepId;
-      if (!nextStepId) {
-        Logger.info("[RTDS] end of flow", { lastStep: current.id });
-        return "disconnect";
-      }
-      currentId = String(nextStepId);
-      continue;
+          }
+          return runStep(String(_rtNextStep), remaining);
+        },
+        function (err) {
+          log_error(
+            "[RTDS] ERROR in async " +
+              type +
+              " step " +
+              jsCurrentId +
+              ": " +
+              (err && err.message),
+          );
+          context.session.variables.RTDS_error = err && err.message;
+          return "disconnect";
+        },
+      );
     }
 
     // GUI-exit operation.
@@ -1075,48 +1069,54 @@ function resolveFilesList(raw) {
 }
 
 /**
+ * Mirrors rtds/components/sendSms.js under the unified __rtOutcome contract.
+ * Builds __rtParams via setupConfig, stages __rtOutcome ('nextStep' /
+ * 'nextStep_Success' / 'nextStep_Failure'), and returns the jsonHttpRequest
+ * thenable; the engine resolves _rtNextStep from __rtOutcome after it settles.
+ * The pre-POST 'nextStep_Failure' pivot gives at-most-once on interruption (a
+ * mid-POST hang-up finalizes the failure default, never re-firing the send).
+ *
  * @param {Object} op
- * @returns {{ nextStepId: ?string }|Promise<{ nextStepId: ?string }>}
+ * @returns {void|Promise<void>}
  */
 function executeSendSms(op) {
-  var skipNext = resolveNextStep(op, null);
+  __rtParams = setupConfig(op.params);
+  __rtOutcome = "nextStep";
 
-  if (!activeFlag(getParam(op, "active", false))) {
-    Logger.info("[RTDS] SendSMS skipped -- inactive", { nextStep: skipNext });
-    return { nextStepId: skipNext };
+  if (!activeFlag(getValue(__rtParams, "active", false))) {
+    Logger.info("[RTDS] SendSMS skipped -- inactive", { outcome: __rtOutcome });
+    return;
   }
 
-  var to = String(resolveTokens(getParam(op, "to", "")));
+  var to = getValue(__rtParams, "to", "");
   if (!to || !isMobileNumber(to)) {
     Logger.warn("[RTDS] SendSMS invalid phone number", {
       to: to,
-      nextStep: skipNext,
+      outcome: __rtOutcome,
     });
-    return { nextStepId: skipNext };
+    return;
   }
 
-  var failureNext = resolveNextStep(op, "NextStep_Failure") || skipNext;
-  var successNext = resolveNextStep(op, "NextStep_Success") || skipNext;
+  __rtOutcome = "nextStep_Failure";
 
   if (typeof _rtSmsEndpoint === "undefined" || !_rtSmsEndpoint) {
     Logger.error("[RTDS] SendSMS endpoint not configured", {
-      nextStep: failureNext,
+      outcome: __rtOutcome,
     });
-    return { nextStepId: failureNext };
+    return;
   }
+  if (typeof _headers === "undefined" || !_headers) _headers = {};
 
   var url = _rtBaseUrl + _rtSmsEndpoint;
-  var timeout = Number(getParam(op, "timeout", 10000)) || 10000;
+  var timeout = Number(getValue(__rtParams, "timeout", 10000)) || 10000;
   var payload = {
-    smsAccountId: Number(getParam(op, "smsAccountId", -1)),
-    routing: resolveTokens(getParam(op, "routing", "")),
-    from: resolveTokens(getParam(op, "from", "")),
+    smsAccountId: Number(getValue(__rtParams, "smsAccountId", -1)),
+    routing: getValue(__rtParams, "routing", ""),
+    from: getValue(__rtParams, "from", ""),
     to: to,
-    content: resolveTokens(getParam(op, "body", "")),
+    content: getValue(__rtParams, "body", ""),
     plannedTime: nowUTC(),
   };
-
-  if (typeof _headers === "undefined" || !_headers) _headers = {};
 
   return jsonHttpRequest(
     url,
@@ -1126,93 +1126,93 @@ function executeSendSms(op) {
   ).then(
     function (result) {
       if (result && result.success === true) {
-        Logger.info("[RTDS] SendSMS success", { nextStep: successNext });
-        return { nextStepId: successNext };
+        __rtOutcome = "nextStep_Success";
+        Logger.info("[RTDS] SendSMS success", { outcome: __rtOutcome });
+        return;
       }
       Logger.warn("[RTDS] SendSMS gateway failure", {
         statusCode: result && result.statusCode,
-        nextStep: failureNext,
+        outcome: __rtOutcome,
       });
-      return { nextStepId: failureNext };
     },
     function (err) {
-      Logger.error(
-        "[RTDS] SendSMS request error",
-        { nextStep: failureNext },
-        err,
-      );
-      return { nextStepId: failureNext };
+      Logger.error("[RTDS] SendSMS request error", { outcome: __rtOutcome }, err);
     },
   );
 }
 
 /**
+ * Mirrors rtds/components/sendMail.js under the unified __rtOutcome contract.
+ * Builds __rtParams via setupConfig, stages __rtOutcome, and returns the
+ * jsonHttpRequest thenable; the engine resolves _rtNextStep from __rtOutcome
+ * after it settles. Pre-POST 'nextStep_Failure' pivot gives at-most-once on
+ * interruption. Optional payload fields (cc/bcc/files/attachments/customerKey)
+ * are included only when non-empty -- observably identical to the component's
+ * "!== null" guards.
+ *
  * @param {Object} op
- * @returns {{ nextStepId: ?string }|Promise<{ nextStepId: ?string }>}
+ * @returns {void|Promise<void>}
  */
 function executeSendEmail(op) {
-  var skipNext = resolveNextStep(op, null);
+  __rtParams = setupConfig(op.params);
+  __rtOutcome = "nextStep";
 
-  if (!activeFlag(getParam(op, "active", false))) {
-    Logger.info("[RTDS] SendEmail skipped -- inactive", { nextStep: skipNext });
-    return { nextStepId: skipNext };
+  if (!activeFlag(getValue(__rtParams, "active", false))) {
+    Logger.info("[RTDS] SendEmail skipped -- inactive", { outcome: __rtOutcome });
+    return;
   }
 
-  var from = String(resolveTokens(getParam(op, "from", ""))).replace(
-    /^\s+|\s+$/g,
-    "",
-  );
-  var to = splitSemicolonList(resolveTokens(getParam(op, "to", "")));
+  var from = String(getValue(__rtParams, "from", "")).replace(/^\s+|\s+$/g, "");
+  var to = splitSemicolonList(getValue(__rtParams, "to", ""));
   if (!from || to.length === 0) {
     Logger.warn("[RTDS] SendEmail missing From or To", {
       from: from,
       toCount: to.length,
-      nextStep: skipNext,
+      outcome: __rtOutcome,
     });
-    return { nextStepId: skipNext };
+    return;
   }
 
-  var failureNext = resolveNextStep(op, "NextStep_Failure") || skipNext;
-  var successNext = resolveNextStep(op, "NextStep_Success") || skipNext;
+  __rtOutcome = "nextStep_Failure";
 
   if (typeof _rtMailEndpoint === "undefined" || !_rtMailEndpoint) {
     Logger.error("[RTDS] SendEmail endpoint not configured", {
-      nextStep: failureNext,
+      outcome: __rtOutcome,
     });
-    return { nextStepId: failureNext };
+    return;
   }
+  if (typeof _headers === "undefined" || !_headers) _headers = {};
 
-  var priority = Number(getParam(op, "priority", 2));
+  var priority = Number(getValue(__rtParams, "priority", 2));
   if (priority !== 1 && priority !== 2 && priority !== 3) priority = 2;
 
   var payload = {
     from: from,
-    subject: resolveTokens(getParam(op, "subject", "")),
+    subject: getValue(__rtParams, "subject", ""),
     to: to,
-    body: resolveTokens(getParam(op, "body", "")),
+    body: getValue(__rtParams, "body", ""),
     priority: priority,
   };
 
-  var cc = splitSemicolonList(resolveTokens(getParam(op, "cc", "")));
+  var cc = splitSemicolonList(getValue(__rtParams, "cc", ""));
   if (cc.length) payload.cc = cc;
-  var bcc = splitSemicolonList(resolveTokens(getParam(op, "bcc", "")));
+  var bcc = splitSemicolonList(getValue(__rtParams, "bcc", ""));
   if (bcc.length) payload.bcc = bcc;
-  var files = resolveFilesList(resolveTokens(getParam(op, "files", "")));
+  var files = resolveFilesList(getValue(__rtParams, "files", ""));
   if (files.length) payload.files = files;
   var attachments = buildAttachments(
-    getParam(op, "attachmentNames", ""),
-    getParam(op, "attachmentData", ""),
+    getValue(__rtParams, "attachmentNames", ""),
+    getValue(__rtParams, "attachmentData", ""),
   );
   if (attachments.length) payload.attachments = attachments;
-  var customerKey = String(
-    resolveTokens(getParam(op, "customerKey", "")),
-  ).replace(/^\s+|\s+$/g, "");
+  var customerKey = String(getValue(__rtParams, "customerKey", "")).replace(
+    /^\s+|\s+$/g,
+    "",
+  );
   if (customerKey) payload.customerKey = customerKey;
 
   var url = _rtBaseUrl + _rtMailEndpoint;
-  var timeout = Number(getParam(op, "timeout", 10000)) || 10000;
-
-  if (typeof _headers === "undefined" || !_headers) _headers = {};
+  var timeout = Number(getValue(__rtParams, "timeout", 10000)) || 10000;
 
   return jsonHttpRequest(
     url,
@@ -1222,22 +1222,17 @@ function executeSendEmail(op) {
   ).then(
     function (result) {
       if (result && result.success === true) {
-        Logger.info("[RTDS] SendEmail success", { nextStep: successNext });
-        return { nextStepId: successNext };
+        __rtOutcome = "nextStep_Success";
+        Logger.info("[RTDS] SendEmail success", { outcome: __rtOutcome });
+        return;
       }
       Logger.warn("[RTDS] SendEmail gateway failure", {
         statusCode: result && result.statusCode,
-        nextStep: failureNext,
+        outcome: __rtOutcome,
       });
-      return { nextStepId: failureNext };
     },
     function (err) {
-      Logger.error(
-        "[RTDS] SendEmail request error",
-        { nextStep: failureNext },
-        err,
-      );
-      return { nextStepId: failureNext };
+      Logger.error("[RTDS] SendEmail request error", { outcome: __rtOutcome }, err);
     },
   );
 }
@@ -1253,24 +1248,19 @@ function executeSendEmail(op) {
 // The runtime loop is untouched in either case.
 // ===========================================================================
 
-// --- JS twins DISABLED ---
-// The inline JS handlers (executeSetVariables / executeSendSms /
-// executeSendEmail) are no longer registered. SetVariables / SendSms / SendMail
-// are now handled by their Vocalls canvas components (rtds/components/) via the
-// GUI-exit keys below, NOT inline in the runtime. The executeXxx functions are
-// kept defined above (dead code) so the twins can be re-enabled by restoring
-// the registerRtdsOperation lines. SetAttributes is routed to the same
-// set_variables exit (the canvas setVariables.js handles both).
+// --- JS twins (inline handlers, unified __rtOutcome contract) ---
+// setVariables / setAttributes / sendSms / sendMail dispatch as inline JS twins:
+// each stages __rtParams + __rtOutcome and the engine resolves _rtNextStep (see
+// runStep's JS branch). The registry is last-write-wins, so registering these as
+// JS (and NOT as GUI exits) makes the JS path win. Their canvas components
+// (rtds/components/) remain the lockstep reference but are no longer reached on
+// the live path for these Types. setAttributes shares executeSetVariables.
 registerRtdsOperation("setVariables", executeSetVariables);
-//   registerRtdsOperation("setAttributes", executeSetVariables);
-//   registerRtdsOperation("sendSms", executeSendSms);
-//   registerRtdsOperation("sendMail", executeSendEmail);
+registerRtdsOperation("setAttributes", executeSetVariables);
+registerRtdsOperation("sendSms", executeSendSms);
+registerRtdsOperation("sendMail", executeSendEmail);
 
 // --- GUI-exit Types -- handled by Vocalls components on the canvas ---
-registerRtdsExit("setVariables", "set_variables");
-registerRtdsExit("setAttributes", "set_variables");
-registerRtdsExit("sendSms", "send_sms");
-registerRtdsExit("sendMail", "send_mail");
 registerRtdsExit("workgroupTransfer", "workgroup_transfer");
 registerRtdsExit("externalTransfer", "external_transfer");
 registerRtdsExit("menu", "menu");
