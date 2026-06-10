@@ -147,3 +147,21 @@ and make these the working principles:
 Deliverable of the review: a short note confirming the two mechanisms share the engine,
 listing any logic that is (or risks becoming) duplicated, and the exact platform
 callback name + invocation contract.
+
+**Register the `sendSms` / `sendMail` JS twins for the finalize data tail (separate
+effort).** Recovering the resume point is *necessary but not sufficient* for the
+call-report SMS/email to actually fire on the finalize path. Today only `setVariables`
+is registered as a JS handler (`registerRtdsOperation`); `sendSms` / `sendMail` are
+registered as **GUI exits** (`registerRtdsExit`, the canvas components), with the
+`executeSendSms` / `executeSendEmail` JS twins defined but their
+`registerRtdsOperation` lines commented out (`rtds_2_runtime.js` registration block).
+In finalize mode `runStep` **filters GUI-exit ops out** (the `RTDS_finalizing` branch),
+so a `sendSms` / `sendMail` op reached during finalization is logged-and-stopped, not
+sent. To make the data tail functional end-to-end, the JS twins must be re-registered
+(uncomment the `registerRtdsOperation('sendSms', executeSendSms)` /
+`('sendMail', executeSendEmail)` lines) so those ops run as JS handlers — whose async
+`jsonHttpRequest(...).then(...)` promises the shared engine already awaits and returns
+up through `finalizeFrom` / `onCallResult` for the platform to await. This is the
+"only the activated JS handlers run" principle: the resolution fix delivers `runStep`
+to those ops; registering the twins is what lets them execute. **Out of scope for the
+resolution plan; tracked here so it is not lost.**

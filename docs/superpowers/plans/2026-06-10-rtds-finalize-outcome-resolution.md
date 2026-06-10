@@ -34,6 +34,8 @@
 
 The convention change (`conventions/component-v2.md` §8) and the design doc were already committed in a prior step — they are **not** part of this plan.
 
+**Out of scope for this plan (tracked in the design doc's Follow-up):** registering the `sendSms` / `sendMail` JS twins. Today only `setVariables` runs as a JS handler; `sendSms` / `sendMail` are GUI exits, which `runStep` filters out in finalize mode — so this plan recovers the resume point and reaches the data tail, but the call-report SMS/email won't *send* until the `executeSendSms` / `executeSendEmail` twins are re-registered (a separate effort). This plan does **not** change the registration block.
+
 ---
 
 ### Task 1: Add re-resolution tests (failing first)
