@@ -1,7 +1,9 @@
 # RTDS finalize-path outcome resolution
 
+> **⚠️ SUPERSEDED (2026-06-10)** by [2026-06-10-rtds-unified-rtoutcome-contract-design.md](2026-06-10-rtds-unified-rtoutcome-contract-design.md). That design makes JS handlers stage `__rtParams`/`__rtOutcome` identically to GUI components, so finalize coverage falls out uniformly with no per-kind re-resolution. The engine-side `finalizeFrom` recovery described below is **not** implemented on its own; this doc is retained for context only. Its companion plan ([../plans/2026-06-10-rtds-finalize-outcome-resolution.md](../plans/2026-06-10-rtds-finalize-outcome-resolution.md)) is likewise superseded.
+
 **Date:** 2026-06-10
-**Status:** Design approved — ready for implementation plan
+**Status:** Superseded — see banner above
 **Area:** RTDS runtime engine (`rtds_2_runtime.js`), `__rtOutcome` staging contract
 
 ## Problem

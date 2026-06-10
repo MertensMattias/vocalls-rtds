@@ -1,5 +1,7 @@
 # RTDS Finalize-Path Outcome Resolution Implementation Plan
 
+> **⚠️ SUPERSEDED (2026-06-10)** — do NOT execute. Replaced by the unified `__rtOutcome` contract design ([../specs/2026-06-10-rtds-unified-rtoutcome-contract-design.md](../specs/2026-06-10-rtds-unified-rtoutcome-contract-design.md)) and its forthcoming plan. Under the unified contract, JS handlers stage `__rtParams`/`__rtOutcome` like GUI components, so the engine-side `finalizeFrom` recovery this plan implemented is unnecessary. Retained for history only.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** When a caller hangs up while a GUI component is mid-execution, recover the component's staged `__rtOutcome` so the end-of-call data tail runs from the component's actual chosen branch instead of a stale default.
