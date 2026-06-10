@@ -120,3 +120,30 @@ After editing the repo `conventions/` source and the runtime engine, run:
 - Renaming `__rtOutcome` → `_rtOutcome` (considered; not adopted this round).
 - Any change to the live-call (`resumeFrom`) path — only the finalize path changes.
 - Sequential finaliser slot (`KeyLog()` / `SegmentLog()`) — separate effort.
+
+## Follow-up (to fold into the implementation plan)
+
+**Review the termination-callback path for logic duplication.** As part of planning,
+audit the end-of-call callback (the master-layer `onCallResult` — confirm the exact
+platform hook name; the user referred to it as `onCallEnd`) against the live-call path
+and make these the working principles:
+
+- **One engine, two entry points, one extra mode.** The finalize path must reuse the
+  *same* dispatch engine (`runStep`) as the live path — never a parallel/duplicated
+  loop. The only differences are (a) **where** it enters (`finalizeFrom` vs
+  `resumeFrom` / `fetchAndStart`) and (b) a **`'finalization'` mode** (the existing
+  `RTDS_finalizing` flag) that changes behaviour *within* the shared engine (GUI nodes
+  filtered out; only the JS-inline data tail runs).
+- **Only JS-handled (registered) operations run in finalization.** Confirm the engine
+  executes solely the activated JS handlers (`RTDS_REGISTRY` `kind: 'js'`) on the
+  finalize path and that GUI-exit ops are filtered — so the data tail is exactly the
+  set of real, registered handlers, with no mock/duplicate advancers.
+- **No duplicated logic.** Resolution, NextStep selection, the step budget / cycle
+  guard, error handling, and async-await semantics should all come from the shared
+  engine functions (`resolveNextStep`, `getValue`, the `runStep` budget, the
+  `.then` chaining) — finalize should add *only* the re-resolution of the in-flight
+  `__rtOutcome` and the mode flag, nothing it could instead borrow.
+
+Deliverable of the review: a short note confirming the two mechanisms share the engine,
+listing any logic that is (or risks becoming) duplicated, and the exact platform
+callback name + invocation contract.
