@@ -34,8 +34,13 @@ first), `rtds_1_…` sorts lowest (loaded last). When editing, preserve this inv
 
 Every operation Type is registered into a single map, `RTDS_REGISTRY`, as one of two kinds:
 
-- **`js`** — a handler that runs **inline** and returns `{ nextStepId }`. Registered via
-  `registerRtdsOperation(type, handler)`.
+- **`js`** — a handler that runs **inline**. Under the unified `__rtOutcome` contract it stages
+  `__rtParams` (via `setupConfig`) + `__rtOutcome` (a Params key) and returns nothing meaningful
+  (`undefined` sync, or its `jsonHttpRequest` thenable async); the engine resolves
+  `_rtNextStep = getValue(__rtParams, __rtOutcome, '')`. Registered via
+  `registerRtdsOperation(type, handler)`. `setVariables`, `setAttributes`, `sendSms`, `sendMail`
+  are JS twins (JS wins the last-write-wins registry); their canvas components stay the lockstep
+  reference but are dormant on the live path.
 - **`gui`** — a Vocalls component on the canvas, reached via an **exit key**. Registered via
   `registerRtdsExit(type, exitKey)`. The runtime stops and hands the call off to the GUI.
 
@@ -63,7 +68,7 @@ flowchart TD
     F --> P["parseFlow(json)\n→ ordered ops + RTDS_* header bag"]
     P --> RS["runStep(startOpId)"]
     RS --> L{"RTDS_REGISTRY.get(type)?"}
-    L -->|"kind: js"| H["handler runs inline\n→ { nextStepId }"]
+    L -->|"kind: js"| H["handler stages __rtOutcome\n→ engine resolves _rtNextStep"]
     H --> RS
     L -->|"kind: gui"| G["write RTDS_currentOpConfig (params) + RTDS_currentTtsMessages\nreturn exitKey to canvas"]
     L -->|"unregistered"| W["warn + skip to NextStep"]
@@ -80,7 +85,10 @@ flowchart TD
   `RTDS_*` header bag (sourceId, name, project, promptLibrary, supportedLanguages) into the
   session.
 - **`runStep(startOpId)`** — the loop. For each op it looks up the registry: a `js` entry runs
-  inline and the loop advances to the returned `nextStepId`; a `gui` entry stops the loop.
+  inline and, after the handler settles (`Promise.resolve(handler(op))`), the engine resolves
+  `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` and advances to it (the engine is the
+  single resolver, playing the component output-node role); a `gui` entry stops the loop. Because
+  JS dispatch awaits the settle, `runStep` returns a promise whenever it runs a JS op.
 - **`resumeFrom(nextStepId)`** — re-entry after a GUI node completes; resumes `runStep` at the
   step the component selected.
 - **`getParam(op, name, fallback)`** — case-insensitive Param read on the runtime side
@@ -90,7 +98,8 @@ flowchart TD
 ## JS-inline vs GUI-exit, and `_rtNextStep`
 
 - **JS-inline** operations (e.g. `SetVariables`, `SendSms`, `SendMail`) execute entirely in the
-  runtime and return `{ nextStepId }`; the loop never leaves `rtds_2_runtime.js`.
+  runtime: they stage `__rtParams` + `__rtOutcome` and the engine resolves `_rtNextStep`; the
+  loop never leaves `rtds_2_runtime.js`.
 - **GUI-exit** operations hand off via `prepareGuiHandoff`, which writes the whole Params object to
   `RTDS_currentOpConfig` (plus `RTDS_currentOpId/Type`, the per-language `RTDS_currentTtsMessages`
   spoken-text map for prompt-playing components, and a default `RTDS_nextStepId`) and returns a

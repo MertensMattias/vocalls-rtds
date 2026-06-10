@@ -16,6 +16,12 @@ Both sides read a Param the same way: **array-form `[value, ...flags]` unwraps t
 
 **`Active` coercion — one shared helper.** Both sides route Active through the **single global `activeFlag()`** ([rtds_3_vocallsEnv.js](../references/rtds_3_vocallsEnv.js)): `true`/`1`/`"1"`/`"true"` → active; `false`/`0`/`"0"`/`"false"`/empty/unresolved-`${}` → inactive (array form unwrapped first). The JS twins call `activeFlag()` directly; the component calls it through the thin component-local `__activeFlag` alias (which just delegates). There is no second coercion body to drift — a dictionary-emitted `Active: ["0", "isEditable"]` yields `false` on both paths. (Historically the global was named `isActive` with a `"false"`-is-truthy contract that diverged from the component; it was renamed to `activeFlag` and the component reduced to an alias, retiring the divergence.)
 
+**Config resolution — one shared helper.** Both sides resolve raw Params into a flat map the same way: the component's inline `__setupConfig` and the engine global `setupConfig` ([rtds_3_vocallsEnv.js](../references/rtds_3_vocallsEnv.js)) are byte-equivalent — array-form unwrap, `activeFlag` coercion, `${name}` resolution via `resolveConfigTokens`. A twin builds `__rtParams = setupConfig(op.params)` exactly as the component builds it.
+
+## Outcome / next-step resolution parity
+
+Both the twin and the component express their branch the **same** way: stage `__rtOutcome` (a literal Params key — `'nextStep'` / `'nextStep_Success'` / `'nextStep_Failure'`) and resolve it via `getValue(__rtParams, __rtOutcome, '')`. The **component** resolves at its output node; the **twin** does not resolve at all — the runtime engine (`runStep`'s JS branch) is the single resolver and runs the identical line after the handler settles. So a JS twin returns nothing meaningful (sync `undefined` / async thenable); it never returns `{ nextStepId }` and never resolves `_rtNextStep` itself. Keep the outcome-key vocabulary identical across twin, component, and spec.
+
 ## Reflect on
 
 - **[judgment]** Is there a runtime twin for this operation Type?

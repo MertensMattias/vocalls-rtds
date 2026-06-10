@@ -83,7 +83,7 @@ Each operation has:
 
 The full RTDS operation set spans two categories:
 
-**JS-handled operations** — fully executed inside the Script node; produces a `nextStepId` and loops:
+**JS-handled operations** — fully executed inside the Script node; stages `__rtOutcome` and the engine resolves `_rtNextStep`, then loops:
 
 | Type | What it does | Status |
 |---|---|---|
@@ -222,11 +222,11 @@ Resolution order:
 
 ### 4.7 `executeSetVariables(op)`
 
-Iterates `op.params`:
-- Skips the control keys `Active` and `NextStep` (case-insensitive; flow control only, not stored).
-- For every other key: keeps the value's **native JSON type**; only string values are token-resolved (`resolveTokens`). The result is written via `setVariable(key, value)` — a bare key lands on `varObj`, a dotted key targets `varObj` / `globalThis` / a named reachable object (see §4.11).
+Unified `__rtOutcome` contract (mirrors `rtds/components/setVariables.js`). Builds `__rtParams = setupConfig(op.params)`, seeds `__rtOutcome = 'nextStep'`, then:
+- **Active defaults `false`** — `if (!activeFlag(getValue(__rtParams, 'active', false)))` skips (logs, returns; outcome stays `'nextStep'`). (Requester decision; diverges from the component's `true` default.)
+- Otherwise `walk(__rtParams, …)` skips the control keys `active` / `nextStep` (case-insensitive) and writes every other key via `setVariable(key, value)` — a bare key lands on `varObj`, a dotted key targets `varObj` / `globalThis` / a named reachable object (see §4.11). Values keep the type `setupConfig` resolved.
 
-Returns `{ nextStepId }`.
+Returns nothing (sync `undefined`). The engine resolves `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` after it returns.
 
 ### 4.8 `prepareGuiHandoff(op)`
 
@@ -243,7 +243,7 @@ The runtime does **not** mirror params into per-key `RTDS_OP_*` session variable
 
 Core dispatch loop. Takes an operation id string, looks it up in `context.session.variables.RTDS_opIndex` (`opIndex.get(currentId)`), and dispatches:
 
-- JS-handled type: calls the handler, gets `nextStepId`, advances `currentId`, continues the `while` loop. (An async handler returns a thenable; `runStep` chains off it and resolves to a promise of the exit key.)
+- JS-handled type: `Promise.resolve(handler(op))`, then the engine — the **single resolver** — runs `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` and advances `currentId` to it (or ends the flow when it resolves to `''`). The handler's return value is used only for sync-vs-async timing, never routing; `runStep` therefore returns a promise of the exit key whenever it runs a JS op. `Active` defaults `false` on the JS twins.
 - GUI-exit type: calls `prepareGuiHandoff`, returns the exit key string.
 - **Unregistered type** (no real handler yet — e.g. `Emergency`, `Schedule`): logs a warning and **skips to the op's `NextStep`**, continuing the loop. Only when there is no `NextStep` does it end the flow (`"disconnect"`).
 - Missing step (id not in opIndex): logs warning, writes `RTDS_error`, returns `"disconnect"`.
