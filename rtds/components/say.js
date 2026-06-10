@@ -96,7 +96,7 @@
     <object
       label="say: prompt"
       Type="say"
-      Text="{__sayText}"
+      Text="{Speech.ssml(__sayText)}"
       AltTexts=""
       SelectionMode="temporary"
       Language=""

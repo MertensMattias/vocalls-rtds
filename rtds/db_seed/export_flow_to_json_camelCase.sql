@@ -251,13 +251,13 @@ FROM rtds.Operation OP
                         OR AT.IsEditable <> DA.IsEditable THEN N'["' + STRING_ESCAPE(AT.Value, 'json') + N'"' + CASE
                             WHEN AT.IsDisplayed <> DA.IsDisplayed THEN CASE
                                 WHEN AT.IsDisplayed = 1 THEN N',"isDisplayed"'
-                                ELSE N ',"isNotDisplayed"'
+                                ELSE N',"isNotDisplayed"'
                             END
                             ELSE N''
                         END + CASE
                             WHEN AT.IsEditable <> DA.IsEditable THEN CASE
                                 WHEN AT.IsEditable = 1 THEN N',"isEditable"'
-                                ELSE N ',"isNotEditable"'
+                                ELSE N',"isNotEditable"'
                             END
                             ELSE N''
                         END + N']'

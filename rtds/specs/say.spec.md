@@ -99,8 +99,10 @@ __rtOutcome = 'nextStep';
 Logger.info('[say] play', { prompt: getValue(__rtParams, 'prompt', ''), language: language, outcome: __rtOutcome });
 ```
 
-`say` primitive (id=101) — `Type="say"`, `Text="{__sayText}"` (engine-scope `{var}` markup, resolved
-at TTS time).
+`say` primitive (id=101) — `Type="say"`, `Text="{Speech.ssml(__sayText)}"`. The `Speech.ssml(...)`
+wrapper tells the TTS engine to interpret the text as SSML (matching the shipped
+[voicemaildetector.js](../components/voicemaildetector.js) say nodes); the engine-scope `{...}`
+expression resolves the master-layer global `__sayText` at TTS time.
 
 `output` (id=6, `OnEnter`) — resolves the staged outcome once:
 
@@ -134,9 +136,29 @@ contract and are **out of scope**:
   mechanism (`play_audio` / audio node), not a TTS `say` node. In Phase 1 those two Params are
   metadata only.
 
+## TTS / SSML
+
+The spoken text (`ttsMessages[language]`, staged into `__sayText`) is rendered through
+`Text="{Speech.ssml(__sayText)}"`, so **SSML markup in the `ttsMessages` values is supported** — e.g.
+`<break time="500ms"/>`, `<prosody rate="slow">…</prosody>`. The RTDS pipeline carries it intact:
+`prepareGuiHandoff` forwards the object by reference, the component does **not** run
+`__setupConfig` / `${}`-token resolution on `__ttsMessages` (only on `__configJSON`), and the
+component XML holds only the `{Speech.ssml(__sayText)}` placeholder — never the literal markup. Two
+authoring caveats:
+
+- **JSON escaping** — SSML attribute quotes must be valid JSON: `"NL": "… <break time=\"500ms\"/> …"`
+  (or use single-quoted SSML attributes to avoid escaping). When authored directly in the seed SQL
+  (`import_flow_from_json_camelCase.sql`), single quotes additionally double (`''`) per SQL literal rules.
+- **Reserved characters** — once SSML is active, literal `&` / `<` in the spoken text must be escaped
+  (`&amp;` / `&lt;`).
+
+`${var}` tokens in `ttsMessages` are **not** interpolated (the component does not token-process the
+TTS text) — only relevant if you wanted variable substitution in the spoken text.
+
 ## Open item to verify in Designer
 
-`Text="{__sayText}"` relies on the native `say` node resolving `{var}` against engine scope.
-Master-layer vars declared without `var` become global, so this should resolve, but confirm a
-`__`-prefixed global is in scope. Fallback: stage the text into a plain flow variable the engine
-definitely exposes.
+The `{Speech.ssml(__sayText)}` expression relies on the native `say` node resolving a master-layer
+`__`-global at TTS time. This is the same idiom the shipped
+[voicemaildetector.js](../components/voicemaildetector.js) uses (`{Speech.ssml(__welcomeMessage)}`),
+so it is well-precedented — confirm on first Designer import. Fallback: stage the text into a plain
+flow variable the engine definitely exposes.

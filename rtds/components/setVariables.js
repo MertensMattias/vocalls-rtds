@@ -82,7 +82,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code="if (String(getValue(__rtParams, &#39;active&#39;, false)).toLowerCase() !== &#39;true&#39;) {&#xa;    Logger.info(&#39;[setVariables] skipped -- inactive&#39;, { nextStep: __rtNextStep });&#xa;    return;&#xa;}&#xa;__rtOutcome = &#39;nextStep&#39;;&#xa;&#xa;var __CONTROL_KEYS = { Active: 1, NextStep: 1 };&#xa;var __written = 0;&#xa;&#xa;walk(__rtParams, function (key, value) {&#xa;    if (__CONTROL_KEYS[key]) return;&#xa;    setVariable(key, value);&#xa;    __written++;&#xa;});&#xa;&#xa;&#xa;Logger.info(&#39;[setVariables] wrote variables&#39;, { count: __written, nextStep: _rtNextStep });"
+      Code="if (!__activeFlag(getValue(__rtParams, &#39;active&#39;, true))) {&#xa;    Logger.info(&#39;[setVariables] skipped -- inactive&#39;, { outcome: __rtOutcome });&#xa;    return;&#xa;}&#xa;&#xa;var __CONTROL_KEYS = { active: 1, nextstep: 1 };&#xa;var __written = 0;&#xa;&#xa;walk(__rtParams, function (key, value) {&#xa;    if (__CONTROL_KEYS[String(key).toLowerCase()]) return;&#xa;    setVariable(key, value);&#xa;    __written++;&#xa;});&#xa;&#xa;Logger.info(&#39;[setVariables] wrote variables&#39;, { count: __written, outcome: __rtOutcome });"
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""

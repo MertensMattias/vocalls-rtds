@@ -42,15 +42,14 @@ a downstream operation. The destination defaults to the call-scoped store
 
 | Param name        | Type    | Required  | Default | Description                                                                                                                                  |
 | ----------------- | ------- | --------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `active`          | boolean | no        | `true`  | Boolean `true`/`false` only. Default `true` (the operation runs unless explicitly disabled with `active: false`) — the universal convention across all operations. **⚠ component/twin mismatch, see below.** |
+| `active`          | boolean | no        | `true`  | Boolean `true`/`false` only. Default `true` (the operation runs unless explicitly disabled with `active: false`) — the universal convention across all operations. Both the JS twin and the canvas component default `true` (see below). |
 
-> **⚠ Lockstep conflict (flagged 2026-06-08, not yet resolved).** The JS twin
-> `executeSetVariables` (rtds_2_runtime.js:426) reads `activeFlag(getParam(op, "active", true))`
-> — **default `true`** (matches the target). The canvas component `setVariables.js` reads
-> `getValue(__rtParams, 'active', false)` — **default `false`**. A routing table that omits
-> `active` therefore **writes via the JS twin but skips via the component**. The component is
-> the one that drifted — needs a one-character fix (`false` → `true`), deferred to a code pass.
-> (This is the same Active-default convention now stated in every operation spec.)
+> **Lockstep — Active default `true` (resolved 2026-06-10).** The JS twin
+> `executeSetVariables` (rtds_2_runtime.js:428) reads `activeFlag(getParam(op, "active", true))`
+> and the canvas component `setVariables.js` reads `__activeFlag(getValue(__rtParams, 'active', true))`
+> — **both default `true`**, so a routing table that omits `active` writes via either path.
+> (Previously the component defaulted `false`; the one-character drift flagged 2026-06-08 is
+> now fixed.) This is the same Active-default convention stated in every operation spec.
 | `nextStep`        | string  | yes       | —       | Continuation after the writes (always taken in active mode).                                                                                  |
 | `<target path>`   | any     | yes (≥1)  | —       | Every other Param. The **key** is a write target (see [Target resolution](#target-resolution)); the **value** is written with its native JSON type (see [Value typing](#value-typing)). Control keys (`active`, `nextStep`) are excluded. |
 
@@ -229,22 +228,21 @@ its `script` node, replacing the flat `varObj[key] = value` loop:
 `script` (work body) — as shipped:
 
 ```js
-if (String(getValue(__rtParams, 'active', false)).toLowerCase() !== 'true') {
-    Logger.info('[setVariables] skipped -- inactive', { nextStep: __rtNextStep });
+if (!__activeFlag(getValue(__rtParams, 'active', true))) {
+    Logger.info('[setVariables] skipped -- inactive', { outcome: __rtOutcome });
     return;
 }
-__rtOutcome = 'nextStep';
 
-var __CONTROL_KEYS = { active: 1, nextStep: 1 };
+var __CONTROL_KEYS = { active: 1, nextstep: 1 };
 var __written = 0;
 
 walk(__rtParams, function (key, value) {
-    if (__CONTROL_KEYS[key]) return;
+    if (__CONTROL_KEYS[String(key).toLowerCase()]) return;
     setVariable(key, value);   // dot-path aware; varObj by default
     __written++;
 });
 
-Logger.info('[setVariables] wrote variables', { count: __written, nextStep: _rtNextStep });
+Logger.info('[setVariables] wrote variables', { count: __written, outcome: __rtOutcome });
 ```
 
 `output` (`OnEnter`) resolves the staged outcome once:
@@ -254,7 +252,7 @@ _rtNextStep = getValue(__rtParams, __rtOutcome, '');
 Logger.info('[setVariables] exit', { outcome: __rtOutcome, nextStep: _rtNextStep });
 ```
 
-The component uses `__rtOutcome` staging (stage `'nextStep'` in the work body, resolve once at output), not the mid-flight `global[_rtNextStep]` write — it conforms to the v2 §7/§8 contract.
+The component uses `__rtOutcome` staging (seeded `'nextStep'` in the init node — the single branch this op has — and resolved once at output), not the mid-flight `global[_rtNextStep]` write — it conforms to the v2 §7/§8 contract.
 
 `__setupConfig` already preserves native JSON types for non-string values and only
 substitutes `${name}` in strings — so [Value typing](#value-typing) needs no change

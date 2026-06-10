@@ -80,10 +80,10 @@ The `__` prefix marks a component-local that is not visible outside the componen
 
 | Variable              | Type       | Description                                                            |
 | --------------------- | ---------- | ---------------------------------------------------------------------- |
-| `__guardList`         | `object[]` | Guard records from the Guard API (`id`, `name`, `phone`, `email`, …).  |
-| `__guardLog`          | `object[]` | Ordered dial-attempt records: `{ name, phone, email, time, outcome }`. |
+| `__guardList`         | `object[]` | Raw guard records from the Guard API (`guardID`, `guardName`, `guardPhone`, `guardEmail`, `guardActive`, …); read by their API keys directly. |
+| `__guardLog`          | `object[]` | Ordered dial-attempt records: `{ guardName, guardPhone, guardEmail, time, outcome }`. |
 | `__guardIndex`        | number     | Current index in the dial loop (counter node `VariableName`).          |
-| `__guardCount`        | number     | Length of `__guardList` after normalisation.                           |
+| `__guardCount`        | number     | Length of `__guardList`.                                               |
 | `__guardPickedUp`     | boolean    | Set true when `__classifyRedirect` returns `success`.                  |
 | `__currentGuardPhone` | string     | Phone of the guard being dialed in the current iteration.              |
 | `__transferResult`    | object     | NestedJob redirect result (`ResultVariableName`).                      |
@@ -104,36 +104,38 @@ The `__` prefix marks a component-local that is not visible outside the componen
 
 `GET /digipolisapi-api-${environment}/api/Guard/GetAllCurrentActiveGuardsByGuardConfig?guardConfigId=<configId>`
 
-Response: JSON array of guard objects.
+Response: JSON array of `GuardDto` objects (per [`digipolisapi_swagger.json`](../api_swagger/digipolisapi_swagger.json) → `GuardDto`). The API keys are **`guard`-prefixed** (`guardName` / `guardPhone` / `guardEmail`). `getGuards` stores the records raw — the dial loop, `__guardLog` and notification prep all read these `guard`-prefixed keys directly.
 
-| Field             | Type    | Description                                                  |
-| ----------------- | ------- | ------------------------------------------------------------ |
-| `id`              | number  | Guard record identifier.                                     |
-| `name`            | string  | Display name — used in notification body lines.              |
-| `phone`           | string  | Mobile number — dialed in the loop; SMS recipient candidate. |
-| `email`           | string  | Email address — mail recipient candidate.                    |
-| `active`          | number  | `1` = active.                                                |
-| `activeFlag`      | boolean | Active flag as boolean.                                      |
-| `dateActivated`   | string  | ISO-8601 activation timestamp.                               |
-| `dateDeactivated` | string  | ISO-8601 deactivation timestamp.                             |
+| Field (API)       | Type    | Normalised to | Description                                                  |
+| ----------------- | ------- | ------------- | ------------------------------------------------------------ |
+| `guardID`         | number  | `id`          | Guard record identifier.                                     |
+| `guardName`       | string  | `name`        | Display name — used in notification body lines.              |
+| `guardPhone`      | string  | `phone`       | Mobile number — dialed in the loop; SMS recipient candidate. |
+| `guardEmail`      | string  | `email`       | Email address — mail recipient candidate.                    |
+| `guardActive`     | number  | —             | `1` = active.                                                |
+| `activeFlag`      | boolean | —             | Active flag as boolean.                                      |
+| `dateActivated`   | string  | —             | ISO-8601 activation timestamp.                               |
+| `dateDeactivated` | string  | —             | ISO-8601 deactivation timestamp.                             |
 
-Example response:
+Example response (raw `GuardDto` — note the `guard`-prefixed keys):
 
 ```json
 [
   {
-    "id": 109,
-    "config": 1,
-    "active": 1,
+    "guardID": 109,
+    "guardConfigID": 1,
+    "guardActive": 1,
     "activeFlag": true,
-    "name": "Mattias Mertens",
-    "phone": "0478306999",
-    "email": "mattias.mertens@n-allo.be",
+    "guardName": "Mattias Mertens",
+    "guardPhone": "0478306999",
+    "guardEmail": "mattias.mertens@n-allo.be",
     "dateActivated": "2026-03-26T17:06:51.177",
     "dateDeactivated": "2026-03-26T15:14:24.5"
   }
 ]
 ```
+
+`getGuards` stores the records raw (`__guardList = __guards`). The dial loop, `__guardLog`, and notification prep read the API keys `guardName` / `guardPhone` / `guardEmail` directly — there is no key remapping.
 
 ### Dial outcomes
 
@@ -192,14 +194,14 @@ Ordered steps the operation performs. Steps marked **(shipped)** reflect the cur
    - `Reason: <outcome>`
    - _(blank line)_
 3. **Voicemail line** (when `recordVoicemail` is true): append `The caller recorded a voicemail, this is sent by mail.` when `__voicemailRecorded`, otherwise `The caller didn't record a voicemail.`
-4. **Recipients.** Collect every `phone` from `__guardList`; remove the phone of the `success` guard (if any).
+4. **Recipients.** Collect every `guardPhone` from `__guardList`; remove the `guardPhone` of the `success` guard (if any).
 5. **Merge.** `rtSmsTo = rtSmsTo ? rtSmsTo + ';' + recipients : recipients`; `rtSmsBody = rtSmsBody + smsBodyDelta` (or just `smsBodyDelta` when previously empty).
 6. Log `Logger.debug('[guardRouting] sms prepared', { recipients: …, outcome: __rtOutcome })`.
 
 **Email prep** — only when `sendMail` is true. Same body structure as SMS, with two differences:
 
 - The voicemail line reads `The caller recorded a voicemail, you'll find the attachment below.` (vs the SMS wording) / `The caller didn't record a voicemail.`
-- **No recipient exclusion** — `rtEmailTo` collects every `email` from `__guardList`, including the `success` guard.
+- **No recipient exclusion** — `rtEmailTo` collects every `guardEmail` from `__guardList`, including the `success` guard.
 
 Merge `rtEmailTo` / `rtEmailBody` with the same append rule as SMS. When `__voicemailRecorded`, the recording reference is already in `rtEmailAttachment` (set in Step 6) for `sendMail` to attach.
 
@@ -262,6 +264,7 @@ return jsonHttpRequest(
     if (Object.prototype.toString.call(__guards) !== "[object Array]") {
       __guards = [];
     }
+    // store raw GuardDto records -- readers use the API keys guardName/guardPhone/guardEmail directly.
     __guardList = __guards;
     __guardCount = __guards.length;
     // guards found OR empty both proceed -> 'nextStep'; the hasGuards case routes on __guardCount.

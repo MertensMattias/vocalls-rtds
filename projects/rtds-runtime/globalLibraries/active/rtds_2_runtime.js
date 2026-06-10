@@ -30,6 +30,17 @@
 RTDS_REGISTRY = new Map();
 
 /**
+ * Upper bound on the number of dispatch steps a single runStep run may take
+ * before it aborts as a runaway/cycle (see the budget check in runStep). The
+ * cap spans sync and async hops of one run. Sized generously so no legitimate
+ * flow -- including retry/reprompt loops that revisit nodes -- can hit it,
+ * while still terminating a true cycle (e.g. NextStep pointing back at itself)
+ * in bounded time instead of hanging the call leg.
+ * @type {number}
+ */
+RTDS_MAX_STEPS = 1000;
+
+/**
  * Finalization-mode flag. Set true by finalizeFrom (from the platform's
  * onCallResult termination callback) so runStep filters out GUI-exit operations
  * and runs only the JS-inline data tail. Defaults false for every live call;
@@ -497,9 +508,13 @@ function prepareGuiHandoff(op) {
 
 /**
  * @param {string|number} startOpId
+ * @param {number} [stepBudget] Internal. Remaining dispatch steps before the
+ *        loop aborts as a runaway/cycle. Defaults to RTDS_MAX_STEPS on the
+ *        first (external) call; threaded through the async re-entry so the cap
+ *        spans sync and async hops alike. External callers omit it.
  * @returns {string|Promise<string>} Exit key for the GUI component, or 'disconnect' on error. When a JS handler returns a thenable, returns a promise.
  */
-function runStep(startOpId) {
+function runStep(startOpId, stepBudget) {
   var opIndex = context.session.variables.RTDS_opIndex;
   if (!opIndex || typeof opIndex.get !== "function") {
     log_error("[RTDS] runStep: RTDS_opIndex is missing or not a Map");
@@ -509,19 +524,29 @@ function runStep(startOpId) {
 
   var currentId = startOpId ? String(startOpId) : null;
 
-  // Guards the synchronous dispatch loop against cyclic NextStep chains
-  // (e.g. an unimplemented step whose NextStep points back at itself or forms
-  // a loop among unregistered/registered steps). Without this a cycle spins
-  // forever and hangs the call leg with no disconnect.
-  var visited = {};
+  // Bounds total dispatch steps to guard against cyclic NextStep chains AND
+  // runaway-but-acyclic flows (e.g. a retry/reprompt loop that legitimately
+  // revisits a step). We count iterations rather than forbidding node revisits:
+  // a node may be legitimately re-entered (join points, retry loops), so
+  // "visited once" is NOT a cycle -- only "too many steps without terminating"
+  // is. The budget is threaded through the async re-entry below so it spans
+  // sync and async hops as one run; without it an async A->B->A loop would
+  // recurse forever (each hop a fresh runStep) with no protection.
+  var remaining = typeof stepBudget === "number" ? stepBudget : RTDS_MAX_STEPS;
 
   while (currentId) {
-    if (visited[currentId]) {
-      log_error("[RTDS] runStep: cycle detected at step " + currentId);
+    if (remaining <= 0) {
+      log_error(
+        "[RTDS] runStep: step budget exhausted at step " +
+          currentId +
+          " (possible cycle or runaway flow; cap=" +
+          RTDS_MAX_STEPS +
+          ")",
+      );
       context.session.variables.RTDS_error = "RTDS_CYCLE_DETECTED";
       return "disconnect";
     }
-    visited[currentId] = true;
+    remaining--;
 
     var current = opIndex.get(currentId);
 
@@ -605,7 +630,10 @@ function runStep(startOpId) {
               Logger.info("[RTDS] end of flow", { lastStep: current.id });
               return "disconnect";
             }
-            return runStep(String(asyncNext));
+            // Carry the remaining budget into the async re-entry so the cap
+            // spans this run's sync and async hops as one, not a fresh cap per
+            // async hop (which would leave async cycles unprotected).
+            return runStep(String(asyncNext), remaining);
           },
           function (err) {
             log_error(
@@ -749,18 +777,136 @@ function finalizeFrom(nextStepId) {
  * @param {string} sourceId
  * @returns {Promise<string>|string} Exit key (or a promise resolving to one).
  */
+// function fetchAndStart(sourceId) {
+//   if (!sourceId) {
+//     log_error("[RTDS] fetchAndStart: sourceId is empty");
+//     context.session.variables.RTDS_error = "RTDS_NO_SOURCE_ID";
+//     return "disconnect";
+//   }
+//   var url =
+//     _rtBaseUrl +
+//     _rtGetSourceIdEndpoint +
+//     "?sourceId=" +
+//     encodeURIComponent(sourceId);
+//   Logger.info("[RTDS] fetching routing table", { sourceId: sourceId });
+//   return jsonHttpRequest(url, { method: "GET" }, _headers)
+//     .withTimeout(10000)
+//     .then(
+//       function (rawResult) {
+//         var result = rawResult;
+//         if (typeof result === "string") {
+//           try {
+//             result = JSON.parse(result);
+//           } catch (parseErr) {
+//             log_error(
+//               "[RTDS] fetchAndStart: envelope parse failed | " +
+//                 parseErr.message,
+//             );
+//             context.session.variables.RTDS_error = "RTDS_RESULT_PARSE_ERROR";
+//             return "disconnect";
+//           }
+//         }
+
+//         if (!result || result.success !== true || result.statusCode !== 200) {
+//           var status = result && result.statusCode;
+//           log_error("[RTDS] fetchAndStart: API failure | status=" + status);
+//           context.session.variables.RTDS_error =
+//             "RTDS_API_ERROR_" + (status || "UNKNOWN");
+//           return "disconnect";
+//         }
+
+//         var body = result.response;
+//         if (typeof body === "string") {
+//           try {
+//             body = JSON.parse(body);
+//           } catch (parseErr) {
+//             log_error(
+//               "[RTDS] fetchAndStart: body parse failed | " + parseErr.message,
+//             );
+//             context.session.variables.RTDS_error = "RTDS_PARSE_ERROR";
+//             return "disconnect";
+//           }
+//         }
+
+//         Logger.info("[RTDS] routing table received", {
+//           sourceId: sourceId,
+//           name: body && body.name,
+//         });
+
+//         var firstOp = parseFlow(body);
+//         if (!firstOp) {
+//           log_error("[RTDS] fetchAndStart: no entry operation");
+//           context.session.variables.RTDS_error = "RTDS_NO_ENTRY_POINT";
+//           return "disconnect";
+//         }
+//         return runStep(firstOp.id);
+//       },
+//       function (err) {
+//         var errMsg = err && err.message ? err.message : String(err);
+//         log_error("[RTDS] fetchAndStart: request rejected | " + errMsg);
+//         context.session.variables.RTDS_error = "RTDS_REQUEST_ERROR";
+//         return "disconnect";
+//       },
+//     );
+// }
+
 function fetchAndStart(sourceId) {
   if (!sourceId) {
     log_error("[RTDS] fetchAndStart: sourceId is empty");
     context.session.variables.RTDS_error = "RTDS_NO_SOURCE_ID";
     return "disconnect";
   }
+
+  var useDevBody =
+    typeof _devBody !== "undefined" && _devBody !== null && _devBody !== "";
+
+  if (useDevBody) {
+    Logger.info(
+      "[RTDS] fetchAndStart: _devBody detected, skipping API request",
+      { sourceId: sourceId },
+    );
+
+    var devBody = _devBody;
+    if (typeof devBody === "string") {
+      try {
+        devBody = JSON.parse(devBody);
+      } catch (parseErr) {
+        log_error(
+          "[RTDS] fetchAndStart: _devBody parse failed | " + parseErr.message,
+        );
+        context.session.variables.RTDS_error = "RTDS_DEVBODY_PARSE_ERROR";
+        return "disconnect";
+      }
+    }
+
+    Logger.info("[RTDS] fetchAndStart: using _devBody routing table", {
+      sourceId: sourceId,
+      name: devBody && devBody.name,
+    });
+
+    var devFirstOp = parseFlow(devBody);
+    if (!devFirstOp) {
+      log_error("[RTDS] fetchAndStart: no entry operation in _devBody");
+      context.session.variables.RTDS_error = "RTDS_NO_ENTRY_POINT";
+      return "disconnect";
+    }
+
+    return runStep(devFirstOp.id);
+  }
+
+  Logger.info(
+    "[RTDS] fetchAndStart: no _devBody detected, using API response",
+    { sourceId: sourceId },
+  );
+
   var url =
     _rtBaseUrl +
     _rtGetSourceIdEndpoint +
     "?sourceId=" +
     encodeURIComponent(sourceId);
+
   Logger.info("[RTDS] fetching routing table", { sourceId: sourceId });
+
   return jsonHttpRequest(url, { method: "GET" }, _headers)
     .withTimeout(10000)
     .then(
@@ -800,7 +946,7 @@ function fetchAndStart(sourceId) {
           }
         }
 
-        Logger.info("[RTDS] routing table received", {
+        Logger.info("[RTDS] routing table received from API", {
           sourceId: sourceId,
           name: body && body.name,
         });

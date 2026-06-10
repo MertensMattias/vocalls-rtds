@@ -530,8 +530,9 @@ describe('rtds-runtime main.js', function () {
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
             .then(function (result) {
                 var sb = result.sandbox;
-                // 1 → 2 → 1 among unregistered types. Without the visited-set
-                // guard this would loop forever; it must disconnect instead.
+                // 1 → 2 → 1 among unregistered types. Without the step-budget
+                // guard this would loop forever; it must disconnect instead once
+                // the budget is exhausted.
                 var ops = [
                     { id: '1', type: 'condition', name: 'c1', isFirstOperation: true, params: { nextStep: '2' } },
                     { id: '2', type: 'schedule', name: 's1', params: { nextStep: '1' } }
@@ -539,6 +540,59 @@ describe('rtds-runtime main.js', function () {
                 sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
                 expect(sb.runStep('1')).toBe('disconnect');
                 expect(sb.context.session.variables.RTDS_error).toBe('RTDS_CYCLE_DETECTED');
+            });
+    });
+
+    it('runStep allows a step to be legitimately revisited (not a false cycle)', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                // A retry/reprompt-style loop: step '1' routes back to itself a
+                // bounded number of times, then exits to a GUI op. The old
+                // node-revisit guard killed the call the second time '1' was
+                // entered; the step-budget guard must let bounded revisits run
+                // and reach the GUI exit ('play_prompt').
+                var hits = 0;
+                var ops = [
+                    { id: '1', type: 'retryProbe', name: 'r', isFirstOperation: true, params: {} },
+                    { id: '2', type: 'say', name: 'p', params: {} }
+                ];
+                sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
+                sb.registerRtdsOperation('retryProbe', function () {
+                    hits++;
+                    // Revisit '1' three times, then advance to the GUI op '2'.
+                    return { nextStepId: hits < 3 ? '1' : '2' };
+                });
+                expect(sb.runStep('1')).toBe('play_prompt');
+                expect(hits).toBe(3);
+            });
+    });
+
+    it('runStep budget spans async hops (async cycle disconnects, not hangs)', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                // Async A→B→A loop: each hop resolves a thenable and re-enters
+                // runStep. The budget is threaded through the async re-entry, so
+                // a fresh cap is NOT minted per hop — the run terminates with a
+                // disconnect instead of recursing forever.
+                var ops = [
+                    { id: '1', type: 'asyncA', name: 'a', isFirstOperation: true, params: {} },
+                    { id: '2', type: 'asyncB', name: 'b', params: {} }
+                ];
+                sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
+                sb.registerRtdsOperation('asyncA', function () {
+                    return Promise.resolve({ nextStepId: '2' });
+                });
+                sb.registerRtdsOperation('asyncB', function () {
+                    return Promise.resolve({ nextStepId: '1' });
+                });
+                return sb.runStep('1').then(function (exitKey) {
+                    expect(exitKey).toBe('disconnect');
+                    expect(sb.context.session.variables.RTDS_error).toBe('RTDS_CYCLE_DETECTED');
+                });
             });
     });
 });
