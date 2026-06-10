@@ -6,7 +6,7 @@ catalog:
   pattern: "`set_attributes`"
   component: "setVariables.js"
   componentMark: "✅"
-  runtimeCell: "JS twin `executeSetVariables` (`SetVariables_vocalls`)"
+  runtimeCell: "JS twin `executeSetVariables` (`setVariables`)"
   seed: "✅"
 ---
 
@@ -14,7 +14,7 @@ catalog:
 
 | Field          | Value                                                              |
 | -------------- | ------------------------------------------------------------------ |
-| Operation Type | `SetVariables`                                                    |
+| Operation Type | `setVariables`                                            |
 | Component name | `setVariables`                                                    |
 | Pattern        | `set_attributes`                                                  |
 | Supersedes     | `SetAttributes` / `setAttributes` (this spec is the refactor target) |
@@ -42,25 +42,24 @@ a downstream operation. The destination defaults to the call-scoped store
 
 | Param name        | Type    | Required  | Default | Description                                                                                                                                  |
 | ----------------- | ------- | --------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Active`          | boolean | no        | `true`  | Boolean `true`/`false` only. Default `true` (the operation runs unless explicitly disabled with `Active: false`) — the universal convention across all operations. **⚠ component/twin mismatch, see below.** |
+| `active`          | boolean | no        | `true`  | Boolean `true`/`false` only. Default `true` (the operation runs unless explicitly disabled with `active: false`) — the universal convention across all operations. Both the JS twin and the canvas component default `true` (see below). |
 
-> **⚠ Lockstep conflict (flagged 2026-06-08, not yet resolved).** The JS twin
-> `executeSetVariables` (rtds_2_runtime.js:426) reads `activeFlag(getParam(op, "Active", true))`
-> — **default `true`** (matches the target). The canvas component `setVariables.js` reads
-> `getValue(__rtParams, 'Active', false)` — **default `false`**. A routing table that omits
-> `Active` therefore **writes via the JS twin but skips via the component**. The component is
-> the one that drifted — needs a one-character fix (`false` → `true`), deferred to a code pass.
-> (This is the same Active-default convention now stated in every operation spec.)
-| `NextStep`        | string  | yes       | —       | Continuation after the writes (always taken in active mode).                                                                                  |
-| `<target path>`   | any     | yes (≥1)  | —       | Every other Param. The **key** is a write target (see [Target resolution](#target-resolution)); the **value** is written with its native JSON type (see [Value typing](#value-typing)). Control keys (`Active`, `NextStep`) are excluded. |
+> **Lockstep — Active default `true` (resolved 2026-06-10).** The JS twin
+> `executeSetVariables` (rtds_2_runtime.js:428) reads `activeFlag(getParam(op, "active", true))`
+> and the canvas component `setVariables.js` reads `__activeFlag(getValue(__rtParams, 'active', true))`
+> — **both default `true`**, so a routing table that omits `active` writes via either path.
+> (Previously the component defaulted `false`; the one-character drift flagged 2026-06-08 is
+> now fixed.) This is the same Active-default convention stated in every operation spec.
+| `nextStep`        | string  | yes       | —       | Continuation after the writes (always taken in active mode).                                                                                  |
+| `<target path>`   | any     | yes (≥1)  | —       | Every other Param. The **key** is a write target (see [Target resolution](#target-resolution)); the **value** is written with its native JSON type (see [Value typing](#value-typing)). Control keys (`active`, `nextStep`) are excluded. |
 
 ### Outputs
 
 | Branch key | Taken when                | Fallback |
 | ---------- | ------------------------- | -------- |
-| `NextStep` | Always (the only branch). | `''`     |
+| `nextStep` | Always (the only branch). | `''`     |
 
-The canvas component stages `__rtOutcome = 'NextStep'` in the work body and resolves it once at the output node — `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` — with an **empty-string** fallback (the shipped contract, [conventions/component-v2.md](../../conventions/component-v2.md) §8). The JS twin returns `{ nextStepId }` directly and falls back to `-1` (runtime-side numeric sentinel); these fallbacks differ by design (string-store vs runtime return), not drift.
+The canvas component stages `__rtOutcome = 'nextStep'` in the work body and resolves it once at the output node — `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` — with an **empty-string** fallback (the shipped contract, [conventions/component-v2.md](../../conventions/component-v2.md) §8). The JS twin returns `{ nextStepId }` directly and falls back to `-1` (runtime-side numeric sentinel); these fallbacks differ by design (string-store vs runtime return), not drift.
 
 ## Target resolution
 
@@ -126,7 +125,7 @@ string** — `"n=${count}"` → `"n=5"`, and even a fully-tokened `"${count}"` r
 string, never the number `5`. Booleans, numbers, null, arrays, and objects pass through
 untouched.
 
-`Active` is the one coercion: it is read as a strict Boolean (`true`/`false`).
+`active` is the one coercion: it is read as a strict Boolean (`true`/`false`).
 
 ## Runtime handler — `executeSetVariables(op)`
 
@@ -136,11 +135,11 @@ dispatch model is out of scope for this spec and unchanged by it). It is the loc
 twin of the canvas component: it runs the component's exact two-node pipeline through
 the **same shared env-library functions** (`setupConfig`, `getValue`, `walk`,
 `setVariable`) — the same delegation pattern as `activeFlag` — so the GUI and JS paths
-can never diverge. `setupConfig` (the `init`-node twin) coerces `Active` via
+can never diverge. `setupConfig` (the `init`-node twin) coerces `active` via
 `activeFlag`, trims strings and resolves `${name}` via `resolveConfigTokens`, and
 preserves native types; the loop (the `script`-node twin) walks the non-control keys.
 The twin returns `{ nextStepId }` and falls back to `-1` (runtime numeric sentinel) when
-NextStep is absent; the canvas component resolves through `__rtOutcome` and falls back to
+nextStep is absent; the canvas component resolves through `__rtOutcome` and falls back to
 `''` at its output node (see [Outputs](#outputs)).
 
 ```
@@ -149,13 +148,13 @@ function executeSetVariables(op) {
 
   var rtParams = setupConfig(op.params);   // init-node twin: shared config contract
 
-  if (!getValue(rtParams, "Active", true)) {   // default-true skip
-    var skipNext = getValue(rtParams, "NextStep", -1);
+  if (!getValue(rtParams, "active", true)) {   // default-true skip
+    var skipNext = getValue(rtParams, "nextStep", -1);
     Logger.info("[RTDS] SetVariables skipped -- inactive", { nextStep: skipNext });
     return { nextStepId: skipNext };
   }
 
-  var CONTROL_KEYS = { Active: 1, NextStep: 1 };
+  var CONTROL_KEYS = { active: 1, nextStep: 1 };
   var written = 0;
   walk(rtParams, function (key, value) {       // script-node twin
     if (CONTROL_KEYS[key]) return;
@@ -163,7 +162,7 @@ function executeSetVariables(op) {
     written++;
   });
 
-  var nextStepId = getValue(rtParams, "NextStep", -1);
+  var nextStepId = getValue(rtParams, "nextStep", -1);
   Logger.debug("[RTDS] SetVariables done", { opName: op.name, count: written, nextStep: nextStepId });
   return { nextStepId: nextStepId };
 }
@@ -229,22 +228,21 @@ its `script` node, replacing the flat `varObj[key] = value` loop:
 `script` (work body) — as shipped:
 
 ```js
-if (String(getValue(__rtParams, 'Active', false)).toLowerCase() !== 'true') {
-    Logger.info('[setVariables] skipped -- inactive', { nextStep: __rtNextStep });
+if (!__activeFlag(getValue(__rtParams, 'active', true))) {
+    Logger.info('[setVariables] skipped -- inactive', { outcome: __rtOutcome });
     return;
 }
-__rtOutcome = 'NextStep';
 
-var __CONTROL_KEYS = { Active: 1, NextStep: 1 };
+var __CONTROL_KEYS = { active: 1, nextstep: 1 };
 var __written = 0;
 
 walk(__rtParams, function (key, value) {
-    if (__CONTROL_KEYS[key]) return;
+    if (__CONTROL_KEYS[String(key).toLowerCase()]) return;
     setVariable(key, value);   // dot-path aware; varObj by default
     __written++;
 });
 
-Logger.info('[setVariables] wrote variables', { count: __written, nextStep: _rtNextStep });
+Logger.info('[setVariables] wrote variables', { count: __written, outcome: __rtOutcome });
 ```
 
 `output` (`OnEnter`) resolves the staged outcome once:
@@ -254,7 +252,7 @@ _rtNextStep = getValue(__rtParams, __rtOutcome, '');
 Logger.info('[setVariables] exit', { outcome: __rtOutcome, nextStep: _rtNextStep });
 ```
 
-The component uses `__rtOutcome` staging (stage `'NextStep'` in the work body, resolve once at output), not the mid-flight `global[_rtNextStep]` write — it conforms to the v2 §7/§8 contract.
+The component uses `__rtOutcome` staging (seeded `'nextStep'` in the init node — the single branch this op has — and resolved once at output), not the mid-flight `global[_rtNextStep]` write — it conforms to the v2 §7/§8 contract.
 
 `__setupConfig` already preserves native JSON types for non-string values and only
 substitutes `${name}` in strings — so [Value typing](#value-typing) needs no change
@@ -264,13 +262,13 @@ use.
 
 ## Migration
 
-`SetAttributes` was a **hard cut** to `SetVariables` — there is **no back-compat
-alias**. The runtime registers `SetVariables` only:
-`registerRtdsOperation('SetVariables', executeSetVariables)`. A routing table that
+`SetAttributes` was a **hard cut** to `setVariables` — there is **no back-compat
+alias**. The runtime registers `setVariables` only:
+`registerRtdsOperation('setVariables', executeSetVariables)`. A routing table that
 still emits `SetAttributes` hits the unregistered-type path (runStep skips it to its
-`NextStep` with a warning), so routing tables **must** be re-pointed to `SetVariables`.
+`nextStep` with a warning), so routing tables **must** be re-pointed to `setVariables`.
 
-- Re-point every routing table from `SetAttributes` → `SetVariables` (bare flat keys
+- Re-point every routing table from `SetAttributes` → `setVariables` (bare flat keys
   behave identically; the new dot-path / native-type behavior is purely additive).
 - `setVariables.js` is the forward component; the old `setAttributes.js` is retained
   only for reference until flows are migrated.
@@ -279,19 +277,19 @@ still emits `SetAttributes` hits the unregistered-type path (runStep skips it to
 
 ```jsonc
 // Flat call-scoped writes (identical to old SetAttributes behaviour)
-{ "RoutingId": "LPA_ICT_HELPDESK", "IVREvent": 9999, "IsHelpdeskCall": true, "NextStep": "00001" }
-//  -> varObj.RoutingId = "LPA_ICT_HELPDESK"  (string)
-//  -> varObj.IVREvent  = 9999                 (number)
-//  -> varObj.IsHelpdeskCall = true            (boolean)
+{ "routingId": "LPA_ICT_HELPDESK", "ivrEvent": 9999, "isHelpdeskCall": true, "nextStep": "00001" }
+//  -> varObj.routingId = "LPA_ICT_HELPDESK"  (string)
+//  -> varObj.ivrEvent  = 9999                 (number)
+//  -> varObj.isHelpdeskCall = true            (boolean)
 
 // Nested + explicit roots
-{ "Active": true, "auth.verified": true, "auth.method": "pin",
-  "globalThis.debugCall": true, "NextStep": "00002" }
+{ "active": true, "auth.verified": true, "auth.method": "pin",
+  "globalThis.debugCall": true, "nextStep": "00002" }
 //  -> varObj.auth = { verified: true, method: "pin" }   (auto-created)
 //  -> globalThis.debugCall = true
 
 // Placeholder in a string value stays a string
-{ "greeting": "Hello ${customerName}", "NextStep": "00003" }
+{ "greeting": "Hello ${customerName}", "nextStep": "00003" }
 //  -> varObj.greeting = "Hello Alice"   (string; customerName resolved)
 ```
 

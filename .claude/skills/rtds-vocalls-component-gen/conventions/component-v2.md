@@ -135,6 +135,14 @@ The engine routes on the resolved `_rtNextStep` value; the staging in `__rtOutco
 
 Every v2 component resolves `__rtOutcome` here — including GUI-exit *target* components (§7). The exit key itself is emitted by the engine's `prepareGuiHandoff`, not by any component.
 
+### Finalize-path resolution (call interruption)
+
+`__rtOutcome` and `__rtParams` are bare-assigned (no `var`) and pre-declared in master `Variables`, so they persist on the session global for the life of the call — the `__` prefix is a naming convention, not a real scope. They are **single-slot**: each component overwrites them, so at any instant they reflect the **most recently entered** component.
+
+This is what lets the runtime recover the outcome when a caller hangs up **before** a component reaches its output node (so the output-node resolution above never ran and `_rtNextStep` is stale). On the finalize path only, `finalizeFrom` (`rtds_2_runtime.js`) re-resolves the in-flight component's staged outcome itself — `getValue(__rtParams, __rtOutcome, '')` — and uses that as the resume point **before** falling back to `RTDS_nextStepId`. It is `typeof`-guarded, so it is a no-op when the globals are absent.
+
+Components are **unchanged** by this: they still stage `__rtOutcome` and resolve once at their own output node for the normal (non-interrupted) path. The engine re-resolves only on the finalize path, and the resolution logic is byte-identical to the output-node line — the same `getValue(__rtParams, __rtOutcome, '')`. Keep the two in lockstep.
+
 ## Reflect on
 
 - **[grep]** Does the component have exactly the four canonical ids (`0`/`7`/`29`/`6`)?
@@ -143,4 +151,5 @@ Every v2 component resolves `__rtOutcome` here — including GUI-exit *target* c
 - **[grep]** Init body is the universal four lines (incl. `__rtOutcome = 'NextStep';`)?
 - **[grep]** Work body stages `__rtOutcome = '<key>'` with plain `=` and never writes `_rtNextStep` mid-flight?
 - **[grep]** Output node resolves `__rtOutcome` to `_rtNextStep` (bare, not `global[_rtNextStep]`) with the `''` fallback and logs both `outcome` and `nextStep`?
+- **[judgment]** `__rtOutcome` / `__rtParams` left as persisting bare-assigned globals (no `var`, pre-declared in master `Variables`) so the engine's finalize-path re-resolution can recover the outcome on call interruption (§8 Finalize-path resolution)?
 - **[grep]** No component work body writes per-key `RTDS_OP_*` or `return`s an exit key — GUI-exit routing is the engine's job (`prepareGuiHandoff`)?

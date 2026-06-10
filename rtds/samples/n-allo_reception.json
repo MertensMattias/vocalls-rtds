@@ -1,0 +1,205 @@
+{
+  "sourceId": "+3224581030",
+  "name": "N-ALLO - RECEPTION",
+  "projectId": 83,
+  "project": "NALLO",
+  "promptLibraryId": 1,
+  "promptLibrary": "N-Allo\\RECEPTION",
+  "supportedLanguages": "NL|FR",
+  "operations": [
+    {
+      "id": "00000",
+      "type": "setVariables",
+      "name": "Call Initialization",
+      "isFirstOperation": true,
+      "params": {
+        "active": true,
+        "customerName": "N-ALLO",
+        "customerProject": "RECEPTION",
+        "logAttributes": "RTDS_ProjectName|Eic_RemoteId|ATTR_RoutingId|ATTR_CallflowId",
+        "routingId": "RECEPTION",
+        "nextStep": "00001"
+      }
+    },
+    {
+      "id": "00001",
+      "type": "say",
+      "name": "Say: Welcome",
+      "params": {
+        "active": true,
+        "applicationId": 8,
+        "prompt": "Welcome",
+        "nextStep": "00002"
+      },
+      "ttsMessages": {
+        "NL": "Welkom bij N-Allo. U wordt zo dadelijk verder geholpen.",
+        "FR": "Bienvenue chez N-Allo. Nous traitons votre appel dans un instant."
+      }
+    },
+    {
+      "id": "00002",
+      "type": "getLanguage",
+      "name": "Choose Dutch or French",
+      "params": {
+        "active": true,
+        "applicationId": 7,
+        "prompt": "LanguageMenu",
+        "languages": "$(RTDS_SupportedLanguages)",
+        "maxTries": 2,
+        "nextStep": "00003"
+      },
+      "ttsMessages": {
+        "NL": "Voor Nederlands, druk op 1. Pour le français, appuyez sur le 2.",
+        "FR": "Voor Nederlands, druk op 1. Pour le français, appuyez sur le 2."
+      }
+    },
+    {
+      "id": "00003",
+      "type": "checkSchedule",
+      "name": "Check: Scheduler",
+      "params": {
+        "active": true,
+        "applicationId": 1,
+        "scheduleId": 51,
+        "nextStep_Open": "00040",
+        "nextStep_Transfer": "00090",
+        "nextStep_Closed": "00100",
+        "nextStep": "00100"
+      }
+    },
+    {
+      "id": "00040",
+      "type": "condition",
+      "name": "Check: Staffing",
+      "params": {
+        "active": true,
+        "statistic": "AgentsLoggedIn",
+        "workgroup": "N-ALLO_Reception_V",
+        "operator": "gt",
+        "value": 0,
+        "nextStep_True": "00043",
+        "nextStep_False": "00091"
+      }
+    },
+    {
+      "id": "00043",
+      "type": "condition",
+      "name": "Check: MaxQueue",
+      "params": {
+        "active": true,
+        "statistic": "CallsWaiting",
+        "workgroup": "N-ALLO_Reception_V",
+        "operator": "gt",
+        "value": 39,
+        "nextStep_True": "00091",
+        "nextStep_False": "00050"
+      }
+    },
+    {
+      "id": "00050",
+      "type": "internalTransfer",
+      "name": "Route-To: LPA REGIO",
+      "params": {
+        "active": true,
+        "remoteDestination": "${remoteDestination}",
+        "transferHeader_priority": "${transferHeader_priority}",
+        "transferHeader_skills": "${transferHeader_skills}",
+        "timeout": 150,
+        "nextStep": "00051",
+        "nextStep_Failure": "00100"
+      }
+    },
+    {
+      "id": "00051",
+      "type": "say",
+      "name": "Queue: Message 1",
+      "params": {
+        "active": true,
+        "applicationId": 5,
+        "prompt": "Waitmessage01",
+        "nextStep": "00052"
+      },
+      "ttsMessages": {
+        "NL": "Alle medewerkers zijn momenteel in gesprek. Blijf aan de lijn, wij verbinden u zo snel mogelijk door.",
+        "FR": "Tous nos collaborateurs sont actuellement en ligne. Restez à l'écoute, nous vous mettons en relation dès que possible."
+      }
+    },
+    {
+      "id": "00052",
+      "type": "say",
+      "name": "Play: NoBodyAvailable",
+      "params": {
+        "active": true,
+        "applicationId": 5,
+        "prompt": "NoBodyAvailable",
+        "nextStep": "00091"
+      },
+      "ttsMessages": {
+        "NL": "Onze medewerkers kunnen u op dit moment niet te woord staan. U kunt een boodschap inspreken en wij bellen u zo snel mogelijk terug.",
+        "FR": "Nos collaborateurs ne sont pas en mesure de vous répondre pour le moment. Vous pouvez laisser un message et nous vous rappellerons dès que possible."
+      }
+    },
+    {
+      "id": "00090",
+      "type": "externalTransfer",
+      "name": "Route-To: External Number",
+      "params": {
+        "active": true,
+        "phoneNumber": "",
+        "outboundANI": "",
+        "diversionReason": 8,
+        "timeout": 30,
+        "nextStep_Busy": "00093",
+        "nextStep_RNA": "00093",
+        "nextStep": "00100"
+      }
+    },
+    {
+      "id": "00091",
+      "type": "voicemailCallback",
+      "name": "Leave voicemail",
+      "params": {
+        "active": true,
+        "nextStep_Escape": "00093",
+        "nextStep_Error": "00093",
+        "nextStep": "00094"
+      }
+    },
+    {
+      "id": "00093",
+      "type": "say",
+      "name": "Play: Voicemail Error",
+      "params": {
+        "active": true,
+        "applicationId": 9,
+        "prompt": "error",
+        "nextStep": "00094"
+      },
+      "ttsMessages": {
+        "NL": "Er is iets misgegaan bij het opnemen van uw boodschap. Onze excuses voor het ongemak.",
+        "FR": "Une erreur s'est produite lors de l'enregistrement de votre message. Nous vous prions de nous en excuser."
+      }
+    },
+    {
+      "id": "00094",
+      "type": "say",
+      "name": "play: voicemail disconnect",
+      "params": {
+        "active": true,
+        "applicationId": 9,
+        "prompt": "disconnect",
+        "nextStep": "00100"
+      },
+      "ttsMessages": {
+        "NL": "Bedankt voor uw oproep. Wij nemen zo snel mogelijk contact met u op. Tot ziens.",
+        "FR": "Merci pour votre appel. Nous vous recontacterons dans les plus brefs délais. Au revoir."
+      }
+    },
+    {
+      "id": "00100",
+      "type": "disconnect",
+      "name": "RTDS: Disconnect",
+      "params": {}
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "sourceId": "+3257351120",
+  "name": "DIGIPOLIS - LPA_ICT_GUARD",
+  "projectId": "",
+  "project": "LPA ICT",
+  "promptLibraryId": "",
+  "promptLibrary": "DIGIPOLIS\\LPA\\ICT_HELPDESK",
+  "supportedLanguages": "NL",
+  "operations": [
+    {
+      "id": "00000",
+      "type": "setVariables",
+      "name": "Call Initialization",
+      "isFirstOperation": true,
+      "params": {
+        "active": true,
+        "customerName": "LPA",
+        "customerProject": "ICT_GUARD",
+        "routingId": "LPA_ICT_GUARD",
+        "ivrEvent": "9999",
+        "ivrAction": "CT",
+        "nextStep": "00071"
+      }
+    },
+    {
+      "id": "00071",
+      "type": "guard",
+      "name": "LPA_ICT_GUARD",
+      "params": {
+        "active": true,
+        "configId": 3,
+        "configName": "LPA_ICT_GUARD",
+        "dialGuard": true,
+        "outboundANI": "",
+        "diversion": "",
+        "onHoldAudioUrl": "https://data.freetouse.com/music/tracks/60974ab4-afa7-211d-3ffc-09fdbaff8e58/file/mp3",
+        "timeout": 30,
+        "recordVoicemail": true,
+        "acceptCallMenu": true,
+        "acceptCallMessage": "Press 1 to accept the call.",
+        "sendSms": true,
+        "sendMail": true,
+        "nextStep_Success": "00072",
+        "nextStep_Failure": "00072",
+        "nextStep": "00072"
+      }
+    },
+    {
+      "id": "00072",
+      "type": "sendMail",
+      "name": "Mail-To: LPA_ICT_GUARD",
+      "params": {
+        "active": true,
+        "subject": "LPA_ICT_GUARD: Call Report",
+        "from": "IVR_EVENTS@n-allo.be",
+        "to": "${rtEmailTo}",
+        "cc": "veerle.georges@police.belgium.eu;mattias.mertens@n-allo.be",
+        "bcc": "",
+        "body": "${rtEmailBody}",
+        "priority": 2,
+        "files": "${rtEmailAttachment}",
+        "attachmentNames": "",
+        "attachmentData": "",
+        "customerKey": "",
+        "timeout": 10000,
+        "nextStep_Success": "00073",
+        "nextStep_Failure": "00073",
+        "nextStep": "00073"
+      }
+    },
+    {
+      "id": "00073",
+      "type": "sendSms",
+      "name": "SMS-To: LPA_ICT_GUARD",
+      "params": {
+        "active": true,
+        "smsAccountId": 47,
+        "routing": "LPA_ICT_GUARD",
+        "from": "8850",
+        "to": "${rtSmsTo}",
+        "body": "${rtSmsBody}",
+        "timeout": 5000,
+        "nextStep_Success": "00098",
+        "nextStep_Failure": "00098",
+        "nextStep": "00098"
+      }
+    },
+    {
+      "id": "00098",
+      "type": "disconnect",
+      "name": "RTDS: Disconnect",
+      "params": {}
+    }
+  ]
+}

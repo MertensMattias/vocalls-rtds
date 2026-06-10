@@ -1,0 +1,465 @@
+{
+  "sourceId": "+3257351219",
+  "name": "DIGIPOLIS - LPA_ICT_HELPDESK",
+  "projectId": "",
+  "project": "LPA ICT",
+  "promptLibraryId": "",
+  "promptLibrary": "DIGIPOLIS\\LPA\\ICT_HELPDESK",
+  "supportedLanguages": "NL",
+  "operations": [
+    {
+      "id": "00000",
+      "type": "setVariables",
+      "name": "Call Initialization",
+      "isFirstOperation": true,
+      "params": {
+        "active": true,
+        "customerName": "LPA",
+        "customerProject": "ICT_HELPDESK",
+        "routingId": "LPA_ICT_HELPDESK",
+        "ivrEvent": "9999",
+        "ivrAction": "CT",
+        "nextStep": "00001"
+      }
+    },
+    {
+      "id": "00001",
+      "type": "emergency",
+      "name": "Check: Emergency",
+      "params": {
+        "active": true,
+        "emergencyId": "DIGIPOLIS LPA_ICT_HELPDESK Exception Prompt",
+        "nextStep_Transfer": "00002",
+        "nextStep_Disconnect": "00002",
+        "nextStep_Continue": "00002",
+        "nextStep_Failure": "00002",
+        "nextStep": "00002"
+      }
+    },
+    {
+      "id": "00002",
+      "type": "checkSchedule",
+      "name": "Check: Scheduler",
+      "params": {
+        "active": true,
+        "applicationId": 1,
+        "scheduleId": 8,
+        "nextStep_Open": "00003",
+        "nextStep_Closed": "00006",
+        "nextStep_Transfer": "00005",
+        "nextStep_Guard_ICT": "00004",
+        "nextStep_Failure": "00060",
+        "nextStep": "00060"
+      }
+    },
+    {
+      "id": "00003",
+      "type": "setVariables",
+      "name": "Set: Congnos Open",
+      "params": {
+        "active": true,
+        "ivrEvent": "1200",
+        "ivrAction": "CT",
+        "nextStep": "00010"
+      }
+    },
+    {
+      "id": "00004",
+      "type": "setVariables",
+      "name": "Set: Congnos Guard",
+      "params": {
+        "active": true,
+        "ivrEvent": "1200",
+        "ivrAction": "GD03",
+        "nextStep": "00060"
+      }
+    },
+    {
+      "id": "00005",
+      "type": "setVariables",
+      "name": "Set: Congnos Transfer",
+      "params": {
+        "active": true,
+        "ivrEvent": "1200",
+        "ivrAction": "TX",
+        "nextStep": "00097"
+      }
+    },
+    {
+      "id": "00006",
+      "type": "setVariables",
+      "name": "Set: Congnos Closed",
+      "params": {
+        "active": true,
+        "ivrEvent": "1201",
+        "ivrAction": "DC",
+        "nextStep": "00098"
+      }
+    },
+    {
+      "id": "00010",
+      "type": "emergency",
+      "name": "Check: Emergency",
+      "params": {
+        "active": true,
+        "emergencyId": "Emergency Routing LPA ICT Helpdesk",
+        "nextStep_Transfer": "00011",
+        "nextStep_Disconnect": "00012",
+        "nextStep_Continue": "00013",
+        "nextStep_Failure": "00020",
+        "nextStep": "00020"
+      }
+    },
+    {
+      "id": "00011",
+      "type": "setVariables",
+      "name": "Set: Congnos Emergency Transfer",
+      "params": {
+        "active": true,
+        "ivrEvent": "1204",
+        "ivrAction": "TX",
+        "nextStep": "00097"
+      }
+    },
+    {
+      "id": "00012",
+      "type": "setVariables",
+      "name": "Set: Congnos Emergency Disconnect",
+      "params": {
+        "active": true,
+        "ivrEvent": "1204",
+        "ivrAction": "DC",
+        "nextStep": "00098"
+      }
+    },
+    {
+      "id": "00013",
+      "type": "setVariables",
+      "name": "Set: Congnos Emergency Continue",
+      "params": {
+        "active": true,
+        "ivrEvent": "1204",
+        "ivrAction": "CT",
+        "nextStep": "00020"
+      }
+    },
+    {
+      "id": "00020",
+      "type": "say",
+      "name": "Play: Welcome",
+      "params": {
+        "active": true,
+        "prompt": "Welcome.wav",
+        "nextStep": "00021"
+      }
+    },
+    {
+      "id": "00021",
+      "type": "say",
+      "name": "Play: Extra",
+      "params": {
+        "active": false,
+        "applicationId": 6,
+        "prompt": "AdHoc_Extra",
+        "nextStep": "00022"
+      }
+    },
+    {
+      "id": "00022",
+      "type": "say",
+      "name": "Play: Exceptions",
+      "params": {
+        "active": false,
+        "applicationId": 6,
+        "prompt": "AdHoc_ExceptionBadPortal",
+        "nextStep": "00024"
+      }
+    },
+    {
+      "id": "00024",
+      "type": "condition",
+      "name": "Check: Staffing",
+      "params": {
+        "active": true,
+        "statistic": "AgentsLoggedIn",
+        "workgroup": "LPA_ICT_HELPDESK_V",
+        "operator": "gt",
+        "value": "0",
+        "nextStep_True": "00025",
+        "nextStep_False": "00060"
+      }
+    },
+    {
+      "id": "00025",
+      "type": "condition",
+      "name": "Check: MaxQueue",
+      "params": {
+        "active": true,
+        "statistic": "CallsWaiting",
+        "workgroup": "LPA_ICT_HELPDESK_V",
+        "operator": "gt",
+        "value": "39",
+        "nextStep_True": "00096",
+        "nextStep_False": "00030"
+      }
+    },
+    {
+      "id": "00030",
+      "type": "workgroupTransfer",
+      "name": "Route-To: Workgroup",
+      "params": {
+        "active": true,
+        "queueName": "LPA_ICT_HELPDESK_V",
+        "skills": "LPA_ICT_Helpdesk",
+        "priority": 100,
+        "nextStep": "00050"
+      }
+    },
+    {
+      "id": "00050",
+      "type": "say",
+      "name": "Queue: Message 1",
+      "params": {
+        "active": true,
+        "prompt": "Queue_Waitmessage01",
+        "nextStep": "00051"
+      }
+    },
+    {
+      "id": "00051",
+      "type": "say",
+      "name": "Queue: Message 2",
+      "params": {
+        "active": true,
+        "prompt": "Queue_Waitmessage02",
+        "nextStep": "00050"
+      }
+    },
+    {
+      "id": "00060",
+      "type": "menu",
+      "name": "Menu: Guard",
+      "params": {
+        "active": true,
+        "applicationId": 7,
+        "staticPrompt": "Menu_Guard.wav",
+        "timeout": 8,
+        "maxTries": 0,
+        "nextStep_0": "00065",
+        "nextStep_DefaultChoice": "00070",
+        "nextStep": "00070"
+      }
+    },
+    {
+      "id": "00065",
+      "type": "setVariables",
+      "name": "Set: Congnos Guard LTSU",
+      "params": {
+        "active": true,
+        "ivrEvent": "1200",
+        "ivrAction": "GD04",
+        "nextStep": "00066"
+      }
+    },
+    {
+      "id": "00066",
+      "type": "flowJump",
+      "name": "FlowJump: LPA_LTSU_GUARD",
+      "isFirstOperation": true,
+      "params": {
+        "active": true,
+        "sourceId": "+3271690037"
+      }
+    },
+    {
+      "id": "00080",
+      "type": "guard",
+      "name": "LPA_LTSU_GUARD",
+      "params": {
+        "active": true,
+        "configId": 3,
+        "configName": "LPA_LTSU_GUARD",
+        "dialGuard": true,
+        "outboundANI": "",
+        "diversion": "",
+        "onHoldAudioUrl": "TENANT_DA_GUARD",
+        "timeout": 15,
+        "recordVoicemail": true,
+        "acceptCallMenu": true,
+        "acceptCallMessage": "Press 1 to accept the call.",
+        "sendSms": true,
+        "sendMail": true,
+        "nextStep_Success": "00081",
+        "nextStep_Failure": "00081",
+        "nextStep": "00081"
+      }
+    },
+    {
+      "id": "00081",
+      "type": "sendMail",
+      "name": "Mail-To: LPA_LTSU_GUARD",
+      "params": {
+        "active": true,
+        "subject": "LPA_LTSU_GUARD: Call Report",
+        "from": "IVR_EVENTS@n-allo.be",
+        "to": "${rtEmailTo}",
+        "cc": "veerle.georges@police.belgium.eu;mattias.mertens@n-allo.be",
+        "bcc": "",
+        "body": "${rtEmailBody}",
+        "priority": 2,
+        "files": "${rtEmailAttachment}",
+        "attachmentNames": "",
+        "attachmentData": "",
+        "customerKey": "",
+        "timeout": 10000,
+        "nextStep_Success": "00082",
+        "nextStep_Failure": "00082",
+        "nextStep": "00082"
+      }
+    },
+    {
+      "id": "00082",
+      "type": "sendSms",
+      "name": "SMS-To: LPA_LTSU_GUARD",
+      "params": {
+        "active": true,
+        "smsAccountId": 47,
+        "routing": "LPA_LTSU_GUARD",
+        "from": "8850",
+        "to": "${rtSmsTo}",
+        "body": "${rtSmsBody}",
+        "timeout": 5000,
+        "nextStep_Success": "00098",
+        "nextStep_Failure": "00098",
+        "nextStep": "00098"
+      }
+    },
+    {
+      "id": "00070",
+      "type": "emergency",
+      "name": "Check: Emergency",
+      "params": {
+        "active": true,
+        "emergencyId": "DIGIPOLIS LPA_ICT_HELPDESK Exception Prompt",
+        "nextStep_Transfer": "00097",
+        "nextStep_Disconnect": "00098",
+        "nextStep_Continue": "00071",
+        "nextStep_Failure": "00071",
+        "nextStep": "00071"
+      }
+    },
+    {
+      "id": "00071",
+      "type": "guard",
+      "name": "LPA_ICT_GUARD",
+      "params": {
+        "active": true,
+        "configId": 3,
+        "configName": "LPA_ICT_GUARD",
+        "dialGuard": true,
+        "outboundANI": "",
+        "diversion": "",
+        "onHoldAudioUrl": "TENANT_DA_GUARD",
+        "timeout": 30,
+        "recordVoicemail": true,
+        "acceptCallMenu": true,
+        "acceptCallMessage": "Press 1 to accept the call.",
+        "sendSms": true,
+        "sendMail": true,
+        "nextStep_Success": "00072",
+        "nextStep_Failure": "00072",
+        "nextStep": "00072"
+      }
+    },
+    {
+      "id": "00072",
+      "type": "sendMail",
+      "name": "Mail-To: LPA_ICT_GUARD",
+      "params": {
+        "active": true,
+        "subject": "LPA_ICT_GUARD: Call Report",
+        "from": "IVR_EVENTS@n-allo.be",
+        "to": "${rtEmailTo}",
+        "cc": "veerle.georges@police.belgium.eu;mattias.mertens@n-allo.be",
+        "bcc": "",
+        "body": "${rtEmailBody}",
+        "priority": 2,
+        "files": "${rtEmailAttachment}",
+        "attachmentNames": "",
+        "attachmentData": "",
+        "customerKey": "",
+        "timeout": 10000,
+        "nextStep_Success": "00073",
+        "nextStep_Failure": "00073",
+        "nextStep": "00073"
+      }
+    },
+    {
+      "id": "00073",
+      "type": "sendSms",
+      "name": "SMS-To: LPA_ICT_GUARD",
+      "params": {
+        "active": true,
+        "smsAccountId": 47,
+        "routing": "LPA_ICT_GUARD",
+        "from": "8850",
+        "to": "${rtSmsTo}",
+        "body": "${rtSmsBody}",
+        "timeout": 5000,
+        "nextStep_Success": "00098",
+        "nextStep_Failure": "00098",
+        "nextStep": "00098"
+      }
+    },
+    {
+      "id": "00096",
+      "type": "disconnect",
+      "name": "RTDS: MaxQueue Disconnect",
+      "params": {
+        "prompt": "PreQueue_MaxQueueDisconnect",
+        "applicationId": 4
+      }
+    },
+    {
+      "id": "00097",
+      "type": "externalTransfer",
+      "name": "Route-To: External Number",
+      "params": {
+        "active": true,
+        "phoneNumber": "",
+        "outboundANI": "",
+        "performCallAnalysis": "Yes",
+        "diversionReason": 8,
+        "timeout": 30,
+        "nextStep_Busy": "00099",
+        "nextStep_RNA": "00099",
+        "nextStep": "00098"
+      }
+    },
+    {
+      "id": "00098",
+      "type": "disconnect",
+      "name": "RTDS: Disconnect",
+      "params": {}
+    },
+    {
+      "id": "00099",
+      "type": "setVariables",
+      "name": "Set: Congnos Error",
+      "params": {
+        "active": true,
+        "ivrEvent": "1200",
+        "ivrAction": "CT",
+        "nextStep": "00100"
+      }
+    },
+    {
+      "id": "00100",
+      "type": "disconnect",
+      "name": "RTDS: IVR Error",
+      "params": {
+        "prompt": "Scheduler_ClosedDisconnect"
+      }
+    }
+  ]
+}

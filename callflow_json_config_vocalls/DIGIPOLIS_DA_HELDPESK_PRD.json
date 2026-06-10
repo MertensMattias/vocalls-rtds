@@ -1,0 +1,554 @@
+{
+  "sourceId": "+3257351226",
+  "name": "DIGIPOLIS - DA_HELPDESK",
+  "projectId": "127",
+  "project": "DA HELPDESK",
+  "promptLibraryId": "",
+  "promptLibrary": "DIGIPOLIS\\DA\\HELPDESK",
+  "supportedLanguages": "NL",
+  "operations": [
+    {
+      "id": "00000",
+      "type": "setVariables",
+      "name": "Call Initialization",
+      "isFirstOperation": true,
+      "params": {
+        "active": true,
+        "customerName": "DA",
+        "customerProject": "HELPDESK",
+        "routingId": "DA_HELPDESK",
+        "ivrEvent": "9999",
+        "ivrAction": "CT",
+        "nextStep": "00001"
+      }
+    },
+    {
+      "id": "00001",
+      "type": "say",
+      "name": "Play: Welcome",
+      "params": {
+        "active": false,
+        "applicationId": 11,
+        "prompt": "Welcome_Welcome",
+        "nextStep": "00002"
+      }
+    },
+    {
+      "id": "00002",
+      "type": "say",
+      "name": "Play: Exception",
+      "params": {
+        "active": false,
+        "applicationId": 14,
+        "prompt": "Exception_ExceptionAntwerpenBe",
+        "nextStep": "00003"
+      }
+    },
+    {
+      "id": "00003",
+      "type": "emergency",
+      "name": "Check: Adhoc Exception",
+      "params": {
+        "active": true,
+        "emergencyId": "DIGIPOLIS DA_HELPDESK Exception Prompt",
+        "nextStep_Transfer": "00090",
+        "nextStep_Disconnect": "00100",
+        "nextStep_Continue": "00004",
+        "nextStep_Failure": "00004",
+        "nextStep": "00004"
+      }
+    },
+    {
+      "id": "00004",
+      "type": "checkSchedule",
+      "name": "Check: Scheduler",
+      "params": {
+        "active": true,
+        "applicationId": 1,
+        "scheduleId": 4,
+        "nextStep_Open": "00010",
+        "nextStep_Closed": "00011",
+        "nextStep_Transfer": "00012",
+        "nextStep_Guard_Klantwacht": "00080",
+        "nextStep_Guard_Systeemwacht": "00085",
+        "nextStep_Failure": "00085",
+        "nextStep": "00085"
+      }
+    },
+    {
+      "id": "00010",
+      "type": "setVariables",
+      "name": "Set: Congnos Open",
+      "params": {
+        "active": true,
+        "ivrEvent": "1200",
+        "ivrAction": "CT",
+        "nextStep": "00015"
+      }
+    },
+    {
+      "id": "00011",
+      "type": "setVariables",
+      "name": "Set: Congnos Closed",
+      "params": {
+        "active": true,
+        "ivrEvent": "1201",
+        "ivrAction": "DC",
+        "nextStep": "00098"
+      }
+    },
+    {
+      "id": "00012",
+      "type": "setVariables",
+      "name": "Set: Congnos Transfer",
+      "params": {
+        "active": true,
+        "ivrEvent": "1200",
+        "ivrAction": "TX",
+        "nextStep": "00090"
+      }
+    },
+    {
+      "id": "00015",
+      "type": "emergency",
+      "name": "Check: Emergency",
+      "params": {
+        "active": true,
+        "emergencyId": "Emergency Routing DA Helpdesk",
+        "nextStep_Transfer": "00016",
+        "nextStep_Disconnect": "00017",
+        "nextStep_Continue": "00018",
+        "nextStep_Failure": "00018",
+        "nextStep": "00021"
+      }
+    },
+    {
+      "id": "00016",
+      "type": "setVariables",
+      "name": "Set: Congnos Emergency Transfer",
+      "params": {
+        "active": true,
+        "ivrEvent": "1204",
+        "ivrAction": "TX",
+        "nextStep": "00090"
+      }
+    },
+    {
+      "id": "00017",
+      "type": "setVariables",
+      "name": "Set: Congnos Emergency Disconnect",
+      "params": {
+        "active": true,
+        "ivrEvent": "1204",
+        "ivrAction": "DC",
+        "nextStep": "00100"
+      }
+    },
+    {
+      "id": "00018",
+      "type": "setVariables",
+      "name": "Set: Congnos Emergency Continue",
+      "params": {
+        "active": true,
+        "ivrEvent": "1204",
+        "ivrAction": "CT",
+        "nextStep": "00021"
+      }
+    },
+    {
+      "id": "00021",
+      "type": "condition",
+      "name": "Check: Staffing",
+      "params": {
+        "active": true,
+        "statistic": "AgentsLoggedIn",
+        "workgroup": "DA_HELPDESK_V",
+        "operator": "gt",
+        "value": "0",
+        "nextStep_True": "00023",
+        "nextStep_False": "00022"
+      }
+    },
+    {
+      "id": "00022",
+      "type": "say",
+      "name": "Play: PreQueue NoStaffing",
+      "params": {
+        "active": true,
+        "applicationId": 4,
+        "prompt": "PreQueue_NoStaffingGuard.wav",
+        "nextStep": "00080"
+      }
+    },
+    {
+      "id": "00023",
+      "type": "condition",
+      "name": "Check: MaxQueue",
+      "params": {
+        "active": true,
+        "statistic": "CallsWaiting",
+        "workgroup": "DA_HELPDESK_V",
+        "operator": "gt",
+        "value": "39",
+        "nextStep_True": "00097",
+        "nextStep_False": "00024"
+      }
+    },
+    {
+      "id": "00024",
+      "type": "say",
+      "name": "Play: Extra",
+      "params": {
+        "active": false,
+        "applicationId": 6,
+        "prompt": "AdHoc_Extra_Xtremis.wav",
+        "nextStep": "00025"
+      }
+    },
+    {
+      "id": "00025",
+      "type": "condition",
+      "name": "Check: Time",
+      "params": {
+        "active": true,
+        "statistic": "Time",
+        "operator": "lt",
+        "value": "1500",
+        "nextStep_True": "00040",
+        "nextStep_False": "00060"
+      }
+    },
+    {
+      "id": "00040",
+      "type": "workgroupTransfer",
+      "name": "Route-To: Workgroup & Callback",
+      "params": {
+        "active": true,
+        "queueName": "DA_HELPDESK_V",
+        "skills": "DA_Helpdesk",
+        "priority": 100,
+        "escapeKey": 1,
+        "nextStep_EscapeKey": "00070",
+        "nextStep": "00041"
+      }
+    },
+    {
+      "id": "00041",
+      "type": "say",
+      "name": "Queue: Message 1",
+      "params": {
+        "active": true,
+        "prompt": "Queue_WaitMessage01.wav",
+        "nextStep": "00042"
+      }
+    },
+    {
+      "id": "00042",
+      "type": "say",
+      "name": "Queue: Message 2",
+      "params": {
+        "active": true,
+        "prompt": "Queue_WaitMessage02_CB.wav",
+        "nextStep": "00043"
+      }
+    },
+    {
+      "id": "00043",
+      "type": "play",
+      "name": "Queue: Audio",
+      "params": {
+        "active": true,
+        "audioSource": "DA_HELPDESK_TENANT",
+        "timeout": 60,
+        "nextStep": "00044"
+      }
+    },
+    {
+      "id": "00044",
+      "type": "say",
+      "name": "Queue: Message 2",
+      "params": {
+        "active": true,
+        "prompt": "Queue_WaitMessage02_CB.wav",
+        "nextStep": "00045"
+      }
+    },
+    {
+      "id": "00045",
+      "type": "play",
+      "name": "Queue: Audio",
+      "params": {
+        "active": true,
+        "audioSource": "DA_HELPDESK_TENANT",
+        "timeout": 120,
+        "nextStep": "00046"
+      }
+    },
+    {
+      "id": "00046",
+      "type": "say",
+      "name": "Queue: Message 2",
+      "params": {
+        "active": true,
+        "prompt": "Queue_WaitMessage02_CB.wav",
+        "nextStep": "00047"
+      }
+    },
+    {
+      "id": "00047",
+      "type": "play",
+      "name": "Queue: Audio",
+      "params": {
+        "active": true,
+        "audioSource": "DA_HELPDESK_TENANT",
+        "timeout": 9999,
+        "nextStep": "00041"
+      }
+    },
+    {
+      "id": "00060",
+      "type": "workgroupTransfer",
+      "name": "Route-To: Workgroup",
+      "params": {
+        "active": true,
+        "queueName": "DA_HELPDESK_V",
+        "skills": "DA_Helpdesk",
+        "priority": 100,
+        "nextStep": "00061"
+      }
+    },
+    {
+      "id": "00061",
+      "type": "say",
+      "name": "Queue: Message 1",
+      "params": {
+        "active": true,
+        "prompt": "Queue_WaitMessage01.wav",
+        "nextStep": "00061"
+      }
+    },
+    {
+      "id": "00070",
+      "type": "callback",
+      "name": "Callback DA HELPDESK",
+      "params": {
+        "active": true,
+        "configId": 62,
+        "callbackOnANI": 1,
+        "aniConfirmation": 0,
+        "allowManualInput": 0,
+        "manualInputRetries": 2,
+        "locationFilter": "Local",
+        "aniClassifications": "Mobile,Local",
+        "aniAttribute": "Eic_RemoteAddress",
+        "customSkills": "DA_Helpdesk",
+        "inheritSkills": 0,
+        "customPriority": 500,
+        "inheritPriority": 0,
+        "promptFolder": "Callback",
+        "workgroup": "DA_HELPDESK_CB",
+        "nextStep_Accepted": "00100",
+        "nextStep_Rejected": "00060",
+        "nextStep_Failure": "00060",
+        "nextStep": "00060"
+      }
+    },
+    {
+      "id": "00080",
+      "type": "setVariables",
+      "name": "Set: Congnos Guard Klantwacht",
+      "params": {
+        "active": true,
+        "ivrEvent": "1204",
+        "ivrAction": "GD01",
+        "nextStep": "00081"
+      }
+    },
+    {
+      "id": "00081",
+      "type": "guard",
+      "name": "DA_KLANTWACHT",
+      "params": {
+        "active": true,
+        "configId": 1,
+        "configName": "KLANTWACHT",
+        "dialGuard": true,
+        "outboundANI": "",
+        "diversion": "",
+        "onHoldAudioUrl": "TENANT_DA_GUARD",
+        "timeout": 15,
+        "recordVoicemail": true,
+        "acceptCallMenu": true,
+        "acceptCallMessage": "Press 1 to accept the call.",
+        "sendSms": true,
+        "sendMail": true,
+        "nextStep_Success": "00082",
+        "nextStep_Failure": "00082",
+        "nextStep": "00082"
+      }
+    },
+    {
+      "id": "00082",
+      "type": "sendMail",
+      "name": "Mail-To: DA_KLANTWACHT",
+      "params": {
+        "active": true,
+        "subject": "DA_KLANTWACHT: Call Report",
+        "from": "IVR_EVENTS@n-allo.be",
+        "to": "${rtEmailTo}",
+        "cc": "mattias.mertens@n-allo.be;bart.dexelle@digipolis.be;erik.dujardin@digipolis.be;chrisje.henrard@digipolis.be",
+        "bcc": "",
+        "body": "${rtEmailBody}",
+        "priority": 2,
+        "files": "${rtEmailAttachment}",
+        "attachmentNames": "",
+        "attachmentData": "",
+        "customerKey": "",
+        "timeout": 10000,
+        "nextStep_Success": "00083",
+        "nextStep_Failure": "00083",
+        "nextStep": "00083"
+      }
+    },
+    {
+      "id": "00083",
+      "type": "sendSms",
+      "name": "SMS-To: DA_KLANTWACHT",
+      "params": {
+        "active": true,
+        "smsAccountId": 47,
+        "routing": "KLANTWACHT",
+        "from": "8850",
+        "to": "${rtSmsTo}",
+        "body": "${rtSmsBody}",
+        "timeout": 5000,
+        "nextStep_Success": "00100",
+        "nextStep_Failure": "00100",
+        "nextStep": "00100"
+      }
+    },
+    {
+      "id": "00085",
+      "type": "setVariables",
+      "name": "Set: Congnos Guard Systeemwacht",
+      "params": {
+        "active": true,
+        "ivrEvent": "1204",
+        "ivrAction": "GD02",
+        "nextStep": "00086"
+      }
+    },
+    {
+      "id": "00086",
+      "type": "guard",
+      "name": "DA_SYSTEEMWACHT",
+      "params": {
+        "active": true,
+        "configId": 2,
+        "configName": "SYSTEEMWACHT",
+        "dialGuard": false,
+        "outboundANI": "",
+        "diversion": "",
+        "onHoldAudioUrl": "TENANT_DA_GUARD",
+        "timeout": 15,
+        "recordVoicemail": true,
+        "acceptCallMenu": false,
+        "acceptCallMessage": "Press 1 to accept the call.",
+        "sendSms": true,
+        "sendMail": true,
+        "nextStep_Success": "00087",
+        "nextStep_Failure": "00087",
+        "nextStep": "00087"
+      }
+    },
+    {
+      "id": "00087",
+      "type": "sendMail",
+      "name": "Mail-To: DA_SYSTEEMWACHT",
+      "params": {
+        "active": true,
+        "subject": "DA_SYSTEEMWACHT: Call Report",
+        "from": "IVR_EVENTS@n-allo.be",
+        "to": "mattias.mertens@n-allo.be;da_systeemwacht@digipolis.be;bart.dexelle@digipolis.be",
+        "cc": "",
+        "bcc": "",
+        "body": "${rtEmailBody}",
+        "priority": 2,
+        "files": "${rtEmailAttachment}",
+        "attachmentNames": "",
+        "attachmentData": "",
+        "customerKey": "",
+        "timeout": 10000,
+        "nextStep_Success": "00088",
+        "nextStep_Failure": "00088",
+        "nextStep": "00088"
+      }
+    },
+    {
+      "id": "00088",
+      "type": "sendSms",
+      "name": "SMS-To: DA_SYSTEEMWACHT",
+      "params": {
+        "active": true,
+        "smsAccountId": 47,
+        "routing": "SYSTEEMWACHT",
+        "from": "8850",
+        "to": "${rtSmsTo}",
+        "body": "${rtSmsBody}",
+        "timeout": 5000,
+        "nextStep_Success": "00100",
+        "nextStep_Failure": "00100",
+        "nextStep": "00100"
+      }
+    },
+    {
+      "id": "00090",
+      "type": "externalTransfer",
+      "name": "Route-To: External Number",
+      "params": {
+        "active": true,
+        "phoneNumber": "",
+        "outboundANI": "",
+        "performCallAnalysis": "Yes",
+        "diversionReason": 8,
+        "timeout": 30,
+        "nextStep_Busy": "00098",
+        "nextStep_RNA": "00098",
+        "nextStep": "00100"
+      }
+    },
+    {
+      "id": "00097",
+      "type": "disconnect",
+      "name": "RTDS: Max queue",
+      "params": {
+        "prompt": "PreQueue_MaxQueueDisconnect.wav"
+      }
+    },
+    {
+      "id": "00098",
+      "type": "setVariables",
+      "name": "Set: Congnos Error",
+      "params": {
+        "active": true,
+        "ivrEvent": "1200",
+        "ivrAction": "CT",
+        "nextStep": "00099"
+      }
+    },
+    {
+      "id": "00099",
+      "type": "disconnect",
+      "name": "RTDS: IVR Error",
+      "params": {
+        "prompt": "Scheduler_ClosedDisconnect.wav"
+      }
+    },
+    {
+      "id": "00100",
+      "type": "disconnect",
+      "name": "RTDS: Disconnect",
+      "params": {}
+    }
+  ]
+}

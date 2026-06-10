@@ -32,10 +32,24 @@ REPO = Path(__file__).resolve().parents[1]
 SPECS = REPO / "rtds" / "specs"
 COMPONENTS = REPO / "rtds" / "components"
 CATALOG = REPO / "rtds" / "docs" / "operations-catalog.md"
-SEED = REPO / "rtds" / "db_seed" / "seed_operations_vocalls_dictionary.sql"
+SEED = REPO / "rtds" / "db_seed" / "import_seeds_camelCase.sql"
 RUNTIME = (
     REPO / "projects" / "rtds-runtime" / "globalLibraries" / "active" / "rtds_2_runtime.js"
 )
+
+# Component files in rtds/components/ that are intentionally NOT claimed by a
+# spec frontmatter (catalog.component), and so are exempt from check #2:
+#   - voicemaildetector.js: hand-built mxGraph reference, not a routing-table
+#     operation (cited throughout component-mxgraph.md).
+#   - guardRouting.v2.js: in-progress v2 migration scratch; the canonical
+#     guardRouting.js is the specced one.
+#   - gaurdRouting_recent_bad_shape.js: a known-bad scratch export kept for
+#     reference (the filename flags it); not a shipping component.
+SPECLESS_COMPONENTS = {
+    "voicemaildetector.js",
+    "guardRouting.v2.js",
+    "gaurdRouting_recent_bad_shape.js",
+}
 
 
 def load_gen_catalog():
@@ -104,11 +118,13 @@ def spec_param_names(spec_filename):
 # ---- seed Dic_Attribute names ---------------------------------------------
 
 def seed_param_names_by_optype():
-    """Map seed OperationType (e.g. 'SendSms_vocalls') -> set of AttributeName.
+    """Map seed OperationType (e.g. 'sendSms') -> set of AttributeName.
 
     Scoped to the `INSERT INTO @Attribute ... VALUES` block so the earlier
     `@OperationType` VALUES list (type names only) cannot pollute attribute
-    names. Rows are `('<OpType>_vocalls', '<AttributeName>', '<type>', ...)`.
+    names. Rows are `('<opType>', '<AttributeName>', '<type>', ...)` where
+    <opType> is the camelCase, suffix-free operation type (the temporary
+    '_vocalls' suffix was dropped in the camelCase-contract migration).
     """
     text = SEED.read_text(encoding="utf-8")
     out = {}
@@ -117,7 +133,7 @@ def seed_param_names_by_optype():
     # only, no type column) can't match. No need to bound the block — comment
     # semicolons elsewhere are irrelevant.
     for ot, name in re.findall(
-        r"\('([A-Za-z0-9_]+_vocalls)',\s*'([A-Za-z_][A-Za-z0-9_]*)',\s*'(?:string|int|bit)'",
+        r"\('([A-Za-z][A-Za-z0-9_]*)',\s*'([A-Za-z_][A-Za-z0-9_]*)',\s*'(?:string|int|bit)'",
         text,
     ):
         out.setdefault(ot, set()).add(name)
@@ -156,8 +172,8 @@ def main():
 
     # 2. Every component file is claimed by a spec.
     for comp in COMPONENTS.glob("*.js"):
-        if comp.name == "voicemaildetector.js":
-            continue  # hand-built reference, intentionally specless
+        if comp.name in SPECLESS_COMPONENTS:
+            continue  # intentionally not specced — see SPECLESS_COMPONENTS
         if comp.name not in by_component:
             problems.append(
                 f"component {comp.name} has no spec frontmatter naming it "
@@ -173,9 +189,13 @@ def main():
         runtime_cell = cat.get("runtimeCell", "")
         # Derive expected registration from the operationType + cell wording.
         # JS twin -> registerRtdsOperation; GUI-exit -> registerRtdsExit.
-        m_type = re.search(r"`([A-Za-z0-9_]+_vocalls)`", runtime_cell)
+        # The operation type is the backticked token inside the trailing
+        # parentheses: "JS twin `executeSendSms` (`sendSms`)",
+        # "GUI-exit `guard_routing` (via `guard`)". Both register* calls key on
+        # this type (registerRtdsExit's first arg is the type, not the exit key).
+        m_type = re.search(r"\((?:via )?`([A-Za-z][A-Za-z0-9_]*)`\)", runtime_cell)
         if not m_type:
-            continue  # "not registered" rows carry no _vocalls type
+            continue  # "not registered" rows carry no parenthesized type
         rtype = m_type.group(1)
         if "JS twin" in runtime_cell or "aliased to" in runtime_cell:
             if rtype not in ops:
@@ -207,11 +227,14 @@ def main():
             continue
         comp_names = component_param_names(comp_name)
         spec_names = spec_param_names(fname)
-        # The seed OperationType (e.g. SendSms_vocalls) is named verbatim in the
-        # runtimeCell — use it directly so the seed key matches the seed file's
-        # exact casing without a separate frontmatter field.
+        # The seed OperationType (e.g. sendSms) is named verbatim in the
+        # runtimeCell's trailing parentheses — use it directly so the seed key
+        # matches the seed file's exact casing without a separate frontmatter
+        # field.
         seed_key = None
-        m_ot = re.search(r"`([A-Za-z0-9_]+_vocalls)`", cat.get("runtimeCell", ""))
+        m_ot = re.search(
+            r"\((?:via )?`([A-Za-z][A-Za-z0-9_]*)`\)", cat.get("runtimeCell", "")
+        )
         if m_ot:
             seed_key = seed_keys_lower.get(m_ot.group(1).lower())
         if not (comp_names and spec_names and seed_key):

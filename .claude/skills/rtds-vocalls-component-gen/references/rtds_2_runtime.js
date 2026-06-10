@@ -30,6 +30,17 @@
 RTDS_REGISTRY = new Map();
 
 /**
+ * Upper bound on the number of dispatch steps a single runStep run may take
+ * before it aborts as a runaway/cycle (see the budget check in runStep). The
+ * cap spans sync and async hops of one run. Sized generously so no legitimate
+ * flow -- including retry/reprompt loops that revisit nodes -- can hit it,
+ * while still terminating a true cycle (e.g. NextStep pointing back at itself)
+ * in bounded time instead of hanging the call leg.
+ * @type {number}
+ */
+RTDS_MAX_STEPS = 1000;
+
+/**
  * Finalization-mode flag. Set true by finalizeFrom (from the platform's
  * onCallResult termination callback) so runStep filters out GUI-exit operations
  * and runs only the JS-inline data tail. Defaults false for every live call;
@@ -393,7 +404,7 @@ function resolveNextStep(op, resultKey) {
       return String(specific);
     }
   }
-  var fallback = getParam(op, "NextStep", null);
+  var fallback = getParam(op, "nextStep", null);
   if (fallback) {
     return String(fallback);
   }
@@ -423,7 +434,7 @@ function executeSetVariables(op) {
   // Active defaults to true for SetVariables: a large body of older config
   // never sets the key, and historically those ops always wrote. Only an
   // explicit Active:false skips. (Send* ops default false -- opt-in.)
-  if (!activeFlag(getParam(op, "Active", true))) {
+  if (!activeFlag(getParam(op, "active", true))) {
     var skipNext = resolveNextStep(op, null);
     Logger.info("[RTDS] SetVariables skipped -- inactive", {
       nextStep: skipNext ? skipNext : "(none)",
@@ -460,9 +471,10 @@ function executeSetVariables(op) {
 // prepareGuiHandoff(op)
 //   Sets the dispatcher handoff state on context.session.variables:
 //   RTDS_currentOpId / RTDS_currentOpType, RTDS_currentOpConfig (op.params
-//   delivered to the component), and pre-populates RTDS_nextStepId with the
-//   default NextStep (the component overwrites it with its chosen branching
-//   outcome before re-entry).
+//   delivered to the component), RTDS_currentTtsMessages (op.ttsMessages — the
+//   per-language spoken text for prompt-playing components), and pre-populates
+//   RTDS_nextStepId with the default NextStep (the component overwrites it with
+//   its chosen branching outcome before re-entry).
 // ===========================================================================
 
 /**
@@ -475,6 +487,11 @@ function prepareGuiHandoff(op) {
   vars.RTDS_currentOpId = op.id;
   vars.RTDS_currentOpType = op.type;
   vars.RTDS_currentOpConfig = op.params || {};
+  // Operation-level ttsMessages ({ "NL": "...", "FR": "..." }) is a sibling of
+  // op.params, not part of it. Forward it on its own session var so prompt-playing
+  // GUI components (say, getLanguage, …) can speak the per-language text; absent on
+  // non-prompt ops, so default to {}.
+  vars.RTDS_currentTtsMessages = op.ttsMessages || {};
 
   var defaultNext = resolveNextStep(op, null);
   if (defaultNext) {
@@ -491,9 +508,13 @@ function prepareGuiHandoff(op) {
 
 /**
  * @param {string|number} startOpId
+ * @param {number} [stepBudget] Internal. Remaining dispatch steps before the
+ *        loop aborts as a runaway/cycle. Defaults to RTDS_MAX_STEPS on the
+ *        first (external) call; threaded through the async re-entry so the cap
+ *        spans sync and async hops alike. External callers omit it.
  * @returns {string|Promise<string>} Exit key for the GUI component, or 'disconnect' on error. When a JS handler returns a thenable, returns a promise.
  */
-function runStep(startOpId) {
+function runStep(startOpId, stepBudget) {
   var opIndex = context.session.variables.RTDS_opIndex;
   if (!opIndex || typeof opIndex.get !== "function") {
     log_error("[RTDS] runStep: RTDS_opIndex is missing or not a Map");
@@ -503,19 +524,29 @@ function runStep(startOpId) {
 
   var currentId = startOpId ? String(startOpId) : null;
 
-  // Guards the synchronous dispatch loop against cyclic NextStep chains
-  // (e.g. an unimplemented step whose NextStep points back at itself or forms
-  // a loop among unregistered/registered steps). Without this a cycle spins
-  // forever and hangs the call leg with no disconnect.
-  var visited = {};
+  // Bounds total dispatch steps to guard against cyclic NextStep chains AND
+  // runaway-but-acyclic flows (e.g. a retry/reprompt loop that legitimately
+  // revisits a step). We count iterations rather than forbidding node revisits:
+  // a node may be legitimately re-entered (join points, retry loops), so
+  // "visited once" is NOT a cycle -- only "too many steps without terminating"
+  // is. The budget is threaded through the async re-entry below so it spans
+  // sync and async hops as one run; without it an async A->B->A loop would
+  // recurse forever (each hop a fresh runStep) with no protection.
+  var remaining = typeof stepBudget === "number" ? stepBudget : RTDS_MAX_STEPS;
 
   while (currentId) {
-    if (visited[currentId]) {
-      log_error("[RTDS] runStep: cycle detected at step " + currentId);
+    if (remaining <= 0) {
+      log_error(
+        "[RTDS] runStep: step budget exhausted at step " +
+          currentId +
+          " (possible cycle or runaway flow; cap=" +
+          RTDS_MAX_STEPS +
+          ")",
+      );
       context.session.variables.RTDS_error = "RTDS_CYCLE_DETECTED";
       return "disconnect";
     }
-    visited[currentId] = true;
+    remaining--;
 
     var current = opIndex.get(currentId);
 
@@ -599,7 +630,10 @@ function runStep(startOpId) {
               Logger.info("[RTDS] end of flow", { lastStep: current.id });
               return "disconnect";
             }
-            return runStep(String(asyncNext));
+            // Carry the remaining budget into the async re-entry so the cap
+            // spans this run's sync and async hops as one, not a fresh cap per
+            // async hop (which would leave async cycles unprotected).
+            return runStep(String(asyncNext), remaining);
           },
           function (err) {
             log_error(
@@ -743,18 +777,136 @@ function finalizeFrom(nextStepId) {
  * @param {string} sourceId
  * @returns {Promise<string>|string} Exit key (or a promise resolving to one).
  */
+// function fetchAndStart(sourceId) {
+//   if (!sourceId) {
+//     log_error("[RTDS] fetchAndStart: sourceId is empty");
+//     context.session.variables.RTDS_error = "RTDS_NO_SOURCE_ID";
+//     return "disconnect";
+//   }
+//   var url =
+//     _rtBaseUrl +
+//     _rtGetSourceIdEndpoint +
+//     "?sourceId=" +
+//     encodeURIComponent(sourceId);
+//   Logger.info("[RTDS] fetching routing table", { sourceId: sourceId });
+//   return jsonHttpRequest(url, { method: "GET" }, _headers)
+//     .withTimeout(10000)
+//     .then(
+//       function (rawResult) {
+//         var result = rawResult;
+//         if (typeof result === "string") {
+//           try {
+//             result = JSON.parse(result);
+//           } catch (parseErr) {
+//             log_error(
+//               "[RTDS] fetchAndStart: envelope parse failed | " +
+//                 parseErr.message,
+//             );
+//             context.session.variables.RTDS_error = "RTDS_RESULT_PARSE_ERROR";
+//             return "disconnect";
+//           }
+//         }
+
+//         if (!result || result.success !== true || result.statusCode !== 200) {
+//           var status = result && result.statusCode;
+//           log_error("[RTDS] fetchAndStart: API failure | status=" + status);
+//           context.session.variables.RTDS_error =
+//             "RTDS_API_ERROR_" + (status || "UNKNOWN");
+//           return "disconnect";
+//         }
+
+//         var body = result.response;
+//         if (typeof body === "string") {
+//           try {
+//             body = JSON.parse(body);
+//           } catch (parseErr) {
+//             log_error(
+//               "[RTDS] fetchAndStart: body parse failed | " + parseErr.message,
+//             );
+//             context.session.variables.RTDS_error = "RTDS_PARSE_ERROR";
+//             return "disconnect";
+//           }
+//         }
+
+//         Logger.info("[RTDS] routing table received", {
+//           sourceId: sourceId,
+//           name: body && body.name,
+//         });
+
+//         var firstOp = parseFlow(body);
+//         if (!firstOp) {
+//           log_error("[RTDS] fetchAndStart: no entry operation");
+//           context.session.variables.RTDS_error = "RTDS_NO_ENTRY_POINT";
+//           return "disconnect";
+//         }
+//         return runStep(firstOp.id);
+//       },
+//       function (err) {
+//         var errMsg = err && err.message ? err.message : String(err);
+//         log_error("[RTDS] fetchAndStart: request rejected | " + errMsg);
+//         context.session.variables.RTDS_error = "RTDS_REQUEST_ERROR";
+//         return "disconnect";
+//       },
+//     );
+// }
+
 function fetchAndStart(sourceId) {
   if (!sourceId) {
     log_error("[RTDS] fetchAndStart: sourceId is empty");
     context.session.variables.RTDS_error = "RTDS_NO_SOURCE_ID";
     return "disconnect";
   }
+
+  var useDevBody =
+    typeof _devBody !== "undefined" && _devBody !== null && _devBody !== "";
+
+  if (useDevBody) {
+    Logger.info(
+      "[RTDS] fetchAndStart: _devBody detected, skipping API request",
+      { sourceId: sourceId },
+    );
+
+    var devBody = _devBody;
+    if (typeof devBody === "string") {
+      try {
+        devBody = JSON.parse(devBody);
+      } catch (parseErr) {
+        log_error(
+          "[RTDS] fetchAndStart: _devBody parse failed | " + parseErr.message,
+        );
+        context.session.variables.RTDS_error = "RTDS_DEVBODY_PARSE_ERROR";
+        return "disconnect";
+      }
+    }
+
+    Logger.info("[RTDS] fetchAndStart: using _devBody routing table", {
+      sourceId: sourceId,
+      name: devBody && devBody.name,
+    });
+
+    var devFirstOp = parseFlow(devBody);
+    if (!devFirstOp) {
+      log_error("[RTDS] fetchAndStart: no entry operation in _devBody");
+      context.session.variables.RTDS_error = "RTDS_NO_ENTRY_POINT";
+      return "disconnect";
+    }
+
+    return runStep(devFirstOp.id);
+  }
+
+  Logger.info(
+    "[RTDS] fetchAndStart: no _devBody detected, using API response",
+    { sourceId: sourceId },
+  );
+
   var url =
     _rtBaseUrl +
     _rtGetSourceIdEndpoint +
     "?sourceId=" +
     encodeURIComponent(sourceId);
+
   Logger.info("[RTDS] fetching routing table", { sourceId: sourceId });
+
   return jsonHttpRequest(url, { method: "GET" }, _headers)
     .withTimeout(10000)
     .then(
@@ -794,7 +946,7 @@ function fetchAndStart(sourceId) {
           }
         }
 
-        Logger.info("[RTDS] routing table received", {
+        Logger.info("[RTDS] routing table received from API", {
           sourceId: sourceId,
           name: body && body.name,
         });
@@ -929,12 +1081,12 @@ function resolveFilesList(raw) {
 function executeSendSms(op) {
   var skipNext = resolveNextStep(op, null);
 
-  if (!activeFlag(getParam(op, "Active", false))) {
+  if (!activeFlag(getParam(op, "active", false))) {
     Logger.info("[RTDS] SendSMS skipped -- inactive", { nextStep: skipNext });
     return { nextStepId: skipNext };
   }
 
-  var to = String(resolveTokens(getParam(op, "To", "")));
+  var to = String(resolveTokens(getParam(op, "to", "")));
   if (!to || !isMobileNumber(to)) {
     Logger.warn("[RTDS] SendSMS invalid phone number", {
       to: to,
@@ -954,13 +1106,13 @@ function executeSendSms(op) {
   }
 
   var url = _rtBaseUrl + _rtSmsEndpoint;
-  var timeout = Number(getParam(op, "Timeout", 10000)) || 10000;
+  var timeout = Number(getParam(op, "timeout", 10000)) || 10000;
   var payload = {
-    smsAccountId: Number(getParam(op, "SmsAccountId", -1)),
-    routing: resolveTokens(getParam(op, "Routing", "")),
-    from: resolveTokens(getParam(op, "From", "")),
+    smsAccountId: Number(getParam(op, "smsAccountId", -1)),
+    routing: resolveTokens(getParam(op, "routing", "")),
+    from: resolveTokens(getParam(op, "from", "")),
     to: to,
-    content: resolveTokens(getParam(op, "Body", "")),
+    content: resolveTokens(getParam(op, "body", "")),
     plannedTime: nowUTC(),
   };
 
@@ -1001,16 +1153,16 @@ function executeSendSms(op) {
 function executeSendEmail(op) {
   var skipNext = resolveNextStep(op, null);
 
-  if (!activeFlag(getParam(op, "Active", false))) {
+  if (!activeFlag(getParam(op, "active", false))) {
     Logger.info("[RTDS] SendEmail skipped -- inactive", { nextStep: skipNext });
     return { nextStepId: skipNext };
   }
 
-  var from = String(resolveTokens(getParam(op, "From", ""))).replace(
+  var from = String(resolveTokens(getParam(op, "from", ""))).replace(
     /^\s+|\s+$/g,
     "",
   );
-  var to = splitSemicolonList(resolveTokens(getParam(op, "To", "")));
+  var to = splitSemicolonList(resolveTokens(getParam(op, "to", "")));
   if (!from || to.length === 0) {
     Logger.warn("[RTDS] SendEmail missing From or To", {
       from: from,
@@ -1030,35 +1182,35 @@ function executeSendEmail(op) {
     return { nextStepId: failureNext };
   }
 
-  var priority = Number(getParam(op, "Priority", 2));
+  var priority = Number(getParam(op, "priority", 2));
   if (priority !== 1 && priority !== 2 && priority !== 3) priority = 2;
 
   var payload = {
     from: from,
-    subject: resolveTokens(getParam(op, "Subject", "")),
+    subject: resolveTokens(getParam(op, "subject", "")),
     to: to,
-    body: resolveTokens(getParam(op, "Body", "")),
+    body: resolveTokens(getParam(op, "body", "")),
     priority: priority,
   };
 
-  var cc = splitSemicolonList(resolveTokens(getParam(op, "Cc", "")));
+  var cc = splitSemicolonList(resolveTokens(getParam(op, "cc", "")));
   if (cc.length) payload.cc = cc;
-  var bcc = splitSemicolonList(resolveTokens(getParam(op, "Bcc", "")));
+  var bcc = splitSemicolonList(resolveTokens(getParam(op, "bcc", "")));
   if (bcc.length) payload.bcc = bcc;
-  var files = resolveFilesList(resolveTokens(getParam(op, "Files", "")));
+  var files = resolveFilesList(resolveTokens(getParam(op, "files", "")));
   if (files.length) payload.files = files;
   var attachments = buildAttachments(
-    getParam(op, "AttachmentNames", ""),
-    getParam(op, "AttachmentData", ""),
+    getParam(op, "attachmentNames", ""),
+    getParam(op, "attachmentData", ""),
   );
   if (attachments.length) payload.attachments = attachments;
   var customerKey = String(
-    resolveTokens(getParam(op, "CustomerKey", "")),
+    resolveTokens(getParam(op, "customerKey", "")),
   ).replace(/^\s+|\s+$/g, "");
   if (customerKey) payload.customerKey = customerKey;
 
   var url = _rtBaseUrl + _rtMailEndpoint;
-  var timeout = Number(getParam(op, "Timeout", 10000)) || 10000;
+  var timeout = Number(getParam(op, "timeout", 10000)) || 10000;
 
   if (typeof _headers === "undefined" || !_headers) _headers = {};
 
@@ -1107,28 +1259,28 @@ function executeSendEmail(op) {
 // are now handled by their Vocalls canvas components (rtds/components/) via the
 // GUI-exit keys below, NOT inline in the runtime. The executeXxx functions are
 // kept defined above (dead code) so the twins can be re-enabled by restoring
-// the registerRtdsOperation lines. SetAttributes_vocalls is routed to the same
+// the registerRtdsOperation lines. SetAttributes is routed to the same
 // set_variables exit (the canvas setVariables.js handles both).
-registerRtdsOperation("SetVariables_vocalls", executeSetVariables);
-//   registerRtdsOperation("SetAttributes_vocalls", executeSetVariables);
-//   registerRtdsOperation("SendSms_vocalls", executeSendSms);
-//   registerRtdsOperation("SendMail_vocalls", executeSendEmail);
+registerRtdsOperation("setVariables", executeSetVariables);
+//   registerRtdsOperation("setAttributes", executeSetVariables);
+//   registerRtdsOperation("sendSms", executeSendSms);
+//   registerRtdsOperation("sendMail", executeSendEmail);
 
 // --- GUI-exit Types -- handled by Vocalls components on the canvas ---
-registerRtdsExit("SetVariables_vocalls", "set_variables");
-registerRtdsExit("SetAttributes_vocalls", "set_variables");
-registerRtdsExit("SendSms_vocalls", "send_sms");
-registerRtdsExit("SendMail_vocalls", "send_mail");
-registerRtdsExit("WorkgroupTransfer_vocalls", "workgroup_transfer");
-registerRtdsExit("ExternalTransfer_vocalls", "external_transfer");
-registerRtdsExit("Menu_vocalls", "menu");
-registerRtdsExit("LanguageMenu_vocalls", "language_menu");
-registerRtdsExit("PlayPrompt_vocalls", "play_prompt");
-registerRtdsExit("PlayAudio_vocalls", "play_audio");
-registerRtdsExit("Disconnect_vocalls", "disconnect");
-registerRtdsExit("Guard_vocalls", "guard_routing");
-registerRtdsExit("GuardTui_vocalls", "guard_tui");
-registerRtdsExit("Callback_vocalls", "callback");
+registerRtdsExit("setVariables", "set_variables");
+registerRtdsExit("setAttributes", "set_variables");
+registerRtdsExit("sendSms", "send_sms");
+registerRtdsExit("sendMail", "send_mail");
+registerRtdsExit("workgroupTransfer", "workgroup_transfer");
+registerRtdsExit("externalTransfer", "external_transfer");
+registerRtdsExit("menu", "menu");
+registerRtdsExit("getLanguage", "language_menu");
+registerRtdsExit("say", "play_prompt");
+registerRtdsExit("play", "play_audio");
+registerRtdsExit("disconnect", "disconnect");
+registerRtdsExit("guard", "guard_routing");
+registerRtdsExit("guardTui", "guard_tui");
+registerRtdsExit("callback", "callback");
 
 Logger.info("[RTDS] registry initialised", {
   types: RTDS_REGISTRY.size,

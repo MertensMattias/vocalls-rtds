@@ -17,8 +17,9 @@
  *   - HTTP boundary: jsonHttpRequest is replaced with a Vocalls-shaped mock
  *           (core/flowSimHttp) — { success, statusCode, response }. The chosen
  *           flow file IS the routing-table response. Authoring files in
- *           callflow_json_config_vocalls/ use PascalCase (importer contract);
- *           simulate-flow adapts them to runtime camelCase before fetchAndStart.
+ *           callflow_json_config_vocalls/ are camelCase (the unified contract);
+ *           adaptAuthoringFlowToRuntime is a no-op for them and only kicks in
+ *           for a legacy PascalCase `Operations` shape, if one is ever passed.
  *   - GUI boundary: at a GUI-exit key the handoff is recorded and the flow
  *           auto-advances on the op's default NextStep (RTDS_nextStepId set by
  *           the production prepareGuiHandoff), calling the real resumeFrom().

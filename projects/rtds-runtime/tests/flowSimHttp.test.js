@@ -23,7 +23,7 @@ var EVENTLOG_URL = 'https://api.n-allo.be/ivrapi-acc/api/EventLog';
 
 var FLOW = {
     sourceId: '+3271690041',
-    operations: [{ id: '00000', type: 'SetVariables_vocalls', isFirstOperation: true, params: {} }],
+    operations: [{ id: '00000', type: 'SetVariables', isFirstOperation: true, params: {} }],
 };
 
 describe('flowSimHttp — routing-table fetch (covers AE1)', function () {

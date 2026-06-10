@@ -3,7 +3,7 @@
 Use for any Type whose work body's job is to **write Param values out to
 global variables**. The reference Type is `SetVariables` — the canonical name
 that hard-cut and superseded `SetAttributes` (which now survives only as the
-`SetAttributes_vocalls` registry alias routing to the same `set_variables`
+`SetAttributes` registry alias routing to the same `set_variables`
 exit). The same pattern applies to any thin attribute-projection operation.
 
 Logging discipline lives in [logging.md](../../conventions/logging.md).

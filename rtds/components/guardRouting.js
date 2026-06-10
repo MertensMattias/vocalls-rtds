@@ -1,6 +1,6 @@
 <mxGraphModel
-  dx="4413"
-  dy="2877"
+  dx="5282"
+  dy="3525"
   grid="1"
   gridSize="10"
   guides="1"
@@ -19,12 +19,12 @@
       MaxEntryCount=""
       MaxEntryNodeId=""
       SpeechRecognitionEngine=""
-      Code="__rtParams = {};&#xa;&#xa;/**&#xa; * Replaces the last &#39;-&#39;-separated segment of context.currentNode.id with the supplied nodeId.&#xa; * Returns the original nodeId untouched when context.currentNode.id is not set.&#xa; *&#xa; * @param {string|number} nodeId - The short id to splice into the current node path.&#xa; * @returns {string} The fully-qualified node id, or the original nodeId if no path is set.&#xa; */&#xa;__makeLocalNodeId = function (nodeId) {&#xa;    if (nodeId !== null &amp;&amp; nodeId !== undefined) nodeId = nodeId.toString();&#xa;    if (!context.currentNode.id) return nodeId;&#xa;    var __separator = &#39;-&#39;;&#xa;    var __output = context.currentNode.id.split(__separator);&#xa;    __output[__output.length - 1] = nodeId;&#xa;    return __output.join(__separator);&#xa;};&#xa;&#xa;/**&#xa; * Normalises operation config: JSON string -&gt; parsed; { Params: {...} } -&gt; Params; flat object -&gt; itself; null -&gt; {}.&#xa; *&#xa; * @param {string|object} config - Raw operation config.&#xa; * @returns {object} Flat Params object, never null.&#xa; */&#xa;__extractParams = function (config) {&#xa;    var __parsed = typeof config === &#39;string&#39; ? JSON.parse(config) : config;&#xa;    if (__parsed &amp;&amp; typeof __parsed.Params === &#39;object&#39; &amp;&amp; __parsed.Params !== null) return __parsed.Params;&#xa;    return __parsed || {};&#xa;};&#xa;&#xa;/**&#xa; * Component-local alias for the global activeFlag() (rtds_3_vocallsEnv.js) --&#xa; * the single Active-coercion contract. See conventions/params.md.&#xa; *&#xa; * @param {*} value&#xa; * @returns {boolean}&#xa; */&#xa;__activeFlag = function (value) {&#xa;    return activeFlag(value);&#xa;};&#xa;&#xa;/**&#xa; * Resolves Params into a flat { Key: value } map. The value&#39;s TYPE is whatever&#xa; * the JSON wrote -- no Number coercion (&#39;4&#39; stays a string, 4 stays a number).&#xa; * Per key: array-form [value, ...flags] is unwrapped to its first element&#xa; * (matches the runtime twin getParam; GUI flags isDisplayed/isEditable are&#xa; * runtime-irrelevant). Active is then coerced to a real boolean via __activeFlag.&#xa; * Every other STRING value is trimmed and has ${name} placeholders resolved via&#xa; * resolveConfigTokens (varObj first, then global; bare names only; String.replace,&#xa; * never new Function -- the Vocalls runtime disables string-eval). Non-strings pass&#xa; * through with their type intact. Unresolved placeholders are left raw and warned.&#xa; * Active absent: not defaulted here -- the read site decides (SetVariables true,&#xa; * Send and guard default false).&#xa; *&#xa; * @param {string|object} config - Raw operation config (see __extractParams).&#xa; * @returns {object} Map of Key -&gt; resolved value (no __rt prefix; v2 shape).&#xa; */&#xa;__setupConfig = function (config) {&#xa;    var __params = __extractParams(config);&#xa;    var __result = {};&#xa;    var __keys = Object.keys(__params);&#xa;    for (var __i = 0; __i &lt; __keys.length; __i++) {&#xa;        var __key = __keys[__i];&#xa;        var __value = __params[__key];&#xa;        if (Array.isArray(__value)) __value = __value.length ? __value[0] : &#39;&#39;;&#xa;        if (__key === &#39;Active&#39;) { __result.Active = __activeFlag(__value); continue; }&#xa;        if (typeof __value === &#39;string&#39;) __value = resolveConfigTokens(__value.trim(), __key);&#xa;        __result[__key] = __value;&#xa;    }&#xa;    return __result;&#xa;};&#xa;&#xa;// --- v2 object-access helpers ---&#xa;// Declared with `typeof &lt;name&gt; === &#39;undefined&#39;` guards so they fall back to local definitions&#xa;// when rtds_globalCodeAndHelpers.js has not yet been updated to expose them.&#xa;&#xa;if (typeof getValue === &#39;undefined&#39;) {&#xa;    /**&#xa;     * Returns the value of `key` from `obj`, or `defaultValue` if the key is absent.&#xa;     * Case-insensitive lookup: matches whichever own property name lowercases to the same string.&#xa;     *&#xa;     * @param {object} obj&#xa;     * @param {string} key&#xa;     * @param {*} [defaultValue]&#xa;     * @returns {*}&#xa;     */&#xa;    getValue = function (obj, key, defaultValue) {&#xa;        if (!obj || !key) return defaultValue;&#xa;        var __lowerKey = String(key).toLowerCase();&#xa;        for (var __propertyName in obj) {&#xa;            if (obj.hasOwnProperty(__propertyName) &amp;&amp; String(__propertyName).toLowerCase() === __lowerKey) {&#xa;                return obj[__propertyName];&#xa;            }&#xa;        }&#xa;        return defaultValue;&#xa;    };&#xa;}&#xa;&#xa;if (typeof walk === &#39;undefined&#39;) {&#xa;    /**&#xa;     * Iterates own properties of `obj`, calling fn(key, value) for each. Returning false stops the walk.&#xa;     *&#xa;     * @param {object} obj&#xa;     * @param {function} fn&#xa;     * @returns {void}&#xa;     */&#xa;    walk = function (obj, fn) {&#xa;        if (!obj) return;&#xa;        for (var __key in obj) {&#xa;            if (!obj.hasOwnProperty(__key)) continue;&#xa;            if (fn(__key, obj[__key]) === false) return;&#xa;        }&#xa;    };&#xa;}&#xa;&#xa;if (typeof nowUTC === &#39;undefined&#39;) {&#xa;    /**&#xa;     * @returns {string} Current date/time as ISO-8601 UTC.&#xa;     */&#xa;    nowUTC = function () { return new Date().toISOString(); };&#xa;}&#xa;&#xa;if (typeof hasKey === &#39;undefined&#39;) {&#xa;    /**&#xa;     * Case-insensitive existence check (own properties).&#xa;     *&#xa;     * @param {object} obj&#xa;     * @param {string} key&#xa;     * @returns {boolean}&#xa;     */&#xa;    hasKey = function (obj, key) {&#xa;        if (!obj || !key) return false;&#xa;        var __lowerKey = String(key).toLowerCase();&#xa;        for (var __propertyName in obj) {&#xa;            if (obj.hasOwnProperty(__propertyName) &amp;&amp; String(__propertyName).toLowerCase() === __lowerKey) {&#xa;                return true;&#xa;            }&#xa;        }&#xa;        return false;&#xa;    };&#xa;}&#xa;&#xa;if (typeof getScoped === &#39;undefined&#39;) {&#xa;    /**&#xa;     * Reads operator data with the RTDS scope contract: varObj[key]&#xa;     * (case-insensitive) first, then exact-case global[key], then defaultValue.&#xa;     * See conventions/storage.md.&#xa;     *&#xa;     * @param {string} key&#xa;     * @param {*} [defaultValue]&#xa;     * @returns {*}&#xa;     */&#xa;    getScoped = function (key, defaultValue) {&#xa;        if (defaultValue === undefined) defaultValue = null;&#xa;        if (!key) return defaultValue;&#xa;        var __vo = (typeof varObj !== &#39;undefined&#39;) ? varObj : null;&#xa;        if (__vo &amp;&amp; hasKey(__vo, key)) return getValue(__vo, key, defaultValue);&#xa;        var __scope = (typeof global !== &#39;undefined&#39;) ? global : ((typeof globalThis !== &#39;undefined&#39;) ? globalThis : null);&#xa;        if (__scope &amp;&amp; __scope[key] !== undefined &amp;&amp; __scope[key] !== null) return __scope[key];&#xa;        return defaultValue;&#xa;    };&#xa;}&#xa;&#xa;if (typeof resolveConfigTokens === &#39;undefined&#39;) {&#xa;    /**&#xa;     * Substitutes ${name} placeholders in a string via getScoped (varObj first,&#xa;     * then global). Bare identifiers only (${w+}); no expressions. A placeholder&#xa;     * that resolves nowhere is left raw and a warn is logged (never silent &#39;&#39;).&#xa;     * String.replace only -- the Vocalls runtime disables string-eval.&#xa;     *&#xa;     * @param {string} raw&#xa;     * @param {string} keyName&#xa;     * @returns {string}&#xa;     */&#xa;    resolveConfigTokens = function (raw, keyName) {&#xa;        if (typeof raw !== &#39;string&#39; || raw.indexOf(&#39;${&#39;) === -1) return raw;&#xa;        var __MISSING = &#39; __rtUnresolved &#39;;&#xa;        return raw.replace(/\$\{(\w+)\}/g, function (__match, __name) {&#xa;            var __sub = getScoped(__name, __MISSING);&#xa;            if (__sub !== __MISSING) return String(__sub);&#xa;            Logger.warn(&#39;[resolveConfigTokens] unresolved placeholder&#39;, { key: keyName, placeholder: __name });&#xa;            return __match;&#xa;        });&#xa;    };&#xa;}&#xa;&#xa;&#xa;&#xa;// --- operation-specific helper ---&#xa;&#xa;/**&#xa; * Classifies the result object returned by a NestedJob redirect into a coarse outcome string.&#xa; * Mirrors the PureConnect Party2.Status mapping: 4 -&gt; no_reaction, 1 -&gt; rejected, 0 -&gt; rejected_voicebox.&#xa; * Any other status (a connected / answered call) is treated as success. Missing / malformed result -&gt; unknown.&#xa; *&#xa; * @param {object} transferResult - The redirect ResultVariableName object (__transferResult).&#xa; * @returns {string} One of: success, no_reaction, rejected, rejected_voicebox, unknown.&#xa; */&#xa;__classifyRedirect = function (transferResult) {&#xa;    if (!transferResult || !transferResult.Details || !transferResult.Details.ClientSpecific || !transferResult.Details.ClientSpecific.Party2) {&#xa;        return &#39;unknown&#39;;&#xa;    }&#xa;    var __status = transferResult.Details.ClientSpecific.Party2.Status;&#xa;    if (__status === 4) return &#39;no_reaction&#39;;&#xa;    if (__status === 1) return &#39;rejected&#39;;&#xa;    if (__status === 0) return &#39;rejected_voicebox&#39;;&#xa;    return &#39;success&#39;;&#xa;};"
+      Code="__rtParams = {};&#xa;&#xa;/**&#xa; * Replaces the last &#39;-&#39;-separated segment of context.currentNode.id with the supplied nodeId.&#xa; * Returns the original nodeId untouched when context.currentNode.id is not set.&#xa; *&#xa; * @param {string|number} nodeId - The short id to splice into the current node path.&#xa; * @returns {string} The fully-qualified node id, or the original nodeId if no path is set.&#xa; */&#xa;__makeLocalNodeId = function (nodeId) {&#xa;    if (nodeId !== null &amp;&amp; nodeId !== undefined) nodeId = nodeId.toString();&#xa;    if (!context.currentNode.id) return nodeId;&#xa;    var __separator = &#39;-&#39;;&#xa;    var __output = context.currentNode.id.split(__separator);&#xa;    __output[__output.length - 1] = nodeId;&#xa;    return __output.join(__separator);&#xa;};&#xa;&#xa;/**&#xa; * Normalises operation config: JSON string -&gt; parsed; { Params: {...} } -&gt; Params; flat object -&gt; itself; null -&gt; {}.&#xa; *&#xa; * @param {string|object} config - Raw operation config.&#xa; * @returns {object} Flat Params object, never null.&#xa; */&#xa;__extractParams = function (config) {&#xa;    var __parsed = typeof config === &#39;string&#39; ? JSON.parse(config) : config;&#xa;    if (__parsed &amp;&amp; typeof __parsed.params === &#39;object&#39; &amp;&amp; __parsed.params !== null) return __parsed.params;&#xa;    return __parsed || {};&#xa;};&#xa;&#xa;/**&#xa; * Component-local alias for the global activeFlag() (rtds_3_vocallsEnv.js) --&#xa; * the single Active-coercion contract. See conventions/params.md.&#xa; *&#xa; * @param {*} value&#xa; * @returns {boolean}&#xa; */&#xa;__activeFlag = function (value) {&#xa;    return activeFlag(value);&#xa;};&#xa;&#xa;/**&#xa; * Resolves Params into a flat { Key: value } map. The value&#39;s TYPE is whatever&#xa; * the JSON wrote -- no Number coercion (&#39;4&#39; stays a string, 4 stays a number).&#xa; * Per key: array-form [value, ...flags] is unwrapped to its first element&#xa; * (matches the runtime twin getParam; GUI flags isDisplayed/isEditable are&#xa; * runtime-irrelevant). Active is then coerced to a real boolean via __activeFlag.&#xa; * Every other STRING value is trimmed and has ${name} placeholders resolved via&#xa; * resolveConfigTokens (varObj first, then global; bare names only; String.replace,&#xa; * never new Function -- the Vocalls runtime disables string-eval). Non-strings pass&#xa; * through with their type intact. Unresolved placeholders are left raw and warned.&#xa; * Active absent: not defaulted here -- the read site decides (SetVariables true,&#xa; * Send and guard default false).&#xa; *&#xa; * @param {string|object} config - Raw operation config (see __extractParams).&#xa; * @returns {object} Map of Key -&gt; resolved value (no __rt prefix; v2 shape).&#xa; */&#xa;__setupConfig = function (config) {&#xa;    var __params = __extractParams(config);&#xa;    var __result = {};&#xa;    var __keys = Object.keys(__params);&#xa;    for (var __i = 0; __i &lt; __keys.length; __i++) {&#xa;        var __key = __keys[__i];&#xa;        var __value = __params[__key];&#xa;        if (Array.isArray(__value)) __value = __value.length ? __value[0] : &#39;&#39;;&#xa;        if (__key === &#39;active&#39;) { __result.active = __activeFlag(__value); continue; }&#xa;        if (typeof __value === &#39;string&#39;) __value = resolveConfigTokens(__value.trim(), __key);&#xa;        __result[__key] = __value;&#xa;    }&#xa;    return __result;&#xa;};&#xa;&#xa;// --- v2 object-access helpers ---&#xa;// Declared with `typeof &lt;name&gt; === &#39;undefined&#39;` guards so they fall back to local definitions&#xa;// when rtds_globalCodeAndHelpers.js has not yet been updated to expose them.&#xa;&#xa;if (typeof getValue === &#39;undefined&#39;) {&#xa;    /**&#xa;     * Returns the value of `key` from `obj`, or `defaultValue` if the key is absent.&#xa;     * Case-insensitive lookup: matches whichever own property name lowercases to the same string.&#xa;     *&#xa;     * @param {object} obj&#xa;     * @param {string} key&#xa;     * @param {*} [defaultValue]&#xa;     * @returns {*}&#xa;     */&#xa;    getValue = function (obj, key, defaultValue) {&#xa;        if (!obj || !key) return defaultValue;&#xa;        var __lowerKey = String(key).toLowerCase();&#xa;        for (var __propertyName in obj) {&#xa;            if (obj.hasOwnProperty(__propertyName) &amp;&amp; String(__propertyName).toLowerCase() === __lowerKey) {&#xa;                return obj[__propertyName];&#xa;            }&#xa;        }&#xa;        return defaultValue;&#xa;    };&#xa;}&#xa;&#xa;if (typeof walk === &#39;undefined&#39;) {&#xa;    /**&#xa;     * Iterates own properties of `obj`, calling fn(key, value) for each. Returning false stops the walk.&#xa;     *&#xa;     * @param {object} obj&#xa;     * @param {function} fn&#xa;     * @returns {void}&#xa;     */&#xa;    walk = function (obj, fn) {&#xa;        if (!obj) return;&#xa;        for (var __key in obj) {&#xa;            if (!obj.hasOwnProperty(__key)) continue;&#xa;            if (fn(__key, obj[__key]) === false) return;&#xa;        }&#xa;    };&#xa;}&#xa;&#xa;if (typeof nowUTC === &#39;undefined&#39;) {&#xa;    /**&#xa;     * @returns {string} Current date/time as ISO-8601 UTC.&#xa;     */&#xa;    nowUTC = function () { return new Date().toISOString(); };&#xa;}&#xa;&#xa;if (typeof hasKey === &#39;undefined&#39;) {&#xa;    /**&#xa;     * Case-insensitive existence check (own properties).&#xa;     *&#xa;     * @param {object} obj&#xa;     * @param {string} key&#xa;     * @returns {boolean}&#xa;     */&#xa;    hasKey = function (obj, key) {&#xa;        if (!obj || !key) return false;&#xa;        var __lowerKey = String(key).toLowerCase();&#xa;        for (var __propertyName in obj) {&#xa;            if (obj.hasOwnProperty(__propertyName) &amp;&amp; String(__propertyName).toLowerCase() === __lowerKey) {&#xa;                return true;&#xa;            }&#xa;        }&#xa;        return false;&#xa;    };&#xa;}&#xa;&#xa;if (typeof getScoped === &#39;undefined&#39;) {&#xa;    /**&#xa;     * Reads operator data with the RTDS scope contract: varObj[key]&#xa;     * (case-insensitive) first, then exact-case global[key], then defaultValue.&#xa;     * See conventions/storage.md.&#xa;     *&#xa;     * @param {string} key&#xa;     * @param {*} [defaultValue]&#xa;     * @returns {*}&#xa;     */&#xa;    getScoped = function (key, defaultValue) {&#xa;        if (defaultValue === undefined) defaultValue = null;&#xa;        if (!key) return defaultValue;&#xa;        var __vo = (typeof varObj !== &#39;undefined&#39;) ? varObj : null;&#xa;        if (__vo &amp;&amp; hasKey(__vo, key)) return getValue(__vo, key, defaultValue);&#xa;        var __scope = (typeof global !== &#39;undefined&#39;) ? global : ((typeof globalThis !== &#39;undefined&#39;) ? globalThis : null);&#xa;        if (__scope &amp;&amp; __scope[key] !== undefined &amp;&amp; __scope[key] !== null) return __scope[key];&#xa;        return defaultValue;&#xa;    };&#xa;}&#xa;&#xa;if (typeof resolveConfigTokens === &#39;undefined&#39;) {&#xa;    /**&#xa;     * Substitutes ${name} placeholders in a string via getScoped (varObj first,&#xa;     * then global). Bare identifiers only (${w+}); no expressions. A placeholder&#xa;     * that resolves nowhere is left raw and a warn is logged (never silent &#39;&#39;).&#xa;     * String.replace only -- the Vocalls runtime disables string-eval.&#xa;     *&#xa;     * @param {string} raw&#xa;     * @param {string} keyName&#xa;     * @returns {string}&#xa;     */&#xa;    resolveConfigTokens = function (raw, keyName) {&#xa;        if (typeof raw !== &#39;string&#39; || raw.indexOf(&#39;${&#39;) === -1) return raw;&#xa;        var __MISSING = &#39; __rtUnresolved &#39;;&#xa;        return raw.replace(/\$\{(\w+)\}/g, function (__match, __name) {&#xa;            var __sub = getScoped(__name, __MISSING);&#xa;            if (__sub !== __MISSING) return String(__sub);&#xa;            Logger.warn(&#39;[resolveConfigTokens] unresolved placeholder&#39;, { key: keyName, placeholder: __name });&#xa;            return __match;&#xa;        });&#xa;    };&#xa;}&#xa;&#xa;&#xa;&#xa;// --- operation-specific helper ---&#xa;&#xa;/**&#xa; * Classifies the result object returned by a NestedJob redirect into a coarse outcome string.&#xa; * Mirrors the PureConnect Party2.Status mapping: 4 -&gt; no_reaction, 1 -&gt; rejected, 0 -&gt; rejected_voicebox.&#xa; * Any other status (a connected / answered call) is treated as success. Missing / malformed result -&gt; unknown.&#xa; *&#xa; * @param {object} transferResult - The redirect ResultVariableName object (__transferResult).&#xa; * @returns {string} One of: success, no_reaction, rejected, rejected_voicebox, unknown.&#xa; */&#xa;__classifyRedirect = function (transferResult) {&#xa;    if (!transferResult || !transferResult.Details || !transferResult.Details.ClientSpecific || !transferResult.Details.ClientSpecific.Party2) {&#xa;        return &#39;unknown&#39;;&#xa;    }&#xa;    var __status = transferResult.Details.ClientSpecific.Party2.Status;&#xa;    if (__status === 4) return &#39;no_reaction&#39;;&#xa;    if (__status === 1) return &#39;rejected&#39;;&#xa;    if (__status === 0) return &#39;rejected_voicebox&#39;;&#xa;    return &#39;success&#39;;&#xa;};"
       Extensions=""
       BackgroundNoise="true"
       BreathInEffect="true"
       Languages="{&#39;nl&#39;:{&#39;isDefault&#39;:true,&#39;languageName&#39;:&#39;Dutch (Belgium)&#39;,&#39;ttsLanguageCode&#39;:&#39;nl-BE&#39;,&#39;ttsVoiceName&#39;:&#39;&#39;,&#39;ttsEngine&#39;:&#39;&#39;,&#39;ttsPitch&#39;:&#39;&#39;,&#39;ttsSpeed&#39;:&#39;&#39;,&#39;ttsVolume&#39;:&#39;&#39;,&#39;prosodyBaseEnabled&#39;:true,&#39;prosodyContourEnabled&#39;:false}}"
-      Variables='__configJSON = {&#xa;    "Active": false,&#xa;    "ConfigId": 1,&#xa;    "ConfigName": "KLANTWACHT",&#xa;    "DialGuard": true,&#xa;    "OutboundAni": "",&#xa;    "Diversion": "",&#xa;    "OnHoldAudioUrl": "https://audio-${environment}.n-allo.be/on-hold.wav",&#xa;    "Timeout": 15,&#xa;    "RecordVoicemail": true,&#xa;    "AcceptCallMenu": true,&#xa;    "AcceptCallMessage": "Press 1 to accept the call.",&#xa;    "SendSms": true,&#xa;    "SendMail": true,&#xa;    "NextStep_Success": "00002",&#xa;    "NextStep_Failure": "00099",&#xa;    "NextStep": "00005"&#xa;};&#xa;__environment = environment;&#xa;__rtBaseUrl = _rtBaseUrl;&#xa;__rtGuardEndpoint = _rtActiveGuardByConfigEndpoint;&#xa;__rtNextStep &amp;= _rtNextStep;&#xa;__guardList = [];&#xa;__guardIndex = 0;&#xa;__guardCount = 0;&#xa;__guardLog = [];&#xa;__guardPickedUp = false;&#xa;__recordVoicemail = false;&#xa;__diversion = &#39;&#39;;&#xa;__onHoldAudioUrl = &#39;&#39;;&#xa;__currentGuardPhone = &#39;&#39;;&#xa;__transferResult = null;&#xa;__voicemailCapture = &#39;&#39;;'
+      Variables='__configJSON = {&#xa;    "active": true,&#xa;    "configId": 1,&#xa;    "configName": "KLANTWACHT",&#xa;    "dialGuard": true,&#xa;    "outboundAni": "",&#xa;    "diversion": "",&#xa;    "onHoldAudioUrl": "https://vocalls.cz/downloads/files/CuRJXoaYDOPQbHZ8YAAQv_GENERAL_TENANT.wav",&#xa;    "timeout": 10000,&#xa;    "recordVoicemail": true,&#xa;    "acceptCallMenu": true,&#xa;    "acceptCallMessage": "Press 1 to accept the call.",&#xa;    "sendSms": true,&#xa;    "sendMail": true,&#xa;    "nextStep_Success": "00002",&#xa;    "nextStep_Failure": "00099",&#xa;    "nextStep": "00005"&#xa;};&#xa;__environment = environment;&#xa;__rtBaseUrl = _rtBaseUrl;&#xa;__rtGuardEndpoint = _rtActiveGuardByConfigEndpoint;&#xa;__rtNextStep &amp;= _rtNextStep;&#xa;__guardList = [];&#xa;__guardIndex = 0;&#xa;__guardCount = 0;&#xa;__guardLog = [];&#xa;__guardPickedUp = false;&#xa;__recordVoicemail = false;&#xa;__diversion = &#39;&#39;;&#xa;__onHoldAudioUrl = &#39;&#39;;&#xa;__currentGuardPhone = &#39;&#39;;&#xa;__transferResult = null;&#xa;__voicemailCapture = &#39;&#39;;'
       PropertiesDefinition='[&#xa;    {&#xa;        "name": "__configJSON",&#xa;        "title": "Operation config (JSON)",&#xa;        "hint": "Full RTDS operation Params object as JSON. Must include all required Params fields for the operation type.",&#xa;        "controlSettings": {&#xa;            "controlType": "text",&#xa;            "maxLength": 5000,&#xa;            "dataType": "string",&#xa;            "readonly": false&#xa;        }&#xa;    },&#xa;    {&#xa;        "name": "__environment",&#xa;        "title": "Environment",&#xa;        "hint": "Deployment environment. Controls which RTDS API endpoint is called.",&#xa;        "controlSettings": {&#xa;            "controlType": "text",&#xa;            "defaultValue": "environment",&#xa;            "maxLength": 100,&#xa;            "dataType": "string",&#xa;            "readonly": false&#xa;        }&#xa;    },&#xa;    {&#xa;        "name": "__nextStep",&#xa;        "title": "Next step (output variable name)",&#xa;        "hint": "Name of the session variable that will receive the next step Id after execution.",&#xa;        "controlSettings": {&#xa;            "controlType": "text",&#xa;            "defaultValue": "_rtNextStep",&#xa;            "maxLength": 100,&#xa;            "dataType": "string",&#xa;            "readonly": false&#xa;        }&#xa;    }&#xa;]'
       EnableUpdateRelations="true"
       AllowGlobalIntent="false"
@@ -37,12 +37,21 @@
       CompanyInformation_nl=""
       GeneralKnowledge_nl=""
       Translations_nl=""
-      Sections="[]"
       id="vocalls-master-layer"
     >
       <mxCell />
     </object>
     <mxCell id="baselayer" parent="vocalls-master-layer" />
+    <mxCell
+      id="354"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
+      parent="baselayer"
+      source="0"
+      target="344"
+      edge="1"
+    >
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
     <object
       label="input"
       Type="transient"
@@ -57,8 +66,12 @@
       Parameters=""
       id="0"
     >
-      <mxCell style="transientNode" parent="baselayer" vertex="1">
-        <mxGeometry x="220" y="-780" width="130" height="40" as="geometry" />
+      <mxCell
+        style="transientNode;strokeColor=#666666;"
+        parent="baselayer"
+        vertex="1"
+      >
+        <mxGeometry x="-498" y="-1400" width="130" height="40" as="geometry" />
       </mxCell>
     </object>
     <object
@@ -73,8 +86,12 @@
       DynamicNextTabGuid=""
       id="7"
     >
-      <mxCell style="scriptNode" parent="baselayer" vertex="1">
-        <mxGeometry x="220" y="-330" width="168" height="80" as="geometry" />
+      <mxCell
+        style="scriptNode;strokeColor=#999999;"
+        parent="baselayer"
+        vertex="1"
+      >
+        <mxGeometry x="224" y="-379" width="168" height="80" as="geometry" />
       </mxCell>
     </object>
     <object
@@ -83,23 +100,27 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code='global[_rtNextStep] = getValue(__rtParams, &#39;NextStep&#39;, &#39;&#39;);&#xa;&#xa;if (!getValue(__rtParams, &#39;Active&#39;, false)) {&#xa;    Logger.info(&#39;[guardRouting] skipped -- inactive&#39;, { nextStep: global[_rtNextStep] });&#xa;    return;&#xa;}&#xa;&#xa;__guardList = [];&#xa;__guardIndex = 0;&#xa;__guardCount = 0;&#xa;__guardLog = [];&#xa;__guardPickedUp = false;&#xa;__recordVoicemail = String(getValue(__rtParams, &#39;RecordVoicemail&#39;, false)).toLowerCase() === &#39;true&#39;;&#xa;__diversion = getValue(__rtParams, &#39;Diversion&#39;, &#39;&#39;);&#xa;__onHoldAudioUrl = getValue(__rtParams, &#39;OnHoldAudioUrl&#39;, &#39;&#39;);&#xa;__currentGuardPhone = &#39;&#39;;&#xa;&#xa;global[_rtNextStep] = getValue(__rtParams, &#39;NextStep_Failure&#39;, &#39;&#39;);&#xa;&#xa;var __url = __rtBaseUrl + __rtGuardEndpoint + &#39;/&#39; + getValue(__rtParams, &#39;ConfigId&#39;, -1);&#xa;&#xa;return jsonHttpRequest(__url, { method: &#39;GET&#39;, "timeout": 10000 }, _headers).then(&#xa;    function (result) {&#xa;        if (!result || result.success !== true) {&#xa;            Logger.warn(&#39;[guardRouting] guard lookup failed&#39;, { statusCode: result &amp;&amp; result.statusCode, nextStep: global[_rtNextStep] });&#xa;            return;&#xa;        }&#xa;        var __guards = result.response || [];&#xa;        if (!__guards.length) {&#xa;            Logger.warn(&#39;[guardRouting] no active guards&#39;, { nextStep: global[_rtNextStep] });&#xa;            return;&#xa;        }&#xa;        __guardList = __guards;&#xa;        __guardCount = __guards.length;&#xa;        global[_rtNextStep] = getValue(__rtParams, &#39;NextStep&#39;, &#39;&#39;);&#xa;        Logger.info(&#39;[guardRouting] guards resolved&#39;, { count: __guardCount, nextStep: global[_rtNextStep] });&#xa;    },&#xa;    function (err) {&#xa;        Logger.error(&#39;[guardRouting] guard lookup error&#39;, { nextStep: global[_rtNextStep] }, err);&#xa;    }&#xa;);'
+      Code='//guard config&#xa;_errorMessage = &#39;&#39;;&#xa;&#xa;__rtOutcome = &#39;nextStep&#39;;&#xa;&#xa;if (String(getValue(__rtParams, &#39;active&#39;, false)).toLowerCase() !== &#39;true&#39;) {&#xa;    Logger.info(&#39;[guard] skipped -- inactive&#39;, { outcome: __rtOutcome });&#xa;    return;&#xa;}&#xa;&#xa;__rtOutcome = &#39;nextStep_Failure&#39;;&#xa;&#xa;&#xa;&#xa;&#xa;//var __method = &#39;GET&#39;;&#xa;//var __timeout = Number(getValue(__rtParams, &#39;timeout&#39;, 10000));&#xa;var __headers = _headers;&#xa;var __endpoint = __rtBaseUrl + __rtGuardEndpoint;&#xa;//var __configId = getValue(__rtParams, &#39;configId&#39;, null);&#xa;&#xa;var __queryParameters = &#39;?guardConfigId=&#39; + encodeURIComponent(getValue(__rtParams, &#39;configId&#39;, null));&#xa;&#xa;log_debug(&#39;__urlCheck: &#39; + __endpoint + __queryParameters);&#xa;&#xa;__compRequest = jsonHttpRequest(&#xa;    __endpoint + __queryParameters,&#xa;    { method: &#39;GET&#39;, "timeout": getValue(__rtParams, &#39;timeout&#39;, 10000) },&#xa;    __headers&#xa;);&#xa;&#xa;/* return __compRequest.then(function (result) {&#xa;    __resultObj = result.response;&#xa;    &#xa;    if (result &amp;&amp; !result.success) {&#xa;        _errorMessage = "status: " + result.statusCode + ", error: " + result.error;&#xa;        Logger.warn(&#39;[guard] eligibility check failed&#39;, { error: _errorMessage, outcome: __rtOutcome });&#xa;        return;&#xa;    }&#xa;    if (String(__resultObj).toLowerCase() !== &#39;true&#39;) {&#xa;        __rtOutcome = &#39;NextStep_Denied&#39;;&#xa;        Logger.info(&#39;[guardTui] denied&#39;, { outcome: __rtOutcome });&#xa;        return;&#xa;    }&#xa;    __guardTuiEligible = true;&#xa;    Logger.info(&#39;[guardTui] eligible -- proceeding to state lookup&#39;, { configId: __configId });&#xa;}); */&#xa;&#xa;&#xa;return __compRequest.then(&#xa;    function (result) {&#xa;        log_debug(&#39;result: &#39; + JSON.stringify(result));&#xa;&#xa;        // transport / HTTP failure (wrapper resolves with success:false rather than rejecting)&#xa;        if (!result || result.success !== true) {&#xa;            _errorMessage = &#39;status: &#39; + (result &amp;&amp; result.statusCode) + &#39;, error: &#39; + (result &amp;&amp; result.error);&#xa;            Logger.warn(&#39;[guard] lookup failed&#39;, { error: _errorMessage, outcome: __rtOutcome });&#xa;            return; // __rtOutcome stays &#39;nextStep_Failure&#39;&#xa;        }&#xa;&#xa;        // endpoint returns a collection -- normalise to an array before reading .length&#xa;        var __guards = result.response;&#xa;        if (Object.prototype.toString.call(__guards) !== &#39;[object Array]&#39;) {&#xa;            __guards = [];&#xa;        }&#xa;        __guardList = __guards;&#xa;        __guardCount = __guards.length;&#xa;&#xa;        if (__guardCount === 0) {&#xa;            // no active guards for this config -&gt; nothing to hold, proceed&#xa;            __rtOutcome = &#39;nextStep&#39;;&#xa;            Logger.info(&#39;[guard] no active guards -- proceeding&#39;, { outcome: __rtOutcome });&#xa;            return;&#xa;        }&#xa;&#xa;        // active guards present -&gt; route into guard handling&#xa;        __rtOutcome = &#39;NextStep_Denied&#39;; // &lt;-- confirm: is this the "guarded" branch your node exposes?&#xa;        Logger.info(&#39;[guard] active guards resolved&#39;, { count: __guardCount, outcome: __rtOutcome });&#xa;    },&#xa;    function (err) {&#xa;        Logger.error(&#39;[guard] lookup error&#39;, { outcome: __rtOutcome }, err);&#xa;        // __rtOutcome stays &#39;nextStep_Failure&#39;&#xa;    }&#xa;);'
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
       id="29"
     >
-      <mxCell style="scriptNode" parent="baselayer" vertex="1">
-        <mxGeometry x="220" y="-190" width="168" height="80" as="geometry" />
+      <mxCell
+        style="scriptNode;strokeColor=#999999;"
+        parent="baselayer"
+        vertex="1"
+      >
+        <mxGeometry x="224" y="-200" width="168" height="80" as="geometry" />
       </mxCell>
     </object>
     <object
-      label="{__onHoldAudioUrl}"
+      label="{getValue(__rtParams, &#39;onHoldAudioUrl&#39;, null)}"
       Type="play"
       OnEnter="context.returnTo = context.currentNode.id"
       OnLeave=""
       DynamicNextId=""
-      Source="{__onHoldAudioUrl}"
+      Source="{getValue(__rtParams, &#39;onHoldAudioUrl&#39;, null)}"
       SelectionMode="temporary"
       MaxEntryCount=""
       MaxEntryNodeId=""
@@ -110,7 +131,11 @@
       AltSources_nl=""
       id="110"
     >
-      <mxCell style="playNode" parent="baselayer" vertex="1">
+      <mxCell
+        style="playNode;strokeColor=#6AB04E;"
+        parent="baselayer"
+        vertex="1"
+      >
         <mxGeometry x="-350" y="100" width="290" height="80" as="geometry" />
       </mxCell>
     </object>
@@ -126,7 +151,11 @@
       DynamicNextTabGuid=""
       id="130"
     >
-      <mxCell style="scriptNode" parent="baselayer" vertex="1">
+      <mxCell
+        style="scriptNode;strokeColor=#999999;"
+        parent="baselayer"
+        vertex="1"
+      >
         <mxGeometry x="-289" y="470" width="168" height="80" as="geometry" />
       </mxCell>
     </object>
@@ -192,7 +221,7 @@
     <object
       label="output"
       Type="transient"
-      OnEnter="Logger.info(&#39;[guardRouting] exit&#39;, { nextStep: __rtNextStep });"
+      OnEnter="_rtNextStep = getValue(__rtParams, __rtOutcome, &#39;&#39;); &#xa;Logger.info(&#39;[guardRouting] exit&#39;, { outcome: __rtOutcome, nextStep: _rtNextStep });"
       OnLeave=""
       MaxEntryCount=""
       MaxEntryNodeId=""
@@ -203,20 +232,14 @@
       Parameters=""
       id="6"
     >
-      <mxCell style="transientNode" parent="baselayer" vertex="1">
+      <mxCell
+        style="transientNode;strokeColor=#666666;"
+        parent="baselayer"
+        vertex="1"
+      >
         <mxGeometry x="880" y="1190" width="130" height="40" as="geometry" />
       </mxCell>
     </object>
-    <mxCell
-      id="28"
-      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;"
-      parent="baselayer"
-      source="0"
-      target="325"
-      edge="1"
-    >
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
     <mxCell
       id="30"
       style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;"
@@ -306,7 +329,11 @@
       MaxEntryNodeId=""
       id="100"
     >
-      <mxCell style="caseNode" parent="baselayer" vertex="1">
+      <mxCell
+        style="caseNode;strokeColor=#999999;"
+        parent="baselayer"
+        vertex="1"
+      >
         <mxGeometry x="228" y="-20" width="160" height="126" as="geometry" />
       </mxCell>
     </object>
@@ -357,7 +384,11 @@
       VariableName="__guardIndex"
       id="120"
     >
-      <mxCell style="counterNode" parent="baselayer" vertex="1">
+      <mxCell
+        style="counterNode;strokeColor=#999999;"
+        parent="baselayer"
+        vertex="1"
+      >
         <mxGeometry x="-285" y="280" width="160" height="96" as="geometry" />
       </mxCell>
     </object>
@@ -400,7 +431,11 @@
       MaxEntryNodeId=""
       id="140"
     >
-      <mxCell style="redirectNode" parent="baselayer" vertex="1">
+      <mxCell
+        style="redirectNode;strokeColor=#D1B73D;"
+        parent="baselayer"
+        vertex="1"
+      >
         <mxGeometry x="-285" y="640" width="160" height="96" as="geometry" />
       </mxCell>
     </object>
@@ -614,16 +649,65 @@
       </mxGeometry>
     </mxCell>
     <mxCell
-      id="318"
+      id="334"
       style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;"
       parent="baselayer"
-      source="319"
-      target="321"
+      source="338"
+      target="340"
       edge="1"
     >
       <mxGeometry relative="1" as="geometry">
-        <mxPoint x="-178.5" y="-670" as="sourcePoint" />
-        <mxPoint x="-178.5" y="-290" as="targetPoint" />
+        <mxPoint x="-445" y="-1100" as="sourcePoint" />
+        <mxPoint x="-445" y="-720" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <object
+      label="script"
+      Type="script"
+      OnEnter=""
+      OnLeave=""
+      DynamicNextId=""
+      Code='devJson = { &#xa;    "sourceId": "569200", &#xa;    "name": "DIGIPOLIS - DA_KLANTWACHT", &#xa;    "project": "DA HELPDESK", &#xa;    "promptLibrary": "DIGIPOLIS\\DA\\KLANTWACHT", &#xa; "supportedLanguages": "NL", &#xa; "operations": &#xa; [ &#xa;  { &#xa;   "id": "00000", &#xa;   "type": "SetAttributes", &#xa;   "name": "Call Initialization", &#xa;   "isFirstOperation": true, &#xa;   "params": { &#xa;    "LogAttributes": "RTDS_ProjectName|Eic_RemoteId|ATTR_RoutingId|ATTR_CallflowId|ATTR_IVREvent|ATTR_IVRAction|ATTR_CQR|ATTR_CQS", &#xa;    "CallflowId": "DA_KLANTWACHT", &#xa;    "RoutingId": "DA_KLANTWACHT", &#xa;    "IVREvent": "9999", &#xa;    "IVRAction": "CT", &#xa;    "NextStep": "00001" &#xa;   } &#xa;  }, &#xa;        { &#xa;            "id": "00001", &#xa;            "type": "GuardRouting", &#xa;            "name": "DA_KLANTWACHT", &#xa;            "params": { &#xa;                "Active": 1, &#xa;                "ConfigId": 1, &#xa;                "ConfigName": "KLANTWACHT", &#xa;                "DialGuard" : true, &#xa;                "DialGroup": "SIP_TO_TELENET_DIGIPOLIS_STAD", &#xa;                "OnHoldAudio": "TENANT_DA_GUARD", &#xa;                "Timeout": 15, &#xa;                "RecordVoicemail": true, &#xa;                "AcceptCallMenu": true, &#xa;                "SendSMS": true, &#xa;                "SendMail": true, &#xa;                "NextStep_Failure": "00002", &#xa;                "NextStep_Success": "00002", &#xa;                "NextStep": "00002" &#xa;            } &#xa;        }, &#xa;        { &#xa;            "id": "00002", &#xa;            "type": "SendEmail", &#xa;            "name": "Mail-To: DA_KLANTWACHT", &#xa;            "params": { &#xa;                "Active": 1, &#xa;                "Subject": "DA_KLANTWACHT: Call Report", &#xa;                "From": "IVR_EVENTS@n-allo.be", &#xa;                "To": "$(ATTR_EmailTo)", &#xa;                "CC": "mattias.mertens@n-allo.be;bart.dexelle@digipolis.be;erik.dujardin@digipolis.be;chrisje.henrard@digipolis.be", &#xa;                "Body": "$(ATTR_EmailBody)", &#xa;                "Importance": "Normal", &#xa;                "Attachment": "$(ATTR_EmailAttachment)", &#xa;                "NextStep_Success": "00003", &#xa;                "NextStep_Failure": "00003", &#xa;                "NextStep": "00003" &#xa;            } &#xa;        }, &#xa;        { &#xa;             "id": "00003", &#xa;             "type": "SendSMS", &#xa;             "name": "SMS-To: DA_KLANTWACHT", &#xa;             "params": { &#xa;                "Active": 1, &#xa;                "ConfigId": 47, &#xa;                "Routing": "KLANTWACHT", &#xa;                "From": "8850", &#xa;                "To": "$(ATTR_SMSTo)", &#xa;                "Body": "$(ATTR_SMSBody)", &#xa;                "NextStep_Failure": "00099", &#xa;                "NextStep_Success": "00099", &#xa;                "NextStep": "00099" &#xa;            } &#xa;        },    &#xa;  { &#xa;   "id": "00099", &#xa;   "type": "Disconnect", &#xa;   "name": "RTDS: Disconnect" &#xa;  } &#xa; ] &#xa;}'
+      MaxEntryNodeId=""
+      MaxEntryCount=""
+      DynamicNextTabGuid=""
+      id="335"
+    >
+      <mxCell style="scriptNode" parent="baselayer" vertex="1">
+        <mxGeometry x="50" y="-610" width="168" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <object
+      label="[rtds] start"
+      Type="script"
+      OnEnter=""
+      OnLeave=""
+      DynamicNextId=""
+      Code='Logger.info("[rtds] start");&#xa;&#xa;initializeCallFlowContext("full");&#xa;&#xa;Logger.info("[rtds] call context ready", {&#xa;    callGuid: context &amp;&amp; context.callInfo &amp;&amp; context.callInfo.callGuid,&#xa;    direction: context &amp;&amp; context.callInfo &amp;&amp; context.callInfo.direction,&#xa;    language: (context &amp;&amp; context.language) || (varObj &amp;&amp; varObj.language),&#xa;    ani: varObj &amp;&amp; varObj.ani,&#xa;    dnis: varObj &amp;&amp; varObj.dnis,&#xa;    routingId: varObj &amp;&amp; varObj.routingId,&#xa;    environment: varObj &amp;&amp; varObj.environment,&#xa;});&#xa;&#xa;__rtGuardEndpoint = _rtActiveGuardByConfigEndpoint;&#xa;__rtBaseUrl = _rtBaseUrl;'
+      MaxEntryNodeId=""
+      MaxEntryCount=""
+      DynamicNextTabGuid=""
+      id="336"
+    >
+      <mxCell
+        style="scriptNode;strokeColor=#999999;"
+        parent="baselayer"
+        vertex="1"
+      >
+        <mxGeometry x="-523" y="-459" width="168" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell
+      id="337"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;"
+      parent="baselayer"
+      source="335"
+      target="336"
+      edge="1"
+    >
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="-432" y="-200" as="sourcePoint" />
+        <mxPoint x="-432" y="-10" as="targetPoint" />
       </mxGeometry>
     </mxCell>
     <object
@@ -632,57 +716,101 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code="_rtBaseUrl = &#39;https://api.n-allo.be&#39;;&#xa;_rtSmsEndpoint = `/smsapi-${environment}/api/Send`;&#xa;_rtMailEndpoint = `/mailapi-${environment}/api/SendMail`;&#xa;&#xa;_rtGetSourceIdEndpoint = `/routingtablesapi-${environment}/api/routing-table/source`;&#xa;&#xa;_rtTuiCheckAccessEndpoint = `/rtdsapi-${environment}/api/Guards/AnyGuardWithPhoneNumberAndConfig`;&#xa;_rtTuiGetStateEndpoint = `/rtdsapi-${environment}/api/Guards/GetGuardByPhoneNumberAndConfig`;&#xa;_rtTuiActivateEndpoint = `/rtdsapi-${environment}/api/Guards/Activate`;&#xa;_rtTuiDeactivateEndpoint = `/rtdsapi-${environment}/api/Guards/Disable`;&#xa;&#xa;_rtActiveGuardByConfigEndpoint = `/digipolisapi-${environment}/Guard/GetAllCurrentActiveGuardsByGuardConfig`;&#xa;_rtAnyGuardWithPhoneAndConfEndpoint = `/digipolisapi-${environment}/Guard/AnyGuardWithPhoneNumberAndConfig`;&#xa;&#xa;_rtScheduleEndpoint = `/schedulingapi-${environment}/api/schedule/`;&#xa;_rtPhonebookEndpoint = `/phonebookapi-${environment}`;&#xa;&#xa;__rtBaseUrl = _rtBaseUrl;&#xa;__rtGuardEndpoint = _rtActiveGuardByConfigEndpoint;"
+      Code="_rtBaseUrl = &#39;https://api.n-allo.be&#39;;&#xa;_rtSmsEndpoint = `/smsapi-${environment}/api/Send`;&#xa;_rtMailEndpoint = `/mailapi-${environment}/api/SendMail`;&#xa;&#xa;_rtGetSourceIdEndpoint = `/routingtablesapi-${environment}/api/routing-table/source`;&#xa;&#xa;_rtTuiCheckAccessEndpoint = `/digipolisapi-api-${environment}/api/Guard/AnyGuardWithPhoneNumberAndConfig`;&#xa;_rtTuiGetStateEndpoint = `/digipolisapi-api-${environment}/api/Guard/GetGuardByPhoneNumberAndConfig`;&#xa;_rtTuiActivateEndpoint = `/digipolisapi-api-${environment}/api/Guard/activate`;&#xa;_rtTuiDeactivateEndpoint = `/digipolisapi-api-${environment}/api/Guard/deactivate`;&#xa;&#xa;&#xa;_rtActiveGuardByConfigEndpoint = `/digipolisapi-api-${environment}/api/Guard/GetAllCurrentActiveGuardsByGuardConfig`;&#xa;_rtAnyGuardWithPhoneAndConfEndpoint = `/digipolisapi-api-${environment}/api/Guard/AnyGuardWithPhoneNumberAndConfig`;&#xa;&#xa;_rtScheduleEndpoint = `/schedulingapi-${environment}/api/schedule/`;&#xa;_rtPhonebookEndpoint = `/phonebookapi-${environment}`;&#xa;&#xa;&#xa;Logger.configure({ activeLevel: &#39;DEBUG&#39; });"
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
-      id="319"
+      id="338"
     >
-      <mxCell style="scriptNode" parent="baselayer" vertex="1">
-        <mxGeometry x="-250" y="-610" width="168" height="80" as="geometry" />
-      </mxCell>
-    </object>
-    <mxCell
-      id="320"
-      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;"
-      parent="baselayer"
-      source="325"
-      target="319"
-      edge="1"
-    >
-      <mxGeometry relative="1" as="geometry">
-        <mxPoint x="-166" y="-690" as="sourcePoint" />
-        <mxPoint x="-166" y="-450" as="targetPoint" />
-      </mxGeometry>
-    </mxCell>
-    <object
-      label=""
-      Type="component"
-      ComponentGuid="953a6f47-b453-4d6f-96eb-d67f2a222bcf"
-      ComponentVersion="dPdDs3WsUtvPUYJ6ZgJ2Jw=="
-      SupportedLanguages=""
-      __environment='"acc"'
-      SingleInput="0"
-      SingleOutput="6"
-      ManualId=""
-      EnableUpdateRelations="true"
-      AllowGlobalIntent="false"
-      PropertiesDefinition=""
-      id="325"
-    >
-      <mxCell style="component3Node" parent="baselayer" vertex="1">
+      <mxCell
+        style="scriptNode;strokeColor=#999999;"
+        parent="baselayer"
+        vertex="1"
+      >
         <mxGeometry
-          x="-243.49999999999994"
-          y="-750"
-          width="155"
-          height="60"
+          x="-516.5"
+          y="-1040"
+          width="168"
+          height="80"
           as="geometry"
         />
       </mxCell>
     </object>
-    <object label="getEnvironment" id="326">
-      <mxCell style="componentInnerNode" parent="325" vertex="1">
-        <mxGeometry x="10" y="16" width="135" height="34" as="geometry" />
+    <mxCell
+      id="339"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=oval;startFill=1;strokeColor=#000000;"
+      parent="baselayer"
+      source="344"
+      target="338"
+      edge="1"
+    >
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="-432.5" y="-1120" as="sourcePoint" />
+        <mxPoint x="-432.5" y="-880" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <mxCell
+      id="357"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;"
+      parent="baselayer"
+      source="336"
+      target="7"
+      edge="1"
+    >
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="-433" y="-240" as="sourcePoint" />
+        <mxPoint x="220" y="-290" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <object
+      label=""
+      Type="globalLibrary"
+      LibraryGuid="ff4d0c4c-7a8e-4c7d-a7ee-cca186ea2873"
+      LibraryVersion="null"
+      SupportedLanguages=""
+      id="347"
+    >
+      <mxCell style="globalLibraryNode;" parent="baselayer" vertex="1">
+        <mxGeometry x="-880" y="-1310" width="180" height="60" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="rtds_1_globalConfig" id="348">
+      <mxCell style="globalLibraryInnerNode;" parent="347" vertex="1">
+        <mxGeometry x="10" y="16" width="160" height="34" as="geometry" />
+      </mxCell>
+    </object>
+    <object
+      label=""
+      Type="globalLibrary"
+      LibraryGuid="92f0ecdb-bdb1-4c76-bce5-0f2a822379da"
+      LibraryVersion="null"
+      SupportedLanguages=""
+      id="349"
+    >
+      <mxCell style="globalLibraryNode;" parent="baselayer" vertex="1">
+        <mxGeometry x="-880" y="-1220" width="180" height="60" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="rtds_2_runtime" id="350">
+      <mxCell style="globalLibraryInnerNode;" parent="349" vertex="1">
+        <mxGeometry x="10" y="16" width="160" height="34" as="geometry" />
+      </mxCell>
+    </object>
+    <object
+      label=""
+      Type="globalLibrary"
+      LibraryGuid="dbb79182-33e8-4733-b4a4-f735d07e7bc9"
+      LibraryVersion="null"
+      SupportedLanguages=""
+      id="351"
+    >
+      <mxCell style="globalLibraryNode;" parent="baselayer" vertex="1">
+        <mxGeometry x="-880" y="-1130" width="180" height="60" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="rtds_3_vocallsEnv" id="352">
+      <mxCell style="globalLibraryInnerNode;" parent="351" vertex="1">
+        <mxGeometry x="10" y="16" width="160" height="34" as="geometry" />
       </mxCell>
     </object>
     <object
@@ -702,20 +830,24 @@
       EnableUpdateRelations="true"
       AllowGlobalIntent="false"
       PropertiesDefinition="&#39;[ \n    { \n        \&#39;name\&#39;: \&#39;__retriesOnFailure\&#39;, \n        \&#39;title\&#39;: \&#39;The total amount of tries\&#39;, \n        \&#39;hint\&#39;: \&#39;Select the total tries to retrieve a valid Okta Auth header.\&#39;, \n        \&#39;controlSettings\&#39;: { \n            \&#39;controlType\&#39;: \&#39;dropdown\&#39;, \n            \&#39;defaultValue\&#39;: 1, \n            \&#39;dataType\&#39;: \&#39;number\&#39;,  \n            \&#39;options\&#39;: [ \n                1, \n                2, \n                3 \n            ] \n        } \n    }, \n    { \n        \&#39;name\&#39;: \&#39;__forceTokenReload\&#39;, \n        \&#39;title\&#39;: \&#39;Forced token reload\&#39;, \n        \&#39;controlSettings\&#39;: { \n            \&#39;controlType\&#39;: \&#39;dropdown\&#39;, \n            \&#39;defaultValue\&#39;: \&#39;false\&#39;, \n            \&#39;options\&#39;: [ \n                \&#39;true\&#39;, \n                \&#39;false\&#39; \n            ] \n        } \n    } \n]&#39;"
-      id="321"
+      id="340"
     >
-      <mxCell style="component3Node" parent="baselayer" vertex="1">
+      <mxCell
+        style="component3Node;strokeColor=#999999;"
+        parent="baselayer"
+        vertex="1"
+      >
         <mxGeometry
-          x="-249.99999999999994"
-          y="-461"
+          x="-509.99999999999994"
+          y="-880"
           width="155"
           height="131"
           as="geometry"
         />
       </mxCell>
     </object>
-    <object label="nalOktaAuth" id="322">
-      <mxCell style="componentInnerNode" parent="321" vertex="1">
+    <object label="nalOktaAuth" id="341">
+      <mxCell style="componentInnerNode" parent="340" vertex="1">
         <mxGeometry x="10" y="16" width="135" height="45" as="geometry" />
       </mxCell>
     </object>
@@ -724,9 +856,9 @@
       ComponentId="23"
       SubType="transient"
       Kind="output"
-      id="323"
+      id="342"
     >
-      <mxCell style="component3OutputNode" parent="321" vertex="1">
+      <mxCell style="component3OutputNode" parent="340" vertex="1">
         <mxGeometry x="10" y="61" width="135" height="30" as="geometry" />
       </mxCell>
     </object>
@@ -735,82 +867,68 @@
       ComponentId="17"
       SubType="transient"
       Kind="output"
-      id="324"
+      id="343"
     >
-      <mxCell style="component3OutputNode" parent="321" vertex="1">
+      <mxCell style="component3OutputNode" parent="340" vertex="1">
         <mxGeometry x="10" y="91" width="135" height="30" as="geometry" />
       </mxCell>
     </object>
+    <object
+      label=""
+      Type="component"
+      ComponentGuid="953a6f47-b453-4d6f-96eb-d67f2a222bcf"
+      ComponentVersion="dPdDs3WsUtvPUYJ6ZgJ2Jw=="
+      SupportedLanguages=""
+      __environment='"acc"'
+      SingleInput="0"
+      SingleOutput="6"
+      ManualId=""
+      EnableUpdateRelations="true"
+      AllowGlobalIntent="false"
+      PropertiesDefinition=""
+      id="344"
+    >
+      <mxCell
+        style="component3Node;strokeColor=#999999;"
+        parent="baselayer"
+        vertex="1"
+      >
+        <mxGeometry
+          x="-509.99999999999994"
+          y="-1180"
+          width="155"
+          height="60"
+          as="geometry"
+        />
+      </mxCell>
+    </object>
+    <object label="getEnvironment" id="345">
+      <mxCell style="componentInnerNode" parent="344" vertex="1">
+        <mxGeometry x="10" y="16" width="135" height="34" as="geometry" />
+      </mxCell>
+    </object>
     <mxCell
-      id="327"
+      id="353"
       style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;"
       parent="baselayer"
-      source="323"
-      target="7"
+      source="342"
+      target="336"
       edge="1"
     >
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
     <mxCell
-      id="328"
-      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;"
+      id="346"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
       parent="baselayer"
-      source="324"
-      target="7"
+      source="343"
+      target="336"
       edge="1"
     >
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="-432.5" y="-389" as="sourcePoint" />
+        <mxPoint x="-432" y="-30" as="targetPoint" />
+      </mxGeometry>
     </mxCell>
-    <object
-      label=""
-      Type="globalLibrary"
-      LibraryGuid="ff4d0c4c-7a8e-4c7d-a7ee-cca186ea2873"
-      LibraryVersion="null"
-      SupportedLanguages=""
-      id="329"
-    >
-      <mxCell style="globalLibraryNode;" parent="baselayer" vertex="1">
-        <mxGeometry x="-690" y="-800" width="180" height="60" as="geometry" />
-      </mxCell>
-    </object>
-    <object label="rtds_1_globalConfig" id="330">
-      <mxCell style="globalLibraryInnerNode;" parent="329" vertex="1">
-        <mxGeometry x="10" y="16" width="160" height="34" as="geometry" />
-      </mxCell>
-    </object>
-    <object
-      label=""
-      Type="globalLibrary"
-      LibraryGuid="92f0ecdb-bdb1-4c76-bce5-0f2a822379da"
-      LibraryVersion="null"
-      SupportedLanguages=""
-      id="331"
-    >
-      <mxCell style="globalLibraryNode;" parent="baselayer" vertex="1">
-        <mxGeometry x="-690" y="-710" width="180" height="60" as="geometry" />
-      </mxCell>
-    </object>
-    <object label="rtds_2_runtime" id="332">
-      <mxCell style="globalLibraryInnerNode;" parent="331" vertex="1">
-        <mxGeometry x="10" y="16" width="160" height="34" as="geometry" />
-      </mxCell>
-    </object>
-    <object
-      label=""
-      Type="globalLibrary"
-      LibraryGuid="dbb79182-33e8-4733-b4a4-f735d07e7bc9"
-      LibraryVersion="null"
-      SupportedLanguages=""
-      id="333"
-    >
-      <mxCell style="globalLibraryNode;" parent="baselayer" vertex="1">
-        <mxGeometry x="-690" y="-620" width="180" height="60" as="geometry" />
-      </mxCell>
-    </object>
-    <object label="rtds_3_vocallsEnv" id="334">
-      <mxCell style="globalLibraryInnerNode;" parent="333" vertex="1">
-        <mxGeometry x="10" y="16" width="160" height="34" as="geometry" />
-      </mxCell>
-    </object>
   </root>
 </mxGraphModel>;

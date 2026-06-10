@@ -38,10 +38,10 @@ var ROUTING_TABLE_STUB = {
         operations: [
             {
                 id: '00000',
-                type: 'SetVariables',
+                type: 'setVariables',
                 name: 'Init',
                 isFirstOperation: true,
-                params: { TestKey: 'TestValue' }
+                params: { testKey: 'TestValue' }
             }
         ]
     }
@@ -93,12 +93,12 @@ describe('rtds-runtime main.js', function () {
                 // JS twins are disabled: SetVariables / SetAttributes are no
                 // longer inline JS handlers, they route to the set_variables
                 // GUI-exit (the canvas setVariables.js component).
-                expect(result.sandbox.RTDS_OPERATIONS.has('SetVariables_vocalls')).toBe(false);
-                expect(result.sandbox.RTDS_OPERATIONS.has('SetAttributes_vocalls')).toBe(false);
-                expect(result.sandbox.RTDS_EXIT_KEYS.get('SetVariables_vocalls')).toBe('set_variables');
-                expect(result.sandbox.RTDS_EXIT_KEYS.get('SetAttributes_vocalls')).toBe('set_variables');
+                expect(result.sandbox.RTDS_OPERATIONS.has('setVariables')).toBe(false);
+                expect(result.sandbox.RTDS_OPERATIONS.has('setAttributes')).toBe(false);
+                expect(result.sandbox.RTDS_EXIT_KEYS.get('setVariables')).toBe('set_variables');
+                expect(result.sandbox.RTDS_EXIT_KEYS.get('setAttributes')).toBe('set_variables');
                 expect(typeof result.sandbox.RTDS_EXIT_KEYS.get).toBe('function');
-                expect(result.sandbox.RTDS_EXIT_KEYS.get('PlayPrompt_vocalls')).toBe('play_prompt');
+                expect(result.sandbox.RTDS_EXIT_KEYS.get('say')).toBe('play_prompt');
                 expect(result.sandbox.OP_VAR_PREFIX).toBeUndefined();
                 expect(typeof result.sandbox.fetchAndStart).toBe('function');
                 expect(typeof result.sandbox.resumeFrom).toBe('function');
@@ -126,16 +126,16 @@ describe('rtds-runtime main.js', function () {
             .then(function (result) {
                 var sb = result.sandbox;
                 // Clean slate on both stores before invoking the handler
-                delete sb.varObj.TestKey;
-                delete sb.TestKey;
+                delete sb.varObj.testKey;
+                delete sb.testKey;
                 var out = sb.executeSetVariables({
                     id: 'unit-1',
                     name: 'unit-setvars',
-                    type: 'SetVariables',
-                    params: { TestKey: 'TestValue', NextStep: '00001' }
+                    type: 'setVariables',
+                    params: { testKey: 'TestValue', nextStep: '00001' }
                 });
-                expect(sb.varObj.TestKey).toBe('TestValue');
-                expect(sb.TestKey).toBeUndefined();
+                expect(sb.varObj.testKey).toBe('TestValue');
+                expect(sb.testKey).toBeUndefined();
                 expect(out.nextStepId).toBe('00001');
             });
     });
@@ -145,30 +145,30 @@ describe('rtds-runtime main.js', function () {
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
             .then(function (result) {
                 var sb = result.sandbox;
-                delete sb.varObj.IVREvent;
-                delete sb.varObj.IsHelpdeskCall;
+                delete sb.varObj.ivrEvent;
+                delete sb.varObj.isHelpdeskCall;
                 delete sb.varObj.auth;
                 delete sb.debugCall;
                 sb.executeSetVariables({
-                    id: 'unit-2', name: 'unit-setvars-2', type: 'SetVariables',
+                    id: 'unit-2', name: 'unit-setvars-2', type: 'setVariables',
                     params: {
-                        IVREvent: 9999,
-                        IsHelpdeskCall: true,
-                        StrDigits: '123456',
+                        ivrEvent: 9999,
+                        isHelpdeskCall: true,
+                        strDigits: '123456',
                         'auth.verified': true,
                         'auth.method': 'pin',
                         'globalThis.debugCall': true,
-                        NextStep: '00002'
+                        nextStep: '00002'
                     }
                 });
-                expect(sb.varObj.IVREvent).toBe(9999);
-                expect(typeof sb.varObj.IVREvent).toBe('number');
-                expect(sb.varObj.IsHelpdeskCall).toBe(true);
-                expect(sb.varObj.StrDigits).toBe('123456');
-                expect(typeof sb.varObj.StrDigits).toBe('string');
+                expect(sb.varObj.ivrEvent).toBe(9999);
+                expect(typeof sb.varObj.ivrEvent).toBe('number');
+                expect(sb.varObj.isHelpdeskCall).toBe(true);
+                expect(sb.varObj.strDigits).toBe('123456');
+                expect(typeof sb.varObj.strDigits).toBe('string');
                 expect(sb.varObj.auth).toEqual({ verified: true, method: 'pin' });
                 expect(sb.debugCall).toBe(true);
-                expect('NextStep' in sb.varObj).toBe(false);
+                expect('nextStep' in sb.varObj).toBe(false);
             });
     });
 
@@ -177,17 +177,17 @@ describe('rtds-runtime main.js', function () {
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
             .then(function (result) {
                 var sb = result.sandbox;
-                delete sb.varObj.InactiveKey;
-                delete sb.InactiveKey;
+                delete sb.varObj.inactiveKey;
+                delete sb.inactiveKey;
                 var out = sb.executeSetVariables({
                     id: 'unit-inactive',
                     name: 'unit-setvars-inactive',
-                    type: 'SetVariables',
-                    params: { Active: false, InactiveKey: 'ShouldNotWrite', NextStep: '00003' }
+                    type: 'setVariables',
+                    params: { active: false, inactiveKey: 'ShouldNotWrite', nextStep: '00003' }
                 });
                 // Nothing written on either store, and the op advances on NextStep.
-                expect(sb.varObj.InactiveKey).toBeUndefined();
-                expect(sb.InactiveKey).toBeUndefined();
+                expect(sb.varObj.inactiveKey).toBeUndefined();
+                expect(sb.inactiveKey).toBeUndefined();
                 expect(out.nextStepId).toBe('00003');
             });
     });
@@ -197,15 +197,15 @@ describe('rtds-runtime main.js', function () {
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
             .then(function (result) {
                 var sb = result.sandbox;
-                delete sb.varObj.LegacyKey;
+                delete sb.varObj.legacyKey;
                 // No Active key at all — legacy config. Default-true means it writes.
                 var out = sb.executeSetVariables({
                     id: 'unit-legacy',
                     name: 'unit-setvars-legacy',
-                    type: 'SetVariables',
-                    params: { LegacyKey: 'Written', NextStep: '00004' }
+                    type: 'setVariables',
+                    params: { legacyKey: 'Written', nextStep: '00004' }
                 });
-                expect(sb.varObj.LegacyKey).toBe('Written');
+                expect(sb.varObj.legacyKey).toBe('Written');
                 expect(out.nextStepId).toBe('00004');
             });
     });
@@ -223,29 +223,29 @@ describe('rtds-runtime main.js', function () {
 
                 // SetVariables: NextStep entirely absent.
                 var sv = sb.executeSetVariables({
-                    id: 'nv-1', type: 'SetVariables', name: 'nv',
-                    params: { SomeKey: 'x' }
+                    id: 'nv-1', type: 'setVariables', name: 'nv',
+                    params: { someKey: 'x' }
                 });
                 expect(sv.nextStepId).toBe(null);
 
                 // SetVariables: NextStep present but blank.
                 var svBlank = sb.executeSetVariables({
-                    id: 'nv-2', type: 'SetVariables', name: 'nv',
-                    params: { SomeKey: 'x', NextStep: '' }
+                    id: 'nv-2', type: 'setVariables', name: 'nv',
+                    params: { someKey: 'x', nextStep: '' }
                 });
                 expect(svBlank.nextStepId).toBe(null);
 
                 // SendSms inactive with no NextStep -> null (not -1).
                 var sms = sb.executeSendSms({
-                    id: 'nv-3', type: 'SendSMS', name: 'nv',
-                    params: { Active: false }
+                    id: 'nv-3', type: 'sendSMS', name: 'nv',
+                    params: { active: false }
                 });
                 expect(sms.nextStepId).toBe(null);
 
                 // SendEmail inactive with no NextStep -> null (not -1).
                 var mail = sb.executeSendEmail({
-                    id: 'nv-4', type: 'SendEmail', name: 'nv',
-                    params: { Active: false }
+                    id: 'nv-4', type: 'sendEmail', name: 'nv',
+                    params: { active: false }
                 });
                 expect(mail.nextStepId).toBe(null);
             });
@@ -319,11 +319,11 @@ describe('rtds-runtime main.js', function () {
             .then(function (result) {
                 var sb = result.sandbox;
                 // Twins disabled: no longer registered as inline JS handlers.
-                expect(sb.RTDS_OPERATIONS.has('SendSms_vocalls')).toBe(false);
-                expect(sb.RTDS_OPERATIONS.has('SendMail_vocalls')).toBe(false);
+                expect(sb.RTDS_OPERATIONS.has('sendSms')).toBe(false);
+                expect(sb.RTDS_OPERATIONS.has('sendMail')).toBe(false);
                 // They now route to the canvas components via GUI-exit keys.
-                expect(sb.RTDS_EXIT_KEYS.get('SendSms_vocalls')).toBe('send_sms');
-                expect(sb.RTDS_EXIT_KEYS.get('SendMail_vocalls')).toBe('send_mail');
+                expect(sb.RTDS_EXIT_KEYS.get('sendSms')).toBe('send_sms');
+                expect(sb.RTDS_EXIT_KEYS.get('sendMail')).toBe('send_mail');
                 // The executeXxx functions remain defined (dead code, re-enableable).
                 expect(typeof sb.executeSendSms).toBe('function');
                 expect(typeof sb.executeSendEmail).toBe('function');
@@ -355,11 +355,11 @@ describe('rtds-runtime main.js', function () {
                 var capture = {};
                 withGateway(sb, { success: true, statusCode: 200 }, capture);
                 return sb.executeSendSms({
-                    id: 'sms-1', type: 'SendSMS', name: 'sms',
+                    id: 'sms-1', type: 'sendSMS', name: 'sms',
                     params: {
-                        Active: true, To: '+32478306999', From: '8850', Routing: 'LPA_DEV',
-                        Body: 'hi', SmsAccountId: 47,
-                        NextStep: '00012', NextStep_Success: '00011', NextStep_Failure: '00099'
+                        active: true, to: '+32478306999', from: '8850', routing: 'LPA_DEV',
+                        body: 'hi', smsAccountId: 47,
+                        nextStep: '00012', nextStep_Success: '00011', nextStep_Failure: '00099'
                     }
                 }).then(function (out) {
                     expect(out.nextStepId).toBe('00011');
@@ -377,11 +377,11 @@ describe('rtds-runtime main.js', function () {
                 var sb = result.sandbox;
                 withGateway(sb, { success: false, statusCode: 502 });
                 return sb.executeSendSms({
-                    id: 'sms-2', type: 'SendSMS', name: 'sms',
+                    id: 'sms-2', type: 'sendSMS', name: 'sms',
                     params: {
-                        Active: true, To: '+32478306999', From: '8850', Routing: 'LPA_DEV',
-                        Body: 'hi', SmsAccountId: 47,
-                        NextStep: '00012', NextStep_Success: '00011', NextStep_Failure: '00099'
+                        active: true, to: '+32478306999', from: '8850', routing: 'LPA_DEV',
+                        body: 'hi', smsAccountId: 47,
+                        nextStep: '00012', nextStep_Success: '00011', nextStep_Failure: '00099'
                     }
                 }).then(function (out) {
                     expect(out.nextStepId).toBe('00099');
@@ -397,8 +397,8 @@ describe('rtds-runtime main.js', function () {
                 var called = false;
                 sb.jsonHttpRequest = function () { called = true; throw new Error('should not POST'); };
                 var out = sb.executeSendSms({
-                    id: 'sms-3', type: 'SendSMS', name: 'sms',
-                    params: { Active: false, To: '+32478306999', NextStep: '00012' }
+                    id: 'sms-3', type: 'sendSMS', name: 'sms',
+                    params: { active: false, to: '+32478306999', nextStep: '00012' }
                 });
                 expect(out.nextStepId).toBe('00012');
                 expect(called).toBe(false);
@@ -411,8 +411,8 @@ describe('rtds-runtime main.js', function () {
             .then(function (result) {
                 var sb = result.sandbox;
                 var out = sb.executeSendSms({
-                    id: 'sms-4', type: 'SendSMS', name: 'sms',
-                    params: { Active: true, To: 'not-a-number', NextStep: '00012' }
+                    id: 'sms-4', type: 'sendSMS', name: 'sms',
+                    params: { active: true, to: 'not-a-number', nextStep: '00012' }
                 });
                 expect(out.nextStepId).toBe('00012');
             });
@@ -426,11 +426,11 @@ describe('rtds-runtime main.js', function () {
                 var capture = {};
                 withGateway(sb, { success: true, statusCode: 200 }, capture);
                 return sb.executeSendEmail({
-                    id: 'mail-1', type: 'SendEmail', name: 'mail',
+                    id: 'mail-1', type: 'sendEmail', name: 'mail',
                     params: {
-                        Active: true, From: 'noreply@n-allo.be',
-                        To: 'a@x.be; b@x.be', Cc: '', Subject: 'Hi', Body: 'Body', Priority: 9,
-                        NextStep: '00022', NextStep_Success: '00021', NextStep_Failure: '00099'
+                        active: true, from: 'noreply@n-allo.be',
+                        to: 'a@x.be; b@x.be', cc: '', subject: 'Hi', body: 'Body', priority: 9,
+                        nextStep: '00022', nextStep_Success: '00021', nextStep_Failure: '00099'
                     }
                 }).then(function (out) {
                     expect(out.nextStepId).toBe('00021');
@@ -448,8 +448,8 @@ describe('rtds-runtime main.js', function () {
             .then(function (result) {
                 var sb = result.sandbox;
                 var out = sb.executeSendEmail({
-                    id: 'mail-2', type: 'SendEmail', name: 'mail',
-                    params: { Active: true, From: 'noreply@n-allo.be', To: '', NextStep: '00022' }
+                    id: 'mail-2', type: 'sendEmail', name: 'mail',
+                    params: { active: true, from: 'noreply@n-allo.be', to: '', nextStep: '00022' }
                 });
                 expect(out.nextStepId).toBe('00022');
             });
@@ -463,11 +463,11 @@ describe('rtds-runtime main.js', function () {
                 // Two-op flow: an async op that resolves to step 2, then a
                 // GUI-exit op. runStep must await the promise and return the key.
                 var ops = [
-                    { id: '1', type: 'AsyncProbe', name: 'a', isFirstOperation: true, params: { NextStep: '2' } },
-                    { id: '2', type: 'PlayPrompt_vocalls', name: 'p', params: {} }
+                    { id: '1', type: 'asyncProbe', name: 'a', isFirstOperation: true, params: { nextStep: '2' } },
+                    { id: '2', type: 'say', name: 'p', params: {} }
                 ];
                 sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
-                sb.registerRtdsOperation('AsyncProbe', function (op) {
+                sb.registerRtdsOperation('asyncProbe', function (op) {
                     return Promise.resolve({ nextStepId: '2' });
                 });
 
@@ -500,14 +500,14 @@ describe('rtds-runtime main.js', function () {
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
             .then(function (result) {
                 var sb = result.sandbox;
-                // Unregistered type 'Condition' (mock removed) → must skip to
+                // Unregistered type 'condition' (mock removed) → must skip to
                 // NextStep '2' (a GUI-exit op) rather than hard-disconnect.
                 var ops = [
-                    { id: '1', type: 'Condition', name: 'c', isFirstOperation: true, params: { NextStep: '2' } },
-                    { id: '2', type: 'PlayPrompt_vocalls', name: 'p', params: {} }
+                    { id: '1', type: 'condition', name: 'c', isFirstOperation: true, params: { nextStep: '2' } },
+                    { id: '2', type: 'say', name: 'p', params: {} }
                 ];
                 sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
-                expect(sb.RTDS_REGISTRY.has('Condition')).toBe(false);
+                expect(sb.RTDS_REGISTRY.has('condition')).toBe(false);
                 expect(sb.runStep('1')).toBe('play_prompt');
             });
     });
@@ -518,7 +518,7 @@ describe('rtds-runtime main.js', function () {
             .then(function (result) {
                 var sb = result.sandbox;
                 var ops = [
-                    { id: '1', type: 'Condition', name: 'c', isFirstOperation: true, params: {} }
+                    { id: '1', type: 'condition', name: 'c', isFirstOperation: true, params: {} }
                 ];
                 sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
                 expect(sb.runStep('1')).toBe('disconnect');
@@ -530,15 +530,69 @@ describe('rtds-runtime main.js', function () {
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
             .then(function (result) {
                 var sb = result.sandbox;
-                // 1 → 2 → 1 among unregistered types. Without the visited-set
-                // guard this would loop forever; it must disconnect instead.
+                // 1 → 2 → 1 among unregistered types. Without the step-budget
+                // guard this would loop forever; it must disconnect instead once
+                // the budget is exhausted.
                 var ops = [
-                    { id: '1', type: 'Condition', name: 'c1', isFirstOperation: true, params: { NextStep: '2' } },
-                    { id: '2', type: 'Schedule', name: 's1', params: { NextStep: '1' } }
+                    { id: '1', type: 'condition', name: 'c1', isFirstOperation: true, params: { nextStep: '2' } },
+                    { id: '2', type: 'schedule', name: 's1', params: { nextStep: '1' } }
                 ];
                 sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
                 expect(sb.runStep('1')).toBe('disconnect');
                 expect(sb.context.session.variables.RTDS_error).toBe('RTDS_CYCLE_DETECTED');
+            });
+    });
+
+    it('runStep allows a step to be legitimately revisited (not a false cycle)', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                // A retry/reprompt-style loop: step '1' routes back to itself a
+                // bounded number of times, then exits to a GUI op. The old
+                // node-revisit guard killed the call the second time '1' was
+                // entered; the step-budget guard must let bounded revisits run
+                // and reach the GUI exit ('play_prompt').
+                var hits = 0;
+                var ops = [
+                    { id: '1', type: 'retryProbe', name: 'r', isFirstOperation: true, params: {} },
+                    { id: '2', type: 'say', name: 'p', params: {} }
+                ];
+                sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
+                sb.registerRtdsOperation('retryProbe', function () {
+                    hits++;
+                    // Revisit '1' three times, then advance to the GUI op '2'.
+                    return { nextStepId: hits < 3 ? '1' : '2' };
+                });
+                expect(sb.runStep('1')).toBe('play_prompt');
+                expect(hits).toBe(3);
+            });
+    });
+
+    it('runStep budget spans async hops (async cycle disconnects, not hangs)', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                // Async A→B→A loop: each hop resolves a thenable and re-enters
+                // runStep. The budget is threaded through the async re-entry, so
+                // a fresh cap is NOT minted per hop — the run terminates with a
+                // disconnect instead of recursing forever.
+                var ops = [
+                    { id: '1', type: 'asyncA', name: 'a', isFirstOperation: true, params: {} },
+                    { id: '2', type: 'asyncB', name: 'b', params: {} }
+                ];
+                sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
+                sb.registerRtdsOperation('asyncA', function () {
+                    return Promise.resolve({ nextStepId: '2' });
+                });
+                sb.registerRtdsOperation('asyncB', function () {
+                    return Promise.resolve({ nextStepId: '1' });
+                });
+                return sb.runStep('1').then(function (exitKey) {
+                    expect(exitKey).toBe('disconnect');
+                    expect(sb.context.session.variables.RTDS_error).toBe('RTDS_CYCLE_DETECTED');
+                });
             });
     });
 });

@@ -167,6 +167,8 @@ All state is stored on `context.session.variables`. No separate "context" object
 | `RTDS_opIndex` | After parseFlow | Map<string, Object> keyed by operation id |
 | `RTDS_currentOpId` | Before GUI handoff | Id of the operation being handed off |
 | `RTDS_currentOpType` | Before GUI handoff | Type of the operation being handed off |
+| `RTDS_currentOpConfig` | Before GUI handoff | The op's whole `params` object (the GUI component reads it to configure itself) |
+| `RTDS_currentTtsMessages` | Before GUI handoff | The op's `ttsMessages` map (`{ "NL": …, "FR": … }`) — per-language spoken text for prompt-playing components; `{}` when absent |
 | `RTDS_nextStepId` | Before GUI handoff | Default next step Id (GUI node overwrites this with its outcome) |
 | `RTDS_error` | On error | Error code string |
 | Any SetVariables target | During SetVariables | Written to `varObj` by default (or a dotted target) via `setVariable`; native JSON type preserved, strings token-resolved |
@@ -232,6 +234,7 @@ Before returning an exit key, sets the dispatcher handoff state on `context.sess
 - `RTDS_currentOpId` = `op.id`
 - `RTDS_currentOpType` = `op.type`
 - `RTDS_currentOpConfig` = `op.params` (the whole config object; the GUI node reads it to configure itself)
+- `RTDS_currentTtsMessages` = `op.ttsMessages` (the per-language `{ "NL": "...", "FR": "..." }` spoken-text map, a sibling of `op.params` — prompt-playing components like `say` read it to speak the caller-facing text; `{}` when the op carries none)
 - `RTDS_nextStepId` = the default `NextStep` (the GUI node overwrites this with its branching outcome before re-entry).
 
 The runtime does **not** mirror params into per-key `RTDS_OP_*` session variables — the GUI node reads `RTDS_currentOpConfig` instead.

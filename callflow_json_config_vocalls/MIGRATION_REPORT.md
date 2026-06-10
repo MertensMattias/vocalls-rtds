@@ -1,152 +1,145 @@
-# Callflow config migration — legacy PureConnect → RTDS `_vocalls` routing tables
+# Callflow config migration — legacy PureConnect → RTDS camelCase routing tables
 
 Source: [`callflow_json_config/`](../callflow_json_config/) (10 files, UTF-16, PureConnect schema).
-Target: this folder (`callflow_json_config_vocalls/`), UTF-8, **DB-importer schema** consumed by
-[`insert_flow_on_sourceId.sql`](../rtds/db_seed/insert_flow_on_sourceId.sql) (`POST /api/routing-table/import`).
-The importer writes `rtds.RoutingTable`/`Operation`/`Attribute`; the runtime later fetches the
-regenerated table over HTTP (`fetchAndStart`/`parseFlow`, which re-emits camelCase).
+Target: this folder (`callflow_json_config_vocalls/`), UTF-8, **camelCase RTDS contract** consumed by
+[`import_flow_from_json_camelCase.sql`](../rtds/db_seed/import_flow_from_json_camelCase.sql). Param keys
+are validated against the camelCase dictionary
+[`import_seeds_camelCase.sql`](../rtds/db_seed/import_seeds_camelCase.sql) — an unknown key throws
+`UNKNOWN_PARAM` (54016), an unresolved `nextStep*` target throws `INVALID_NEXTSTEP`.
 
-> **Contract note:** there are two envelope-casing contracts in this repo. The **importer**
-> reads **PascalCase** (`$.SourceId`, `$.Operations`, `$.Id/$.Type/$.Params`); the **runtime
-> `parseFlow`** reads **camelCase** (`json.sourceId`, `op.id`). These files target the **importer**,
-> so they are PascalCase. Param keys are validated by the importer against
-> [`seed_operations_vocalls_dictionary.sql`](../rtds/db_seed/seed_operations_vocalls_dictionary.sql)
-> — an unknown key throws `UNKNOWN_PARAM` (54016).
+> **Contract (camelCase, single envelope).** Both the importer (`import_flow_from_json_camelCase.sql`)
+> and the runtime `parseFlow` read **camelCase**: header keys (`sourceId`, `name`, `operations`),
+> per-op keys (`id`, `type`, `name`, `isFirstOperation`, `params`), every operation **type** value, and
+> every **param** name. This supersedes the earlier two-contract (PascalCase-importer) plan and the
+> temporary `_vocalls` type suffix, both now dropped. The canonical shape is
+> [`rtds/samples/n-allo_reception.json`](../rtds/samples/n-allo_reception.json).
 
 ## Status
 
-- ✅ **Pilot done:** `DIGIPOLIS_DA_KLANTWACHT_GUARD_PRD.json` — 5 ops.
-- ✅ **GUARD & TUI batch done (7 files):** the 3 full guard flows + 4 self-service TUI flows. See the per-file table below.
-- ⬜ Remaining 2 files: the two helpdesk flows (`DA_HELDPESK`, `LPA_ICT_HELDPESK`) — larger, contain unmapped types, still pending.
+- ✅ **All 10 flows migrated and validated** against `import_seeds_camelCase.sql`: well-formed JSON,
+  camelCase envelope + types + params, **every param key in the dictionary** (no `UNKNOWN_PARAM`), no
+  duplicate `id`s, and every `nextStep*` target resolves to a node in the same flow.
+- ✅ GUARD & TUI batch (8 files) — done previously, re-validated here against the camelCase dictionary.
+- ✅ **Helpdesk batch (2 files) — done in this pass:** `DA_HELDPESK` (41 ops) and `LPA_ICT_HELDPESK`
+  (34 ops). These are the flows that exercise the prompt/menu/condition/emergency/schedule types and
+  the semantic renames below.
 
-All 8 migrated files validated together: well-formed JSON, PascalCase envelope, **every Param key present in the dictionary** (no `UNKNOWN_PARAM`), no duplicate `Id`s, and every `NextStep*` target resolves to a real node in the same flow.
+### Per-file
 
-### GUARD & TUI batch — per-file
+| Output file | sourceId | Ops | Notes |
+| --- | --- | --- | --- |
+| `DIGIPOLIS_DA_KLANTWACHT_GUARD_PRD.json` | +3257351122 | 5 | guard |
+| `DIGIPOLIS_DA_SYSTEEMWACHT_GUARD_PRD.json` | +3257351123 | 5 | guard; `dialGuard:false`, `acceptCallMenu:false`, configId 2 |
+| `DIGIPOLIS_LPA_ICT_GUARD_PRD.json` | +3257351120 | 5 | guard |
+| `DIGIPOLIS_LPA_LTSU_GUARD_PRD.json` | +3271690037 | 5 | guard, configId 4. **sourceId placeholder `+xxx` repaired → `+3271690037`** (the value the report names as the correct LTSU source, and the target of the ICT helpdesk `flowJump`). |
+| `DIGIPOLIS_DA_KLANTWACHT_TUI_PRD.json` | +3271690040 | 5 | tui, configId 1 |
+| `DIGIPOLIS_DA_SYSTEEMWACHT_TUI_PRD.json` | +3271690039 | 5 | tui, configId 2 |
+| `DIGIPOLIS_LPA_ICT_GUARD_TUI_PRD.json` | +3257351121 | 5 | tui, configId 3 |
+| `DIGIPOLIS_LPA_LTSU_GUARD_TUI_PRD.json` | +3271690038 | 5 | tui, configId 4 |
+| `DIGIPOLIS_DA_HELDPESK_PRD.json` | +3233387777 | 41 | **NEW.** helpdesk: say/play/emergency/checkSchedule/condition/workgroupTransfer/callback/guard×2/sendMail×2/sendSms×2/externalTransfer/disconnect |
+| `DIGIPOLIS_LPA_ICT_HELDPESK_PRD.json` | +3233389999 | 34 | **NEW** (renamed from source `..._PROD_CURRENT.json`). helpdesk: say/emergency/checkSchedule/condition/menu/flowJump/guard×2/sendMail×2/sendSms×2/externalTransfer/workgroupTransfer/disconnect |
 
-| Output file | SourceId | Shape | Ops | Notes |
-| --- | --- | --- | --- | --- |
-| `DIGIPOLIS_DA_KLANTWACHT_GUARD_PRD.json` | +3281800050 | guard | 5 | pilot |
-| `DIGIPOLIS_DA_SYSTEEMWACHT_GUARD_PRD.json` | +3281800051 | guard | 5 | `DialGuard:false`, `AcceptCallMenu:false`, ConfigId 2 |
-| `DIGIPOLIS_LPA_ICT_GUARD_PRD.json` | +3271690036 | guard | 5 | source Disconnect `Id:"0098"` typo **repaired → "00098"** to match the SMS `NextStep` |
-| `DIGIPOLIS_LPA_LTSU_GUARD_PRD.json` | +3271690037 | guard | 5 | source file in the folder was a corrupted ICT copy; rebuilt from the **correct source you supplied** (`+3271690037`, ConfigId 4). `_TODO` dropped. |
-| `DIGIPOLIS_DA_KLANTWACHT_TUI_PRD.json` | +3271690040 | tui | 5 | ConfigId 1 |
-| `DIGIPOLIS_DA_SYSTEEMWACHT_TUI_PRD.json` | +3271690039 | tui | 5 | ConfigId 2 |
-| `DIGIPOLIS_LPA_ICT_GUARD_TUI_PRD.json` | +3271690041 | tui | 5 | ConfigId 3 |
-| `DIGIPOLIS_LPA_LTSU_GUARD_TUI_PRD.json` | +3271690038 | tui | 5 | ConfigId 4 |
+All 10 `sourceId`s are unique.
 
-### TUI flows — `GuardTUI_vocalls` mapping
+## Migration rules applied
 
-Legacy TUI ops carried only `Active / ConfigId / ConfigName / NextStep* `. The `GuardTUI_vocalls`
-dictionary (and `rtds/components/guardTui.js`) require the spoken slots and a `NextStep_Denied`
-branch, so each was filled from the **component's own `__configJSON` defaults**:
+### 1. Envelope + keys → camelCase
+`sourceId / name / projectId / project / promptLibraryId / promptLibrary / supportedLanguages /
+operations`, and per-op `id / type / name / isFirstOperation / params`. `promptLibraryId` left `""`
+(the importer find-or-creates the library by project). `projectId` is informational (the importer
+resolves `CompanyProjectID` by project **name**); the ICT helpdesk source carried none, so it is `""`.
 
-| Added key | Source of value | Why |
-| --- | --- | --- |
-| `PhoneNumberVar: "ani"` | component default | which var holds the caller number to (de)activate |
-| `Timeout: 10000` | component default | DTMF/HTTP timeout |
-| `ResultCurrentlyActivated_NL`, `ResultCurrentlyDeactivated_NL`, `PromptActivate_NL`, `PromptDeactivate_NL`, `ResultActivated_NL`, `ResultDeactivated_NL`, `ResultOnlyActive_NL`, `ResultDenied_NL`, `ResultError_NL` | `sourceCode_guardTui.js` / KLANTWACHT template | per-language spoken slots; component resolves `base + '_' + language` |
-| `NextStep_Denied` | mapped to the legacy **Failure** node | the component branches on `denied`; legacy had no such branch, so denied falls through to the Cognos-failure node |
-
-The two trailing **Cognos** `SetAttributes` nodes (success `IVREvent 1200 / IVRAction CT`,
-failure `9999 / DC`) → `SetVariables_vocalls` with `IvrEvent`/`IvrAction`. `Active:true` added.
-
-> ⚠️ **Spoken text is still English placeholder** (`*_NL` suffix, English copy). Replace with Dutch
-> copy (or add `*_FR` / `*_DE` dictionary rows) before production.
-
-### ⚠️ Data-quality findings in the source files
-
-1. **`DIGIPOLIS_LPA_LTSU_GUARD_PRD.json` in the source folder was a corrupted ICT copy** — same
-   `SourceId +3271690036` / `Name "LPA_ICT_GUARD"` / `ConfigId 3` as the ICT flow, so importing it
-   would have collided on SourceId. **Resolved:** you supplied the correct LTSU source
-   (`SourceId +3271690037`, `ConfigId 4`, `PromptLibrary DIGIPOLIS\LPA\LTSU`); the migrated file now
-   uses those values and the `_TODO` suffix was dropped. All 8 SourceIds are now unique.
-2. **`LPA_ICT_GUARD` Disconnect Id typo.** Source Disconnect node was `Id:"0098"` while the SMS step
-   pointed at `"00098"` — a dangling jump. Repaired the Disconnect `Id` to `"00098"`.
-3. **Leading spaces in legacy ids/names** (`" DA_KLANTWACHT_TUI"`, `" LPA_ICT_GUARD"`). Trimmed.
-
-## The migration rules applied
-
-### 1. Envelope keys → PascalCase (importer contract)
-The importer reads `$.SourceId / Name / ProjectId / Project / PromptLibraryId / PromptLibrary / SupportedLanguages / Operations`, and per-op `$.Id / Type / Name / IsFirstOperation / Params`. Added the importer-required header fields `ProjectId` (from the source file) and `PromptLibraryId` (left `""` — the importer find-or-creates the library by `CompanyProjectID`, so the id is optional on input).
-
-### 2. Type names → `<Type>_vocalls` (the registry keys)
-From `registerRtdsOperation` / `registerRtdsExit` ([rtds_2_runtime.js:1083-1098](../projects/rtds-runtime/globalLibraries/active/rtds_2_runtime.js#L1083)):
+### 2. Operation type names → camelCase + semantic renames
+Matched to the dictionary in `import_seeds_camelCase.sql` and the runtime registry
+([rtds_2_runtime.js](../projects/rtds-runtime/globalLibraries/active/rtds_2_runtime.js)):
 
 | Legacy `Type` | New `type` | Runtime status |
 | --- | --- | --- |
-| `SetAttributes` | `SetVariables_vocalls` | ✅ JS twin (per your instruction — not `SetAttributes_vocalls`, though that alias also exists) |
-| `SendEmail` | `SendMail_vocalls` | ✅ JS twin + component |
-| `SendSMS` | `SendSms_vocalls` | ✅ JS twin + component |
-| `GuardRouting` | `Guard_vocalls` | ✅ GUI-exit `guard_routing` + component |
-| `GuardTUI` | `GuardTui_vocalls` | ✅ GUI-exit `guard_tui` + component |
-| `Disconnect` | `Disconnect_vocalls` | ✅ GUI-exit (terminal) |
-| `WorkgroupTransfer` | `WorkgroupTransfer_vocalls` | ⚠️ exit registered, **no component** |
-| `ExternalTransfer` | `ExternalTransfer_vocalls` | ⚠️ exit registered, **no component** |
-| `PlayPrompt` | `PlayPrompt_vocalls` | ⚠️ exit registered, **no component** (native `say`) |
-| `PlayAudio` | `PlayAudio_vocalls` | ⚠️ exit registered, **no component** (native `say`) |
-| `Menu` | `Menu_vocalls` | ⚠️ exit registered, **no component** (native `dtmf`) |
-| `Callback` | `Callback_vocalls` | ⚠️ exit registered, **no component** |
-| `Condition` | `Condition_vocalls` | ❌ **not registered, no component, spec-only** |
-| `Emergency` | `Emergency_vocalls` | ❌ **not registered, no component, spec-only** |
-| `Schedule` | `CheckSchedule_vocalls` | ⚠️ component [checkSchedule.js](../rtds/components/checkSchedule.js) exists but **not registered** |
-| `FlowJump` | `FlowJump_vocalls` | ❌ **not registered, spec-only** |
+| `SetAttributes` | `setVariables` | ✅ GUI-exit `set_variables` (+ `setAttributes` alias) |
+| `SendEmail` | `sendMail` | ✅ GUI-exit `send_mail` + component |
+| `SendSMS` | `sendSms` | ✅ GUI-exit `send_sms` + component |
+| `GuardRouting` | `guard` | ✅ GUI-exit `guard_routing` + component |
+| `GuardTUI` | `guardTui` | ✅ GUI-exit `guard_tui` + component |
+| `PlayPrompt` | `say` | ✅ GUI-exit `play_prompt` (semantic rename; native `say`) |
+| `PlayAudio` | `play` | ✅ GUI-exit `play_audio` (semantic rename) |
+| `LanguageMenu` | `getLanguage` | ✅ GUI-exit `language_menu` (semantic rename; not used by these flows) |
+| `Menu` | `menu` | ✅ GUI-exit `menu` |
+| `WorkgroupTransfer` | `workgroupTransfer` | ✅ GUI-exit `workgroup_transfer` |
+| `ExternalTransfer` | `externalTransfer` | ✅ GUI-exit `external_transfer` |
+| `Callback` | `callback` | ✅ GUI-exit `callback` |
+| `Disconnect` | `disconnect` | ✅ GUI-exit (terminal) |
+| `Schedule` | `checkSchedule` | ⚠️ catalogued + component exists, **not runtime-registered** → runStep skips to `nextStep` |
+| `Condition` | `condition` | ⚠️ catalogued, **not runtime-registered** → skips to `nextStep` |
+| `Emergency` | `emergency` | ⚠️ catalogued, **not runtime-registered** → skips to `nextStep` |
+| `FlowJump` | `flowJump` | ⚠️ catalogued, **not runtime-registered** → skips to `nextStep` |
 
-Files containing any ❌/⚠️-unregistered type (the two helpdesk flows) will be written with a **`_TODO` filename suffix** so it's obvious they reference types the runtime will currently *skip to NextStep with a warning*.
+> The helpdesk flows reference `condition`, `emergency`, `checkSchedule`, `flowJump`, which the runtime
+> currently **skips to their default `nextStep` with a warning** (cataloguing unblocks import; wiring
+> the handlers is separate work). The files are NOT given a `_TODO` suffix — the dictionary now
+> catalogues every type, so the **import** is clean; only **runtime execution** of those four is pending.
 
-### 3. Tokens `$(ATTR_x)` → `${rtX}`
-Per your choice, renamed to the `_rt`-style `${name}` vars the existing components ship with. ⚠️ **Token-syntax caveat:** `${name}` is the *component* path (`resolveConfigTokens`); the runtime *JS twins* that consume an imported table resolve **`$(NAME)`** instead (`resolveTokens`, [rtds_2_runtime.js:375](../projects/rtds-runtime/globalLibraries/active/rtds_2_runtime.js#L375)). If these ops execute as JS twins rather than GUI components, the tokens must be `$(rtEmailTo)`. Confirm the execution path per op before import.
+### 3. Tokens `$(ATTR_x)` → `${rt*}`
+`$(ATTR_EmailTo)→${rtEmailTo}`, `EmailBody→${rtEmailBody}`, `EmailAttachment→${rtEmailAttachment}`,
+`SMSTo→${rtSmsTo}`, `SMSBody→${rtSmsBody}`. ⚠️ These must be populated upstream (on `varObj`/`global`)
+before the mail/SMS op runs, or the placeholder ships literally.
 
-| Legacy | New |
-| --- | --- |
-| `$(ATTR_EmailTo)` | `${rtEmailTo}` |
-| `$(ATTR_EmailBody)` | `${rtEmailBody}` |
-| `$(ATTR_EmailAttachment)` | `${rtEmailAttachment}` |
-| `$(ATTR_SMSTo)` | `${rtSmsTo}` |
-| `$(ATTR_SMSBody)` | `${rtSmsBody}` |
-
-⚠️ **These vars must be populated upstream** (on `varObj` or `global`) before the mail/SMS op runs, or `resolveConfigTokens` leaves them raw and logs a warn — the placeholder ships literally.
-
-### 4. Param-key remaps
-
-**SendEmail → SendMail_vocalls** ([sendMail.js](../rtds/components/sendMail.js) contract):
-| Legacy | New | Note |
-| --- | --- | --- |
-| `CC` | `Cc` | casing (read is case-insensitive, normalised for clarity) |
-| `Importance: "Normal"` | `Priority: 2` | component expects numeric 1/2/3; Normal→2 |
-| `Attachment: $(ATTR_EmailAttachment)` | `Files: ${rtEmailAttachment}` | component splits `;`-list of file paths (`Files`), or `AttachmentNames`+`AttachmentData` for base64. **Assumed file paths** — change to AttachmentNames/Data if it's base64 |
-| *(added)* | `Timeout: 10000` | component default; not in source |
-
-**SendSMS → SendSms_vocalls** ([sendSms.js](../rtds/components/sendSms.js) contract):
-| Legacy | New | Note |
-| --- | --- | --- |
-| `ConfigId: 47` | `SmsAccountId: 47` | component key for the SMS account |
-| `Routing` | `Routing` | unchanged |
-| *(added)* | `Timeout: 5000` | component default; not in source |
-
-**GuardRouting → Guard_vocalls** (dictionary keys for `Guard_vocalls`):
-| Legacy | New | Note |
-| --- | --- | --- |
-| `SendSMS` / `SendMail` | `SendSms` / `SendMail` | casing → dictionary keys |
-| `OnHoldAudio: "TENANT_DA_GUARD"` | `OnHoldAudioUrl: "https://audio-${environment}.n-allo.be/on-hold.wav"` | matched the reference example (`insert_flow_on_sourceId.sql`); the dictionary key expects a **URL**, not the legacy audio-source name. ⚠️ confirm the real URL |
-| `DialGroup: "SIP_TO_..."` | *(dropped)* | not a dictionary key → would throw `UNKNOWN_PARAM`. Legacy SIP trunk routing; the guard models the outbound leg via `OutboundAni`/`Diversion` (both added, empty) |
-| *(added)* | `OutboundAni: ""`, `Diversion: ""`, `AcceptCallMessage: "..."` | dictionary keys present in the reference example |
-
-**SetAttributes → SetVariables_vocalls** (dictionary keys only — importer throws `UNKNOWN_PARAM` otherwise):
-| Legacy | New | Note |
-| --- | --- | --- |
-| `IVREvent` | `IvrEvent` | dictionary uses `IvrEvent` casing |
-| `IVRAction` | `IvrAction` | dictionary uses `IvrAction` casing |
-| `RoutingId` | `RoutingId` | unchanged (dictionary key) |
-| `CallflowId` | *(dropped)* | ⚠️ **not in the dictionary** for `SetVariables_vocalls` → would throw `UNKNOWN_PARAM`. Mapped instead to `CustomerName`/`CustomerProject` (split from the routing id), matching the reference example. Re-add `CallflowId` to the dictionary if it must be preserved |
-| `LogAttributes` | *(dropped)* | dictionary *does* allow `LogAttributes`, but the value is a PureConnect Cognos pipe-list with no runtime consumer — omitted. Re-add verbatim if Cognos logging is still needed |
-| *(added)* | `Active: true`, `CustomerName`, `CustomerProject` | dictionary keys from the reference example |
+### 4. Param-key remaps and value transforms
+- **setVariables** (from `SetAttributes`): `IVREvent→ivrEvent`, `IVRAction→ivrAction`, `RoutingId→routingId`.
+  `CallflowId` **dropped** (not in dict); `LogAttributes` **dropped** (PureConnect Cognos pipe-list, no
+  runtime consumer). On the first op, `customerName`/`customerProject` added by splitting `routingId` on
+  the first `_` (parity with the GUARD/TUI files).
+- **guard** (from `GuardRouting`): `OnHoldAudio→onHoldAudioUrl`, `SendSMS→sendSms`, `SendMail→sendMail`.
+  `DialGroup` **dropped** (SIP trunk, not a dict key). Added `outboundANI:""`, `diversion:""`,
+  `acceptCallMessage` (dict-required, absent in source).
+- **sendMail** (from `SendEmail`): `CC→cc`, `Importance:"Normal"→priority:2`, `Attachment→files`. Added
+  `bcc/attachmentNames/attachmentData/customerKey:""`, `timeout:10000`.
+- **sendSms** (from `SendSMS`): `ConfigId→smsAccountId`. Added `timeout:5000`.
+- **Array→scalar:** legacy `[value,"isDisplayed","isEditable"]` param forms (e.g. `prompt`, `active` on
+  some `say` ops) flattened to the scalar `value`, matching `n-allo_reception.json`.
+- **Type coercion:** `bit` params → JSON boolean, `int` params → JSON number (no `TYPE_MISMATCH`).
+- `active` defaulted to `true` on non-`disconnect` ops where the source omitted it (optional in the dict).
 
 ### 5. Encoding
-Source UTF-16 (BOM + null-spaced bytes) → output UTF-8.
+Source UTF-16 (BOM) → output UTF-8.
 
-## Open items to confirm on the pilot
+## Data-quality findings & repairs in the source files
 
-1. **`OnHoldAudioUrl`** — keep the legacy `TENANT_DA_GUARD` audio-source name, or map to a real URL?
-2. **`Files` vs `AttachmentNames/Data`** — is `$(ATTR_EmailAttachment)` a file *path* or base64 data?
-3. **`DialGroup` drop** — confirm the SIP trunk group isn't needed by the new guard component.
-4. **`SmsAccountId`** — confirm `47` is the account id (legacy called it `ConfigId`).
+1. **`LPA_LTSU_GUARD` sourceId was the placeholder `+xxx`** → repaired to **`+3271690037`** (the report's
+   stated LTSU source and the target of the ICT helpdesk `flowJump`). All 10 sourceIds are now unique.
+2. **ICT helpdesk dangling jumps.** The inline `LPA_LTSU_GUARD` block (ops 00080–00082) is orphaned —
+   the flow `flowJump`s to `+3271690037` at op 00066 before reaching them — and its `nextStep*` pointed
+   at non-existent ids `00067`/`00068` (leftovers from when the LTSU guard was inline at those ids).
+   Repaired to the flow's own mail/sms ids (`00067→00081`, `00068→00082`) so every target resolves; the
+   ops remain unreachable (harmless dead code, superseded by the standalone LTSU flow).
+3. **`onHoldAudioUrl` carries the legacy audio-source NAME** (`"TENANT_DA_GUARD"`) on the helpdesk
+   guards, not a URL. Kept verbatim from source — ⚠️ replace with the real on-hold URL before production
+   (the standalone GUARD files use a placeholder URL).
+4. **`LPA_ICT_GUARD_TUI` terminal disconnect carried a stray TTS block** (`applicationId:20` — not a
+   seeded prompt application; `prompt`/`ttsMessages` with a lowercase `nl` key and the prompt *filename*
+   as the spoken text). It was absent from the PureConnect source and inconsistent with the other three
+   TUI flows, and would have thrown `UNKNOWN_APPLICATION`. Reduced to a bare terminal `disconnect`
+   (`params: {}`), matching source and siblings.
+
+## Import readiness
+
+Validated statically against the importer rules in `import_flow_from_json_camelCase.sql`
+(`UNKNOWN_PARAM`, `TYPE_MISMATCH`, `INVALID_NEXTSTEP`, TTS application/language) and the camelCase
+dictionary: **all 10 flows + `rtds/samples/n-allo_reception.json` pass.** Run order: seed first
+(`import_seeds_camelCase.sql`), then each flow through `import_flow_from_json_camelCase.sql`.
+
+**Precondition (not provided by the seed):** the importer's `UNKNOWN_PROJECT` check requires
+`rtds.Dic_CompanyProject` to already contain the project names these flows reference — **`NALLO`**,
+**`DA HELPDESK`**, **`LPA ICT`**. `import_seeds_camelCase.sql` seeds OperationType / PromptApplication /
+PromptLanguage / AttributeType / Attribute only, **not** `Dic_CompanyProject`; those project rows must
+pre-exist in the target DB (or be seeded separately). The PromptLibrary is find-or-created by the importer.
+
+## Open items to confirm
+
+1. **`onHoldAudioUrl`** — supply the real on-hold audio URL (helpdesk guards still carry `TENANT_DA_GUARD`).
+2. **`files` vs `attachmentNames`/`attachmentData`** — is `${rtEmailAttachment}` a file *path* (current
+   mapping, `files`) or base64 data?
+3. **`smsAccountId 47`** — confirm `47` is the SMS account id (legacy `ConfigId`).
+4. **GUARD/TUI sourceIds** — the 8 pre-existing files use a `+3257351120–123` / `+3271690037–041` range
+   that differs from the source PureConnect exports; confirm these reassignments are intended.
+5. **Runtime wiring** — `condition` / `emergency` / `checkSchedule` / `flowJump` are catalogued but not
+   yet runtime-registered (runStep skips them); wire handlers before these flows run end-to-end.
