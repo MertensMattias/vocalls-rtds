@@ -39,9 +39,11 @@ These become the single shared implementation the twins use. **Components keep t
 
 Rewritten to mirror their components body-for-body, using the latest component code as the source of truth:
 
-- **`executeSetVariables`** (ref [setVariables.js](../../rtds/components/setVariables.js)): build `__rtParams = setupConfig(op.params)`; seed `__rtOutcome='nextStep'`; if `!activeFlag(getValue(__rtParams,'active',true))` → log skip, return (outcome stays `'nextStep'`); else `walk(__rtParams, ...)` skipping control keys `{ active:1, nextstep:1 }`, `setVariable(key,value)` each; outcome stays `'nextStep'`. Sync — returns `undefined`. Active defaults **true** (SetVariables historically always wrote).
-- **`executeSendSms`** (ref [sendSms.js](../../rtds/components/sendSms.js)): seed `'nextStep'`; inactive check `String(getValue(__rtParams,'active',false)).toLowerCase() !== 'true'` → return; invalid `to` (`!isMobileNumber`) → return (stays `'nextStep'`); pivot `__rtOutcome='nextStep_Failure'` before the POST; in `.then` success → `'nextStep_Success'`, gateway-fail/reject → stays `'nextStep_Failure'`. Async — returns the thenable. Active defaults **false** (opt-in).
-- **`executeSendEmail`** (ref [sendMail.js](../../rtds/components/sendMail.js)): same shape as sendSms — seed `'nextStep'`; inactive/precondition (missing From/To) → return; pivot `'nextStep_Failure'` before POST; `.then` success → `'nextStep_Success'`. Async — returns the thenable. Active defaults **false**.
+- **`executeSetVariables`** (ref [setVariables.js](../../rtds/components/setVariables.js)): build `__rtParams = setupConfig(op.params)`; seed `__rtOutcome='nextStep'`; if `!activeFlag(getValue(__rtParams,'active',true))` → log skip, return (outcome stays `'nextStep'`); else `walk(__rtParams, ...)` skipping control keys `{ active:1, nextstep:1 }`, `setVariable(key,value)` each; outcome stays `'nextStep'`. Sync — returns `undefined`. Active defaults **true**.
+- **`executeSendSms`** (ref [sendSms.js](../../rtds/components/sendSms.js)): seed `'nextStep'`; inactive check `!activeFlag(getValue(__rtParams,'active',true))` → return; invalid `to` (`!isMobileNumber`) → return (stays `'nextStep'`); pivot `__rtOutcome='nextStep_Failure'` before the POST; in `.then` success → `'nextStep_Success'`, gateway-fail/reject → stays `'nextStep_Failure'`. Async — returns the thenable. Active defaults **true**.
+- **`executeSendEmail`** (ref [sendMail.js](../../rtds/components/sendMail.js)): same shape as sendSms — seed `'nextStep'`; inactive check `!activeFlag(getValue(__rtParams,'active',true))` → return; precondition (missing From/To) → return; pivot `'nextStep_Failure'` before POST; `.then` success → `'nextStep_Success'`. Async — returns the thenable. Active defaults **true**.
+
+**Active default — uniform `true` across all three twins** (requester decision). This *diverges from the current `sendSms`/`sendMail` components*, which default Active **false** (opt-in) via `String(getValue(...,'active',false)).toLowerCase() !== 'true'`. Because the twins now win at dispatch (see Registration below), the **twin's `true` default is the live contract** for these Types. The components' `false` default becomes dormant for `sendSms`/`sendMail` (those components are no longer reached on the live path). This is a **deliberate behavior change**, not a mirror of the component — flagged here so it is not mistaken for drift. `conventions/lockstep.md` param-parity still holds (param *names* match); the Active-default value is now owned by the twin.
 
 Twins use the shared `setupConfig`/`walk`/`getValue`/`activeFlag` — no `resolveNextStep`, no `{ nextStepId }` return, no inline token-resolution loop.
 
@@ -66,9 +68,23 @@ Uses the same `getValue(__rtParams, __rtOutcome, '')`. **No per-kind logic.** Be
 
 ## Error handling (mirrors the component contract)
 
-- **Active=false / validation fail:** stage `'nextStep'` (skip) or `'nextStep_Failure'`, return. No throw.
+- **Inactive (`Active` resolves false) / validation fail:** stage `'nextStep'` (skip) or `'nextStep_Failure'`, return. No throw. (`Active` now defaults `true` on all three twins, so the skip path is taken only on an explicit falsey `Active`.)
 - **Async HTTP reject:** handler `.then(onOk, onErr)` error arm leaves `'nextStep_Failure'`. Engine keeps `try/catch` + promise-reject backstop → `RTDS_error` + `'disconnect'`.
 - **Resolution miss:** outcome key absent in `__rtParams` → `getValue` returns `''` → engine treats as end-of-flow (same as a component resolving to `''`).
+
+## Registration — all three twins dispatch as JS (requester decision)
+
+`RTDS_REGISTRY` is a `Map` keyed by Type, **last-write-wins**: `registerRtdsOperation(type,…)` sets `{ kind:'js' }` and deletes any exit view; `registerRtdsExit(type,…)` sets `{ kind:'gui' }` and deletes any JS view. A Type is therefore **either** JS **or** GUI at dispatch, never both.
+
+`setVariables`, `sendSms`, and `sendMail` are to dispatch as **JS handlers** (inline twins win). Concretely, in the registration block at the bottom of `rtds_2_runtime.js`:
+
+- Ensure `registerRtdsOperation('setVariables', executeSetVariables)`, `registerRtdsOperation('sendSms', executeSendSms)`, `registerRtdsOperation('sendMail', executeSendEmail)` are present and run **after** (or instead of) the competing `registerRtdsExit('setVariables'|'sendSms'|'sendMail', …)` lines. Cleanest is to **remove** those three exit registrations so there is no silently-overridden line.
+- **Check `setAttributes`:** it currently maps to the `set_variables` exit (`registerRtdsExit('setAttributes','set_variables')`). Decide during implementation whether `setAttributes` also becomes a JS op (`registerRtdsOperation('setAttributes', executeSetVariables)`) or stays a GUI exit — do not orphan it. (It shares the `executeSetVariables` handler, so JS-registering it is the consistent choice.)
+
+**Behavioral consequences (intended):**
+- On **live calls**, these Types execute inline in `runStep`; their canvas components (`rtds/components/setVariables.js`, `sendSms.js`, `sendMail.js`) are no longer reached for these Types. The components remain the lockstep reference but become dormant on the live path.
+- On the **finalize path**, these ops now **run** (JS handlers are not filtered; only GUI exits are). This is what makes the call-report SMS/email actually send on call interruption — the original finalize gap closes here, not via special-casing.
+- Because `sendSms`/`sendMail` now run on the **live** path (not just the finalize tail), their twins are load-bearing for real calls; the "mirror the component exactly" conversion and its tests are correctness-critical, not latent.
 
 ## Testing
 
@@ -89,8 +105,9 @@ Uses the same `getValue(__rtParams, __rtOutcome, '')`. **No per-kind logic.** Be
 ## Out of scope
 
 - **De-duplicating component inline helpers** against the new engine `setupConfig`/`walk` (future follow-up; the fallback guards already permit it).
-- **Registering `sendSms`/`sendMail` as JS handlers.** The twins are converted to the contract here, but their `registerRtdsOperation` lines stay commented (they remain GUI exits). Registration is a separate effort; the converted twins are ready for it.
 - Renaming `__rtOutcome` → `_rtOutcome` (considered earlier; not adopted).
+
+(Note: registering `sendSms`/`sendMail` as JS handlers was previously out of scope; it is now **in scope** — see the Registration section above.)
 
 ## Open question for implementation
 
