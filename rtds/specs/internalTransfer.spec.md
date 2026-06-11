@@ -30,6 +30,8 @@ Transfer the caller to an **internal destination** — an agent, extension, or i
 | ----------------- | ---------------- | -------- | -------------------------------- | -------------------------------------------------------------------------------------------- |
 | `active`          | boolean          | yes      | `true`                           | If falsy, the operation logs a skip and exits to `nextStep` without transferring. Read with a `true` fallback. |
 | `target`          | string           | yes      | `${RTDS_SchedulerInternalNumber}` | The internal destination (extension / agent / internal route). Defaults to the value stashed by `checkSchedule`; `${name}` is resolved at init by `__setupConfig`. |
+| `parameters`      | string           | no       | —                                | Semicolon-delimited SIP headers / transfer data attached to the internal leg, e.g. `X-Context:{headerContext};X-Clir:true;`. Feeds the `redirect` primitive's `Parameters` attribute (alongside any `line:`-route endpoint header); `{name}` tokens are resolved by the runtime at transfer time, literals pass through. |
+| `attendTransfer`  | boolean          | no       | `false`                          | Transfer style: `false` (default) = blind, `true` = attended. The style is a **fixed node setting** (not variable-driven), so the component holds two `redirect` nodes and the `case` routes to the one matching this flag. |
 | `timeout`         | number (s)       | no       | `30`                             | No-answer timeout for the internal attempt.                                                  |
 | `nextStep_Failure`| string (step ID) | yes      | —                                | Continuation when the transfer is not accepted (unavailable / no answer / failed).           |
 | `nextStep`        | string (step ID) | yes      | —                                | Continuation when the operation is inactive or the target is empty (caller **not** transferred). **Last key in the Params array.** |
@@ -50,31 +52,33 @@ A native Vocalls telephony action via a `redirect` primitive — no HTTP call. T
 | Field          | Value                                                                                   |
 | -------------- | --------------------------------------------------------------------------------------- |
 | `Destination`  | the internal target directly (`${__transferDest}`), **or** a `line:` route with the endpoint passed in `Parameters` (`X-Vocalls-Party2-Endpoint:{__transferDest}`), per the [guardRouting.v2.js](../components/guardRouting.v2.js) precedent |
-| `TransferType` | `attend` (internal attended hand-off; confirm)                                          |
+| `Parameters`   | the resolved `parameters` Param — semicolon-delimited `Header:value;` pairs (SIP headers / transfer data, e.g. `X-Context:{headerContext};X-Clir:true;`), combined with any `line:`-route endpoint header; `{name}` tokens resolved by the engine at transfer time |
+| `TransferType` | selected by `attendTransfer` — the component holds **two** `redirect` nodes (`blind` / `attend`) and the `case` routes to the matching one (the setting is per-node, not variable-driven) |
 | Success        | caller leg terminates (no outbound edge)                                                 |
 | Not accepted   | the `default` branch routes to `output`, which resolves `nextStep_Failure`               |
 
 ### Component structure
 
-Composite — the four-node trunk with a `case` guard and a `redirect` primitive between the work script and the output node (identical shape to [externalTransfer.spec.md](externalTransfer.spec.md), only the destination semantics differ).
+Composite — the four-node trunk with a `case` that picks the transfer style (or skips), feeding one of **two** `redirect` primitives (blind / attend) before the output node (identical shape to [externalTransfer.spec.md](externalTransfer.spec.md), only the destination semantics differ).
 
 ```
-input(0) → init(7) → script(29) → case ─[__doTransfer]→ redirect ─[not accepted]→ output(6)
-                                       └─[default: skip]──────────────────────────→ output(6)
-                                                          (success → leg terminates)
+input → init → script → case ┬ [__doTransfer && __attendTransfer] → redirect:attend ┐
+                             ├ [__doTransfer]                      → redirect:blind  ┤ success → leg ends
+                             └ [default / skip] ───────────────────────────────────→ output
+                               each redirect's "not accepted" branch ──────────────→ output
 ```
 
-`init` — seed `__rtOutcome = 'nextStep'`, `__doTransfer = false`, `__transferDest = ''`, then `__setupConfig`.
+`init` — seed `__rtOutcome = 'nextStep'`, `__doTransfer = false`, `__attendTransfer = false`, `__transferDest = ''`, `__transferParams = ''`, then `__setupConfig`.
 
-`script` (work body) — active gate, resolve `target` into `__transferDest`; if inactive or empty leave `__rtOutcome = 'nextStep'` and return; otherwise stage `__rtOutcome = 'nextStep_Failure'` and set `__doTransfer = true`. Work-node logs carry `{ outcome: __rtOutcome }`.
+`script` (work body) — active gate, resolve `target` into `__transferDest`, `parameters` into `__transferParams`, and `attendTransfer` into `__attendTransfer`; if inactive or empty leave `__rtOutcome = 'nextStep'` and return; otherwise stage `__rtOutcome = 'nextStep_Failure'` and set `__doTransfer = true`. Work-node logs carry `{ outcome: __rtOutcome }`.
 
-`case` → `redirect` → `output` resolves the staged outcome once (`{ outcome, nextStep }`).
+`case` — `__doTransfer && __attendTransfer` → `redirect:attend`; `__doTransfer` → `redirect:blind`; `default` → `output`. Both `redirect` nodes share the internal `Destination` and `Parameters="{__transferParams}"`, differing only in their fixed `TransferType`; success terminates the leg, each not-accepted branch → `output`, which resolves the staged outcome once (`{ outcome, nextStep }`).
 
 ### Open questions
 
 - **Internal addressing.** Is the internal destination a bare extension/number on `Destination`, or a `line:<route>` with the endpoint in `redirect.Parameters` (as [guardRouting.v2.js](../components/guardRouting.v2.js) does for its guard transfer)? This drives the `redirect` shape.
 - **Dropped workgroup behaviour.** The legacy `NAllo_RTDS_WorkgroupTransfer` did skills validation, ACD priority, queue-timeout, and DTMF escape-key handling — all **out of scope** here per the "no workgroups" decision. Confirm `internalTransfer` is a plain internal redirect with none of that.
-- **`TransferType`** — attended vs. blind for an internal hand-off. Confirm.
+- **Attend-mode node attributes** — `attendTransfer: true` routes to the `redirect` node configured for attended transfer; confirm that node's exact attend-mode settings when the component is built.
 - **Not-accepted granularity** — the `redirect` primitive exposes a single not-accepted branch; confirm collapsing all internal failure modes into `nextStep_Failure` is acceptable.
 
 ### Build note
