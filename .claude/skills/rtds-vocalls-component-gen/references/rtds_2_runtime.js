@@ -435,8 +435,8 @@ function resolveNextStep(op, resultKey) {
 //   varObj/globalThis/a named reachable object. Values keep their resolved type.
 //   Control keys (active, nextStep) are never stored. The engine resolves
 //   _rtNextStep from __rtOutcome after this returns; the handler returns nothing.
-//   Active defaults FALSE (requester decision -- diverges from the component's
-//   true default; see the unified-contract design doc).
+//   Active defaults TRUE -- byte-identical to the rtds/components/setVariables.js
+//   component (sendSms / sendMail twins + components also default true).
 // ===========================================================================
 
 /**
@@ -447,7 +447,7 @@ function executeSetVariables(op) {
   __rtParams = setupConfig(op.params);
   __rtOutcome = "nextStep";
 
-  if (!activeFlag(getValue(__rtParams, "active", false))) {
+  if (!activeFlag(getValue(__rtParams, "active", true))) {
     Logger.info("[RTDS] SetVariables skipped -- inactive", {
       outcome: __rtOutcome,
     });
@@ -1083,7 +1083,7 @@ function executeSendSms(op) {
   __rtParams = setupConfig(op.params);
   __rtOutcome = "nextStep";
 
-  if (!activeFlag(getValue(__rtParams, "active", false))) {
+  if (!activeFlag(getValue(__rtParams, "active", true))) {
     Logger.info("[RTDS] SendSMS skipped -- inactive", { outcome: __rtOutcome });
     return;
   }
@@ -1136,7 +1136,11 @@ function executeSendSms(op) {
       });
     },
     function (err) {
-      Logger.error("[RTDS] SendSMS request error", { outcome: __rtOutcome }, err);
+      Logger.error(
+        "[RTDS] SendSMS request error",
+        { outcome: __rtOutcome },
+        err,
+      );
     },
   );
 }
@@ -1157,8 +1161,10 @@ function executeSendEmail(op) {
   __rtParams = setupConfig(op.params);
   __rtOutcome = "nextStep";
 
-  if (!activeFlag(getValue(__rtParams, "active", false))) {
-    Logger.info("[RTDS] SendEmail skipped -- inactive", { outcome: __rtOutcome });
+  if (!activeFlag(getValue(__rtParams, "active", true))) {
+    Logger.info("[RTDS] SendEmail skipped -- inactive", {
+      outcome: __rtOutcome,
+    });
     return;
   }
 
@@ -1232,7 +1238,11 @@ function executeSendEmail(op) {
       });
     },
     function (err) {
-      Logger.error("[RTDS] SendEmail request error", { outcome: __rtOutcome }, err);
+      Logger.error(
+        "[RTDS] SendEmail request error",
+        { outcome: __rtOutcome },
+        err,
+      );
     },
   );
 }

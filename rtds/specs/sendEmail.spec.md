@@ -28,7 +28,7 @@ Send an outbound email via the RTDS mail gateway with optional CC/BCC, file atta
 
 | Param name         | Type                              | Required | Default | Description                                                                                                                       |
 | ------------------ | --------------------------------- | -------- | ------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `active`           | boolean                           | no       | `true`  | If falsy, the operation logs a skip and exits to `nextStep`. Default `true` (runs unless explicitly disabled). **⚠ The shipped `sendMail.js` currently defaults `false` — flagged for a code fix; see [Convention debt](#convention-debt).** |
+| `active`           | boolean                           | no       | `true`  | If falsy, the operation logs a skip and exits to `nextStep`. Default `true` (runs unless explicitly disabled). |
 | `from`             | string (email address)            | yes      | —       | Sender address.                                                                                                                    |
 | `to`               | string (`;`-separated emails)     | yes      | —       | Recipient list.                                                                                                                    |
 | `cc`               | string (`;`-separated emails)     | no       | `''`    | CC recipients. Omitted from the payload when empty.                                                                                |
@@ -157,13 +157,9 @@ _rtNextStep = getValue(__rtParams, __rtOutcome, '');
 Logger.info('[sendMail] exit', { outcome: __rtOutcome, nextStep: _rtNextStep });
 ```
 
-### Convention debt (flagged 2026-06-08)
+### Convention debt — resolved 2026-06-11
 
-This spec states the **target** contract. The shipped `sendMail.js` conforms except:
-
-- **`active` default.** The component reads `getValue(__rtParams, 'active', false)` — default **false**. The target is **true**. Change the component's active guard to default `true`.
-
-Otherwise conformant: v2 `__rtOutcome` staging, single-resolve at output with the `''` fallback.
+The `active`-default debt is **closed**: `sendMail.js` (and the runtime twin `executeSendEmail`) now read `getValue(__rtParams, 'active', true)`, matching this spec's target. The operation also now dispatches as an **inline JS twin** (registered via `registerRtdsOperation`), not a GUI exit — the canvas component remains the lockstep reference. Otherwise conformant: v2 `__rtOutcome` staging, single-resolve at output with the `''` fallback.
 
 ### Notes on naming
 

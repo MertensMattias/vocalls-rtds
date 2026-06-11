@@ -223,7 +223,7 @@ Resolution order:
 ### 4.7 `executeSetVariables(op)`
 
 Unified `__rtOutcome` contract (mirrors `rtds/components/setVariables.js`). Builds `__rtParams = setupConfig(op.params)`, seeds `__rtOutcome = 'nextStep'`, then:
-- **Active defaults `false`** — `if (!activeFlag(getValue(__rtParams, 'active', false)))` skips (logs, returns; outcome stays `'nextStep'`). (Requester decision; diverges from the component's `true` default.)
+- **Active defaults `true`** — `if (!activeFlag(getValue(__rtParams, 'active', true)))` skips (logs, returns; outcome stays `'nextStep'`). Byte-identical to the `setVariables.js` component; only an explicit falsey `Active` skips.
 - Otherwise `walk(__rtParams, …)` skips the control keys `active` / `nextStep` (case-insensitive) and writes every other key via `setVariable(key, value)` — a bare key lands on `varObj`, a dotted key targets `varObj` / `globalThis` / a named reachable object (see §4.11). Values keep the type `setupConfig` resolved.
 
 Returns nothing (sync `undefined`). The engine resolves `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` after it returns.
@@ -243,7 +243,7 @@ The runtime does **not** mirror params into per-key `RTDS_OP_*` session variable
 
 Core dispatch loop. Takes an operation id string, looks it up in `context.session.variables.RTDS_opIndex` (`opIndex.get(currentId)`), and dispatches:
 
-- JS-handled type: `Promise.resolve(handler(op))`, then the engine — the **single resolver** — runs `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` and advances `currentId` to it (or ends the flow when it resolves to `''`). The handler's return value is used only for sync-vs-async timing, never routing; `runStep` therefore returns a promise of the exit key whenever it runs a JS op. `Active` defaults `false` on the JS twins.
+- JS-handled type: `Promise.resolve(handler(op))`, then the engine — the **single resolver** — runs `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` and advances `currentId` to it (or ends the flow when it resolves to `''`). The handler's return value is used only for sync-vs-async timing, never routing; `runStep` therefore returns a promise of the exit key whenever it runs a JS op. `Active` defaults `true` on the JS twins.
 - GUI-exit type: calls `prepareGuiHandoff`, returns the exit key string.
 - **Unregistered type** (no real handler yet — e.g. `Emergency`, `Schedule`): logs a warning and **skips to the op's `NextStep`**, continuing the loop. Only when there is no `NextStep` does it end the flow (`"disconnect"`).
 - Missing step (id not in opIndex): logs warning, writes `RTDS_error`, returns `"disconnect"`.

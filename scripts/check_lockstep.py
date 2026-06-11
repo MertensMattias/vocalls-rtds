@@ -81,6 +81,11 @@ def component_param_names(comp_filename):
     of the first object literal assigned to __configJSON.
     """
     path = COMPONENTS / comp_filename
+    # Spec-only drafts (status: spec-only / componentMark: ⏳) name a component
+    # that does not exist yet. They are legitimate -- skip param-parity for them
+    # rather than crashing. The caller treats None as "no component side".
+    if not path.exists():
+        return None
     raw = path.read_text(encoding="utf-8")
     text = html.unescape(raw)
     m = re.search(r"__configJSON\s*&?=\s*\{(.*?)\};", text, re.DOTALL)

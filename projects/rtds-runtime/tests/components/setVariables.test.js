@@ -14,12 +14,13 @@ function op(params) {
 }
 
 describe('setVariables component contract (twin executeSetVariables)', function () {
-    it('inactive by default (no active key) -> skips, stages nextStep, writes nothing', function () {
+    it('active by default (no active key) -> writes, stages nextStep', function () {
         return h.loadRuntime().then(function (sb) {
             delete sb.varObj.foo;
+            // Active defaults true (byte-identical to setVariables.js component).
             sb.executeSetVariables(op({ foo: 'bar', nextStep: '00002' }));
             expect(sb.__rtOutcome).toBe('nextStep');
-            expect(sb.varObj.foo).toBeUndefined();
+            expect(sb.varObj.foo).toBe('bar');
         });
     });
 

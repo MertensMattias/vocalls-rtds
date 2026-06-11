@@ -69,10 +69,11 @@ describe('sendMail component contract (twin executeSendEmail)', function () {
         });
     });
 
-    it('inactive (default false, no active key) -> nextStep, no HTTP', function () {
+    it('explicit active:false -> nextStep, no HTTP', function () {
         return h.loadRuntime().then(function (sb) {
+            // Active defaults TRUE now, so the skip path needs an explicit false.
             var gw = h.forbidGateway(sb);
-            sb.executeSendEmail(op({ from: 'a@b.c', to: 'd@e.f', nextStep: '00022' }));
+            sb.executeSendEmail(op({ active: false, from: 'a@b.c', to: 'd@e.f', nextStep: '00022' }));
             expect(sb.__rtOutcome).toBe('nextStep');   // synchronous skip
             expect(gw.called).toBe(false);
         });

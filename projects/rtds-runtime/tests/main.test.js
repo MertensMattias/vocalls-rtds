@@ -194,21 +194,21 @@ describe('rtds-runtime main.js', function () {
             });
     });
 
-    it('executeSetVariables defaults Active to false (absent Active skips)', function () {
+    it('executeSetVariables defaults Active to true (absent Active still writes)', function () {
         return helpers
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
             .then(function (result) {
                 var sb = result.sandbox;
                 delete sb.varObj.legacyKey;
-                // No Active key at all. Under the unified contract the twin
-                // defaults Active FALSE (requester decision) -> nothing written.
+                // No Active key at all — legacy config. The twin defaults Active
+                // TRUE (byte-identical to setVariables.js), so it still writes.
                 sb.executeSetVariables({
                     id: 'unit-legacy',
                     name: 'unit-setvars-legacy',
                     type: 'setVariables',
                     params: { legacyKey: 'Written', nextStep: '00004' }
                 });
-                expect(sb.varObj.legacyKey).toBeUndefined();   // skipped (Active default false)
+                expect(sb.varObj.legacyKey).toBe('Written');   // default-true -> writes
                 expect(sb.__rtOutcome).toBe('nextStep');
             });
     });

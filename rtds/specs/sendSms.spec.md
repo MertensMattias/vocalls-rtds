@@ -28,7 +28,7 @@ Send an outbound SMS to a configured recipient via the RTDS SMS gateway. The flo
 
 | Param name      | Type                          | Required | Default | Description                                                                                                |
 | --------------- | ----------------------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------- |
-| `active`        | boolean                       | no       | `true`  | If falsy, the operation logs a skip and exits to `nextStep`. Default `true` (the operation runs unless explicitly disabled with `active: false`). **⚠ The shipped `sendSms.js` currently defaults `false` — flagged for a code fix; see [Convention debt](#convention-debt).** |
+| `active`        | boolean                       | no       | `true`  | If falsy, the operation logs a skip and exits to `nextStep`. Default `true` (the operation runs unless explicitly disabled with `active: false`). |
 | `routing`       | string                        | yes      | —       | SMS gateway routing token (provider-specific, e.g. `LPA_DEV`).                                              |
 | `from`          | string (E.164 or sender name) | yes      | —       | Sender identifier. Either an E.164 number or an alphanumeric short-code (e.g. `8850`).                      |
 | `to`            | string (E.164)                | yes      | —       | Recipient number. Validated against `__isMobileNumber` before sending.                                     |
@@ -136,10 +136,6 @@ _rtNextStep = getValue(__rtParams, __rtOutcome, '');
 Logger.info('[sendSms] exit', { outcome: __rtOutcome, nextStep: _rtNextStep });
 ```
 
-### Convention debt (flagged 2026-06-08)
+### Convention debt — resolved 2026-06-11
 
-This spec states the **target** contract. The shipped `sendSms.js` conforms except:
-
-- **`active` default.** The component reads `getValue(__rtParams, 'active', false)` — default **false**. The target is **true** (run unless explicitly disabled). Change the component's `active` guard to default `true` to match the convention.
-
-Otherwise the component is conformant: v2 `__rtOutcome` staging, single-resolve at output with the `''` fallback.
+The `active`-default debt is **closed**: `sendSms.js` (and the runtime twin `executeSendSms`) now read `getValue(__rtParams, 'active', true)`, matching this spec's target. The operation also now dispatches as an **inline JS twin** (registered via `registerRtdsOperation`), not a GUI exit — the canvas component remains the lockstep reference. The component is otherwise conformant: v2 `__rtOutcome` staging, single-resolve at output with the `''` fallback.
