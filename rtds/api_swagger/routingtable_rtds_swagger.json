@@ -72,6 +72,78 @@
         }
       }
     },
+    "/api/dictionary/applications": {
+      "get": {
+        "tags": ["Dictionnary"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PromptApplicationViewModel"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PromptApplicationViewModel"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PromptApplicationViewModel"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dictionary/languages": {
+      "get": {
+        "tags": ["Dictionnary"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PromptLanguageViewModel"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PromptLanguageViewModel"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PromptLanguageViewModel"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/operation/routing-table/{id}": {
       "get": {
         "tags": ["Operation"],
@@ -127,6 +199,194 @@
         }
       }
     },
+    "/api/prompt/version/{promptLibraryId}/{promptName}": {
+      "get": {
+        "tags": ["Prompt"],
+        "parameters": [
+          {
+            "name": "promptLibraryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "promptName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PromptVersionDTO"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PromptVersionDTO"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PromptVersionDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/prompt/version/{promptId}": {
+      "get": {
+        "tags": ["Prompt"],
+        "parameters": [
+          {
+            "name": "promptId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PromptVersionDTO"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PromptVersionDTO"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PromptVersionDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/prompt/version": {
+      "post": {
+        "tags": ["Prompt"],
+        "parameters": [
+          {
+            "name": "createdBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromptVersionViewModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromptVersionViewModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromptVersionViewModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/prompt/version/{promptVersionId}": {
+      "delete": {
+        "tags": ["Prompt"],
+        "parameters": [
+          {
+            "name": "promptVersionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "updatedBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/prompt": {
       "get": {
         "tags": ["Prompt"],
@@ -174,6 +434,62 @@
                   "items": {
                     "$ref": "#/components/schemas/PromptViewModel"
                   }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Prompt"],
+        "parameters": [
+          {
+            "name": "createdBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromptCreateViewModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromptCreateViewModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromptCreateViewModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
                 }
               }
             }
@@ -348,6 +664,53 @@
         }
       }
     },
+    "/api/prompt/promptLibrary/{promptLibraryId}": {
+      "get": {
+        "tags": ["Prompt"],
+        "parameters": [
+          {
+            "name": "promptLibraryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PromptViewModel"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PromptViewModel"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PromptViewModel"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/prompt/{promptId}": {
       "get": {
         "tags": ["Prompt"],
@@ -387,6 +750,61 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/PromptViewModel"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/prompt/libraryId/{promptLibraryId}/name/{promptName}": {
+      "get": {
+        "tags": ["Prompt"],
+        "parameters": [
+          {
+            "name": "promptLibraryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "promptName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PromptVersionViewModel"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PromptVersionViewModel"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PromptVersionViewModel"
                   }
                 }
               }
@@ -808,6 +1226,66 @@
         },
         "additionalProperties": false
       },
+      "PromptApplicationViewModel": {
+        "type": "object",
+        "properties": {
+          "dicPromptApplicationId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PromptCreateViewModel": {
+        "type": "object",
+        "properties": {
+          "promptLibraryId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dicApplicationId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDisplayed": {
+            "type": "boolean"
+          },
+          "ttsMessage": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PromptVersionViewModel"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PromptLanguageViewModel": {
+        "type": "object",
+        "properties": {
+          "dicPromptLanguageId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "key": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "PromptLibraryViewModel": {
         "type": "object",
         "properties": {
@@ -816,6 +1294,46 @@
             "format": "int32"
           },
           "basePath": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PromptVersionDTO": {
+        "type": "object",
+        "properties": {
+          "dicPromptLanguageId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "text": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PromptVersionViewModel": {
+        "type": "object",
+        "properties": {
+          "promptVersionId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "promptId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "path": {
+            "type": "string",
+            "nullable": true
+          },
+          "dicPromptLanguageId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "text": {
             "type": "string",
             "nullable": true
           }
@@ -847,6 +1365,13 @@
           "scheduleId": {
             "type": "integer",
             "format": "int32",
+            "nullable": true
+          },
+          "promptVersions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PromptVersionViewModel"
+            },
             "nullable": true
           }
         },
@@ -1064,6 +1589,14 @@
             "nullable": true
           },
           "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "promptLibraryID": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "supportedLanguages": {
             "type": "string",
             "nullable": true
           }

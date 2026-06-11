@@ -24,7 +24,7 @@
       BackgroundNoise="true"
       BreathInEffect="true"
       Languages="{&#39;nl&#39;:{&#39;isDefault&#39;:true,&#39;languageName&#39;:&#39;Dutch (Belgium)&#39;,&#39;ttsLanguageCode&#39;:&#39;nl-BE&#39;,&#39;ttsVoiceName&#39;:&#39;&#39;,&#39;ttsEngine&#39;:&#39;&#39;,&#39;ttsPitch&#39;:&#39;&#39;,&#39;ttsSpeed&#39;:&#39;&#39;,&#39;ttsVolume&#39;:&#39;&#39;,&#39;prosodyBaseEnabled&#39;:true,&#39;prosodyContourEnabled&#39;:false}}"
-      Variables='__configJSON = {&#xa;    "active": false,&#xa;    "scheduleID": "${rtScheduleId}",&#xa;    "version": "1",&#xa;    "inQueue": false,&#xa;    "timeout": 5000,&#xa;    "nextStep": "00012",&#xa;    "nextStep_Open": "00011",&#xa;    "nextStep_Closed": "00021",&#xa;    "nextStep_Disconnect": "00041",&#xa;    "nextStep_Transfer": "00051",&#xa;    "nextStep_ExternalTransfer": "00052",&#xa;    "nextStep_WorkgroupTransfer": "00053",&#xa;    "nextStep_Failure": "00099"&#xa;};&#xa;__environment = environment;&#xa;__rtBaseUrl = _rtBaseUrl;&#xa;__rtEndpoint = _rtScheduleEndpoint;&#xa;__rtNextStep &amp;= _rtNextStep;'
+      Variables='__configJSON = {&#xa;    "active": true,&#xa;    "scheduleId": "${rtScheduleId}",&#xa;    "timeout": 5000,&#xa;    "nextStep_Open": "00011",&#xa;    "nextStep_Closed": "00021",&#xa;    "nextStep_Transfer": "00051",&#xa;    "nextStep_ExternalTransfer": "00052",&#xa;    "nextStep_Disconnect": "00041",&#xa;    "nextStep_Failure": "00099",&#xa;    "nextStep": "00012"&#xa;};&#xa;__environment = environment;&#xa;__rtBaseUrl = _rtBaseUrl;&#xa;__rtEndpoint = _rtScheduleEndpoint;&#xa;__rtPromptEndpoint = _rtPromptEndpoint;&#xa;__sayText = &#39;&#39;;&#xa;__rtOutcome = &#39;nextStep&#39;;&#xa;__rtNextStep &amp;= _rtNextStep;'
       PropertiesDefinition='[&#xa;    {&#xa;        "name": "__configJSON",&#xa;        "title": "Operation config (JSON)",&#xa;        "hint": "Full RTDS operation Params object as JSON. Must include all required Params fields for the operation type.",&#xa;        "controlSettings": {&#xa;            "controlType": "text",&#xa;            "maxLength": 5000,&#xa;            "dataType": "string",&#xa;            "readonly": false&#xa;        }&#xa;    },&#xa;    {&#xa;        "name": "__environment",&#xa;        "title": "Environment",&#xa;        "hint": "Deployment environment. Controls which RTDS API endpoint is called.",&#xa;        "controlSettings": {&#xa;            "controlType": "text",&#xa;            "defaultValue": "environment",&#xa;            "maxLength": 100,&#xa;            "dataType": "string",&#xa;            "readonly": false&#xa;        }&#xa;    },&#xa;    {&#xa;        "name": "__nextStep",&#xa;        "title": "Next step (output variable name)",&#xa;        "hint": "Name of the session variable that will receive the next step Id after execution.",&#xa;        "controlSettings": {&#xa;            "controlType": "text",&#xa;            "defaultValue": "_rtNextStep",&#xa;            "maxLength": 100,&#xa;            "dataType": "string",&#xa;            "readonly": false&#xa;        }&#xa;    }&#xa;]'
       EnableUpdateRelations="true"
       AllowGlobalIntent="false"
@@ -66,7 +66,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code="__rtParams = __setupConfig(__configJSON);&#xa;if (!_headers) { _headers = {}; }&#xa;Logger.debug(&#39;[checkSchedule] config resolved&#39;, { params: __rtParams });"
+      Code="language = (typeof language === &#39;string&#39; &amp;&amp; language.trim() !== &#39;&#39;) ? language.toUpperCase() : &#39;NL&#39;;&#xa;__rtOutcome = &#39;nextStep&#39;;&#xa;__sayText = &#39;&#39;;&#xa;__rtParams = __setupConfig(__configJSON);&#xa;if (!_headers) { _headers = {}; }&#xa;Logger.debug(&#39;[checkSchedule] config resolved&#39;, { params: __rtParams, outcome: __rtOutcome });"
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
@@ -82,7 +82,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code='global[_rtNextStep] = getValue(__rtParams, &#39;nextStep&#39;, &#39;&#39;);&#xa;&#xa;if (!getValue(__rtParams, &#39;active&#39;, false)) {&#xa;    Logger.info(&#39;[checkSchedule] skipped -- inactive&#39;, { nextStep: global[_rtNextStep] });&#xa;    return;&#xa;}&#xa;&#xa;var __scheduleId = getValue(__rtParams, &#39;scheduleID&#39;, &#39;&#39;);&#xa;if (!__scheduleId) {&#xa;    Logger.warn(&#39;[checkSchedule] missing ScheduleID&#39;, { nextStep: global[_rtNextStep] });&#xa;    return;&#xa;}&#xa;&#xa;global[_rtNextStep] = getValue(__rtParams, &#39;nextStep_Failure&#39;, &#39;&#39;);&#xa;&#xa;var __now = new Date();&#xa;var __dt = __now.toISOString().substring(0, 10) + &#39; &#39; + __now.toLocaleTimeString(&#39;fr&#39;);&#xa;var __url = __rtBaseUrl + __rtEndpoint + &#39;/&#39; + encodeURIComponent(__scheduleId) + &#39;/status?date=&#39; + encodeURI(__dt);&#xa;var __timeout = Number(getValue(__rtParams, &#39;timeout&#39;, 10000));&#xa;&#xa;var __request = null;&#xa;try {&#xa;    __request = jsonHttpRequest(__url, { &#39;timeout&#39;: +__timeout }, _headers);&#xa;}&#xa;catch (e) {&#xa;    Logger.error(&#39;[checkSchedule] request threw&#39;, { url: __url, nextStep: global[_rtNextStep] }, e);&#xa;    return;&#xa;}&#xa;&#xa;return __request.then(&#xa;    function (result) {&#xa;        if (!result || result.success !== true) {&#xa;            Logger.warn(&#39;[checkSchedule] request failed&#39;, { url: __url, statusCode: result &amp;&amp; result.statusCode, nextStep: global[_rtNextStep] });&#xa;            return;&#xa;        }&#xa;        var __response = result.response || {};&#xa;        var __action = String(__response.action || &#39;&#39;).replace(/\s+/g, &#39;&#39;);&#xa;        var __actionLower = __action.toLowerCase();&#xa;&#xa;        var __isOpenRaw = __response.isOpen;&#xa;        var __isOpen = __isOpenRaw === true || __isOpenRaw === &#39;true&#39; || __isOpenRaw === &#39;1&#39; || __isOpenRaw === 1;&#xa;        Logger.info(&#39;[checkSchedule] schedule result&#39;, { line: __isOpen ? &#39;open&#39; : &#39;closed&#39;, action: __action });&#xa;&#xa;        if (__actionLower === &#39;transfer&#39; || __actionLower === &#39;externaltransfer&#39;) {&#xa;            setVariable(&#39;SchedulerExternalNumber&#39;, String(__response.actionDetail || &#39;&#39;));&#xa;        } else if (__actionLower === &#39;workgrouptransfer&#39;) {&#xa;            setVariable(&#39;SchedulerWorkgroup&#39;, String(__response.actionTransferWorkgroup || &#39;&#39;));&#xa;        }&#xa;&#xa;        var __playRaw = __response.actionPlayPrompt;&#xa;        var __play = __playRaw === true || __playRaw === &#39;true&#39; || __playRaw === &#39;1&#39; || __playRaw === 1;&#xa;        if (__play) {&#xa;            setVariable(&#39;rtPromptList&#39;, String(__response.actionPromptName || &#39;&#39;));&#xa;            if (getValue(__rtParams, &#39;inQueue&#39;, false)) {&#xa;                setVariable(&#39;rtPromptEscapeKey&#39;, getScoped(&#39;RTDS_EscapeKey&#39;, &#39;&#39;));&#xa;            }&#xa;        }&#xa;&#xa;        var __key = &#39;nextStep_&#39; + __action;&#xa;        if (hasKey(__rtParams, __key)) {&#xa;            global[_rtNextStep] = getValue(__rtParams, __key, &#39;&#39;);&#xa;            Logger.info(&#39;[checkSchedule] success&#39;, { action: __action, nextStep: global[_rtNextStep] });&#xa;        } else {&#xa;            global[_rtNextStep] = getValue(__rtParams, &#39;nextStep&#39;, &#39;&#39;);&#xa;            Logger.warn(&#39;[checkSchedule] no branch for action&#39;, { action: __action, nextStep: global[_rtNextStep] });&#xa;        }&#xa;    },&#xa;    function (err) {&#xa;        Logger.error(&#39;[checkSchedule] request error&#39;, { url: __url, nextStep: global[_rtNextStep] }, err);&#xa;    }&#xa;);'
+      Code='if (!getValue(__rtParams, &#39;active&#39;, true)) {&#xa;    Logger.info(&#39;[checkSchedule] skipped -- inactive&#39;, { outcome: __rtOutcome });&#xa;    return;&#xa;}&#xa;&#xa;var __scheduleId = getValue(__rtParams, &#39;scheduleId&#39;, &#39;&#39;);&#xa;if (__scheduleId === &#39;&#39; || __scheduleId === null || __scheduleId === undefined) {&#xa;    Logger.warn(&#39;[checkSchedule] missing scheduleId&#39;, { outcome: __rtOutcome });&#xa;    return;&#xa;}&#xa;&#xa;__rtOutcome = &#39;nextStep_Failure&#39;;&#xa;&#xa;var __now = new Date();&#xa;var __dt = __now.toISOString().substring(0, 10) + &#39; &#39; + __now.toLocaleTimeString(&#39;fr&#39;);&#xa;var __statusUrl = __rtBaseUrl + __rtEndpoint + &#39;/&#39; + encodeURIComponent(__scheduleId) + &#39;/status?date=&#39; + encodeURI(__dt);&#xa;var __timeout = Number(getValue(__rtParams, &#39;timeout&#39;, 10000));&#xa;&#xa;return jsonHttpRequest(__statusUrl, { &#39;timeout&#39;: +__timeout }, _headers).then(&#xa;    function (result) {&#xa;        if (!result || result.success !== true) {&#xa;            Logger.warn(&#39;[checkSchedule] status request failed&#39;, { url: __statusUrl, statusCode: result &amp;&amp; result.statusCode, outcome: __rtOutcome });&#xa;            return;&#xa;        }&#xa;        var __res = result.response || {};&#xa;        var __action = String(__res.action || &#39;&#39;).replace(/\s+/g, &#39;&#39;);&#xa;        var __isOpen = __res.isOpen === true || __res.isOpen === &#39;true&#39; || __res.isOpen === 1 || __res.isOpen === &#39;1&#39;;&#xa;        Logger.info(&#39;[checkSchedule] schedule result&#39;, { line: __isOpen ? &#39;open&#39; : &#39;closed&#39;, action: __action });&#xa;&#xa;        var __actionLower = __action.toLowerCase();&#xa;        if (__actionLower === &#39;transfer&#39;) {&#xa;            setVariable(&#39;RTDS_SchedulerInternalNumber&#39;, String(__res.actionDetail || &#39;&#39;));&#xa;        } else if (__actionLower === &#39;externaltransfer&#39;) {&#xa;            setVariable(&#39;RTDS_SchedulerExternalNumber&#39;, String(__res.actionDetail || &#39;&#39;));&#xa;        }&#xa;&#xa;        var __key = &#39;nextStep_&#39; + __action;&#xa;        __rtOutcome = hasKey(__rtParams, __key) ? __key : &#39;nextStep&#39;;&#xa;        Logger.info(&#39;[checkSchedule] branch&#39;, { action: __action, outcome: __rtOutcome });&#xa;&#xa;        var __play = __res.actionPlayPrompt === true || __res.actionPlayPrompt === &#39;true&#39; || __res.actionPlayPrompt === 1 || __res.actionPlayPrompt === &#39;1&#39;;&#xa;        var __promptId = __res.promptId;&#xa;        if (!__play || __promptId === null || __promptId === undefined || __promptId === &#39;&#39;) {&#xa;            return;&#xa;        }&#xa;        var __promptUrl = __rtBaseUrl + __rtPromptEndpoint + &#39;/&#39; + encodeURIComponent(__promptId);&#xa;        return jsonHttpRequest(__promptUrl, { &#39;timeout&#39;: +__timeout }, _headers).then(&#xa;            function (pres) {&#xa;                if (!pres || pres.success !== true) {&#xa;                    Logger.warn(&#39;[checkSchedule] prompt fetch failed&#39;, { promptId: __promptId, statusCode: pres &amp;&amp; pres.statusCode, outcome: __rtOutcome });&#xa;                    return;&#xa;                }&#xa;                var __prompt = (pres.response &amp;&amp; pres.response[0]) || {};&#xa;                var __versions = __prompt.promptVersions || [];&#xa;                var __langMap = { 1: &#39;NL&#39;, 2: &#39;FR&#39;, 3: &#39;DE&#39;, 44: &#39;EN&#39; };&#xa;                var __tts = {};&#xa;                for (var __i = 0; __i &lt; __versions.length; __i++) {&#xa;                    var __code = __langMap[__versions[__i].dicPromptLanguageId] || &#39;&#39;;&#xa;                    if (__code) { __tts[__code] = String(__versions[__i].text || &#39;&#39;); }&#xa;                }&#xa;                __sayText = getValue(__tts, language, &#39;&#39;);&#xa;                Logger.info(&#39;[checkSchedule] prompt resolved&#39;, { promptId: __promptId, language: language, hasText: __sayText !== &#39;&#39;, outcome: __rtOutcome });&#xa;            },&#xa;            function (perr) { Logger.warn(&#39;[checkSchedule] prompt fetch error&#39;, { promptId: __promptId, outcome: __rtOutcome }, perr); }&#xa;        );&#xa;    },&#xa;    function (err) {&#xa;        Logger.error(&#39;[checkSchedule] status request error&#39;, { url: __statusUrl, outcome: __rtOutcome }, err);&#xa;    }&#xa;);'
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
@@ -93,9 +93,28 @@
       </mxCell>
     </object>
     <object
+      label="say: scheduler prompt"
+      Type="say"
+      Text="{Speech.ssml(__sayText)}"
+      AltTexts=""
+      SelectionMode="temporary"
+      Language=""
+      Voice=""
+      OnEnter=""
+      OnLeave=""
+      MaxEntryCount=""
+      MaxEntryNodeId=""
+      DynamicNextId=""
+      id="101"
+    >
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
+        <mxGeometry x="233.5" y="280" width="168" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <object
       label="output"
       Type="transient"
-      OnEnter="Logger.info(&#39;[checkSchedule] exit&#39;, { nextStep: __rtNextStep });"
+      OnEnter="_rtNextStep = getValue(__rtParams, __rtOutcome, &#39;&#39;);&#xa;Logger.info(&#39;[checkSchedule] exit&#39;, { outcome: __rtOutcome, nextStep: _rtNextStep });"
       OnLeave=""
       MaxEntryCount=""
       MaxEntryNodeId=""
@@ -107,7 +126,7 @@
       id="6"
     >
       <mxCell style="transientNode" parent="baselayer" vertex="1">
-        <mxGeometry x="252.5" y="110" width="130" height="40" as="geometry" />
+        <mxGeometry x="252.5" y="440" width="130" height="40" as="geometry" />
       </mxCell>
     </object>
     <mxCell
@@ -137,10 +156,80 @@
       </mxGeometry>
     </mxCell>
     <mxCell
-      id="38"
-      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;"
+      id="100"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
       parent="baselayer"
       source="29"
+      target="110"
+      edge="1"
+    >
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object
+      label="play prompt?"
+      Type="case"
+      OnEnter=""
+      OnLeave=""
+      MaxEntryCount=""
+      MaxEntryNodeId=""
+      id="110"
+    >
+      <mxCell style="caseNode" parent="baselayer" vertex="1">
+        <mxGeometry x="150" y="120" width="336" height="126" as="geometry" />
+      </mxCell>
+    </object>
+    <object id="111">
+      <mxCell style="caseInnerNode" parent="110" vertex="1">
+        <mxGeometry x="10" y="16" width="316" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object
+      label="__sayText != &#39;&#39;"
+      SubType="expression"
+      Expression="__sayText != &#39;&#39;"
+      DynamicNextId=""
+      DynamicNextTabGuid=""
+      id="112"
+    >
+      <mxCell style="expressionNode" parent="110" vertex="1">
+        <mxGeometry x="10" y="56" width="316" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="no choice" SubType="default" DynamicNextId="" id="113">
+      <mxCell style="defaultNode" parent="110" vertex="1">
+        <mxGeometry x="10" y="86" width="316" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell
+      id="120"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
+      parent="baselayer"
+      source="112"
+      target="101"
+      edge="1"
+    >
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell
+      id="121"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
+      parent="baselayer"
+      source="113"
+      target="6"
+      edge="1"
+    >
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="560" y="101" />
+          <mxPoint x="560" y="460" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell
+      id="102"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
+      parent="baselayer"
+      source="101"
       target="6"
       edge="1"
     >
