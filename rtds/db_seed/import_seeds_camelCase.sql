@@ -55,11 +55,15 @@
    HOW TO USE
    ----------------------------------------------------------------------------
    1. (Optional) edit the catalogue data block in SECTION 1.
-   2. Run the whole file once against the NALLO_APP database.
+   2. On a database that already has data, FIRST set @dryRun = 1 (MODE TOGGLE
+      below) and run once: it does all the work inside the transaction, prints
+      the would-be insert/update counts, then ROLLs BACK so nothing is persisted.
+      Review the counts, then set @dryRun = 0 and run again to commit.
    3. Re-run any time -- idempotent (find-or-create + sync). Missing catalogue
       rows are inserted. Existing Dic_Attribute rows for types in SECTION 1 are
       updated when DataType or GUI flags drift from the seed. Rows outside this
-      seed's @OperationType list are never touched. Nothing is deleted.
+      seed's @OperationType list are never touched. Nothing is deleted (at the
+      default @reset = 0). @dryRun previews this safely; see MODE TOGGLE.
 
    ----------------------------------------------------------------------------
    FIDELITY / CASING  (do not "fix" these)
@@ -148,7 +152,31 @@ DECLARE @CreatedBy varchar(50) = 'rtds-seed';
 DECLARE @reset     bit = 0;
 DECLARE @resetFull bit = 0;
 
+/* ----------------------------------------------------------------------------
+   @dryRun = 1  -->  PREVIEW. Do everything inside the transaction exactly as a
+                    real run would (all the INSERT/UPDATE/find-or-create work),
+                    print the would-be insert/update counts, then ROLLBACK so the
+                    database is left untouched. Use this FIRST on a database that
+                    already has data to see precisely what the seed would change.
+                    @dryRun = 0  -->  the run COMMITs (the normal seed). Default 0.
+
+                    CAVEAT -- not everything is transactional. The seed's row
+                    INSERT/UPDATEs (SECTION 0/1/2) ARE inside the tran and so are
+                    fully undone by the dry-run ROLLBACK. But DBCC CHECKIDENT
+                    (only reached when @reset = 1) is NOT transactional: if you
+                    combine @dryRun = 1 with @reset = 1, the table DELETEs roll
+                    back but the identity RESEEDs do NOT. So dry-run is intended
+                    for the default @reset = 0 / @resetFull = 0 mode (the
+                    non-destructive insert/update path). A guard below BLOCKS the
+                    @dryRun = 1 + @reset = 1 combination rather than leave the
+                    identity counters silently reseeded.
+   ---------------------------------------------------------------------------- */
+DECLARE @dryRun    bit = 0;
+
 IF @resetFull = 1 SET @reset = 1;   -- a full reset implies the dictionary reset
+
+IF @dryRun = 1 AND @reset = 1
+    THROW 60062, 'DRY_RUN_WITH_RESET_UNSUPPORTED: @dryRun = 1 cannot be combined with @reset/@resetFull = 1 -- DBCC CHECKIDENT RESEED is not transactional and would not roll back. Run the dry-run with @reset = 0, or accept a real (committing) reset.', 1;
 
 BEGIN TRY
 BEGIN TRANSACTION;
@@ -199,13 +227,16 @@ END
    Prompt-application names and language keys (NL/FR/...) are DATA, not type
    strings -- left verbatim, like the language keys elsewhere in this file.
 
-   CLEAN ID NUMBERING: this is a clean-DB seed. The dictionary IDs are assigned
-   fresh and CONTIGUOUS from 1, in listed order -- they are NOT the historical
-   production IDs (the old scattered ids -- guardRouting 21, guardTui 22, prompt
-   app Welcome 11, ... -- have been collapsed to 1..N). Because the IDs moved, any
-   payload that references a dictionary row by numeric id (e.g. a flow's prompt
-   'applicationId') must use these new ids; rtds/samples/n-allo_reception.json was
-   updated in lockstep (Welcome 11 -> 8).
+   ID NUMBERING: the Dic_OperationType ids are a clean-DB collapse -- assigned
+   fresh and CONTIGUOUS from 1, in listed order (NOT the historical scattered
+   production op-type ids guardRouting 21, guardTui 22, ...). The
+   Dic_PromptApplication ids, by contrast, are kept VERBATIM at their production
+   values (scattered: ids 8/9/10 unused, Welcome=11, Voicemail=12, Info=13,
+   Exception=14, Emergency=15) because the live flows reference prompt-apps by
+   numeric id and a TTS-bearing op THROWs UNKNOWN_APPLICATION if the id is absent.
+   So flow payloads use the production prompt-app ids directly (applicationId: 11
+   Welcome, 14 Exception, ...); rtds/samples/n-allo_reception.json tracks the same
+   production ids (Welcome 11, Voicemail 12).
 
    SEMANTIC RENAMES (deliberate, not casing fixes):
      - 'languageMenu' -> 'getLanguage'
@@ -266,20 +297,27 @@ PRINT 'Seeding rtds.Dic_PromptApplication ...';
 
 SET IDENTITY_INSERT rtds.Dic_PromptApplication ON;
 
+-- PRODUCTION IDs (verbatim). These are the historical scattered ids from the live
+-- NALLO_APP.rtds.Dic_PromptApplication, NOT a contiguous 1..N collapse: ids 8/9/10
+-- are unused, Welcome=11, Voicemail=12, Info=13, Exception=14, Emergency=15. The
+-- flows reference these ids directly (applicationId: 11 Welcome, 14 Exception, ...),
+-- so they MUST line up with production or a TTS-bearing op THROWs UNKNOWN_APPLICATION.
+-- Names/FilePrefixes are DATA, kept verbatim as production stores them (PascalCase);
+-- import resolves by numeric id, not by name, so casing here is cosmetic.
 INSERT INTO rtds.Dic_PromptApplication ([DicPromptApplicationID], [Name], [FilePrefix], [DateCreated], [CreatedBy], [DateUpdated], [UpdatedBy])
 SELECT v.* FROM (VALUES
-  (1,  N'scheduler',     N'Scheduler', N'2021-06-30 11:08:13.6400000', N'rtds-seed', NULL, NULL),
-  (2,  N'callback',      N'CB',        N'2021-06-30 11:08:13.6400000', N'rtds-seed', NULL, NULL),
-  (3,  N'survey',        N'Survey',    N'2021-06-30 11:08:13.6400000', N'rtds-seed', NULL, NULL),
-  (4,  N'preQueue',      N'PreQueue',  N'2021-06-30 11:08:13.6400000', N'rtds-seed', NULL, NULL),
-  (5,  N'queue',         N'Queue',     N'2021-06-30 11:08:13.6400000', N'rtds-seed', NULL, NULL),
-  (6,  N'adHocMessages', N'AdHoc',     N'2021-06-30 11:08:13.6400000', N'rtds-seed', NULL, NULL),
-  (7,  N'menu',          N'Menu',      N'2021-07-23 11:26:02.6600000', N'rtds-seed', NULL, NULL),
-  (8,  N'welcome',       N'Welcome',   N'2021-10-22 11:49:45.7700000', N'rtds-seed', NULL, NULL),
-  (9,  N'voicemail',     N'Voicemail', N'2021-11-09 14:02:36.2930000', N'rtds-seed', NULL, NULL),
-  (10, N'info',          N'Info',      N'2021-11-22 15:52:00.6030000', N'rtds-seed', NULL, NULL),
-  (11, N'exception',     N'Exception', N'2021-11-29 12:19:10.1300000', N'rtds-seed', NULL, NULL),
-  (12, N'disconnect',    N'Disconnect', N'2022-06-09 09:35:39.9470000', N'rtds-seed', NULL, NULL)
+  (1,  N'Scheduler',     N'Scheduler', N'2021-06-30 11:08:13.6400000', N'rtds-seed', NULL, NULL),
+  (2,  N'Callback',      N'CB',        N'2021-06-30 11:08:13.6400000', N'rtds-seed', NULL, NULL),
+  (3,  N'Survey',        N'Survey',    N'2021-06-30 11:08:13.6400000', N'rtds-seed', NULL, NULL),
+  (4,  N'PreQueue',      N'PreQueue',  N'2021-06-30 11:08:13.6400000', N'rtds-seed', NULL, NULL),
+  (5,  N'Queue',         N'Queue',     N'2021-06-30 11:08:13.6400000', N'rtds-seed', NULL, NULL),
+  (6,  N'AdHocMessages', N'AdHoc',     N'2021-06-30 11:08:13.6400000', N'rtds-seed', NULL, NULL),
+  (7,  N'Menu',          N'Menu',      N'2021-07-23 11:26:02.6600000', N'rtds-seed', NULL, NULL),
+  (11, N'Welcome',       N'Welcome',   N'2021-10-22 11:49:45.7700000', N'rtds-seed', NULL, NULL),
+  (12, N'Voicemail',     N'Voicemail', N'2021-11-09 14:02:36.2930000', N'rtds-seed', NULL, NULL),
+  (13, N'Info',          N'Info',      N'2021-11-22 15:52:00.6030000', N'rtds-seed', NULL, NULL),
+  (14, N'Exception',     N'Exception', N'2021-11-29 12:19:10.1300000', N'rtds-seed', NULL, NULL),
+  (15, N'Emergency',     N'Emergency', N'2022-06-09 09:35:39.9470000', N'rtds-seed', NULL, NULL)
 ) AS v([DicPromptApplicationID], [Name], [FilePrefix], [DateCreated], [CreatedBy], [DateUpdated], [UpdatedBy])
 WHERE NOT EXISTS (
     SELECT 1 FROM rtds.Dic_PromptApplication t WHERE t.[DicPromptApplicationID] = v.[DicPromptApplicationID]
@@ -534,16 +572,28 @@ INSERT INTO @Attribute
     ('workgroupTransfer', 'nextStep_EscapeKey', 'string',  0, 1, 0, 0),
     ('workgroupTransfer', 'nextStep',           'string',  1, 1, 0, 0),
 
-    /* ---- ExternalTransfer ---- (transfer to an external phone number)          */
-    ('externalTransfer', 'active',              'bit', 1, 0, 0, 0),
-    ('externalTransfer', 'phoneNumber',         'string',  1, 0, 0, 0),
-    ('externalTransfer', 'outboundANI',         'string',  0, 0, 0, 0),
-    ('externalTransfer', 'performCallAnalysis', 'string',  0, 0, 0, 0),
-    ('externalTransfer', 'diversionReason',     'int', 0, 0, 0, 0),
-    ('externalTransfer', 'timeout',             'int', 0, 0, 0, 0),
-    ('externalTransfer', 'nextStep_Busy',       'string',  0, 1, 0, 0),
-    ('externalTransfer', 'nextStep_RNA',        'string',  0, 1, 0, 0),
-    ('externalTransfer', 'nextStep',            'string',  1, 1, 0, 0),
+    /* ---- ExternalTransfer ---- (transfer to an external phone number)
+       Param vocabulary reconciled to the shipped component rtds/components/
+       externalTransfer.js (__configJSON), the source of truth: blind/attend
+       `redirect` primitive with a single not-accepted fallback. 'parameters'
+       carries semicolon-delimited SIP headers; 'attendTransfer' (bit) picks the
+       blind vs attend redirect node; the CLI is appended as P-Asserted-Identity
+       via __appendPAssertedIdentity. Replaces the earlier call-analysis shape
+       (performCallAnalysis / diversionReason / nextStep_Busy / nextStep_RNA),
+       which the redirect primitive does not expose.
+       CASING: the component's __configJSON declares 'outboundAni', but the seed
+       casing rule, the 'guard' type, and every production flow use 'outboundANI'
+       (acronym uppercase) and the importer is case-sensitive -- so the dictionary
+       keeps 'outboundANI'. The component default is drift to fix there (same note
+       as rtds/specs/guardRouting.spec.md).                                        */
+    ('externalTransfer', 'active',           'bit', 1, 0, 0, 0),
+    ('externalTransfer', 'phoneNumber',      'string',  1, 0, 0, 0),
+    ('externalTransfer', 'outboundANI',      'string',  0, 0, 0, 0),
+    ('externalTransfer', 'parameters',       'string',  0, 0, 0, 0),
+    ('externalTransfer', 'attendTransfer',   'bit', 0, 0, 0, 0),
+    ('externalTransfer', 'timeout',          'int', 0, 0, 0, 0),
+    ('externalTransfer', 'nextStep_Failure', 'string',  0, 1, 0, 0),
+    ('externalTransfer', 'nextStep',         'string',  1, 1, 0, 0),
 
     /* ---- Condition ---- (branch on an ACD statistic; NOT yet runtime-wired)    */
     ('condition', 'active',          'bit', 1, 0, 0, 0),
@@ -565,14 +615,19 @@ INSERT INTO @Attribute
     ('emergency', 'nextStep',             'string',  1, 1, 0, 0),
 
     /* ---- CheckSchedule ---- (open/closed/guard routing; NOT yet runtime-wired.
-       Component checkSchedule.js exists. Guard branches are per-flow:
-       Guard_ICT (LPA_ICT), Guard_Klantwacht/Guard_Systeemwacht (DA).)            */
+       Component checkSchedule.js exists. The component branches dynamically on
+       'nextStep_' + the API's returned action, so every action it can route to
+       needs a row here (exact-match, else 54016). The shipped __configJSON emits
+       Open/Closed/Transfer/ExternalTransfer/Disconnect/Failure; Guard branches are
+       per-flow: Guard_ICT (LPA_ICT), Guard_Klantwacht/Guard_Systeemwacht (DA).)   */
     ('checkSchedule', 'active',                       'bit', 1, 0, 0, 0),
     ('checkSchedule', 'applicationId',                'int', 0, 0, 0, 0),
     ('checkSchedule', 'scheduleId',                   'int', 1, 0, 0, 0),
     ('checkSchedule', 'nextStep_Open',                'string',  0, 1, 0, 0),
     ('checkSchedule', 'nextStep_Closed',              'string',  0, 1, 0, 0),
     ('checkSchedule', 'nextStep_Transfer',            'string',  0, 1, 0, 0),
+    ('checkSchedule', 'nextStep_ExternalTransfer',    'string',  0, 1, 0, 0),
+    ('checkSchedule', 'nextStep_Disconnect',          'string',  0, 1, 0, 0),
     ('checkSchedule', 'nextStep_Guard_ICT',           'string',  0, 1, 0, 0),
     ('checkSchedule', 'nextStep_Guard_Klantwacht',    'string',  0, 1, 0, 0),
     ('checkSchedule', 'nextStep_Guard_Systeemwacht',  'string',  0, 1, 0, 0),
@@ -626,15 +681,23 @@ INSERT INTO @Attribute
     ('getLanguage', 'maxTries',      'int', 0, 0, 0, 0),
     ('getLanguage', 'nextStep',      'string',  1, 1, 0, 0),
 
-    /* ---- InternalTransfer ---- (skills/priority queue transfer; NEW type, not
-       yet runtime-wired; Params carried verbatim from the flow.)                 */
-    ('internalTransfer', 'active',                   'bit', 1, 0, 0, 0),
-    ('internalTransfer', 'remoteDestination',        'string',  1, 0, 0, 0),
-    ('internalTransfer', 'transferHeader_priority',  'string',  0, 0, 0, 0),
-    ('internalTransfer', 'transferHeader_skills',    'string',  0, 0, 0, 0),
-    ('internalTransfer', 'timeout',                  'int', 0, 0, 0, 0),
-    ('internalTransfer', 'nextStep_Failure',         'string',  0, 1, 0, 0),
-    ('internalTransfer', 'nextStep',                 'string',  1, 1, 0, 0),
+    /* ---- InternalTransfer ---- (direct internal hand-off; NEW type, not yet
+       runtime-wired). Param vocabulary reconciled to the shipped component
+       rtds/components/internalTransfer.js (__configJSON), the source of truth:
+       a plain blind/attend `redirect` to an internal destination -- no ACD
+       queue / skills / priority. 'target' is the internal destination (bare
+       extension/number or a line:<route> literal); 'parameters' carries
+       semicolon-delimited SIP headers; 'attendTransfer' (bit) picks the blind vs
+       attend redirect node. Replaces the earlier queue shape (remoteDestination /
+       transferHeader_priority / transferHeader_skills), which this operation does
+       not model.                                                                  */
+    ('internalTransfer', 'active',           'bit', 1, 0, 0, 0),
+    ('internalTransfer', 'target',           'string',  1, 0, 0, 0),
+    ('internalTransfer', 'parameters',       'string',  0, 0, 0, 0),
+    ('internalTransfer', 'attendTransfer',   'bit', 0, 0, 0, 0),
+    ('internalTransfer', 'timeout',          'int', 0, 0, 0, 0),
+    ('internalTransfer', 'nextStep_Failure', 'string',  0, 1, 0, 0),
+    ('internalTransfer', 'nextStep',         'string',  1, 1, 0, 0),
 
     /* ---- VoicemailCallback ---- (control keys only; the recording content params
        are passthrough and intentionally NOT catalogued -- the flow drops them.)  */
@@ -727,9 +790,17 @@ WHERE  d.DicAttributeTypeID <> at.DicAttributeTypeID
     OR d.IsEditable         <> a.IsEditable;
 SET @attrUpd = @@ROWCOUNT;
 
-COMMIT TRANSACTION;
+IF @dryRun = 1
+BEGIN
+    ROLLBACK TRANSACTION;
+    PRINT '[DRY RUN] Rolled back -- no changes persisted. Counts below are what a real run (@dryRun = 0) WOULD do:';
+END
+ELSE
+BEGIN
+    COMMIT TRANSACTION;
+    PRINT 'RTDS vocalls dictionary seed complete.';
+END
 
-PRINT 'RTDS vocalls dictionary seed complete.';
 PRINT '  Dic_OperationType rows inserted: ' + CAST(@opTypeNew   AS varchar(10));
 PRINT '  Dic_AttributeType rows inserted: ' + CAST(@attrTypeNew AS varchar(10));
 PRINT '  Dic_Attribute     rows inserted: ' + CAST(@attrNew     AS varchar(10));

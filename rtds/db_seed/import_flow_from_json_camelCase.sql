@@ -21,7 +21,7 @@
 /* =============================================================================
    new_import_routing_table_from_json_camelCase.sql   (ALIGNED version, camelCase contract)
 
-   Imports a single RTDS routing-table JSON document into NALLO_APP.rtds.
+   Imports a single RTDS routing-table JSON document into [sqldb-app-acc].rtds.
    This is the corrected/aligned successor to import_routing_table_from_json.sql:
    same structure and ergonomics (dry-run, prints, MERGE-OUTPUT op insert,
    set-based attribute insert) with the locked decisions applied.
@@ -64,7 +64,27 @@
    ASCII-only, no template literals.
 ============================================================================= */
 
-SET NOCOUNT ON;
+-- Pin the database context. The rtds schema lives in [sqldb-app-acc]; without
+-- this USE the script compiles against whatever database the connection has
+-- selected, and every rtds.* reference fails with "Invalid object name"
+-- (Msg 208). The GO is required so the USE takes effect in its own batch before
+-- the body below is compiled. Bracket-quoting is mandatory (the name has hyphens).
+GO
+
+-- Fail fast with an explanatory message if the rtds schema is absent in this
+-- database (e.g. wrong DB, or the schema DDL was never run), instead of the
+-- opaque Msg 208 on the first rtds.* reference.
+IF OBJECT_ID(N'rtds.Dic_CompanyProject', N'U') IS NULL
+    THROW 60099, 'SETUP_INCOMPLETE: rtds.Dic_CompanyProject not found in [sqldb-app-acc]. Run the schema DDL first and confirm the database name.', 1;
+
+-- sp_AddHistory is called in replace mode to close out ConfigHistory before the
+-- old config is deleted. Fail fast here with an explanatory message if the proc
+-- is absent (schema script never run), rather than an opaque "Could not find
+-- stored procedure" mid-transaction on a replace.
+IF OBJECT_ID(N'rtds.sp_AddHistory', N'P') IS NULL
+    THROW 60098, 'SETUP_INCOMPLETE: rtds.sp_AddHistory not found in [sqldb-app-acc]. Run the stored-procedure DDL (script (1).sql) first.', 1;
+
+SET NOCOUNT OFF;
 SET XACT_ABORT ON;
 
 -- -----------------------------------------------------------------------------
@@ -72,17 +92,17 @@ SET XACT_ABORT ON;
 -- -----------------------------------------------------------------------------
 DECLARE @json    NVARCHAR(MAX);
 DECLARE @replace BIT = 1;                  -- 1 = overwrite, 0 = fail on dup
-DECLARE @dryRun  BIT = 1;                  -- 1 = roll back at the end (preview)
+DECLARE @dryRun  BIT = 0;                  -- 1 = roll back at the end (preview)
 
 SET @json = N'
 {
-  "sourceId": "+3257351240",
-  "name": "N-ALLO - RECEPTION",
-  "projectId": 83,
-  "project": "NALLO",
-  "promptLibraryId": 1,
-  "promptLibrary": "N-Allo\\RECEPTION",
-  "supportedLanguages": "NL|FR",
+  "sourceId": "+3257351226",
+  "name": "DIGIPOLIS - DA_HELPDESK",
+  "projectId": "",
+  "project": "DA HELPDESK",
+  "promptLibraryId": "",
+  "promptLibrary": "DIGIPOLIS\\DA\\HELPDESK",
+  "supportedLanguages": "NL",
   "operations": [
     {
       "id": "00000",
@@ -91,129 +111,172 @@ SET @json = N'
       "isFirstOperation": true,
       "params": {
         "active": true,
-        "customerName": "N-ALLO",
-        "customerProject": "RECEPTION",
-        "logAttributes": "RTDS_ProjectName|Eic_RemoteId|ATTR_RoutingId|ATTR_CallflowId",
-        "routingId": "RECEPTION",
+        "customerName": "DA",
+        "customerProject": "HELPDESK",
+        "routingId": "DA_HELPDESK",
+        "ivrEvent": "9999",
+        "ivrAction": "CT",
         "nextStep": "00001"
       }
     },
     {
       "id": "00001",
       "type": "say",
-      "name": "Say: Welcome",
+      "name": "Play: Welcome",
       "params": {
-        "active": true,
-        "applicationId": 8,
-        "prompt": "Welcome",
+        "active": false,
+        "applicationId": 11,
+        "prompt": "Welcome_Welcome",
         "nextStep": "00002"
-      },
-      "ttsMessages": {
-        "NL": "Welkom bij N-Allo. U wordt zo dadelijk verder geholpen.",
-        "FR": "Bienvenue chez N-Allo. Nous traitons votre appel dans un instant."
       }
     },
     {
       "id": "00002",
-      "type": "getLanguage",
-      "name": "Choose Dutch or French",
+      "type": "say",
+      "name": "Play: Exception",
       "params": {
-        "active": true,
-        "applicationId": 7,
-        "prompt": "LanguageMenu",
-        "languages": "$(RTDS_SupportedLanguages)",
-        "maxTries": 2,
-        "nextStep": "00003"
-      },
-      "ttsMessages": {
-        "NL": "Voor Nederlands, druk op 1. Pour le français, appuyez sur le 2.",
-        "FR": "Voor Nederlands, druk op 1. Pour le français, appuyez sur le 2."
+        "active": false,
+        "applicationId": 14,
+        "prompt": "Exception_ExceptionAntwerpenBe",
+        "nextStep": "00004"
       }
     },
     {
-      "id": "00003",
+      "id": "00004",
       "type": "checkSchedule",
       "name": "Check: Scheduler",
       "params": {
         "active": true,
         "applicationId": 1,
-        "scheduleId": 51,
-        "nextStep_Open": "00040",
-        "nextStep_Transfer": "00090",
-        "nextStep_Closed": "00100",
+        "scheduleId": 4039,
+        "nextStep_Open": "00010",
+        "nextStep_Closed": "00011",
+        "nextStep_Transfer": "00012",
+        "nextStep_Guard_Klantwacht": "00080",
+        "nextStep_Guard_Systeemwacht": "00085",
+        "nextStep_Failure": "00085",
+        "nextStep": "00085"
+      }
+    },
+    {
+      "id": "00010",
+      "type": "setVariables",
+      "name": "Set: Congnos Open",
+      "params": {
+        "active": true,
+        "ivrEvent": "1200",
+        "ivrAction": "CT",
+        "nextStep": "00015"
+      }
+    },
+    {
+      "id": "00011",
+      "type": "setVariables",
+      "name": "Set: Congnos Closed",
+      "params": {
+        "active": true,
+        "ivrEvent": "1201",
+        "ivrAction": "DC",
+        "nextStep": "00098"
+      }
+    },
+    {
+      "id": "00012",
+      "type": "setVariables",
+      "name": "Set: Congnos Transfer",
+      "params": {
+        "active": true,
+        "ivrEvent": "1200",
+        "ivrAction": "TX",
+        "nextStep": "00090"
+      }
+    },
+    {
+      "id": "00015",
+      "type": "say",
+      "name": "Play: Exception",
+      "params": {
+        "active": false,
+        "applicationId": 14,
+        "prompt": "Exception_ExceptionAntwerpenBe",
+        "nextStep": "00024"
+      }
+    },
+    {
+      "id": "00024",
+      "type": "say",
+      "name": "Play: Extra",
+      "params": {
+        "active": false,
+        "applicationId": 6,
+        "prompt": "AdHoc_Extra_Xtremis.wav",
+        "nextStep": "00060"
+      }
+    },
+    {
+      "id": "00060",
+      "type": "internalTransfer",
+      "name": "Route-To: Workgroup",
+      "params": {
+        "active": true,
+        "target": "578041",
+        "parameters": "",
+        "attendTransfer": false,
+        "timeout": 30,
+        "nextStep_Failure": "00100",
         "nextStep": "00100"
       }
     },
     {
-      "id": "00040",
-      "type": "condition",
-      "name": "Check: Staffing",
+      "id": "00080",
+      "type": "setVariables",
+      "name": "Set: Congnos Guard Klantwacht",
       "params": {
         "active": true,
-        "statistic": "AgentsLoggedIn",
-        "workgroup": "N-ALLO_Reception_V",
-        "operator": "gt",
-        "value": 0,
-        "nextStep_True": "00043",
-        "nextStep_False": "00091"
+        "ivrEvent": "1204",
+        "ivrAction": "GD01",
+        "nextStep": "00081"
       }
     },
     {
-      "id": "00043",
-      "type": "condition",
-      "name": "Check: MaxQueue",
+      "id": "00081",
+      "type": "externalTransfer",
+      "name": "Route-To: DA_KLANTWACHT",
       "params": {
         "active": true,
-        "statistic": "CallsWaiting",
-        "workgroup": "N-ALLO_Reception_V",
-        "operator": "gt",
-        "value": 39,
-        "nextStep_True": "00091",
-        "nextStep_False": "00050"
+        "phoneNumber": "+3257352046",
+        "outboundANI": "",
+        "parameters": "",
+        "attendTransfer": false,
+        "timeout": 30,
+        "nextStep_Failure": "00098",
+        "nextStep": "00100"
       }
     },
     {
-      "id": "00050",
-      "type": "internalTransfer",
-      "name": "Route-To: LPA REGIO",
+      "id": "00085",
+      "type": "setVariables",
+      "name": "Set: Congnos Guard Systeemwacht",
       "params": {
         "active": true,
-        "remoteDestination": "${remoteDestination}",
-        "transferHeader_priority": "${transferHeader_priority}",
-        "transferHeader_skills": "${transferHeader_skills}",
-        "timeout": 150,
-        "nextStep": "00051",
-        "nextStep_Failure": "00100"
+        "ivrEvent": "1204",
+        "ivrAction": "GD02",
+        "nextStep": "00086"
       }
     },
     {
-      "id": "00051",
-      "type": "say",
-      "name": "Queue: Message 1",
+      "id": "00086",
+      "type": "externalTransfer",
+      "name": "Route-To: DA_SYSTEEMWACHT",
       "params": {
         "active": true,
-        "applicationId": 5,
-        "prompt": "Waitmessage01",
-        "nextStep": "00052"
-      },
-      "ttsMessages": {
-        "NL": "Alle medewerkers zijn momenteel in gesprek. Blijf aan de lijn, wij verbinden u zo snel mogelijk door.",
-        "FR": "Tous nos collaborateurs sont actuellement en ligne. Restez à l''écoute, nous vous mettons en relation dès que possible."
-      }
-    },
-    {
-      "id": "00052",
-      "type": "say",
-      "name": "Play: NoBodyAvailable",
-      "params": {
-        "active": true,
-        "applicationId": 5,
-        "prompt": "NoBodyAvailable",
-        "nextStep": "00091"
-      },
-      "ttsMessages": {
-        "NL": "Onze medewerkers kunnen u op dit moment niet te woord staan. U kunt een boodschap inspreken en wij bellen u zo snel mogelijk terug.",
-        "FR": "Nos collaborateurs ne sont pas en mesure de vous répondre pour le moment. Vous pouvez laisser un message et nous vous rappellerons dès que possible."
+        "phoneNumber": "+3257352048",
+        "outboundANI": "",
+        "parameters": "",
+        "attendTransfer": false,
+        "timeout": 30,
+        "nextStep_Failure": "00098",
+        "nextStep": "00100"
       }
     },
     {
@@ -224,52 +287,31 @@ SET @json = N'
         "active": true,
         "phoneNumber": "",
         "outboundANI": "",
-        "diversionReason": 8,
+        "parameters": "",
+        "attendTransfer": false,
         "timeout": 30,
-        "nextStep_Busy": "00093",
-        "nextStep_RNA": "00093",
+        "nextStep_Failure": "00098",
         "nextStep": "00100"
       }
     },
+
     {
-      "id": "00091",
-      "type": "voicemailCallback",
-      "name": "Leave voicemail",
+      "id": "00098",
+      "type": "setVariables",
+      "name": "Set: Congnos Error",
       "params": {
         "active": true,
-        "nextStep_Escape": "00093",
-        "nextStep_Error": "00093",
-        "nextStep": "00094"
+        "ivrEvent": "1200",
+        "ivrAction": "CT",
+        "nextStep": "00099"
       }
     },
     {
-      "id": "00093",
-      "type": "say",
-      "name": "Play: Voicemail Error",
+      "id": "00099",
+      "type": "disconnect",
+      "name": "RTDS: IVR Error",
       "params": {
-        "active": true,
-        "applicationId": 9,
-        "prompt": "error",
-        "nextStep": "00094"
-      },
-      "ttsMessages": {
-        "NL": "Er is iets misgegaan bij het opnemen van uw boodschap. Onze excuses voor het ongemak.",
-        "FR": "Une erreur s''est produite lors de l''enregistrement de votre message. Nous vous prions de nous en excuser."
-      }
-    },
-    {
-      "id": "00094",
-      "type": "say",
-      "name": "play: voicemail disconnect",
-      "params": {
-        "active": true,
-        "applicationId": 9,
-        "prompt": "disconnect",
-        "nextStep": "00100"
-      },
-      "ttsMessages": {
-        "NL": "Bedankt voor uw oproep. Wij nemen zo snel mogelijk contact met u op. Tot ziens.",
-        "FR": "Merci pour votre appel. Nous vous recontacterons dans les plus brefs délais. Au revoir."
+        "prompt": "Scheduler_ClosedDisconnect.wav"
       }
     },
     {
@@ -344,9 +386,23 @@ END;
 IF @CompanyProjectID IS NULL
     THROW 60006, 'UNKNOWN_PROJECT', 1;
 
+-- Startup banner: echo the resolved header so the run log opens with exactly
+-- what is about to be imported (and in which mode) before any parsing happens.
+PRINT '================================================================';
+PRINT '[RTDS] Routing-table import starting.';
+PRINT '  SourceID       : ' + @SourceID;
+PRINT '  Name           : ' + @Name;
+PRINT '  Project        : ' + @Project + ' (CompanyProjectID=' + CAST(@CompanyProjectID AS VARCHAR(20)) + ')';
+PRINT '  PromptLibrary  : ' + @BasePath;
+PRINT '  Languages      : ' + @SupportedLanguages;
+PRINT '  Mode           : replace=' + CAST(@replace AS VARCHAR(1)) + ', dryRun=' + CAST(@dryRun AS VARCHAR(1));
+PRINT '  Run by / at    : ' + @user + ' / ' + CONVERT(VARCHAR(30), @now, 126) + 'Z';
+PRINT '================================================================';
+
 -- -----------------------------------------------------------------------------
 -- PARSE OPERATIONS
 -- -----------------------------------------------------------------------------
+PRINT '[RTDS][INFO] Parsing operations...';
 DECLARE @ops TABLE (
     Ordinal             INT             NOT NULL,
     OpKey               NVARCHAR(255)   NOT NULL,
@@ -383,10 +439,14 @@ BEGIN
     RETURN;
 END;
 
+DECLARE @logOpCount INT = (SELECT COUNT(*) FROM @ops);
+PRINT '[RTDS][INFO] Operations parsed: ' + CAST(@logOpCount AS VARCHAR(20)) + ' (all types resolved).';
+
 -- -----------------------------------------------------------------------------
 -- PARSE PARAMS (one row per operation x param)
 -- OPENJSON [type]: 1=string 2=number 3=boolean 4=array 5=object 0=null
 -- -----------------------------------------------------------------------------
+PRINT '[RTDS][INFO] Parsing and validating params...';
 DECLARE @params TABLE (
     OpKey               NVARCHAR(255)   NOT NULL,
     DicOperationTypeID  INT             NOT NULL,
@@ -501,9 +561,14 @@ BEGIN
     RETURN;
 END;
 
+DECLARE @logParamCount INT = (SELECT COUNT(*) FROM @params);
+PRINT '[RTDS][INFO] Params parsed: ' + CAST(@logParamCount AS VARCHAR(20))
+    + ' (dictionary, type and nextStep checks passed).';
+
 -- -----------------------------------------------------------------------------
 -- PARSE TTS MESSAGES
 -- -----------------------------------------------------------------------------
+PRINT '[RTDS][INFO] Parsing and validating TTS messages...';
 DECLARE @tts TABLE (
     OpKey                NVARCHAR(255)   NOT NULL,
     Language             VARCHAR(5)      NOT NULL,
@@ -604,9 +669,16 @@ BEGIN
     RETURN;
 END;
 
+DECLARE @logTtsCount INT = (SELECT COUNT(*) FROM @tts);
+DECLARE @logTtsPromptCount INT = (SELECT COUNT(DISTINCT PromptName) FROM @tts);
+PRINT '[RTDS][INFO] TTS messages parsed: ' + CAST(@logTtsCount AS VARCHAR(20))
+    + ' row(s) across ' + CAST(@logTtsPromptCount AS VARCHAR(20))
+    + ' prompt(s). All validations passed.';
+
 -- -----------------------------------------------------------------------------
 -- WRITE TRANSACTION
 -- -----------------------------------------------------------------------------
+PRINT '[RTDS][INFO] All checks passed; opening write transaction...';
 BEGIN TRY
     BEGIN TRAN;
 
@@ -617,26 +689,49 @@ BEGIN TRY
     IF @ExistingRtId IS NOT NULL
     BEGIN
         IF @replace = 0 THROW 60020, 'DUPLICATE_SOURCE_ID', 1;
+
+        -- Audit the about-to-be-replaced config BEFORE deleting it. sp_AddHistory
+        -- in DELETE mode (@Data = 'DELETE|<SourceId>') closes out (stamps EndDateUTC)
+        -- every still-open ConfigHistory row for this SourceID, so the history table
+        -- records that this config version ended at @now. Same transaction: on
+        -- @dryRun or any failure below, this close-out rolls back with the rest.
+        PRINT '[RTDS][INFO] Existing config found (RoutingTableID=' + CAST(@ExistingRtId AS VARCHAR(20))
+            + '); calling rtds.sp_AddHistory to close out ConfigHistory before delete.';
+        -- EXEC parameters cannot be expressions, so build the 'DELETE|<SourceId>'
+        -- payload into a variable first. sp_AddHistory's DELETE branch parses it as
+        -- REPLACE(@Data,'DELETE|','') -> SourceId.
+        DECLARE @historyDelete NVARCHAR(MAX) = N'DELETE|' + @SourceID;
+        EXEC rtds.sp_AddHistory @Data = @historyDelete, @PublishDate = @now;
+        PRINT '[RTDS][INFO] ConfigHistory closed out for SourceID=' + @SourceID + '.';
+
+        PRINT '[RTDS][INFO] Cascade-deleting existing Attribute/Operation/RoutingTable rows...';
         DELETE rtds.Attribute
         WHERE  OperationID IN (SELECT OperationID FROM rtds.Operation WHERE RoutingTableID = @ExistingRtId);
         DELETE rtds.Operation    WHERE RoutingTableID = @ExistingRtId;
         DELETE rtds.RoutingTable WHERE RoutingTableID = @ExistingRtId;
+        PRINT '[RTDS][INFO] Existing config deleted.';
+    END
+    ELSE
+    BEGIN
+        PRINT '[RTDS][INFO] No existing config for SourceID=' + @SourceID + ' (fresh import; no history close-out).';
     END;
 
-    -- PromptLibrary resolution. The invariant is ONE library per project, so the
-    -- PRIMARY lookup is find-by-CompanyProjectID (BasePath stored only). The
-    -- SECONDARY (fallback) honours the otherwise-informational promptLibraryId,
-    -- but ONLY a row that already belongs to THIS CompanyProjectID -- adopting a
-    -- different project's library by id would attach foreign Prompt rows (keyed on
-    -- PromptLibraryID) to this flow and silently break the one-library-per-project
-    -- invariant, so the same-project guard rejects that cross-project case rather
-    -- than accepting it. With the guard the fallback is near-redundant by design
-    -- (the primary already finds the project's library); it exists only to bind an
-    -- explicit, same-project promptLibraryId verbatim. TERTIARY: create.
+    -- PromptLibrary resolution. A project can own MANY libraries (e.g. project
+    -- NALLO has RECEPTION, HELPDESK, WFM, ...), so the key that uniquely
+    -- identifies a library is (CompanyProjectID, BasePath) -- NOT CompanyProjectID
+    -- alone. The PRIMARY lookup is therefore find-by-(CompanyProjectID, BasePath);
+    -- BasePath is the JSON 'promptLibrary' value. The SECONDARY (fallback) honours
+    -- the otherwise-informational promptLibraryId, but ONLY a row that already
+    -- belongs to THIS CompanyProjectID -- adopting a different project's library by
+    -- id would attach foreign Prompt rows (keyed on PromptLibraryID) to this flow,
+    -- so the same-project guard rejects that cross-project case. TERTIARY: create
+    -- a new library for (CompanyProjectID, BasePath).
     DECLARE @PromptLibraryIdJson INT = TRY_CAST(JSON_VALUE(@json, '$.promptLibraryId') AS INT);
 
     SELECT @PromptLibraryID = PromptLibraryID
-    FROM   rtds.PromptLibrary WHERE CompanyProjectID = @CompanyProjectID;
+    FROM   rtds.PromptLibrary
+    WHERE  CompanyProjectID = @CompanyProjectID
+      AND  BasePath         = @BasePath;
 
     IF @PromptLibraryID IS NULL AND @PromptLibraryIdJson IS NOT NULL
         SELECT @PromptLibraryID = PromptLibraryID
@@ -649,7 +744,10 @@ BEGIN TRY
         INSERT INTO rtds.PromptLibrary (CompanyProjectID, BasePath, DateCreated, CreatedBy)
         VALUES (@CompanyProjectID, @BasePath, @now, @user);
         SET @PromptLibraryID = SCOPE_IDENTITY();
-    END;
+        PRINT '[RTDS][INFO] PromptLibrary created (PromptLibraryID=' + CAST(@PromptLibraryID AS VARCHAR(20)) + ').';
+    END
+    ELSE
+        PRINT '[RTDS][INFO] PromptLibrary resolved (PromptLibraryID=' + CAST(@PromptLibraryID AS VARCHAR(20)) + ').';
 
     -- Insert RoutingTable header
     DECLARE @RoutingTableID INT;
@@ -658,6 +756,7 @@ BEGIN TRY
     VALUES
         (@SourceID, @Name, @CompanyProjectID, @PromptLibraryID, @SupportedLanguages, @now, @user);
     SET @RoutingTableID = SCOPE_IDENTITY();
+    PRINT '[RTDS][INFO] RoutingTable header inserted (RoutingTableID=' + CAST(@RoutingTableID AS VARCHAR(20)) + ').';
 
     -- Insert Operations in document order: INSERT ... SELECT ... ORDER BY assigns
     -- OperationID (identity) in @ops.Ordinal order, so the export (which emits
@@ -669,6 +768,7 @@ BEGIN TRY
     SELECT @RoutingTableID, src.DicOperationTypeID, src.OpName, src.OpKey, src.IsFirst, @now, @user
     FROM   @ops src
     ORDER BY src.Ordinal;
+    PRINT '[RTDS][INFO] Operations inserted: ' + CAST(@@ROWCOUNT AS VARCHAR(20)) + '.';
 
     UPDATE op SET op.OperationID = o.OperationID
     FROM @ops op
@@ -683,6 +783,7 @@ BEGIN TRY
     FROM   @params p
     JOIN   @ops op ON op.OpKey = p.OpKey
     ORDER BY op.Ordinal, p.Ordinal;
+    PRINT '[RTDS][INFO] Attributes inserted: ' + CAST(@@ROWCOUNT AS VARCHAR(20)) + '.';
 
     -- ---------------------------------------------------------------------
     -- P2: TTS messages (only if any present)
@@ -690,6 +791,11 @@ BEGIN TRY
     DECLARE @ttsCount INT = (SELECT COUNT(*) FROM @tts);
     IF @ttsCount > 0
     BEGIN
+        PRINT '[RTDS][INFO] Writing prompts and prompt versions...';
+        -- Per-step row counts. @@ROWCOUNT is reset by the very next statement
+        -- (PRINT included), so capture each into a variable on the next line.
+        DECLARE @rcPromptIns INT, @rcPromptUpd INT, @rcPvUpd INT, @rcPvIns INT;
+
         -- Ensure Prompt rows (idempotent on (library, name)); stamp ApplicationId
         INSERT INTO rtds.Prompt
             (PromptLibraryID, DicPromptApplicationID, Name, IsDisplayed, DateCreated, CreatedBy)
@@ -697,6 +803,7 @@ BEGIN TRY
         FROM   @tts t
         WHERE  NOT EXISTS (SELECT 1 FROM rtds.Prompt p
                            WHERE p.PromptLibraryID = @PromptLibraryID AND p.Name = t.PromptName);
+        SET @rcPromptIns = @@ROWCOUNT;
 
         -- Re-stamp ApplicationId on pre-existing prompts when the JSON differs
         -- (insert-only stamping would silently keep a stale/NULL application)
@@ -709,6 +816,7 @@ BEGIN TRY
                ON  p.PromptLibraryID = @PromptLibraryID
                AND p.Name            = t.PromptName
         WHERE  ISNULL(p.DicPromptApplicationID, -1) <> t.ApplicationId;
+        SET @rcPromptUpd = @@ROWCOUNT;
 
         UPDATE t SET t.PromptID = p.PromptID
         FROM @tts t
@@ -716,33 +824,72 @@ BEGIN TRY
 
         -- Upsert PromptVersion via UPDATE + INSERT (no MERGE).
         -- Path = Language\prompt_name.wav (target path; audio generation deferred).
+        --
+        -- Dedupe FIRST: a prompt name is shared across the library, so two flow
+        -- nodes that reference the same Prompt (e.g. two PlayPrompt steps both
+        -- naming 'Exception_ExceptionAntwerpenBe') resolve to the SAME PromptID.
+        -- That yields multiple @tts rows with identical (PromptID, language).
+        -- PromptVersion is keyed UNIQUE on (PromptID, DicPromptLanguageID), so a
+        -- raw set-based INSERT of both rows violates IDX_PromptVersion_*
+        -- (Msg 2601), and the UPDATE-by-join would be non-deterministic if the
+        -- duplicated nodes carried different Text. Collapse to one row per
+        -- (PromptID, language), choosing deterministically by lowest authoring
+        -- OpKey, then drive both the UPDATE and the INSERT off that set.
+        DECLARE @ttsPV TABLE (
+            PromptID            INT             NOT NULL,
+            DicPromptLanguageID INT             NOT NULL,
+            Language            VARCHAR(5)       NOT NULL,
+            PromptName          NVARCHAR(255)    NOT NULL,
+            [Text]              NVARCHAR(MAX)    NULL,
+            PRIMARY KEY (PromptID, DicPromptLanguageID)
+        );
+
+        INSERT INTO @ttsPV (PromptID, DicPromptLanguageID, Language, PromptName, [Text])
+        SELECT d.PromptID, d.DicPromptLanguageID, d.Language, d.PromptName, d.[Text]
+        FROM (
+            SELECT t.PromptID, t.DicPromptLanguageID, t.Language, t.PromptName, t.[Text],
+                   ROW_NUMBER() OVER (
+                       PARTITION BY t.PromptID, t.DicPromptLanguageID
+                       ORDER BY t.OpKey) AS rn
+            FROM @tts t
+            WHERE t.PromptID IS NOT NULL
+        ) d
+        WHERE d.rn = 1;
+
         UPDATE pv
             SET pv.[Text] = t.[Text], pv.DateUpdated = @now, pv.UpdatedBy = @user
         FROM rtds.PromptVersion pv
-        JOIN @tts t ON t.PromptID = pv.PromptID
-                   AND t.DicPromptLanguageID = pv.DicPromptLanguageID
-        WHERE t.PromptID IS NOT NULL
-          AND ISNULL(pv.[Text], '') <> ISNULL(t.[Text], '');
+        JOIN @ttsPV t ON t.PromptID = pv.PromptID
+                     AND t.DicPromptLanguageID = pv.DicPromptLanguageID
+        WHERE ISNULL(pv.[Text], '') <> ISNULL(t.[Text], '');
+        SET @rcPvUpd = @@ROWCOUNT;
 
         INSERT INTO rtds.PromptVersion
             (PromptID, DicPromptLanguageID, Path, [Text], DateCreated, CreatedBy)
         SELECT t.PromptID, t.DicPromptLanguageID,
                t.Language + '\' + t.PromptName + '.wav', t.[Text], @now, @user
-        FROM   @tts t
-        WHERE  t.PromptID IS NOT NULL
-          AND  NOT EXISTS (SELECT 1 FROM rtds.PromptVersion pv
+        FROM   @ttsPV t
+        WHERE  NOT EXISTS (SELECT 1 FROM rtds.PromptVersion pv
                            WHERE pv.PromptID = t.PromptID
                              AND pv.DicPromptLanguageID = t.DicPromptLanguageID);
-    END;
+        SET @rcPvIns = @@ROWCOUNT;
+
+        PRINT '[RTDS][INFO] Prompts: ' + CAST(@rcPromptIns AS VARCHAR(20)) + ' new, '
+            + CAST(@rcPromptUpd AS VARCHAR(20)) + ' re-stamped; PromptVersions: '
+            + CAST(@rcPvIns AS VARCHAR(20)) + ' new, ' + CAST(@rcPvUpd AS VARCHAR(20)) + ' updated.';
+    END
+    ELSE
+        PRINT '[RTDS][INFO] No TTS messages; skipping prompt/version writes.';
 
     DECLARE @opCount     INT = (SELECT COUNT(*) FROM @ops);
     DECLARE @attrCount   INT = (SELECT COUNT(*) FROM @params);
     DECLARE @promptCount INT = (SELECT COUNT(DISTINCT PromptName) FROM @tts);
 
+    PRINT '----------------------------------------------------------------';
     IF @dryRun = 1
     BEGIN
         ROLLBACK;
-        PRINT '[DRY RUN] Rolled back - no changes persisted.';
+        PRINT '[RTDS][DONE] DRY RUN rolled back - no changes persisted.';
         PRINT '  SourceID       : ' + @SourceID;
         PRINT '  Would-be RtID  : ' + CAST(@RoutingTableID AS VARCHAR(20));
         PRINT '  Operations     : ' + CAST(@opCount   AS VARCHAR(20));
@@ -753,7 +900,7 @@ BEGIN TRY
     ELSE
     BEGIN
         COMMIT;
-        PRINT 'Routing table imported.';
+        PRINT '[RTDS][DONE] Routing table imported (committed).';
         PRINT '  SourceID       : ' + @SourceID;
         PRINT '  RoutingTableID : ' + CAST(@RoutingTableID AS VARCHAR(20));
         PRINT '  PromptLibraryID: ' + CAST(@PromptLibraryID AS VARCHAR(20));
@@ -762,8 +909,16 @@ BEGIN TRY
         PRINT '  TTS rows       : ' + CAST(@ttsCount  AS VARCHAR(20))
                                    + ' across ' + CAST(@promptCount AS VARCHAR(20)) + ' prompt(s)';
     END;
+    PRINT '================================================================';
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK;
+    -- Surface the failing phase before re-raising: the error number/message and
+    -- the SourceID make a failed run self-explanatory in the log without having
+    -- to correlate the THROW against the script body.
+    PRINT '----------------------------------------------------------------';
+    PRINT '[RTDS][ERROR] Import FAILED and rolled back for SourceID=' + ISNULL(@SourceID, '<null>')
+        + '. Error ' + CAST(ERROR_NUMBER() AS VARCHAR(20)) + ': ' + ERROR_MESSAGE();
+    PRINT '================================================================';
     THROW;
 END CATCH;
