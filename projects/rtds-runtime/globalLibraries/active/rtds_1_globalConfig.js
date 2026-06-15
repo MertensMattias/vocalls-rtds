@@ -1,4 +1,21 @@
-language = null;
+environment = "";
+language = "";
+
+varObj = {};
+callIdKey = "";
+
+result = null;
+env = "acc";
+debug = true;
+debugCall = true;
+
+_rtConfig = {};
+_rtNextStep = "_rtNextStep";
+
+_headers = "";
+
+_endFlowSemaphore = 0;
+RTDS_finalizing = false;
 
 /**
  * rtds_1_globalConfig.js -- Project varObj schema + log keys
