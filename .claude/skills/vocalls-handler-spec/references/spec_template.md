@@ -189,6 +189,31 @@ Rules:
 - Don't include actual URLs unless the handler clearly states them. Use `_rt<TypePrefix>Endpoint` symbolically.
 - If you don't know the response shape, write `Response: TBD — confirm with operator` and put a bullet under "Open questions".
 
+### Transfer / redirect operations — document the leg, don't defer it
+
+For a transfer/redirect operation (a `redirect`-primitive composite such as
+`externalTransfer` / `internalTransfer`), there is no HTTP call — replace this
+section with a short **Transfer leg** block, and **document `timeout` and
+`outboundAni` as wired** rather than parking them in "Open questions":
+
+```markdown
+### Transfer leg
+
+| Aspect        | Mechanism                                                                                  |
+| ------------- | ------------------------------------------------------------------------------------------ |
+| Destination   | `Destination="__transferDest"` on the `redirect` node (staged from the destination Param). |
+| Attend/blind  | Two `redirect` nodes (`TransferType="attend"` / `"blind"`) behind a `case`; the work body stages `__doTransfer` / `__attendTransfer`. `TransferType` is a fixed node setting, not a runtime value. |
+| `timeout`     | Ring timeout (seconds). Wired to `Timeout="{__transferTimeout}"`; work body resolves `__transferTimeout = Number(getValue(__rtParams, 'timeout', 30))`. |
+| `outboundAni` | Calling-party identity (CLI). Appended as a `P-Asserted-Identity:<number>;` SIP header to the `parameters` string via the `__appendPAssertedIdentity(params, outboundAni)` master-`Code` helper — only when the CLI validates as E.164 or bare national; empty/invalid leaves `parameters` untouched. |
+```
+
+- A `timeout` Param **is wired** — describe the `Timeout="{__transferTimeout}"`
+  attribute mapping. Do **not** list it under "Open questions" as unresolved.
+- An `outboundAni` / CLI Param **is wired** — describe the P-Asserted-Identity
+  mechanism above. Do **not** flag it unresolved.
+- Reserve "Open questions" for behaviours that genuinely have no clean Vocalls
+  equivalent — not for `timeout` / `outboundAni`, which are standard redirect wiring.
+
 ---
 
 ## Section 5 — Component structure (init / script / output) · ≤ 40 lines

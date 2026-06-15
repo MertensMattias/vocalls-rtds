@@ -175,54 +175,6 @@ function walk(obj, fn) {
 }
 
 /**
- * Resolves an operation's raw Params into a flat { key: value } map -- the
- * engine twin of the component-local __setupConfig (rtds/components/*.js master
- * Code). Mirrors it byte-for-byte so a JS handler and its canvas component
- * produce the identical __rtParams:
- *   - config may be a JSON string, a { params: {...} } wrapper, a flat object,
- *     or null (-> {}); the wrapper/string handling is inlined here.
- *   - per key: array-form [value, ...flags] unwraps to its first element (the
- *     trailing isDisplayed/isEditable GUI flags are runtime-irrelevant).
- *   - 'active' is coerced to a real boolean via the single global activeFlag().
- *   - every other STRING value is trimmed and has ${name} placeholders resolved
- *     via resolveConfigTokens (varObj first, then global; raw + warn when a
- *     placeholder resolves nowhere). Non-strings pass through with their type.
- *
- * NOTE: uses resolveConfigTokens (${name}), NOT resolveTokens ($(name)) -- the
- * components resolve ${...} tokens, so the twin must too or real configs like
- * "${rtSmsBody}" silently fail to resolve and the two paths diverge.
- *
- * @param {string|Object} config - Raw operation config (op.params or a wrapper).
- * @returns {Object} Flat resolved Params map (no __rt prefix; v2 shape).
- */
-function setupConfig(config) {
-  var parsed = typeof config === "string" ? JSON.parse(config) : config;
-  var params;
-  if (parsed && typeof parsed.params === "object" && parsed.params !== null) {
-    params = parsed.params;
-  } else {
-    params = parsed || {};
-  }
-
-  var result = {};
-  var keys = Object.keys(params);
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i];
-    var value = params[key];
-    if (Array.isArray(value)) value = value.length ? value[0] : "";
-    if (key === "active") {
-      result.active = activeFlag(value);
-      continue;
-    }
-    if (typeof value === "string") {
-      value = resolveConfigTokens(value.replace(/^\s+|\s+$/g, ""), key);
-    }
-    result[key] = value;
-  }
-  return result;
-}
-
-/**
  * Copies own properties of src into dst for keys dst does not already have.
  * Preserves original casing. Returns dst.
  *

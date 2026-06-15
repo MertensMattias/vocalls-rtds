@@ -1,6 +1,6 @@
 # Storage discipline — `varObj` is the default scope
 
-**Scope:** [All] · **Answers:** *Where do I put call-scoped data? When is `global` allowed?*
+**Scope:** [All] · **Answers:** _Where do I put call-scoped data? When is `global` allowed?_
 
 All call-scoped data lives on `varObj`. It is the only store that:
 
@@ -14,13 +14,13 @@ RTDS runtime state lives on a family of `_rt*`-prefixed globals. **`_rt` is the 
 
 The `_rt*` family includes — at minimum — flow-control plumbing, HTTP scaffolding, and the per-environment endpoint table. The list grows as the runtime grows; treat anything `_rt*` as runtime-owned and outside the SetVariables / varObj contract.
 
-| Global                     | Role                         | Notes                                                                                                                                            |
-| -------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `_rtNextStep`              | Flow-control plumbing        | The platform reads `global[_rtNextStep]` to advance the flow. v2 components write the *next-step id* once at the output node via a bare `_rtNextStep = …` (placeholder-bound to the global by `__rtNextStep &= _rtNextStep`), never `global[_rtNextStep] = …` directly. See [component-v2.md §8](component-v2.md). |
-| `_rtConfig`                | Project-wide config bag      | Loaded once per call leg.                                                                                                                        |
-| `_rtBaseUrl`               | RTDS API base URL            | Set per `environment`.                                                                                                                           |
-| `_rt<Type>Endpoint`        | Per-operation endpoint paths | `_rtSmsEndpoint`, `_rtMailEndpoint`, `_rtScheduleEndpoint`, `_rtTuiCheckAccessEndpoint`, `_rtRoutingTableEndpoint`, … One per HTTP-calling Type. |
-| Other `_rt*` runtime state | Future runtime additions     | New runtime globals **must** carry the `_rt` prefix.                                                                                             |
+| Global                     | Role                         | Notes                                                                                                                                                                                                                                                                                                              |
+| -------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `_rtNextStep`              | Flow-control plumbing        | The platform reads `global[_rtNextStep]` to advance the flow. v2 components write the _next-step id_ once at the output node via a bare `_rtNextStep = …` (placeholder-bound to the global by `__rtNextStep &= _rtNextStep`), never `global[_rtNextStep] = …` directly. See [component-v2.md §8](component-v2.md). |
+| `_rtConfig`                | Project-wide config bag      | Loaded once per call leg.                                                                                                                                                                                                                                                                                          |
+| `_rtBaseUrl`               | RTDS API base URL            | Set per `environment`.                                                                                                                                                                                                                                                                                             |
+| `_rt<Type>Endpoint`        | Per-operation endpoint paths | `_rtSmsEndpoint`, `_rtMailEndpoint`, `_rtScheduleEndpoint`, `_rtTuiCheckAccessEndpoint`, `_rtRoutingTableEndpoint`, … One per HTTP-calling Type.                                                                                                                                                                   |
+| Other `_rt*` runtime state | Future runtime additions     | New runtime globals **must** carry the `_rt` prefix.                                                                                                                                                                                                                                                               |
 
 Non-`_rt` platform globals also live on `global` — they pre-date the prefix convention and stay where they are:
 
@@ -28,10 +28,10 @@ Non-`_rt` platform globals also live on `global` — they pre-date the prefix co
 | ------------------------------------------------------ | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `_headers`                                             | Vocalls platform | HTTP header bag, initialised by `if (!_headers) { _headers = {}; }` in every init body.                                                                                                                                                                         |
 | `environment`, `language`                              | Vocalls platform | Synced **from** varObj at init time by `initializeCallFlowContext`; read by the platform. Components don't write these.                                                                                                                                         |
-| `context.session.variables.RTDS_*`                     | RTDS dispatcher  | `RTDS_sourceId`, `RTDS_opIndex`, `RTDS_currentOpId`, `RTDS_currentOpType`, `RTDS_currentOpConfig`, `RTDS_nextStepId`, `RTDS_error`. Lives on `context.session.variables`, not `global`.                                                                          |
-| `__configJSON`, `__rtParams`, `__<componentName><Key>` | Per-component    | Component-scoped state — never user data. The `__rt` prefix on a *component-scoped* var means "this is a component's local view of an RTDS global" (e.g. `__rtBaseUrl`, `__rtEndpoint`, `__rtNextStep`). Don't confuse it with the bare-`_rt*` runtime globals. |
+| `context.session.variables.RTDS_*`                     | RTDS dispatcher  | `RTDS_sourceId`, `RTDS_opIndex`, `RTDS_currentOpId`, `RTDS_currentOpType`, `RTDS_currentOpConfig`, `RTDS_nextStepId`, `RTDS_error`. Lives on `context.session.variables`, not `global`.                                                                         |
+| `__configJSON`, `__rtParams`, `__<componentName><Key>` | Per-component    | Component-scoped state — never user data. The `__rt` prefix on a _component-scoped_ var means "this is a component's local view of an RTDS global" (e.g. `__rtBaseUrl`, `__rtEndpoint`, `__rtNextStep`). Don't confuse it with the bare-`_rt*` runtime globals. |
 
-**Everything else goes on `varObj`** — operator-set attributes (`RoutingId`, `customerType`, `IVREvent`, …), cross-component scratch (`SchedulerExternalNumber`, `rtPromptList`, …), guard tokens, language overrides, anything else a downstream operation needs to read across components or session restores.
+**Everything else goes on `varObj`** — operator-set attributes (`RoutingId`, `customerType`, `IVREvent`, …), cross-component scratch (`schedulerExternalNumber`, `rtPromptList`, …), guard tokens, language overrides, anything else a downstream operation needs to read across components or session restores.
 
 ## Read & write contract
 

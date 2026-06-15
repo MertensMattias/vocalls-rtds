@@ -707,11 +707,22 @@ Rules:
 
 - Parent on `baselayer`; chrome + every expression + default on
   `parent="436"`. `*InnerNode` is chrome — never an edge endpoint.
+- **The `case` parent's `label` is empty (`label=""`)** — see the parent
+  object above. Don't give it a descriptive title.
+- **Each `expressionNode` child's `label` MUST equal its `Expression`
+  attribute verbatim** (character-for-character, including the
+  `&amp;&amp;` encoding of `&&`). This is a **hard validation rule** —
+  Vocalls Designer raises a VALIDATION ERROR if they differ (e.g.
+  `label="attend transfer"` with
+  `Expression="__doTransfer == true &amp;&amp; __attendTransfer == true"`
+  is rejected). The `default` child's `label` is a free-form tag
+  (`"no choice"`, `"skip"`) — only `expression` children are bound to
+  their `Expression`.
 - Every non-chrome child carries `DynamicNextId=""` and is wired by
   an explicit edge (node_types.md Universal rule #4).
 - `Expression` is engine-evaluated against the engine scope; it may
   reference variables set by earlier `setvar` / `script` / master
-  `Variables` (e.g. `menuMode`, `__maxTries`).
+  `Variables` (e.g. `menuMode`, `__maxTries`, `__doTransfer`).
 
 ### 7.7 `counter`
 
@@ -904,11 +915,14 @@ Rules:
 Transfer the call. Linear-with-failure-branch.
 
 ```xml
-<!-- parent (baselayer) -->
+<!-- parent (baselayer) — one node per TransferType (here: blind) -->
 <object label="" Type="redirect"
         OnEnter="" OnLeave=""
-        Destination="${rtTransferNumber}"
-        Parameters=""
+        Destination="__transferDest"
+        Parameters="{__transferParams}"
+        TransferType="blind"
+        Timeout="{__transferTimeout}"
+        ResultVariableName="__transferResult"
         MaxEntryCount="" MaxEntryNodeId=""
         id="18">
   <mxCell style="redirectNode" parent="baselayer" vertex="1">
@@ -936,9 +950,28 @@ Transfer the call. Linear-with-failure-branch.
 
 Rules:
 
-- `Destination` is either a literal (`"+420"`) or a `${var}`
-  placeholder. `${var}` here resolves at runtime against the global
-  scope — see §5.
+- `Destination` is either a literal (`"+420"`), a `${var}` placeholder,
+  or — in a transfer composite — a bare staged-global ref
+  (`Destination="__transferDest"`) that the work body wrote. `${var}`
+  resolves at runtime against the global scope — see §5.
+- `Parameters`, `Timeout` use curly-brace runtime substitution of staged
+  globals: `Parameters="{__transferParams}"`, `Timeout="{__transferTimeout}"`.
+  `Timeout` (seconds) maps from a `timeout` Param — work body resolves
+  `__transferTimeout = Number(getValue(__rtParams, 'timeout', 30));`, init
+  pre-declares `__transferTimeout = 30;`.
+- `TransferType` (`"blind"` / `"attend"`) is a **fixed node setting**, not a
+  runtime value. To pick attend vs blind at runtime, place **two** redirect
+  nodes — one of each `TransferType` — behind a `case` whose expressions test
+  the staged `__doTransfer` / `__attendTransfer` flags. See the shipped
+  `rtds/components/externalTransfer.js` / `internalTransfer.js` composites and
+  [conventions/component-mxgraph.md §8a](../../conventions/component-mxgraph.md).
+- **CLI / P-Asserted-Identity:** when the operation has an `outboundAni` Param,
+  set the calling-party identity by appending
+  `P-Asserted-Identity:<number>;` to `__transferParams` via the
+  `__appendPAssertedIdentity(params, outboundAni)` master-`Code` helper before
+  the redirect (validates the CLI as E.164 or bare national; no-ops on
+  empty/invalid). `internalTransfer.js` has no `outboundAni`, so it omits the
+  helper — only add it when the op carries a CLI Param.
 - The "accepted" path is terminal for this leg (no outbound edge
   from the parent or chrome).
 - The `defaultNode` child (label `"not accepted"`) fires when the

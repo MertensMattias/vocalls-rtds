@@ -50,7 +50,9 @@ Rules:
 - Geometry is parent-local (`x="10"`, `y` increments by 30 per row).
 - First child is the chrome (`caseInnerNode`) — always present, no `label`/`SubType`.
 - Second child is the default branch (`SubType="default"`, `style="defaultNode"`).
-- Subsequent children are `SubType="expression"` with `Expression="..."` and `style="expressionNode"`. Their `label` is conventionally the same as the `Expression` string for readability.
+- Subsequent children are `SubType="expression"` with `Expression="..."` and `style="expressionNode"`.
+- **The `case` parent node's `label` is empty (`label=""`).** Don't give it a descriptive title (no `label="transfer?"`) — the parent is just the container; only its children carry meaning.
+- **An `expressionNode` child's `label` MUST equal its `Expression` attribute *verbatim* — character-for-character, including the `&amp;&amp;` HTML-encoding of `&&`.** This is not a readability convention; it is a **hard validation rule**. Vocalls Designer raises a VALIDATION ERROR if `label` and `Expression` differ (e.g. `label="attend transfer"` with `Expression="__doTransfer == true &amp;&amp; __attendTransfer == true"` is rejected). Set both to the same string. See [externalTransfer.js:167-190](../rtds/components/externalTransfer.js#L167-L190) / [internalTransfer.js](../rtds/components/internalTransfer.js) and [guardRouting.v2.js](../rtds/components/guardRouting.v2.js) for the shipped precedent.
 - Every branch child carries `DynamicNextId=""` — wiring happens through outbound edges.
 
 ### `recognize`
@@ -134,6 +136,51 @@ So: primitive *attribute values* are not JS and are not subject to the `__` pref
 
 **Don't try to substitute `${name}` placeholders in primitive attributes via `__setupConfig`.** Primitive attributes are read by the engine, not by component JS. `${name}` resolution inside `Text`, `Expression`, `VariableValue`, etc. is the engine's job (when it does it at all) — not `__setupConfig`'s. See [params.md](params.md) for which mechanism resolves which placeholder syntax.
 
+## 8a. The `redirect` primitive — transfer/redirect composites
+
+`Type="redirect"` is how a composite component hands the call leg to another number. The canonical shipped examples are the two `redirect`-primitive composites [externalTransfer.js](../rtds/components/externalTransfer.js) and [internalTransfer.js](../rtds/components/internalTransfer.js): a `case` node (attend vs blind vs skip) fans out to two `redirect` nodes — one `TransferType="attend"`, one `TransferType="blind"` — both reading the same staged work-body globals.
+
+The redirect node's transfer-specific attributes are **curly-brace runtime substitutions** against globals the work body has already staged (these are engine-resolved `{var}` references, *not* `${name}` `__setupConfig` tokens — see §8 and [params.md](params.md)):
+
+| Redirect attribute | Wires to | Notes |
+| ------------------ | -------- | ----- |
+| `Destination` | `__transferDest` (bare global ref) | The target number. Staged by the work body from the destination Param (`phoneNumber` / `target`). |
+| `Parameters` | `"{__transferParams}"` | Semicolon-delimited SIP-header string. Built by the work body (see CLI helper below). |
+| `TransferType` | `"attend"` / `"blind"` | **Fixed per node** — not a runtime value. Attend vs blind is a redirect/transfer contract toggle expressed as *two redirect nodes* plus a `case` that picks one; you cannot switch it from a variable. See [memory: vocalls-redirect-transfer-contract]. |
+| `Timeout` | `"{__transferTimeout}"` | Curly-brace substitution of the staged timeout global. |
+| `ResultVariableName` | `"__transferResult"` | Names the global the engine writes the leg result into. |
+
+### Timeout wiring (E)
+
+A `timeout` Param maps to the redirect node's `Timeout="{__transferTimeout}"` attribute. The plumbing has three fixed touch-points:
+
+1. **Init node** pre-declares the working global: `__transferTimeout = 30;`
+2. **Work body** resolves it: `__transferTimeout = Number(getValue(__rtParams, 'timeout', 30));`
+3. **Redirect node** consumes it: `Timeout="{__transferTimeout}"` (both the attend and blind nodes).
+
+The `30` (seconds) default appears in all three places and in the `__configJSON` literal default. See [externalTransfer.js:234](../rtds/components/externalTransfer.js#L234) / [internalTransfer.js:204](../rtds/components/internalTransfer.js#L204).
+
+### Conditional SIP-header injection — P-Asserted-Identity from CLI (F)
+
+When a transfer/redirect operation carries an `outboundAni` (CLI / calling-party) Param, set the calling-party identity on the outbound leg by appending a `P-Asserted-Identity:<number>;` entry to the semicolon-delimited `parameters` string — but **only when the CLI is a valid phone number**. This is an operation-specific master-`Code` helper, `__`-prefixed and JSDoc'd, named `__appendPAssertedIdentity(params, outboundAni)`. It is the reusable pattern for setting calling-party identity on a transfer leg.
+
+Normalisation + validation (the helper's contract):
+- Strip spaces, dashes, parens, dots: `String(outboundAni).replace(/[\s\-().]/g, '')`.
+- Rewrite a leading `00` as `+` (international-access → E.164 plus).
+- Accept E.164 (`/^\+[1-9]\d{6,14}$/`) **or** bare national (`/^[1-9]\d{6,14}$/`); reject anything else.
+- Empty/invalid CLI → return `params` **untouched** (no header appended).
+- Otherwise append `P-Asserted-Identity:<normalized>;`, preserving/adding the trailing `;` so the string stays well-formed.
+
+The work body calls it after reading `parameters` and `outboundAni`, before staging the redirect:
+
+```js
+__transferParams = String(getValue(__rtParams, 'parameters', ''));
+__outboundAni    = String(getValue(__rtParams, 'outboundAni', ''));
+__transferParams = __appendPAssertedIdentity(__transferParams, __outboundAni);
+```
+
+See the helper in [externalTransfer.js master `Code`](../rtds/components/externalTransfer.js) (the `__appendPAssertedIdentity` JSDoc block) and its work-body call at [externalTransfer.js:85](../rtds/components/externalTransfer.js#L85). `internalTransfer.js` omits this helper — it has no `outboundAni` Param — which is the expected shape: only add the helper when the operation actually carries a CLI Param.
+
 ## 9. Annotation text — section headers in the canvas
 
 The voicemaildetector embeds visual section headers as bare `<mxCell vertex="1">` elements with an HTML `value=` and a no-interaction style. See [voicemaildetector.js:210-218](../rtds/components/voicemaildetector.js#L210-L218).
@@ -158,6 +205,7 @@ Hand-built components don't follow the v2 single-column trunk layout. Voicemaild
 
 - **[grep]** Visible nodes parented to `baselayer`, only the two root cells above?
 - **[grep]** Compound children (case rows, recognize children, component inner) parented to the compound parent's id, not to baselayer?
+- **[grep]** Every `expressionNode` child's `label` equals its `Expression` verbatim (incl. `&amp;&amp;`), and the `case` parent's `label` is empty? (Mismatch = Designer validation error — §4.)
 - **[grep]** Do edges into compound nodes target the parent id, while edges out of branches source the child id?
 - **[grep]** Does every edge anchor both `exit*` and `entry*` unless it's a canonical v2 anchor-free edge?
 - **[grep]** Are annotation texts marked with `connectable=0;allowArrows=0;`?

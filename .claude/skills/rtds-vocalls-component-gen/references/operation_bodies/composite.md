@@ -213,6 +213,54 @@ Retry loops must always be bounded — set `MaxEntryCount` on the looping
 primitive and `MaxEntryNodeId` to id=6 so the loop is guaranteed to
 terminate.
 
+### Variant D — Transfer / redirect (case → two `redirect` nodes)
+
+The Script stages transfer working globals (`__transferDest`,
+`__transferParams`, `__transferTimeout`, `__doTransfer`,
+`__attendTransfer`, …), then a `case` picks one of two `redirect`
+primitives — one `TransferType="attend"`, one `TransferType="blind"` —
+because `TransferType` is a fixed node setting, not a runtime value. The
+`case` default ("skip") and each redirect's `not accepted` child all fall
+to the output.
+
+```
+                  ┌─► redirect attend(120) ──┐
+script(29) ──► case(110)                      ├─► output(6)
+                  ├─► redirect blind(130) ────┘
+                  └─► (skip) ────────────────► output(6)
+```
+
+This is the shape of the shipped `rtds/components/externalTransfer.js` and
+`internalTransfer.js`. Notes specific to this variant:
+
+- **`case` labels:** the `case` parent is `label=""`; each `expression`
+  child's `label` MUST equal its `Expression` verbatim (incl.
+  `&amp;&amp;`) — a mismatch is a Designer **validation error**. The
+  expressions test the staged flags:
+  `__doTransfer == true &amp;&amp; __attendTransfer == true` (attend),
+  `__doTransfer == true` (blind), `default` (skip).
+- **Redirect attributes** are curly-brace runtime substitutions of the
+  staged globals: `Destination="__transferDest"`,
+  `Parameters="{__transferParams}"`, `Timeout="{__transferTimeout}"`,
+  `ResultVariableName="__transferResult"`. See
+  [../node_types.md → Type `redirect`](../node_types.md) and
+  [../primitive_examples.md §7.10](../primitive_examples.md).
+- **Timeout (E):** a `timeout` Param → `Timeout="{__transferTimeout}"`;
+  work body resolves
+  `__transferTimeout = Number(getValue(__rtParams, 'timeout', 30));`, init
+  pre-declares `__transferTimeout = 30;`.
+- **CLI / P-Asserted-Identity (F):** an `outboundAni` Param sets the
+  calling-party identity by appending `P-Asserted-Identity:<number>;` to
+  `__transferParams` via the master-`Code` helper
+  `__appendPAssertedIdentity(params, outboundAni)` before the redirect.
+  Omit the helper when the op has no CLI Param (as `internalTransfer.js`
+  does).
+- **Master `Variables` vs init:** the transfer working globals live in the
+  **init node body only** — master `Variables` carries just the
+  cross-script set (`__configJSON`, `__environment`, the mandatory
+  `__rtOutcome` seed, `__rtNextStep &= _rtNextStep`). See
+  [component-v2.md §4](../../conventions/component-v2.md).
+
 ## Worked example — self-contained component with say + dtmf collect + recognize fallback
 
 Composite mode applies to a **self-contained v2 component** that embeds

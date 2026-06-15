@@ -81,6 +81,10 @@ __rtNextStep &= _rtNextStep;
 
 `__rtOutcome` is cross-script state (staged in init/work, read at the output node), so it is pre-declared here per the [naming.md](naming.md) cross-script rule. The init node re-stages it (§6); it is **not** an operator-facing property (no `PropertiesDefinition` entry — see §5).
 
+**The `__rtOutcome` seed is mandatory for EVERY v2 component** — not just HTTP ops like [sendSms.js](../rtds/components/sendSms.js). It is the load-time safety net for any path that reaches the output node without running the init node, so a composite/redirect component ([externalTransfer.js](../rtds/components/externalTransfer.js), [internalTransfer.js](../rtds/components/internalTransfer.js)) carries it exactly like an HTTP op. A transfer/redirect component that does nothing on its happy path may seed the *did-nothing* default `__rtOutcome = 'nextStep';` rather than `'NextStep_Failure'` — pick the op's no-op outcome key (see [externalTransfer.js:27](../rtds/components/externalTransfer.js#L27)).
+
+**Master `Variables` carries ONLY cross-script declarations** — the things that must exist before *any* node runs: `__configJSON`, `__environment`, the optional `__rtBaseUrl` / `__rt<Op>Endpoint` bindings (HTTP ops only), `__rtOutcome`, and `__rtNextStep &= _rtNextStep`. **Per-execution WORKING vars belong in the init node body only** (§6) — do not also declare them in master `Variables`. For a transfer/redirect component the working vars `__transferDest`, `__transferParams`, `__transferResult`, `__doTransfer`, `__attendTransfer`, `__transferTimeout` (and `__outboundAni` when there's a CLI Param) are pre-declared **only** in the init node — declaring them again in master `Variables` is redundant over-seeding. The shipped [externalTransfer.js:27](../rtds/components/externalTransfer.js#L27) / [internalTransfer.js:27](../rtds/components/internalTransfer.js#L27) `Variables` blocks hold only the cross-script set; the transfer working vars are init-only ([externalTransfer.js:68](../rtds/components/externalTransfer.js#L68)).
+
 `&=` is the **documented placeholder-binding operator** — it keeps `__rtNextStep` synced with the flow variable `_rtNextStep`. Use it only on `__rtNextStep`. Everywhere else, `=`.
 
 Keep the `&=` line in master `Variables` for every component — it keeps `__rtNextStep` synced with the flow variable `_rtNextStep` at no cost, and the engine reads `global[_rtNextStep]` on re-entry. It is **not** the resolution path. The step id is resolved **once at the output node** via `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` (a bare assignment to the placeholder-bound flow variable, **not** `global[_rtNextStep] = …`; see §7–§8) — the work body never writes the step id mid-flight. This holds for *every* v2 component, whether it is reached as a JS-twin-backed op (e.g. [sendSms.js](../rtds/components/sendSms.js)) or as a GUI-exit target (e.g. [guardTui.js](../rtds/components/guardTui.js), the `guard_tui` target): both are self-contained components on the same contract.
@@ -149,6 +153,7 @@ Because every in-flight op leaves the same `__rtParams` / `__rtOutcome` state, *
 
 - **[grep]** Does the component have exactly the four canonical ids (`0`/`7`/`29`/`6`)?
 - **[grep]** Master-attribute order matches §2?
+- **[grep]** Master `Variables` carries only the cross-script set (incl. the mandatory `__rtOutcome` seed) — per-execution working vars (`__transferDest`, `__transferTimeout`, …) are init-node-only, not re-declared in `Variables` (§4)?
 - **[judgment]** Master `Code` composition matches §3?
 - **[grep]** Init body is the universal four lines (incl. `__rtOutcome = 'NextStep';`)?
 - **[grep]** Work body stages `__rtOutcome = '<key>'` with plain `=` and never writes `_rtNextStep` mid-flight?

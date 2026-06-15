@@ -314,17 +314,33 @@ the success-path side effect.
 
 Linear-with-failure-branch call redirect.
 
-| Parent attribute  | Required | Notes                                                                  |
-| ----------------- | -------- | ---------------------------------------------------------------------- |
-| `Type`            | yes      | `"redirect"`.                                                           |
-| `Destination`     | yes      | Target number (e.g. `"+420"`) or `${var}` placeholder.                  |
-| `Parameters`      | no       | Extra parameters passed to the redirect (engine-specific).              |
-| `MaxEntryCount`   | no       | Re-entry cap.                                                           |
-| `MaxEntryNodeId`  | no       | Target if cap exceeded.                                                 |
-| `OnEnter`         | no       | JS run on entry.                                                        |
-| `OnLeave`         | no       | JS run on leave.                                                        |
+| Parent attribute     | Required | Notes                                                                  |
+| -------------------- | -------- | ---------------------------------------------------------------------- |
+| `Type`               | yes      | `"redirect"`.                                                           |
+| `Destination`        | yes      | Target number — a bare staged global ref (`__transferDest`) or a `${var}` placeholder. |
+| `Parameters`         | no       | Semicolon-delimited SIP-header string. Curly-brace substitution of a staged global: `"{__transferParams}"`. See P-Asserted-Identity below. |
+| `TransferType`       | no       | `"attend"` or `"blind"`. **Fixed per node** — not a runtime value. To choose at runtime, place *two* redirect nodes (one attend, one blind) behind a `case`. |
+| `Timeout`            | no       | Ring timeout in seconds. Curly-brace substitution of a staged global: `"{__transferTimeout}"`. |
+| `ResultVariableName` | no       | Names the global the engine writes the leg result into (e.g. `"__transferResult"`). |
+| `MaxEntryCount`      | no       | Re-entry cap.                                                           |
+| `MaxEntryNodeId`     | no       | Target if cap exceeded.                                                 |
+| `OnEnter`            | no       | JS run on entry.                                                        |
+| `OnLeave`            | no       | JS run on leave.                                                        |
 
 **Style:** `redirectNode`.
+
+**Attend vs blind, Timeout, and CLI (P-Asserted-Identity).** A transfer/redirect
+operation that toggles attend vs blind does so with **two** redirect nodes behind
+a `case` (attend-when, blind-when, skip-default) — `TransferType` is a fixed node
+setting, not a variable. A `timeout` Param wires to `Timeout="{__transferTimeout}"`
+(work body resolves `__transferTimeout = Number(getValue(__rtParams, 'timeout', 30));`,
+init pre-declares `__transferTimeout = 30;`). An `outboundAni` (CLI) Param is set on
+the leg by appending `P-Asserted-Identity:<number>;` to the `Parameters` string via the
+`__appendPAssertedIdentity(params, outboundAni)` master-`Code` helper (validates the CLI
+as E.164 or bare national; leaves params untouched when empty/invalid). The shipped
+`rtds/components/externalTransfer.js` / `internalTransfer.js` composites are the
+ground-truth examples. Full wiring + helper contract:
+[conventions/component-mxgraph.md §8a](../../conventions/component-mxgraph.md).
 
 **Children, in this order** (each child's `<mxCell parent="<redirect-id>">`,
 **not** `parent="baselayer"`):

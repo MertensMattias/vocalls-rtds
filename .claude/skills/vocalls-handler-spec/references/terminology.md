@@ -37,6 +37,9 @@ substitution sheet for the Step 6 validation sweep in [SKILL.md](../SKILL.md).
 | `StrTrimW(x)`                                                            | `x.trim()` (in JS sketches)                                                                                       |
 | Routing-table lookup (`GetDsAttrs` against `c_sDsRtPath`)                | (Gone — replaced by the Vocalls RTDS HTTP API — see [RTDS_runtime_spec.md §2](../../rtds-vocalls-component-gen/references/RTDS_runtime_spec.md)) |
 | "Active = Yes?" guard                                                    | "Skip if `Active` is falsy" — the universal inactive-guard at the top of every work body                          |
+| Transfer timeout (ring timeout) Param                                    | `timeout` Param → `redirect` node's `Timeout="{__transferTimeout}"` attribute. **Document as wired** — not an open question. |
+| Calling-party number / CLI / ANI on a transfer leg                       | `outboundAni` Param → `P-Asserted-Identity:<number>;` SIP header appended to `parameters` via `__appendPAssertedIdentity`. **Document as wired** — not an open question. |
+| Attend vs blind transfer toggle                                          | Two `redirect` nodes (`TransferType="attend"` / `"blind"`) behind a `case` on staged `__doTransfer` / `__attendTransfer`. `TransferType` is a fixed node setting, not a runtime value. |
 
 ## Identifier discipline
 
