@@ -1,0 +1,79 @@
+{
+  "sourceId": "+3257351121",
+  "name": "DIGIPOLIS - LPA_ICT_GUARD_TUI",
+  "projectId": "",
+  "project": "LPA ICT",
+  "promptLibraryId": "",
+  "promptLibrary": "DIGIPOLIS\\LPA\\ICT_HELPDESK",
+  "supportedLanguages": "NL",
+  "operations": [
+    {
+      "id": "00000",
+      "type": "setVariables",
+      "name": "Call Initialization",
+      "isFirstOperation": true,
+      "params": {
+        "active": true,
+        "customerName": "LPA",
+        "customerProject": "ICT_GUARD",
+        "routingId": "LPA_ICT_GUARD_TUI",
+        "ivrEvent": "9999",
+        "ivrAction": "CT",
+        "nextStep": "00001"
+      }
+    },
+    {
+      "id": "00001",
+      "type": "guardTui",
+      "name": "LPA_ICT_GUARD_TUI",
+      "params": {
+        "active": true,
+        "configId": 3,
+        "configName": "LPA_ICT_GUARD",
+        "phoneNumberVar": "ani",
+        "timeout": 10000,
+        "resultCurrentlyActivated_NL": "U bent momenteel actief voor de wachtdienst ${CustomerProject}.",
+        "resultCurrentlyDeactivated_NL": "U bent momenteel niet actief op ${CustomerProject}.",
+        "promptActivate_NL": "Druk op 7 om uzelf te activeren.",
+        "promptDeactivate_NL": "Druk op 3 om uzelf te deactiveren.",
+        "resultActivated_NL": "Uw nummer is succesvol geactiveerd.",
+        "resultDeactivated_NL": "Uw nummer is succesvol gedeactiveerd.",
+        "resultOnlyActive_NL": "U bent momenteel als enige geactiveerd. Daarom kunt u zichzelf nu niet deactiveren.",
+        "resultDenied_NL": "U bent niet bevoegd om van deze dienst gebruik te maken. Gelieve contact op te nemen met uw verantwoordelijke indien u hierover vragen heeft.",
+        "resultError_NL": "Er is een technische fout opgetreden. Gelieve dit probleem te melden aan uw verantwoordelijke.",
+        "nextStep_Success": "00098",
+        "nextStep_Denied": "00099",
+        "nextStep_Failure": "00099",
+        "nextStep": "00098"
+      }
+    },
+    {
+      "id": "00098",
+      "type": "setVariables",
+      "name": "Set: Cognos Success",
+      "params": {
+        "active": true,
+        "ivrEvent": "1200",
+        "ivrAction": "CT",
+        "nextStep": "00100"
+      }
+    },
+    {
+      "id": "00099",
+      "type": "setVariables",
+      "name": "Set: Cognos Failure",
+      "params": {
+        "active": true,
+        "ivrEvent": "9999",
+        "ivrAction": "DC",
+        "nextStep": "00100"
+      }
+    },
+    {
+      "id": "00100",
+      "type": "disconnect",
+      "name": "RTDS: Disconnect",
+      "params": {}
+    }
+  ]
+}

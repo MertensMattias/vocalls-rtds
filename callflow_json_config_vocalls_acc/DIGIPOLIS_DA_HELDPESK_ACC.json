@@ -1,0 +1,252 @@
+{
+  "sourceId": "+3257351226",
+  "name": "DIGIPOLIS - DA_HELPDESK",
+  "projectId": "",
+  "project": "DA HELPDESK",
+  "promptLibraryId": "",
+  "promptLibrary": "DIGIPOLIS\\DA\\HELPDESK",
+  "supportedLanguages": "NL",
+  "operations": [
+    {
+      "id": "00000",
+      "type": "setVariables",
+      "name": "Call Initialization",
+      "isFirstOperation": true,
+      "params": {
+        "active": [true, "isDisplayed", "isEditable"],
+        "customerName": "DA",
+        "customerProject": "HELPDESK",
+        "routingId": "DA_HELPDESK",
+        "ivrEvent": "9999",
+        "ivrAction": "CT",
+        "nextStep": "00001"
+      }
+    },
+    {
+      "id": "00001",
+      "type": "say",
+      "name": "Play: Welcome",
+      "params": {
+        "active": [false, "isDisplayed", "isEditable"],
+        "applicationId": 11,
+        "prompt": ["Welcome_Welcome", "isDisplayed", "isEditable"],
+        "nextStep": "00002"
+      }
+    },
+    {
+      "id": "00002",
+      "type": "say",
+      "name": "Play: Exception",
+      "params": {
+        "active": [true, "isDisplayed", "isEditable"],
+        "applicationId": 14,
+        "prompt": [
+          "Exception_ExceptionAntwerpenBe",
+          "isDisplayed",
+          "isEditable"
+        ],
+        "nextStep": "00004"
+      },
+      "ttsMessages": {
+        "NL": "Beste collega, momenteel zijn er algemene problemen met de website antwerpen.be. Onze technische dienst werkt aan een oplossing. Heb je een ander probleem? Blijf dan aan de lijn. We helpen je zo snel mogelijk verder."
+      }
+    },
+    {
+      "id": "00004",
+      "type": "checkSchedule",
+      "name": "Check: Scheduler",
+      "params": {
+        "active": [true, "isDisplayed", "isEditable"],
+        "applicationId": 1,
+        "scheduleId": 4039,
+        "nextStep_Open": "00010",
+        "nextStep_Closed": "00011",
+        "nextStep_Transfer": "00012",
+        "nextStep_Guard_Klantwacht": "00080",
+        "nextStep_Guard_Systeemwacht": "00085",
+        "nextStep_Failure": "00085",
+        "nextStep": "00085"
+      }
+    },
+    {
+      "id": "00010",
+      "type": "setVariables",
+      "name": "Set: Congnos Open",
+      "params": {
+        "active": [true, "isDisplayed", "isEditable"],
+        "ivrEvent": "1200",
+        "ivrAction": "CT",
+        "nextStep": "00015"
+      }
+    },
+    {
+      "id": "00011",
+      "type": "setVariables",
+      "name": "Set: Congnos Closed",
+      "params": {
+        "active": [true, "isDisplayed", "isEditable"],
+        "ivrEvent": "1201",
+        "ivrAction": "DC",
+        "nextStep": "00098"
+      }
+    },
+    {
+      "id": "00012",
+      "type": "setVariables",
+      "name": "Set: Congnos Transfer",
+      "params": {
+        "active": [true, "isDisplayed", "isEditable"],
+        "ivrEvent": "1200",
+        "ivrAction": "TX",
+        "nextStep": "00090"
+      }
+    },
+    {
+      "id": "00015",
+      "type": "say",
+      "name": "Play: Exception",
+      "params": {
+        "active": [true, "isDisplayed", "isEditable"],
+        "applicationId": 14,
+        "prompt": [
+          "Exception_ExceptionAntwerpenBe",
+          "isDisplayed",
+          "isEditable"
+        ],
+        "nextStep": "00024"
+      },
+      "ttsMessages": {
+        "NL": "Beste collega, momenteel zijn er algemene problemen met de website antwerpen.be. Onze technische dienst werkt aan een oplossing. Heb je een ander probleem? Blijf dan aan de lijn. We helpen je zo snel mogelijk verder."
+      }
+    },
+    {
+      "id": "00024",
+      "type": "say",
+      "name": "Play: AdHoc",
+      "params": {
+        "active": [false, "isDisplayed", "isEditable"],
+        "applicationId": 6,
+        "prompt": [
+          "AdHoc_ExceptionToepassingenVertraging",
+          "isDisplayed",
+          "isEditable"
+        ],
+        "nextStep": "00060"
+      },
+      "ttsMessages": {
+        "NL": "Beste collega, momenteel zijn er problemen met verschillende toepassingen. Toepassingen openen niet of met veel vertraging. Onze technische diensten werken aan een oplossing. Heb je een ander probleem? Blijf dan aan de lijn. We helpen je zo snel mogelijk verder."
+      }
+    },
+    {
+      "id": "00060",
+      "type": "internalTransfer",
+      "name": "Route-To: Workgroup",
+      "params": {
+        "active": [true, "isDisplayed", "isEditable"],
+        "target": ["578041", "isDisplayed", "isEditable"],
+        "parameters": {
+          "callIdKey": "${varObj.callIdKey}",
+          "customerName": "${customerName}",
+          "customerProject": "${customerProject}"
+        },
+        "attendTransfer": true,
+        "timeout": 30,
+        "nextStep_Failure": "00100",
+        "nextStep": "00100"
+      }
+    },
+    {
+      "id": "00080",
+      "type": "setVariables",
+      "name": "Set: Congnos Guard Klantwacht",
+      "params": {
+        "active": [true, "isDisplayed", "isEditable"],
+        "ivrEvent": "1204",
+        "ivrAction": "GD01",
+        "nextStep": "00081"
+      }
+    },
+    {
+      "id": "00081",
+      "type": "externalTransfer",
+      "name": "Route-To: DA_KLANTWACHT",
+      "params": {
+        "active": [true, "isDisplayed", "isEditable"],
+        "phoneNumber": ["+3257352046", "isDisplayed", "isEditable"],
+        "outboundANI": "",
+        "parameters": "",
+        "attendTransfer": false,
+        "timeout": 30,
+        "nextStep_Failure": "00098",
+        "nextStep": "00100"
+      }
+    },
+    {
+      "id": "00085",
+      "type": "setVariables",
+      "name": "Set: Congnos Guard Systeemwacht",
+      "params": {
+        "active": [true, "isDisplayed", "isEditable"],
+        "ivrEvent": "1204",
+        "ivrAction": "GD02",
+        "nextStep": "00086"
+      }
+    },
+    {
+      "id": "00086",
+      "type": "externalTransfer",
+      "name": "Route-To: DA_SYSTEEMWACHT",
+      "params": {
+        "active": [true, "isDisplayed", "isEditable"],
+        "phoneNumber": ["+3257352048", "isDisplayed", "isEditable"],
+        "outboundANI": "",
+        "parameters": "",
+        "attendTransfer": false,
+        "timeout": 30,
+        "nextStep_Failure": "00098",
+        "nextStep": "00100"
+      }
+    },
+    {
+      "id": "00090",
+      "type": "externalTransfer",
+      "name": "Route-To: External Number",
+      "params": {
+        "active": [true, "isDisplayed", "isEditable"],
+        "phoneNumber": ["", "isDisplayed", "isEditable"],
+        "outboundANI": "",
+        "parameters": "",
+        "attendTransfer": false,
+        "timeout": 30,
+        "nextStep_Failure": "00098",
+        "nextStep": "00100"
+      }
+    },
+
+    {
+      "id": "00098",
+      "type": "setVariables",
+      "name": "Set: Congnos Error",
+      "params": {
+        "active": [true, "isDisplayed", "isEditable"],
+        "ivrEvent": "1200",
+        "ivrAction": "CT",
+        "nextStep": "00099"
+      }
+    },
+    {
+      "id": "00099",
+      "type": "disconnect",
+      "name": "RTDS: IVR Error",
+      "params": {
+        "prompt": "Scheduler_ClosedDisconnect.wav"
+      }
+    },
+    {
+      "id": "00100",
+      "type": "disconnect",
+      "name": "RTDS: Disconnect",
+      "params": {}
+    }
+  ]
+}

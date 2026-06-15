@@ -205,34 +205,16 @@
     },
     {
       "id": "00030",
-      "type": "workgroupTransfer",
+      "type": "internalTransfer",
       "name": "Route-To: Workgroup",
       "params": {
         "active": true,
-        "queueName": "LPA_ICT_HELPDESK_V",
-        "skills": "LPA_ICT_Helpdesk",
-        "priority": 100,
-        "nextStep": "00050"
-      }
-    },
-    {
-      "id": "00050",
-      "type": "say",
-      "name": "Queue: Message 1",
-      "params": {
-        "active": true,
-        "prompt": "Queue_Waitmessage01",
-        "nextStep": "00051"
-      }
-    },
-    {
-      "id": "00051",
-      "type": "say",
-      "name": "Queue: Message 2",
-      "params": {
-        "active": true,
-        "prompt": "Queue_Waitmessage02",
-        "nextStep": "00050"
+        "target": "LPA_ICT_HELPDESK_V",
+        "parameters": "",
+        "attendTransfer": false,
+        "timeout": 30,
+        "nextStep_Failure": "00098",
+        "nextStep": "00098"
       }
     },
     {
@@ -269,69 +251,6 @@
       "params": {
         "active": true,
         "sourceId": "+3271690037"
-      }
-    },
-    {
-      "id": "00080",
-      "type": "guard",
-      "name": "LPA_LTSU_GUARD",
-      "params": {
-        "active": true,
-        "configId": 3,
-        "configName": "LPA_LTSU_GUARD",
-        "dialGuard": true,
-        "outboundANI": "",
-        "diversion": "",
-        "onHoldAudioUrl": "TENANT_DA_GUARD",
-        "timeout": 15,
-        "recordVoicemail": true,
-        "acceptCallMenu": true,
-        "acceptCallMessage": "Press 1 to accept the call.",
-        "sendSms": true,
-        "sendMail": true,
-        "nextStep_Success": "00081",
-        "nextStep_Failure": "00081",
-        "nextStep": "00081"
-      }
-    },
-    {
-      "id": "00081",
-      "type": "sendMail",
-      "name": "Mail-To: LPA_LTSU_GUARD",
-      "params": {
-        "active": true,
-        "subject": "LPA_LTSU_GUARD: Call Report",
-        "from": "IVR_EVENTS@n-allo.be",
-        "to": "${rtEmailTo}",
-        "cc": "veerle.georges@police.belgium.eu;mattias.mertens@n-allo.be",
-        "bcc": "",
-        "body": "${rtEmailBody}",
-        "priority": 2,
-        "files": "${rtEmailAttachment}",
-        "attachmentNames": "",
-        "attachmentData": "",
-        "customerKey": "",
-        "timeout": 10000,
-        "nextStep_Success": "00082",
-        "nextStep_Failure": "00082",
-        "nextStep": "00082"
-      }
-    },
-    {
-      "id": "00082",
-      "type": "sendSms",
-      "name": "SMS-To: LPA_LTSU_GUARD",
-      "params": {
-        "active": true,
-        "smsAccountId": 47,
-        "routing": "LPA_LTSU_GUARD",
-        "from": "8850",
-        "to": "${rtSmsTo}",
-        "body": "${rtSmsBody}",
-        "timeout": 5000,
-        "nextStep_Success": "00098",
-        "nextStep_Failure": "00098",
-        "nextStep": "00098"
       }
     },
     {
@@ -428,11 +347,10 @@
         "active": true,
         "phoneNumber": "",
         "outboundANI": "",
-        "performCallAnalysis": "Yes",
-        "diversionReason": 8,
+        "parameters": "",
+        "attendTransfer": false,
         "timeout": 30,
-        "nextStep_Busy": "00099",
-        "nextStep_RNA": "00099",
+        "nextStep_Failure": "00099",
         "nextStep": "00098"
       }
     },

@@ -220,137 +220,30 @@
     },
     {
       "id": "00040",
-      "type": "workgroupTransfer",
+      "type": "internalTransfer",
       "name": "Route-To: Workgroup & Callback",
       "params": {
         "active": true,
-        "queueName": "DA_HELPDESK_V",
-        "skills": "DA_Helpdesk",
-        "priority": 100,
-        "escapeKey": 1,
-        "nextStep_EscapeKey": "00070",
-        "nextStep": "00041"
-      }
-    },
-    {
-      "id": "00041",
-      "type": "say",
-      "name": "Queue: Message 1",
-      "params": {
-        "active": true,
-        "prompt": "Queue_WaitMessage01.wav",
-        "nextStep": "00042"
-      }
-    },
-    {
-      "id": "00042",
-      "type": "say",
-      "name": "Queue: Message 2",
-      "params": {
-        "active": true,
-        "prompt": "Queue_WaitMessage02_CB.wav",
-        "nextStep": "00043"
-      }
-    },
-    {
-      "id": "00043",
-      "type": "play",
-      "name": "Queue: Audio",
-      "params": {
-        "active": true,
-        "audioSource": "DA_HELPDESK_TENANT",
-        "timeout": 60,
-        "nextStep": "00044"
-      }
-    },
-    {
-      "id": "00044",
-      "type": "say",
-      "name": "Queue: Message 2",
-      "params": {
-        "active": true,
-        "prompt": "Queue_WaitMessage02_CB.wav",
-        "nextStep": "00045"
-      }
-    },
-    {
-      "id": "00045",
-      "type": "play",
-      "name": "Queue: Audio",
-      "params": {
-        "active": true,
-        "audioSource": "DA_HELPDESK_TENANT",
-        "timeout": 120,
-        "nextStep": "00046"
-      }
-    },
-    {
-      "id": "00046",
-      "type": "say",
-      "name": "Queue: Message 2",
-      "params": {
-        "active": true,
-        "prompt": "Queue_WaitMessage02_CB.wav",
-        "nextStep": "00047"
-      }
-    },
-    {
-      "id": "00047",
-      "type": "play",
-      "name": "Queue: Audio",
-      "params": {
-        "active": true,
-        "audioSource": "DA_HELPDESK_TENANT",
-        "timeout": 9999,
-        "nextStep": "00041"
+        "target": "DA_HELPDESK_V",
+        "parameters": "",
+        "attendTransfer": false,
+        "timeout": 30,
+        "nextStep_Failure": "00100",
+        "nextStep": "00100"
       }
     },
     {
       "id": "00060",
-      "type": "workgroupTransfer",
+      "type": "internalTransfer",
       "name": "Route-To: Workgroup",
       "params": {
         "active": true,
-        "queueName": "DA_HELPDESK_V",
-        "skills": "DA_Helpdesk",
-        "priority": 100,
-        "nextStep": "00061"
-      }
-    },
-    {
-      "id": "00061",
-      "type": "say",
-      "name": "Queue: Message 1",
-      "params": {
-        "active": true,
-        "prompt": "Queue_WaitMessage01.wav",
-        "nextStep": "00061"
-      }
-    },
-    {
-      "id": "00070",
-      "type": "callback",
-      "name": "Callback DA HELPDESK",
-      "params": {
-        "active": true,
-        "configId": 62,
-        "callbackOnANI": 1,
-        "aniConfirmation": 0,
-        "allowManualInput": 0,
-        "manualInputRetries": 2,
-        "locationFilter": "Local",
-        "aniClassifications": "Mobile,Local",
-        "aniAttribute": "Eic_RemoteAddress",
-        "customSkills": "DA_Helpdesk",
-        "inheritSkills": 0,
-        "customPriority": 500,
-        "inheritPriority": 0,
-        "promptFolder": "Callback",
-        "workgroup": "DA_HELPDESK_CB",
-        "nextStep_Accepted": "00100",
-        "nextStep_Rejected": "00060",
-        "nextStep_Failure": "00060",
-        "nextStep": "00060"
+        "target": "DA_HELPDESK_V",
+        "parameters": "",
+        "attendTransfer": false,
+        "timeout": 30,
+        "nextStep_Failure": "00100",
+        "nextStep": "00100"
       }
     },
     {
@@ -509,11 +402,10 @@
         "active": true,
         "phoneNumber": "",
         "outboundANI": "",
-        "performCallAnalysis": "Yes",
-        "diversionReason": 8,
+        "parameters": "",
+        "attendTransfer": false,
         "timeout": 30,
-        "nextStep_Busy": "00098",
-        "nextStep_RNA": "00098",
+        "nextStep_Failure": "00098",
         "nextStep": "00100"
       }
     },
