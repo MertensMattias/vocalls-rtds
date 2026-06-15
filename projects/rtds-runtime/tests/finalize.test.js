@@ -53,16 +53,14 @@ function boot() {
         sb.RTDS_finalizing = false;
         sb.context.session.variables.RTDS_error = null;
 
-        // 'TestData' — a JS-inline op under the unified __rtOutcome contract:
-        // it writes params.Key=params.Value to varObj, then stages __rtParams +
-        // __rtOutcome='nextStep' so the engine resolves _rtNextStep from params.
-        // Mirrors what real data ops (SetVariables) do to the store + flow.
+        // 'TestData' — a JS-inline op that writes params.Key=params.Value to
+        // varObj via setVariable, then advances to NextStep. Mirrors what real
+        // data ops (SetVariables, SendSms result) do to the store + flow.
         sb.registerRtdsOperation('TestData', function (op) {
-            sb.__rtParams = op.params || {};
             if (op.params && op.params.Key) {
                 sb.setVariable(op.params.Key, op.params.Value);
             }
-            sb.__rtOutcome = 'nextStep';
+            return { nextStepId: (op.params && op.params.NextStep) || null };
         });
 
         // 'TestGui' — a GUI-exit op (caller-facing). Filtered out while finalizing.
@@ -75,13 +73,10 @@ function install(sb, ops) {
     sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
 }
 
-// dataOp uses the lowercase 'nextStep' key (the outcome 'nextStep' resolves
-// against it via getValue) so the engine advances to it. A null nextStep ends
-// the flow.
 function dataOp(id, key, value, nextStep) {
     return {
         id: id, type: 'TestData', name: 'data-' + id,
-        params: { Key: key, Value: value, nextStep: nextStep || null }
+        params: { Key: key, Value: value, NextStep: nextStep || null }
     };
 }
 
@@ -93,13 +88,12 @@ describe('finalizeFrom — finalization mode runs the data tail', function () {
                 dataOp('B', 'FromB', 'b', null)
             ]);
 
-            // JS dispatch is promise-returning, so finalizeFrom resolves a task.
-            return Promise.resolve(sb.finalizeFrom('A')).then(function (out) {
-                expect(out).toBe('disconnect');             // tail ends -> runStep terminal
-                expect(sb.getScoped('FromA', null)).toBe('a');
-                expect(sb.getScoped('FromB', null)).toBe('b');
-                expect(sb.RTDS_finalizing).toBe(true);      // mode latched on
-            });
+            var out = sb.finalizeFrom('A');
+
+            expect(out).toBe('disconnect');             // tail ends -> runStep terminal
+            expect(sb.getScoped('FromA', null)).toBe('a');
+            expect(sb.getScoped('FromB', null)).toBe('b');
+            expect(sb.RTDS_finalizing).toBe(true);      // mode latched on
         });
     });
 
@@ -107,32 +101,32 @@ describe('finalizeFrom — finalization mode runs the data tail', function () {
         return boot().then(function (sb) {
             install(sb, [
                 dataOp('A', 'FromA', 'a', 'GUI'),
-                { id: 'GUI', type: 'TestGui', name: 'gui', params: { nextStep: 'C' } },
+                { id: 'GUI', type: 'TestGui', name: 'gui', params: { NextStep: 'C' } },
                 dataOp('C', 'FromC', 'c', null)
             ]);
             // Pre-set so we can prove prepareGuiHandoff did NOT run.
             sb.context.session.variables.RTDS_currentOpId = 'UNCHANGED';
 
-            return Promise.resolve(sb.finalizeFrom('A')).then(function (out) {
-                expect(out).toBe('disconnect');
-                expect(sb.getScoped('FromA', null)).toBe('a');        // ran before the GUI node
-                expect(sb.getScoped('FromC', 'MISSING')).toBe('MISSING'); // remainder dropped
-                expect(sb.context.session.variables.RTDS_currentOpId).toBe('UNCHANGED'); // no handoff
-            });
+            var out = sb.finalizeFrom('A');
+
+            expect(out).toBe('disconnect');
+            expect(sb.getScoped('FromA', null)).toBe('a');        // ran before the GUI node
+            expect(sb.getScoped('FromC', 'MISSING')).toBe('MISSING'); // remainder dropped
+            expect(sb.context.session.variables.RTDS_currentOpId).toBe('UNCHANGED'); // no handoff
         });
     });
 
     it('skips an unregistered type to its NextStep with a warning', function () {
         return boot().then(function (sb) {
             install(sb, [
-                { id: 'A', type: 'NeverRegistered', name: 'x', params: { nextStep: 'B' } },
+                { id: 'A', type: 'NeverRegistered', name: 'x', params: { NextStep: 'B' } },
                 dataOp('B', 'FromB', 'b', null)
             ]);
 
-            return Promise.resolve(sb.finalizeFrom('A')).then(function (out) {
-                expect(out).toBe('disconnect');
-                expect(sb.getScoped('FromB', null)).toBe('b');        // advanced past unknown op
-            });
+            var out = sb.finalizeFrom('A');
+
+            expect(out).toBe('disconnect');
+            expect(sb.getScoped('FromB', null)).toBe('b');        // advanced past unknown op
         });
     });
 
@@ -140,26 +134,28 @@ describe('finalizeFrom — finalization mode runs the data tail', function () {
         return boot().then(function (sb) {
             install(sb, [dataOp('A', 'FromA', 'a', 'A')]);         // points at itself
 
-            return Promise.resolve(sb.finalizeFrom('A')).then(function (out) {
-                expect(out).toBe('disconnect');
-                expect(sb.context.session.variables.RTDS_error).toBe('RTDS_CYCLE_DETECTED');
-            });
+            var out = sb.finalizeFrom('A');
+
+            expect(out).toBe('disconnect');
+            expect(sb.context.session.variables.RTDS_error).toBe('RTDS_CYCLE_DETECTED');
         });
     });
 
     it('awaits an async JS handler in the tail and returns a resolving promise', function () {
         return boot().then(function (sb) {
             var posted = false;
-            // Async twin: returns a thenable, stages __rtOutcome inside it.
             sb.registerRtdsOperation('AsyncPost', function (op) {
-                sb.__rtParams = op.params || {};
-                sb.__rtOutcome = 'nextStep';
-                return Promise.resolve().then(function () {
-                    posted = true;                          // "HTTP" completes here
-                });
+                return {
+                    then: function (onOk) {
+                        return Promise.resolve().then(function () {
+                            posted = true;                          // "HTTP" completes here
+                            return onOk({ nextStepId: (op.params && op.params.NextStep) || null });
+                        });
+                    }
+                };
             });
             install(sb, [
-                { id: 'A', type: 'AsyncPost', name: 'post', params: { nextStep: 'B' } },
+                { id: 'A', type: 'AsyncPost', name: 'post', params: { NextStep: 'B' } },
                 dataOp('B', 'FromB', 'b', null)
             ]);
 
@@ -226,15 +222,13 @@ describe('onCallResult — termination callback (from main_sourceCode.js)', func
             ]);
             sb.context.session.variables.RTDS_nextStepId = 'A';
 
-            var task = sb.onCallResult();
+            var out = sb.onCallResult();
 
+            expect(out).toBe('disconnect');
             expect(sb._endFlowSemaphore).toBe(1);
             expect(sb.RTDS_finalizing).toBe(true);
-            return Promise.resolve(task).then(function (out) {
-                expect(out).toBe('disconnect');
-                expect(sb.getScoped('FromA', null)).toBe('a');
-                expect(sb.getScoped('FromB', null)).toBe('b');
-            });
+            expect(sb.getScoped('FromA', null)).toBe('a');
+            expect(sb.getScoped('FromB', null)).toBe('b');
         });
     });
 
@@ -288,14 +282,17 @@ describe('onCallResult — termination callback (from main_sourceCode.js)', func
         return bootWithCallback().then(function (sb) {
             var posted = false;
             sb.registerRtdsOperation('AsyncPost', function (op) {
-                sb.__rtParams = op.params || {};
-                sb.__rtOutcome = 'nextStep';
-                return Promise.resolve().then(function () {
-                    posted = true;
-                });
+                return {
+                    then: function (onOk) {
+                        return Promise.resolve().then(function () {
+                            posted = true;
+                            return onOk({ nextStepId: (op.params && op.params.NextStep) || null });
+                        });
+                    }
+                };
             });
             install(sb, [
-                { id: 'A', type: 'AsyncPost', name: 'post', params: { nextStep: 'B' } },
+                { id: 'A', type: 'AsyncPost', name: 'post', params: { NextStep: 'B' } },
                 dataOp('B', 'FromB', 'b', null)
             ]);
             sb.context.session.variables.RTDS_nextStepId = 'A';

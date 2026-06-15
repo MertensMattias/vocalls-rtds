@@ -21,7 +21,7 @@ var simulateFlow = require(path.join(process.cwd(), 'cli', 'simulate-flow'));
 
 var REAL_FLOW = path.join(
     process.cwd(),
-    'callflow_json_config_vocalls',
+    'callflow_json_config_vocalls_acc',
     'DIGIPOLIS_LPA_ICT_GUARD_TUI_ACC.json'
 );
 

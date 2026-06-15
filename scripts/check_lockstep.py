@@ -41,14 +41,8 @@ RUNTIME = (
 # spec frontmatter (catalog.component), and so are exempt from check #2:
 #   - voicemaildetector.js: hand-built mxGraph reference, not a routing-table
 #     operation (cited throughout component-mxgraph.md).
-#   - guardRouting.v2.js: in-progress v2 migration scratch; the canonical
-#     guardRouting.js is the specced one.
-#   - gaurdRouting_recent_bad_shape.js: a known-bad scratch export kept for
-#     reference (the filename flags it); not a shipping component.
 SPECLESS_COMPONENTS = {
     "voicemaildetector.js",
-    "guardRouting.v2.js",
-    "gaurdRouting_recent_bad_shape.js",
 }
 
 
