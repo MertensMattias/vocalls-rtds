@@ -105,6 +105,10 @@ _rtAnyGuardWithPhoneAndConfEndpoint = `/digipolisapi-${environment}/Guard/AnyGua
 // Schedule check endpoint. Used by the (future) Schedule handler.
 _rtScheduleEndpoint = `/schedulingapi-${environment}/api/schedule/`;
 
+// dicPromptLanguageId -> language-code map for the schedule status response's
+// ttsMessages[]. Used by the checkSchedule component (bound in as __rtLangMap).
+_rtPromptLanguageMap = { 1: "NL", 2: "FR", 3: "DE", 4: "EN" };
+
 // Phonebook lookup endpoint. Available for future use.
 _rtPhonebookEndpoint = `/phonebookapi-${environment}`;
 
