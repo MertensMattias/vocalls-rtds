@@ -85,10 +85,14 @@ flowchart TD
   `RTDS_*` header bag (sourceId, name, project, promptLibrary, supportedLanguages) into the
   session.
 - **`runStep(startOpId)`** — the loop. For each op it looks up the registry: a `js` entry runs
-  inline and, after the handler settles (`Promise.resolve(handler(op))`), the engine resolves
-  `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` and advances to it (the engine is the
-  single resolver, playing the component output-node role); a `gui` entry stops the loop. Because
-  JS dispatch awaits the settle, `runStep` returns a promise whenever it runs a JS op.
+  inline — a sync handler (returns `undefined`) is resolved on the spot and the loop continues,
+  so a sync-only path hands Vocalls a plain exit-key string; an async handler (returns a
+  thenable — the Send* HTTP twins) is chained off, so `runStep` returns a promise. Either way
+  the engine resolves `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` after the handler
+  settles (the engine is the single resolver, playing the component output-node role); a `gui`
+  entry stops the loop. Async handlers are expected only in the finalize tail: the live Vocalls
+  engine cannot await a native Promise (it stringifies it to `"[object Promise]"` and the
+  dispatch `case` node disconnects), so an async op on the interactive path logs a warn.
 - **`resumeFrom(nextStepId)`** — re-entry after a GUI node completes; resumes `runStep` at the
   step the component selected.
 - **`getParam(op, name, fallback)`** — case-insensitive Param read on the runtime side

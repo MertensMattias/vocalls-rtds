@@ -27,7 +27,7 @@
       "name": "Say: Welcome",
       "params": {
         "active": true,
-        "applicationId": 8,
+        "applicationId": 11,
         "prompt": "Welcome",
         "nextStep": "00002"
       },
@@ -101,9 +101,9 @@
       "name": "Route-To: LPA REGIO",
       "params": {
         "active": true,
-        "remoteDestination": "${remoteDestination}",
-        "transferHeader_priority": "${transferHeader_priority}",
-        "transferHeader_skills": "${transferHeader_skills}",
+        "target": "${schedulerInternalNumber}",
+        "parameters": "",
+        "attendTransfer": false,
         "timeout": 150,
         "nextStep": "00051",
         "nextStep_Failure": "00100"
@@ -121,7 +121,7 @@
       },
       "ttsMessages": {
         "NL": "Alle medewerkers zijn momenteel in gesprek. Blijf aan de lijn, wij verbinden u zo snel mogelijk door.",
-        "FR": "Tous nos collaborateurs sont actuellement en ligne. Restez à l'écoute, nous vous mettons en relation dès que possible."
+        "FR": "Tous nos collaborateurs sont actuellement en ligne. Restez à l''écoute, nous vous mettons en relation dès que possible."
       }
     },
     {
@@ -147,10 +147,10 @@
         "active": true,
         "phoneNumber": "",
         "outboundANI": "",
-        "diversionReason": 8,
+        "parameters": "",
+        "attendTransfer": false,
         "timeout": 30,
-        "nextStep_Busy": "00093",
-        "nextStep_RNA": "00093",
+        "nextStep_Failure": "00093",
         "nextStep": "00100"
       }
     },
@@ -171,13 +171,13 @@
       "name": "Play: Voicemail Error",
       "params": {
         "active": true,
-        "applicationId": 9,
+        "applicationId": 12,
         "prompt": "error",
         "nextStep": "00094"
       },
       "ttsMessages": {
         "NL": "Er is iets misgegaan bij het opnemen van uw boodschap. Onze excuses voor het ongemak.",
-        "FR": "Une erreur s'est produite lors de l'enregistrement de votre message. Nous vous prions de nous en excuser."
+        "FR": "Une erreur s''est produite lors de l'enregistrement de votre message. Nous vous prions de nous en excuser."
       }
     },
     {
@@ -186,7 +186,7 @@
       "name": "play: voicemail disconnect",
       "params": {
         "active": true,
-        "applicationId": 9,
+        "applicationId": 12,
         "prompt": "disconnect",
         "nextStep": "00100"
       },

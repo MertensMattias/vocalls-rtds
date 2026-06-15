@@ -115,7 +115,7 @@ Variables block (component-definition seed; on the canvas instance `__configJSON
 `__ttsMessages` rebind to `RTDS_currentOpConfig` / `RTDS_currentTtsMessages`):
 
 ```js
-__configJSON  = { "active": true, "applicationId": 8, "prompt": "Welcome", "nextStep": "00002" };
+__configJSON  = { "active": true, "applicationId": 11, "prompt": "Welcome", "nextStep": "00002" };
 __ttsMessages = { "NL": "Welkom bij N-Allo. ...", "FR": "Bienvenue chez N-Allo. ..." };
 __environment = environment;
 __sayText     = '';

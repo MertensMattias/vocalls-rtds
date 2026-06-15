@@ -53,6 +53,25 @@ a downstream operation. The destination defaults to the call-scoped store
 | `nextStep`        | string  | yes       | —       | Continuation after the writes (always taken in active mode).                                                                                  |
 | `<target path>`   | any     | yes (≥1)  | —       | Every other Param. The **key** is a write target (see [Target resolution](#target-resolution)); the **value** is written with its native JSON type (see [Value typing](#value-typing)). Control keys (`active`, `nextStep`) are excluded. |
 
+#### Default session variables
+
+`setVariables` is an open-ended writer, but the **default / standard** variable set
+catalogued in the seed dictionary (and shipped as the component's `__configJSON`
+example) is:
+
+| Variable          | Purpose                                                        |
+| ----------------- | -------------------------------------------------------------- |
+| `customerName`    | Customer display name for the call.                            |
+| `customerProject` | Project / line identifier the call belongs to.                 |
+| `ivrEvent`        | IVR event code threaded through the flow.                      |
+| `ivrAction`       | IVR action taken / requested.                                  |
+| `logAttributes`   | Free-form attributes to surface in call logging.               |
+
+These are the keys the import dictionary seeds by default (alongside the `active`
+and `nextStep` control keys and `routingId`); a flow may write any other reachable
+path on top, but a **new** variable not in the seed needs a matching `Dic_Attribute`
+row or the import's `UNKNOWN_PARAM` check throws `54016` for that key.
+
 ### Outputs
 
 | Branch key | Taken when                | Fallback |

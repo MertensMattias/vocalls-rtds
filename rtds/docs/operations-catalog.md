@@ -24,7 +24,9 @@ Legend: ✅ present · ⬜ not yet · 🔒 legacy (superseded).
 | setVariables | `set_attributes` | [spec](../specs/setVariables.spec.md) | ✅ [setVariables.js](../components/setVariables.js) | JS twin `executeSetVariables` (`setVariables`) | ✅ |
 | guardRouting | `http_call` + multi-node | [spec](../specs/guardRouting.spec.md) | ✅ [guardRouting.js](../components/guardRouting.js) | GUI-exit `guard_routing` (via `guard`) | ✅ |
 | guardTui | `http_call` + multi-node | [spec](../specs/guardTui.spec.md) | ✅ [guardTui.js](../components/guardTui.js) | GUI-exit `guard_tui` (`guardTui`) | ✅ |
-| scheduler | `http_call` composite (status → prompt resolve → embedded say) | [spec](../specs/scheduler.spec.md) | ✅ [checkSchedule.js](../components/checkSchedule.js) | ⬜ not registered | ⬜ |
+| scheduler | `http_call` composite (single status call → embedded say) | [spec](../specs/scheduler.spec.md) | ✅ [checkSchedule.js](../components/checkSchedule.js) | ⬜ not registered | ⬜ |
+| internalTransfer | composite (`redirect` primitive) | [spec](../specs/internalTransfer.spec.md) | ✅ [internalTransfer.js](../components/internalTransfer.js) | ⬜ not registered | ⬜ |
+| externalTransfer | composite (`redirect` primitive) | [spec](../specs/externalTransfer.spec.md) | ✅ [externalTransfer.js](../components/externalTransfer.js) | ⬜ not registered | ⬜ |
 | say | `gui_exit` + say primitive | [spec](../specs/say.spec.md) | ✅ [say.js](../components/say.js) | GUI-exit `play_prompt` (`say`) | ✅ |
 
 ## Canonical hand-built example (no operation spec)

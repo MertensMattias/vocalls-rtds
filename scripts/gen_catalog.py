@@ -43,6 +43,7 @@ CATALOG = REPO / "rtds" / "docs" / "operations-catalog.md"
 ROW_ORDER = [
     "sendSms", "sendEmail", "setVariables",
     "guardRouting", "guardTui", "scheduler",
+    "internalTransfer", "externalTransfer",
     "say",
 ]
 

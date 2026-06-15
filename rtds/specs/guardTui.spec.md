@@ -33,15 +33,15 @@ Self-service guard administration line. A guard calls in, the operation checks w
 | `phoneNumberVar`  | string           | no       | `'ani'` | Name of the session variable holding the caller's phone number (defaults to `varObj.ani`).                                            |
 | `timeout`         | number (ms)      | no       | `10000` | HTTP request timeout for each backend call.                                                                                            |
 | `configName`      | string           | no       | —       | Carried for flow-header parity; not read by the component runtime.                                                                      |
-| `resultCurrentlyActivated_<LANG>` | string | yes | — | State preamble when the caller is already active (e.g. `resultCurrentlyActivated_NL`). Supports `${CustomerProject}` tokens. |
-| `resultCurrentlyDeactivated_<LANG>` | string | yes | — | State preamble when the caller is inactive. |
-| `promptActivate_<LANG>` | string   | yes      | —       | DTMF prompt offering activation (press 7).                                                                                             |
-| `promptDeactivate_<LANG>` | string | yes      | —       | DTMF prompt offering deactivation (press 3).                                                                                           |
-| `resultActivated_<LANG>` | string  | yes      | —       | Confirmation prompt after a successful activate.                                                                                      |
-| `resultDeactivated_<LANG>` | string | yes      | —       | Confirmation prompt after a successful deactivate.                                                                                    |
-| `resultOnlyActive_<LANG>` | string | yes      | —       | Apology when the caller is the last active member and tried to deactivate.                                                             |
-| `resultDenied_<LANG>` | string     | yes      | —       | Apology when the caller's number isn't registered for the configured guard pool.                                                       |
-| `resultError_<LANG>` | string      | yes      | —       | Apology on technical failure (HTTP error, malformed response, etc.).                                                                   |
+| `resultCurrentlyActivated_NL` | string | yes | — | State preamble when the caller is already active. Supports `${CustomerProject}` tokens. **Per-language slot** — one row per supported language (`_NL` shipped; add `_FR` / `_DE` rows when the flow supports more). The component resolves `getValue(__rtParams, base + '_' + language)`. |
+| `resultCurrentlyDeactivated_NL` | string | yes | — | State preamble when the caller is inactive. Per-language slot (see above). |
+| `promptActivate_NL` | string   | yes      | —       | DTMF prompt offering activation (press 7). Per-language slot.                                                                          |
+| `promptDeactivate_NL` | string | yes      | —       | DTMF prompt offering deactivation (press 3). Per-language slot.                                                                        |
+| `resultActivated_NL` | string  | yes      | —       | Confirmation prompt after a successful activate. Per-language slot.                                                                   |
+| `resultDeactivated_NL` | string | yes      | —       | Confirmation prompt after a successful deactivate. Per-language slot.                                                                 |
+| `resultOnlyActive_NL` | string | yes      | —       | Apology when the caller is the last active member and tried to deactivate. Per-language slot.                                          |
+| `resultDenied_NL` | string     | yes      | —       | Apology when the caller's number isn't registered for the configured guard pool. Per-language slot.                                    |
+| `resultError_NL` | string      | yes      | —       | Apology on technical failure (HTTP error, malformed response, etc.). Per-language slot.                                               |
 | `nextStep`        | string (step ID) | yes      | —       | Continuation when the operation is inactive or the menu has been served and the caller is ready to be released.                       |
 | `nextStep_Success`| string (step ID) | yes      | —       | Continuation after a successful activate or deactivate.                                                                                |
 | `nextStep_Denied` | string (step ID) | yes      | —       | Continuation when the caller's number was not allowed by the eligibility check.                                                       |

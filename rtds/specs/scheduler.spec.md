@@ -3,7 +3,7 @@ status: spec-only
 catalog:
   operation: "scheduler"
   legacy: false
-  pattern: "`http_call` composite (status → prompt resolve → embedded say)"
+  pattern: "`http_call` composite (single status call → embedded say)"
   component: "checkSchedule.js"
   componentMark: "✅"
   runtimeCell: "⬜ not registered"
@@ -16,13 +16,13 @@ catalog:
 | -------------- | -------------------------------------------------------------- |
 | Operation Type | `schedule`                                                    |
 | Component name | `checkSchedule` (matches existing reference at `rtds/components/checkSchedule.js`) |
-| Pattern        | `http_call` **composite** — branch by `result.response.action`; status call → conditional prompt resolve → embedded `say` primitive plays the prompt in-component |
+| Pattern        | `http_call` **composite** — branch by `result.response.action`; single status call (prompt text arrives inline in `ttsMessages[]`) → embedded `say` primitive plays the prompt in-component |
 | Source handler | `rtds/pureconnect_handlers/NAllo_RTDS_Scheduler.xml`  |
 | Target file    | `rtds/components/checkSchedule.js`          |
 
 ## Business purpose
 
-Query the Schedule API for a configured schedule (typically a per-flow open/closed/holiday calendar) and branch on the returned action. Used at the head of a flow to gate inbound traffic by business hours, holidays, or scheduled maintenance windows. When the schedule's action asks for a prompt to be played (`actionPlayPrompt` true with a `promptId`), the operation resolves the spoken text for the **call's language** and plays it **inside the component** via an embedded TTS node — there is no downstream prompt hand-off and nothing is staged on an RTDS variable. The schedule decision and the message it announces stay in one operation.
+Query the Schedule API for a configured schedule (typically a per-flow open/closed/holiday calendar) and branch on the returned action. Used at the head of a flow to gate inbound traffic by business hours, holidays, or scheduled maintenance windows. When the schedule's action asks for a prompt to be played (`actionPlayPrompt` truthy), the status response carries the prompt text **inline** in `ttsMessages[]`; the operation selects the text for the **call's language** and plays it **inside the component** via an embedded TTS node — no second API call, no downstream prompt hand-off, and nothing staged on an RTDS variable. The schedule decision and the message it announces stay in one operation.
 
 ### Inputs (Params)
 
@@ -30,16 +30,16 @@ Query the Schedule API for a configured schedule (typically a per-flow open/clos
 | ----------------------- | ---------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `active`                | boolean          | yes      | `true`  | If falsy, the operation logs a skip and exits to `nextStep`. Read with a `true` fallback (runs unless explicitly disabled with `active: false`). |
 | `scheduleId`            | number           | yes      | —       | Integer schedule identifier passed to the Schedule API. Reads are case-insensitive via `getValue`; the component path-encodes the value into the status URL. |
-| `timeout`               | number (ms)      | no       | `5000`  | HTTP request timeout, applied to **both** the status call and the prompt-resolve call. Component default in `__configJSON` is `5000`; `getValue(..., 'timeout', 10000)` is the read fallback if absent. |
+| `timeout`               | number (ms)      | no       | `5000`  | HTTP request timeout for the status call. Component default in `__configJSON` is `5000`; `getValue(..., 'timeout', 10000)` is the read fallback if absent. |
 | `nextStep_Open`         | string (step ID) | yes      | —       | Continuation when the schedule reports `Open` (regular hours).                                                                        |
 | `nextStep_Closed`       | string (step ID) | no       | `''`    | Continuation when the schedule reports `Closed`.                                                                                       |
-| `nextStep_Transfer`     | string (step ID) | no       | `''`    | Internal `Transfer` action; the component stashes the target on `RTDS_SchedulerInternalNumber`.                                       |
-| `nextStep_ExternalTransfer` | string (step ID) | no   | `''`    | `ExternalTransfer` action; the component stashes the number on `RTDS_SchedulerExternalNumber`.                                        |
+| `nextStep_Transfer`     | string (step ID) | no       | `''`    | Internal `Transfer` action; the component stashes the target on `schedulerInternalNumber`.                                       |
+| `nextStep_ExternalTransfer` | string (step ID) | no   | `''`    | `ExternalTransfer` action; the component stashes the number on `schedulerExternalNumber`.                                        |
 | `nextStep_Disconnect`   | string (step ID) | no       | `''`    | Continuation when the API returns `Disconnect`.                                                                                        |
 | `nextStep_Failure`      | string (step ID) | yes      | —       | Continuation on HTTP error of the status call, or unknown/unmapped action.                                                            |
 | `nextStep`              | string (step ID) | yes      | —       | Continuation when the operation is inactive, or when the returned action has no matching `nextStep_<Action>` Param. **Always the last key in the Params array.** |
 
-`promptId` is **not** a Param — it is read off the status response and feeds the prompt-resolve call (see [External calls](#external-calls)). `nextStep_Holiday` (and any other `nextStep_<State>`) is honoured dynamically (`'nextStep_' + action`) even though it is not seeded in `__configJSON`. Workgroup transfers, the legacy `version` selector, and `inQueue`/escape-key handling are **not** part of this operation.
+`nextStep_Holiday` (and any other `nextStep_<State>`) is honoured dynamically (`'nextStep_' + action`) even though it is not seeded in `__configJSON`. Workgroup transfers, the legacy `version` selector, and `inQueue`/escape-key handling are **not** part of this operation.
 
 ### Outputs
 
@@ -59,9 +59,9 @@ The branch is decided by the **action** alone. The play-prompt resolve is a side
 
 ### External calls
 
-Two GET calls, **same base URL, different endpoints**. The second is conditional and lives **inside** the first call's success handler.
+**One** GET call — the status response carries everything, including the prompt text.
 
-**1 · Schedule status**
+**Schedule status**
 
 | Field        | Value                                              |
 | ------------ | -------------------------------------------------- |
@@ -70,51 +70,34 @@ Two GET calls, **same base URL, different endpoints**. The second is conditional
 | Method       | `GET`                                              |
 | Timeout      | `Number(getValue(__rtParams, 'timeout', 10000))` ms |
 
-URL shape: `__rtBaseUrl + __rtEndpoint + '/' + encodeURIComponent(scheduleId) + '/status?date=' + encodeURI(<now>)`, where `<now>` is `YYYY-MM-DD HH:MM:SS` (`toISOString` date + `toLocaleTimeString('fr')`). Endpoint resolves to `/api/Schedule` (Swagger: `GET /api/Schedule/{scheduleId}/status`). Response is read off **`result.response`** (the `jsonHttpRequest` `{ success, response }` shape — not `result.body`):
+URL shape: `__rtBaseUrl + __rtEndpoint + '/' + encodeURIComponent(scheduleId) + '/status?date=' + encodeURIComponent(<now>)`, where `<now>` is ISO-8601 UTC to whole seconds (`toISOString().substring(0, 19) + 'Z'`, e.g. `2026-06-12T12:07:42Z`). Endpoint resolves to `/api/Schedule` (Swagger: `GET /api/Schedule/{scheduleId}/status`). Response is read off **`result.response`** (the `jsonHttpRequest` `{ success, response }` shape — not `result.body`):
 
 ```json
 {
-  "action": "Open" | "Closed" | "Transfer" | "ExternalTransfer" | "Disconnect" | "...",
-  "isOpen": true,                       // logged as open/closed
-  "actionDetail": "+32...",             // transfer target on Transfer / ExternalTransfer
-  "actionPlayPrompt": true,             // optional: a prompt should be played
-  "promptId": 4231                      // prompt to resolve when actionPlayPrompt (integer)
+  "scheduleId": 4039,
+  "isOpen": true,                       // line status, logged as open/closed
+  "action": "Open",                     // "Open" | "Closed" | "Transfer" | "ExternalTransfer" | "Disconnect" | ... — drives the branch
+  "actionPlayPrompt": 1,                // truthy: a prompt should be played
+  "actionPromptName": "Scheduler_TestPromptDavy",  // prompt name, logged only
+  "reason": "",
+  "actionDetail": "",                   // transfer target on Transfer / ExternalTransfer
+  "inputDate": "2026-06-12T12:07:42Z",
+  "ttsMessages": [                      // inline per-language prompt text
+    { "dicPromptLanguageId": 1, "text": "Dit is een test prompt" }
+  ],
+  "extraTime": false
 }
 ```
 
-**2 · Prompt resolve** — only when `actionPlayPrompt` is truthy **and** `promptId` is present
+When `actionPlayPrompt` is truthy and `ttsMessages[]` is non-empty, the component folds `ttsMessages[]` into a per-language text map using the `dicPromptLanguageId` → language-code mapping stored in the **`_rtPromptLanguageMap` global** (bound into the component as `__rtLangMap`; inline default if the global is absent):
 
-| Field        | Value                                              |
-| ------------ | -------------------------------------------------- |
-| Base URL var | `_rtBaseUrl` → `__rtBaseUrl` (same base as call 1) |
-| Endpoint var | `_rtPromptEndpoint` → `__rtPromptEndpoint`         |
-| Method       | `GET`                                              |
-| Timeout      | same `timeout` as the status call                  |
-
-URL shape: `__rtBaseUrl + __rtPromptEndpoint + '/' + encodeURIComponent(promptId)`. Endpoint resolves to `/api/prompt` (Swagger: `GET /api/prompt/{promptId}`). Response is an **array** of prompt objects; element `[0]` carries the per-language versions:
-
-```json
-[
-  {
-    "promptId": 4231,
-    "name": "Schedule_Closed",
-    "promptVersions": [
-      { "dicPromptLanguageId": 1, "text": "Wij zijn momenteel gesloten." },
-      { "dicPromptLanguageId": 2, "text": "Nous sommes actuellement fermés." }
-    ]
-  }
-]
-```
-
-The component folds `promptVersions[]` into a per-language text map using a **static** `dicPromptLanguageId` → language-code mapping — no dictionary API call:
-
-| `dicPromptLanguageId` | 1    | 2    | 3    | 44   |
+| `dicPromptLanguageId` | 1    | 2    | 3    | 4    |
 | --------------------- | ---- | ---- | ---- | ---- |
 | language code         | `NL` | `FR` | `DE` | `EN` |
 
 It then selects the text for the **call's `language`** (the runtime global, uppercased in `init`) into `__sayText`, and the embedded `say` node speaks it. Nothing is written to an RTDS variable — the spoken text lives only on the component-local `__sayText`.
 
-Side-effects the component writes via `setVariable` (for the downstream transfer node): `RTDS_SchedulerInternalNumber` (on `Transfer`) and `RTDS_SchedulerExternalNumber` (on `ExternalTransfer`) — distinct variables so internal vs. external destinations stay separable.
+Side-effects the component writes via `setVariable` (for the downstream transfer node): `schedulerInternalNumber` (on `Transfer`) and `schedulerExternalNumber` (on `ExternalTransfer`) — distinct variables so internal vs. external destinations stay separable.
 
 ### Component structure
 
@@ -152,15 +135,25 @@ if (__scheduleId === '' || __scheduleId === null || __scheduleId === undefined) 
 
 __rtOutcome = 'nextStep_Failure';                            // pivot before the network call
 
-var __now = new Date();
-var __dt  = __now.toISOString().substring(0, 10) + ' ' + __now.toLocaleTimeString('fr');
-var __statusUrl = __rtBaseUrl + __rtEndpoint + '/' + encodeURIComponent(__scheduleId) + '/status?date=' + encodeURI(__dt);
-var __timeout   = Number(getValue(__rtParams, 'timeout', 10000));
+var __method = 'GET';
+var __timeout = Number(getValue(__rtParams, 'timeout', 10000));
+var __headers = _headers;
+var __dt = new Date().toISOString().substring(0, 19) + 'Z';
+var __endpoint = __rtBaseUrl + __rtEndpoint + '/' + encodeURIComponent(__scheduleId) + '/status';
+var __queryParameters = '?date=' + encodeURIComponent(__dt);
 
-return jsonHttpRequest(__statusUrl, { 'timeout': +__timeout }, _headers).then(
+Logger.debug('[checkSchedule] status request', { url: __endpoint + __queryParameters, method: __method, timeout: __timeout });
+
+var __compRequest = jsonHttpRequest(
+    __endpoint + __queryParameters,
+    { method: __method, timeout: __timeout },
+    __headers
+);
+
+return __compRequest.then(
     function (result) {
         if (!result || result.success !== true) {
-            Logger.warn('[checkSchedule] status request failed', { url: __statusUrl, statusCode: result && result.statusCode, outcome: __rtOutcome });
+            Logger.warn('[checkSchedule] status request failed', { url: __endpoint + __queryParameters, statusCode: result && result.statusCode, error: result && result.error, outcome: __rtOutcome });
             return;
         }
         var __res    = result.response || {};
@@ -170,44 +163,32 @@ return jsonHttpRequest(__statusUrl, { 'timeout': +__timeout }, _headers).then(
 
         var __actionLower = __action.toLowerCase();
         if (__actionLower === 'transfer') {
-            setVariable('RTDS_SchedulerInternalNumber', String(__res.actionDetail || ''));
+            setVariable('schedulerInternalNumber', String(__res.actionDetail || ''));
         } else if (__actionLower === 'externaltransfer') {
-            setVariable('RTDS_SchedulerExternalNumber', String(__res.actionDetail || ''));
+            setVariable('schedulerExternalNumber', String(__res.actionDetail || ''));
         }
 
         var __key = 'nextStep_' + __action;                  // dynamic branch by action name
         __rtOutcome = hasKey(__rtParams, __key) ? __key : 'nextStep';
         Logger.info('[checkSchedule] branch', { action: __action, outcome: __rtOutcome });
 
-        // play-prompt path: resolve text from the returned promptId and stage __sayText (non-fatal)
+        // play-prompt path: select the call-language text from the inline ttsMessages[] (non-fatal)
         var __play     = __res.actionPlayPrompt === true || __res.actionPlayPrompt === 'true' || __res.actionPlayPrompt === 1 || __res.actionPlayPrompt === '1';
-        var __promptId = __res.promptId;
-        if (!__play || __promptId === null || __promptId === undefined || __promptId === '') {
+        var __messages = __res.ttsMessages || [];
+        if (!__play || !__messages.length) {
             return;
         }
-        var __promptUrl = __rtBaseUrl + __rtPromptEndpoint + '/' + encodeURIComponent(__promptId);
-        return jsonHttpRequest(__promptUrl, { 'timeout': +__timeout }, _headers).then(
-            function (pres) {
-                if (!pres || pres.success !== true) {
-                    Logger.warn('[checkSchedule] prompt fetch failed', { promptId: __promptId, statusCode: pres && pres.statusCode, outcome: __rtOutcome });
-                    return;                                  // keep the action branch
-                }
-                var __prompt   = (pres.response && pres.response[0]) || {};
-                var __versions = __prompt.promptVersions || [];
-                var __langMap  = { 1: 'NL', 2: 'FR', 3: 'DE', 44: 'EN' };
-                var __tts = {};
-                for (var __i = 0; __i < __versions.length; __i++) {
-                    var __code = __langMap[__versions[__i].dicPromptLanguageId] || '';
-                    if (__code) { __tts[__code] = String(__versions[__i].text || ''); }
-                }
-                __sayText = getValue(__tts, language, '');
-                Logger.info('[checkSchedule] prompt resolved', { promptId: __promptId, language: language, hasText: __sayText !== '', outcome: __rtOutcome });
-            },
-            function (perr) { Logger.warn('[checkSchedule] prompt fetch error', { promptId: __promptId, outcome: __rtOutcome }, perr); }
-        );
+        var __langMap = (typeof __rtLangMap === 'object' && __rtLangMap !== null) ? __rtLangMap : { 1: 'NL', 2: 'FR', 3: 'DE', 4: 'EN' };
+        var __tts = {};
+        for (var __i = 0; __i < __messages.length; __i++) {
+            var __code = __langMap[__messages[__i].dicPromptLanguageId] || '';
+            if (__code) { __tts[__code] = String(__messages[__i].text || ''); }
+        }
+        __sayText = getValue(__tts, language, '');
+        Logger.info('[checkSchedule] prompt resolved', { promptName: String(__res.actionPromptName || ''), language: language, hasText: __sayText !== '', outcome: __rtOutcome });
     },
     function (err) {
-        Logger.error('[checkSchedule] status request error', { url: __statusUrl, outcome: __rtOutcome }, err);
+        Logger.error('[checkSchedule] status request error', { url: __endpoint + __queryParameters, outcome: __rtOutcome }, err);
     }
 );
 ```
@@ -221,7 +202,7 @@ _rtNextStep = getValue(__rtParams, __rtOutcome, '');
 Logger.info('[checkSchedule] exit', { outcome: __rtOutcome, nextStep: _rtNextStep });
 ```
 
-Master `Variables` seed (`nextStep` last in the Params array; `__sayText` and the two endpoints pre-declared):
+Master `Variables` seed (`nextStep` last in the Params array; `__sayText`, the endpoint, and the language map pre-declared):
 
 ```js
 __configJSON = {
@@ -239,7 +220,7 @@ __configJSON = {
 __environment      = environment;
 __rtBaseUrl        = _rtBaseUrl;
 __rtEndpoint       = _rtScheduleEndpoint;
-__rtPromptEndpoint = _rtPromptEndpoint;
+__rtLangMap        = _rtPromptLanguageMap;
 __sayText          = '';
 __rtOutcome        = 'nextStep';
 __rtNextStep      &= _rtNextStep;
@@ -247,10 +228,10 @@ __rtNextStep      &= _rtNextStep;
 
 ### Open questions
 
-- **Transfer-target variable names.** Internal `Transfer` → `RTDS_SchedulerInternalNumber`, `ExternalTransfer` → `RTDS_SchedulerExternalNumber` (distinct per request). Confirm these names match what the downstream transfer node reads.
+- **Transfer-target variable names.** Internal `Transfer` → `schedulerInternalNumber`, `ExternalTransfer` → `schedulerExternalNumber` (distinct per request). ✅ Confirmed — [internalTransfer](internalTransfer.spec.md) defaults `target` to `${schedulerInternalNumber}` and [externalTransfer](externalTransfer.spec.md) defaults `phoneNumber` to `${schedulerExternalNumber}`, resolved from varObj at their init.
 - **`say` in-component play.** `{Speech.ssml(__sayText)}` relies on the native `say` node resolving the master-layer global at TTS time — well-precedented in [say.js](../components/say.js) / [voicemaildetector.js](../components/voicemaildetector.js); confirm on first Designer import.
 - The source handler logs the action via `NAllo_RTDS_IVRLogging`; the Vocalls version collapses that to `Logger.info` — confirmed.
 
 ### Resolved from the prior draft
 
-The previous spec's open questions are settled: language map is **static** (`1:NL, 2:FR, 3:DE, 44:EN`, no dictionary call); `version` and `inQueue` are **dropped**; the **base URL is unchanged** (only the endpoints differ — `_rtScheduleEndpoint` vs. `_rtPromptEndpoint`); `scheduleId` is an **integer**; workgroup transfers are removed; and the prompt is **played in-component** (no `RTDS_currentTtsMessages` hand-off). The shipped `checkSchedule.js` is regenerated to this contract in the same change (v2 `__rtOutcome` staging, `active` read-fallback `true`, embedded `say`).
+The previous spec's open questions are settled: the language map lives on the **`_rtPromptLanguageMap` global** (`1:NL, 2:FR, 3:DE, 4:EN`; inline default in the component if the global is absent — no dictionary call); `version` and `inQueue` are **dropped**; `scheduleId` is an **integer**; workgroup transfers are removed; and the prompt is **played in-component** (no `RTDS_currentTtsMessages` hand-off). The earlier two-call shape (status + `_rtPromptEndpoint` prompt resolve by `promptId`) is **retired** — the status response now ships the prompt text inline in `ttsMessages[]`, so the component makes exactly one request. The shipped `checkSchedule.js` is regenerated to this contract in the same change (v2 `__rtOutcome` staging, `active` read-fallback `true`, embedded `say`).

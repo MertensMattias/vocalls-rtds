@@ -243,13 +243,13 @@ The runtime does **not** mirror params into per-key `RTDS_OP_*` session variable
 
 Core dispatch loop. Takes an operation id string, looks it up in `context.session.variables.RTDS_opIndex` (`opIndex.get(currentId)`), and dispatches:
 
-- JS-handled type: `Promise.resolve(handler(op))`, then the engine — the **single resolver** — runs `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` and advances `currentId` to it (or ends the flow when it resolves to `''`). The handler's return value is used only for sync-vs-async timing, never routing; `runStep` therefore returns a promise of the exit key whenever it runs a JS op. `Active` defaults `true` on the JS twins.
+- JS-handled type: the handler runs inline. A **sync** handler (returns `undefined` — e.g. `setVariables`) is resolved immediately: the engine — the **single resolver** — runs `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` and advances `currentId` (or ends the flow on `''`), so a sync-only path returns the exit key as a **plain string**. An **async** handler (returns a thenable — the Send* HTTP twins) is chained off; the same resolver line runs after it settles and `runStep` returns a promise of the exit key. The thenable branch is expected only under `RTDS_finalizing` (the finalize tail, where the platform awaits the return): the prod Vocalls engine cannot await a native Promise — it stringifies it (`"[object Promise]"`) and the dispatch `case` node falls through to disconnect — so an async op on the interactive path logs a warn. The handler's return value is used only for sync-vs-async timing, never routing. `Active` defaults `true` on the JS twins.
 - GUI-exit type: calls `prepareGuiHandoff`, returns the exit key string.
 - **Unregistered type** (no real handler yet — e.g. `Emergency`, `Schedule`): logs a warning and **skips to the op's `NextStep`**, continuing the loop. Only when there is no `NextStep` does it end the flow (`"disconnect"`).
 - Missing step (id not in opIndex): logs warning, writes `RTDS_error`, returns `"disconnect"`.
 - No next step: returns `"disconnect"` (normal end-of-flow).
 
-Implemented as a `while` loop (not recursion) to avoid stack overflow on long JS-handled chains. A **visited-set cycle guard** tracks each `currentId`; revisiting one writes `RTDS_error = 'RTDS_CYCLE_DETECTED'` and returns `"disconnect"`, so a cyclic `NextStep` chain (including among unregistered types) cannot hang the call leg.
+Implemented as a `while` loop (not recursion) to avoid stack overflow on long JS-handled chains. A **step budget** (`RTDS_MAX_STEPS`, threaded through async re-entries so it spans sync and async hops as one run) bounds total dispatch steps; exhausting it writes `RTDS_error = 'RTDS_CYCLE_DETECTED'` and returns `"disconnect"`, so a cyclic `NextStep` chain (including among unregistered types) cannot hang the call leg, while bounded retry/reprompt revisits of a node still run.
 
 ### 4.10 `resumeFrom(nextStepId)`
 
