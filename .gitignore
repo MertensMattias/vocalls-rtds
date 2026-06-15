@@ -22,3 +22,7 @@ coverage/
 .nyc_output/
 __pycache__/
 *.pyc
+
+# Local scratch / backup artifacts (not part of the repo)
+.rewind-backup/
+*.bak
