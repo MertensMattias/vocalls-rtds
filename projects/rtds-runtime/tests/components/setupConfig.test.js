@@ -2,10 +2,10 @@
  * Contract test — the unified component-level __setupConfig / __activeFlag.
  *
  * Unlike the twin contract tests (which exercise executeXxx in the runtime),
- * this loads each component's OWN master-layer Code in an isolated sandbox with
- * NO env library (except the global activeFlag, which the component's
- * __activeFlag alias delegates to — see _harness.loadMasterCode), proving:
- *   - the inline helper fallback chain makes __setupConfig self-contained, and
+ * this loads each component's OWN master-layer Code in a sandbox WITH the shared
+ * env library loaded (rtds_3_vocallsEnv.js — see _harness.loadMasterCode), proving:
+ *   - the component's __fn aliases (__setupConfig / __activeFlag / ...) delegate
+ *     correctly to the shared library functions (no inline drift), and
  *   - the resolved Param contract matches specs/_setupConfig.spec.md:
  *       array-form [value, ...flags] -> [0]; type-from-JSON (no Number coercion);
  *       Active via the activeFlag contract (1/"1"/true active, 0/"0"/false
@@ -35,7 +35,7 @@ COMPONENTS.forEach(function (comp) {
             return { r: runSetup(sb), warns: sb.__warns };
         }
 
-        it('is self-contained (runs with no env library) and unwraps array-form to [0]', function () {
+        it('delegates to the shared library and unwraps array-form to [0]', function () {
             var out = resolve({ prompt: ['AdHoc', 'isDisplayed', 'isEditable'] });
             expect(out.r.prompt).toBe('AdHoc');
         });

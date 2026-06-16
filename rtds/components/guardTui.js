@@ -19,7 +19,7 @@
       MaxEntryCount=""
       MaxEntryNodeId=""
       SpeechRecognitionEngine=""
-      Code="__rtParams = {};&#xa;&#xa;/**&#xa; * Replaces the last &#39;-&#39;-separated segment of context.currentNode.id with the supplied nodeId.&#xa; * Returns the original nodeId untouched when context.currentNode.id is not set.&#xa; *&#xa; * @param {string|number} nodeId - The short id to splice into the current node path.&#xa; * @returns {string} The fully-qualified node id, or the original nodeId if no path is set.&#xa; */&#xa;__makeLocalNodeId = function (nodeId) {&#xa;    if (nodeId !== null &amp;&amp; nodeId !== undefined) nodeId = nodeId.toString();&#xa;    if (!context.currentNode.id) return nodeId;&#xa;    var __separator = &#39;-&#39;;&#xa;    var __output = context.currentNode.id.split(__separator);&#xa;    __output[__output.length - 1] = nodeId;&#xa;    return __output.join(__separator);&#xa;};&#xa;&#xa;/**&#xa; * Normalises operation config: JSON string -&gt; parsed; { Params: {...} } -&gt; Params; flat object -&gt; itself; null -&gt; {}.&#xa; *&#xa; * @param {string|object} config - Raw operation config.&#xa; * @returns {object} Flat Params object, never null.&#xa; */&#xa;__extractParams = function (config) {&#xa;    var __parsed = typeof config === &#39;string&#39; ? JSON.parse(config) : config;&#xa;    if (__parsed &amp;&amp; typeof __parsed.params === &#39;object&#39; &amp;&amp; __parsed.params !== null) return __parsed.params;&#xa;    return __parsed || {};&#xa;};&#xa;&#xa;/**&#xa; * Component-local alias for the global activeFlag() (rtds_3_vocallsEnv.js) --&#xa; * the single Active-coercion contract. See conventions/params.md.&#xa; *&#xa; * @param {*} value&#xa; * @returns {boolean}&#xa; */&#xa;__activeFlag = function (value) {&#xa;    return activeFlag(value);&#xa;};&#xa;&#xa;/**&#xa; * Resolves Params into a flat { Key: value } map. The value&#39;s TYPE is whatever&#xa; * the JSON wrote -- no Number coercion (&#39;4&#39; stays a string, 4 stays a number).&#xa; * Per key: array-form [value, ...flags] is unwrapped to its first element&#xa; * (matches the runtime twin getParam; GUI flags isDisplayed/isEditable are&#xa; * runtime-irrelevant). Active is then coerced to a real boolean via __activeFlag.&#xa; * Every other STRING value is trimmed and has ${name} placeholders resolved via&#xa; * resolveConfigTokens (varObj first, then global; bare names only; String.replace,&#xa; * never new Function -- the Vocalls runtime disables string-eval). Non-strings pass&#xa; * through with their type intact. Unresolved placeholders are left raw and warned.&#xa; * Active absent: not defaulted here -- the read site decides (SetVariables true,&#xa; * Send and guard default false).&#xa; *&#xa; * @param {string|object} config - Raw operation config (see __extractParams).&#xa; * @returns {object} Map of Key -&gt; resolved value (no __rt prefix; v2 shape).&#xa; */&#xa;__setupConfig = function (config) {&#xa;    var __params = __extractParams(config);&#xa;    var __result = {};&#xa;    var __keys = Object.keys(__params);&#xa;    for (var __i = 0; __i &lt; __keys.length; __i++) {&#xa;        var __key = __keys[__i];&#xa;        var __value = __params[__key];&#xa;        if (Array.isArray(__value)) __value = __value.length ? __value[0] : &#39;&#39;;&#xa;        if (__key === &#39;active&#39;) { __result.active = __activeFlag(__value); continue; }&#xa;        if (typeof __value === &#39;string&#39;) __value = resolveConfigTokens(__value.trim(), __key);&#xa;        __result[__key] = __value;&#xa;    }&#xa;    return __result;&#xa;};&#xa;&#xa;// --- v2 object-access helpers ---&#xa;// Declared with `typeof &lt;name&gt; === &#39;undefined&#39;` guards so they fall back to local definitions&#xa;// when rtds_globalCodeAndHelpers.js has not yet been updated to expose them.&#xa;&#xa;if (typeof getValue === &#39;undefined&#39;) {&#xa;    /**&#xa;     * Returns the value of `key` from `obj`, or `defaultValue` if the key is absent.&#xa;     * Case-insensitive lookup: matches whichever own property name lowercases to the same string.&#xa;     *&#xa;     * @param {object} obj&#xa;     * @param {string} key&#xa;     * @param {*} [defaultValue]&#xa;     * @returns {*}&#xa;     */&#xa;    getValue = function (obj, key, defaultValue) {&#xa;        if (!obj || !key) return defaultValue;&#xa;        var __lowerKey = String(key).toLowerCase();&#xa;        for (var __propertyName in obj) {&#xa;            if (obj.hasOwnProperty(__propertyName) &amp;&amp; String(__propertyName).toLowerCase() === __lowerKey) {&#xa;                return obj[__propertyName];&#xa;            }&#xa;        }&#xa;        return defaultValue;&#xa;    };&#xa;}&#xa;&#xa;if (typeof walk === &#39;undefined&#39;) {&#xa;    /**&#xa;     * Iterates own properties of `obj`, calling fn(key, value) for each. Returning false stops the walk.&#xa;     *&#xa;     * @param {object} obj&#xa;     * @param {function} fn&#xa;     * @returns {void}&#xa;     */&#xa;    walk = function (obj, fn) {&#xa;        if (!obj) return;&#xa;        for (var __key in obj) {&#xa;            if (!obj.hasOwnProperty(__key)) continue;&#xa;            if (fn(__key, obj[__key]) === false) return;&#xa;        }&#xa;    };&#xa;}&#xa;&#xa;if (typeof nowUTC === &#39;undefined&#39;) {&#xa;    /**&#xa;     * @returns {string} Current date/time as ISO-8601 UTC.&#xa;     */&#xa;    nowUTC = function () { return new Date().toISOString(); };&#xa;}&#xa;&#xa;if (typeof hasKey === &#39;undefined&#39;) {&#xa;    /**&#xa;     * Case-insensitive existence check (own properties).&#xa;     *&#xa;     * @param {object} obj&#xa;     * @param {string} key&#xa;     * @returns {boolean}&#xa;     */&#xa;    hasKey = function (obj, key) {&#xa;        if (!obj || !key) return false;&#xa;        var __lowerKey = String(key).toLowerCase();&#xa;        for (var __propertyName in obj) {&#xa;            if (obj.hasOwnProperty(__propertyName) &amp;&amp; String(__propertyName).toLowerCase() === __lowerKey) {&#xa;                return true;&#xa;            }&#xa;        }&#xa;        return false;&#xa;    };&#xa;}&#xa;&#xa;if (typeof getScoped === &#39;undefined&#39;) {&#xa;    /**&#xa;     * Reads operator data with the RTDS scope contract: varObj[key]&#xa;     * (case-insensitive) first, then exact-case global[key], then defaultValue.&#xa;     * See conventions/storage.md.&#xa;     *&#xa;     * @param {string} key&#xa;     * @param {*} [defaultValue]&#xa;     * @returns {*}&#xa;     */&#xa;    getScoped = function (key, defaultValue) {&#xa;        if (defaultValue === undefined) defaultValue = null;&#xa;        if (!key) return defaultValue;&#xa;        var __vo = (typeof varObj !== &#39;undefined&#39;) ? varObj : null;&#xa;        if (__vo &amp;&amp; hasKey(__vo, key)) return getValue(__vo, key, defaultValue);&#xa;        var __scope = (typeof global !== &#39;undefined&#39;) ? global : ((typeof globalThis !== &#39;undefined&#39;) ? globalThis : null);&#xa;        if (__scope &amp;&amp; __scope[key] !== undefined &amp;&amp; __scope[key] !== null) return __scope[key];&#xa;        return defaultValue;&#xa;    };&#xa;}&#xa;&#xa;if (typeof resolveConfigTokens === &#39;undefined&#39;) {&#xa;    /**&#xa;     * Substitutes ${name} placeholders in a string via getScoped (varObj first,&#xa;     * then global). Bare identifiers only (${w+}); no expressions. A placeholder&#xa;     * that resolves nowhere is left raw and a warn is logged (never silent &#39;&#39;).&#xa;     * String.replace only -- the Vocalls runtime disables string-eval.&#xa;     *&#xa;     * @param {string} raw&#xa;     * @param {string} keyName&#xa;     * @returns {string}&#xa;     */&#xa;    resolveConfigTokens = function (raw, keyName) {&#xa;        if (typeof raw !== &#39;string&#39; || raw.indexOf(&#39;${&#39;) === -1) return raw;&#xa;        var __MISSING = &#39; __rtUnresolved &#39;;&#xa;        return raw.replace(/\$\{([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)\}/g, function (__match, __path) {&#xa;            var __parts = __path.split(&#39;.&#39;);&#xa;            var __sub = getScoped(__parts[0], __MISSING);&#xa;            if (__sub !== __MISSING) {&#xa;                for (var __i = 1; __i &lt; __parts.length; __i++) {&#xa;                    if (__sub !== null &amp;&amp; __sub !== undefined &amp;&amp; __sub[__parts[__i]] !== undefined) { __sub = __sub[__parts[__i]]; } else { __sub = __MISSING; break; }&#xa;                }&#xa;            }&#xa;            if (__sub !== __MISSING) return String(__sub);&#xa;            Logger.warn(&#39;[resolveConfigTokens] unresolved placeholder&#39;, { key: keyName, placeholder: __path });&#xa;            return __match;&#xa;        });&#xa;    };&#xa;}"
+      Code="__rtParams = {};&#xa;&#xa;__getValue = function () {&#xa;    if (typeof getValue === &#39;undefined&#39;) {&#xa;        Logger.warn(&#39;[guardTui] shared function unavailable -- library not loaded&#39;, { fn: &#39;getValue&#39; });&#xa;        return undefined;&#xa;    }&#xa;    return getValue.apply(null, arguments);&#xa;};&#xa;&#xa;__activeFlag = function () {&#xa;    if (typeof activeFlag === &#39;undefined&#39;) {&#xa;        Logger.warn(&#39;[guardTui] shared function unavailable -- library not loaded&#39;, { fn: &#39;activeFlag&#39; });&#xa;        return undefined;&#xa;    }&#xa;    return activeFlag.apply(null, arguments);&#xa;};&#xa;&#xa;__extractParams = function () {&#xa;    if (typeof extractParams === &#39;undefined&#39;) {&#xa;        Logger.warn(&#39;[guardTui] shared function unavailable -- library not loaded&#39;, { fn: &#39;extractParams&#39; });&#xa;        return undefined;&#xa;    }&#xa;    return extractParams.apply(null, arguments);&#xa;};&#xa;&#xa;__setupConfig = function () {&#xa;    if (typeof setupConfig === &#39;undefined&#39;) {&#xa;        Logger.warn(&#39;[guardTui] shared function unavailable -- library not loaded&#39;, { fn: &#39;setupConfig&#39; });&#xa;        return undefined;&#xa;    }&#xa;    return setupConfig.apply(null, arguments);&#xa;};&#xa;"
       Extensions=""
       BackgroundNoise="true"
       BreathInEffect="true"
@@ -116,12 +116,12 @@
       </mxGeometry>
     </mxCell>
     <object
-      label="{getValue(__rtParams, &#39;resultDenied&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      label="{__getValue(__rtParams, &#39;resultDenied&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       Type="say"
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Text="{getValue(__rtParams, &#39;resultDenied&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      Text="{__getValue(__rtParams, &#39;resultDenied&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       AltTexts=""
       SelectionMode="temporary"
       MaxEntryCount=""
@@ -149,12 +149,12 @@
       </mxCell>
     </object>
     <object
-      label="{getValue(__rtParams, &#39;resultError&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      label="{__getValue(__rtParams, &#39;resultError&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       Type="say"
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Text="{getValue(__rtParams, &#39;resultError&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      Text="{__getValue(__rtParams, &#39;resultError&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       AltTexts=""
       SelectionMode="temporary"
       MaxEntryCount=""
@@ -182,12 +182,12 @@
       </mxCell>
     </object>
     <object
-      label="{getValue(__rtParams, &#39;resultDeactivated&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      label="{__getValue(__rtParams, &#39;resultDeactivated&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       Type="say"
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Text="{getValue(__rtParams, &#39;resultDeactivated&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      Text="{__getValue(__rtParams, &#39;resultDeactivated&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       AltTexts=""
       SelectionMode="temporary"
       MaxEntryCount=""
@@ -231,12 +231,12 @@
       </mxGeometry>
     </mxCell>
     <object
-      label="{getValue(__rtParams, &#39;resultOnlyActive&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      label="{__getValue(__rtParams, &#39;resultOnlyActive&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       Type="say"
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Text="{getValue(__rtParams, &#39;resultOnlyActive&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      Text="{__getValue(__rtParams, &#39;resultOnlyActive&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       AltTexts=""
       SelectionMode="temporary"
       MaxEntryCount=""
@@ -264,12 +264,12 @@
       </mxCell>
     </object>
     <object
-      label="{getValue(__rtParams, &#39;resultError&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      label="{__getValue(__rtParams, &#39;resultError&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       Type="say"
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Text="{getValue(__rtParams, &#39;resultError&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      Text="{__getValue(__rtParams, &#39;resultError&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       AltTexts=""
       SelectionMode="temporary"
       MaxEntryCount=""
@@ -297,12 +297,12 @@
       </mxCell>
     </object>
     <object
-      label="{getValue(__rtParams, &#39;resultActivated&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      label="{__getValue(__rtParams, &#39;resultActivated&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       Type="say"
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Text="{getValue(__rtParams, &#39;resultActivated&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      Text="{__getValue(__rtParams, &#39;resultActivated&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       AltTexts=""
       SelectionMode="temporary"
       MaxEntryCount=""
@@ -330,12 +330,12 @@
       </mxCell>
     </object>
     <object
-      label="{getValue(__rtParams, &#39;resultError&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      label="{__getValue(__rtParams, &#39;resultError&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       Type="say"
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Text="{getValue(__rtParams, &#39;resultError&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      Text="{__getValue(__rtParams, &#39;resultError&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       AltTexts=""
       SelectionMode="temporary"
       MaxEntryCount=""
@@ -363,12 +363,12 @@
       </mxCell>
     </object>
     <object
-      label="{getValue(__rtParams, &#39;resultError&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      label="{__getValue(__rtParams, &#39;resultError&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       Type="say"
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Text="{getValue(__rtParams, &#39;resultError&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      Text="{__getValue(__rtParams, &#39;resultError&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       AltTexts=""
       SelectionMode="temporary"
       MaxEntryCount=""
@@ -398,7 +398,7 @@
     <object
       label="output"
       Type="transient"
-      OnEnter="_rtNextStep = getValue(__rtParams, __rtOutcome, &#39;&#39;);&#xa;Logger.info(&#39;[guardTui] exit&#39;, { outcome: __rtOutcome, nextStep: _rtNextStep });"
+      OnEnter="_rtNextStep = __getValue(__rtParams, __rtOutcome, &#39;&#39;);&#xa;Logger.info(&#39;[guardTui] exit&#39;, { outcome: __rtOutcome, nextStep: _rtNextStep });"
       OnLeave=""
       MaxEntryCount=""
       MaxEntryNodeId=""
@@ -543,7 +543,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code='__guardTuiGuardId = 0; &#xa;__guardTuiEligible = false; &#xa;_errorMessage = &#39;&#39;; &#xa;__rtOutcome = &#39;nextStep&#39;;&#xa;if (String(getValue(__rtParams, &#39;active&#39;, false)).toLowerCase() !== &#39;true&#39;) {&#xa;    Logger.info(&#39;[guardTui] skipped -- inactive&#39;, { outcome: __rtOutcome });&#xa;    return;&#xa;}&#xa;&#xa;__rtOutcome = &#39;nextStep_Failure&#39;; &#xa;&#xa;&#xa;__ani = getScoped(getValue(__rtParams, &#39;phoneNumberVar&#39;, varObj.ani), null); &#xa;__configId = getValue(__rtParams, &#39;configId&#39;, &#39;&#39;); &#xa;__originGuardId = 0; &#xa; &#xa;if (!__configId || !__ani) { &#xa;    Logger.warn(&#39;[guardTui] misssing ConfigId or phone number&#39;, { configId: __configId, outcome: __rtOutcome }); &#xa;    return; &#xa;} &#xa; &#xa;&#xa; &#xa;var __method = &#39;GET&#39;; &#xa;var __timeout = Number(getValue(__rtParams, &#39;timeout&#39;, 10000)); &#xa;var __headers = _headers; &#xa;var __endpoint = __rtBaseUrl + __rtTuiCheckAccessEndpoint; &#xa;var __queryParameters = &#39;?guardConfigId=&#39; + encodeURIComponent(__configId) + &#xa;    &#39;&amp;phonenumber=&#39; + encodeURIComponent(__ani) + &#xa;    &#39;&amp;originGuardId=&#39; + encodeURIComponent(__originGuardId); &#xa; &#xa;log_debug(&#39;__urlCheck: &#39; + __endpoint + __queryParameters); &#xa; &#xa;__compRequest = jsonHttpRequest( &#xa;    __endpoint + __queryParameters, &#xa;    { method: __method, "timeout": __timeout }, &#xa;    __headers &#xa;); &#xa; &#xa;return __compRequest.then(function (result) { &#xa;    __resultObj = result.response; &#xa;    log_debug(&#39;result: &#39; + JSON.stringify(result)); &#xa;    if (result &amp;&amp; !result.success) { &#xa;        _errorMessage = "status: " + result.statusCode + ", error: " + result.error; &#xa;        Logger.warn(&#39;[guardTui] eligibility check failed&#39;, { error: _errorMessage, outcome: __rtOutcome }); &#xa;        return; &#xa;    } &#xa;    if (String(__resultObj).toLowerCase() !== &#39;true&#39;) { &#xa;        __rtOutcome = &#39;nextStep_Denied&#39;; &#xa;        Logger.info(&#39;[guardTui] denied&#39;, { outcome: __rtOutcome }); &#xa;        return; &#xa;    } &#xa;    __guardTuiEligible = true; &#xa;    Logger.info(&#39;[guardTui] eligible -- proceeding to state lookup&#39;, { configId: __configId }); &#xa;});'
+      Code='__guardTuiGuardId = 0; &#xa;__guardTuiEligible = false; &#xa;_errorMessage = &#39;&#39;; &#xa;__rtOutcome = &#39;nextStep&#39;;&#xa;if (String(__getValue(__rtParams, &#39;active&#39;, false)).toLowerCase() !== &#39;true&#39;) {&#xa;    Logger.info(&#39;[guardTui] skipped -- inactive&#39;, { outcome: __rtOutcome });&#xa;    return;&#xa;}&#xa;&#xa;__rtOutcome = &#39;nextStep_Failure&#39;; &#xa;&#xa;&#xa;__ani = getScoped(__getValue(__rtParams, &#39;phoneNumberVar&#39;, varObj.ani), null); &#xa;__configId = __getValue(__rtParams, &#39;configId&#39;, &#39;&#39;); &#xa;__originGuardId = 0; &#xa; &#xa;if (!__configId || !__ani) { &#xa;    Logger.warn(&#39;[guardTui] misssing ConfigId or phone number&#39;, { configId: __configId, outcome: __rtOutcome }); &#xa;    return; &#xa;} &#xa; &#xa;&#xa; &#xa;var __method = &#39;GET&#39;; &#xa;var __timeout = Number(__getValue(__rtParams, &#39;timeout&#39;, 10000)); &#xa;var __headers = _headers; &#xa;var __endpoint = __rtBaseUrl + __rtTuiCheckAccessEndpoint; &#xa;var __queryParameters = &#39;?guardConfigId=&#39; + encodeURIComponent(__configId) + &#xa;    &#39;&amp;phonenumber=&#39; + encodeURIComponent(__ani) + &#xa;    &#39;&amp;originGuardId=&#39; + encodeURIComponent(__originGuardId); &#xa; &#xa;log_debug(&#39;__urlCheck: &#39; + __endpoint + __queryParameters); &#xa; &#xa;__compRequest = jsonHttpRequest( &#xa;    __endpoint + __queryParameters, &#xa;    { method: __method, "timeout": __timeout }, &#xa;    __headers &#xa;); &#xa; &#xa;return __compRequest.then(function (result) { &#xa;    __resultObj = result.response; &#xa;    log_debug(&#39;result: &#39; + JSON.stringify(result)); &#xa;    if (result &amp;&amp; !result.success) { &#xa;        _errorMessage = "status: " + result.statusCode + ", error: " + result.error; &#xa;        Logger.warn(&#39;[guardTui] eligibility check failed&#39;, { error: _errorMessage, outcome: __rtOutcome }); &#xa;        return; &#xa;    } &#xa;    if (String(__resultObj).toLowerCase() !== &#39;true&#39;) { &#xa;        __rtOutcome = &#39;nextStep_Denied&#39;; &#xa;        Logger.info(&#39;[guardTui] denied&#39;, { outcome: __rtOutcome }); &#xa;        return; &#xa;    } &#xa;    __guardTuiEligible = true; &#xa;    Logger.info(&#39;[guardTui] eligible -- proceeding to state lookup&#39;, { configId: __configId }); &#xa;});'
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
@@ -569,7 +569,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code='if (!__guardTuiEligible) { &#xa;    Logger.info(&#39;[guardTui] state lookup skipped -- not eligible&#39;, { outcome: __rtOutcome }); &#xa;    return; &#xa;} &#xa;&#xa;var __configId = getValue(__rtParams, &#39;configId&#39;, &#39;&#39;);&#xa;var __ani = getScoped(getValue(__rtParams, &#39;phoneNumberVar&#39;, varObj.ani), null); &#xa;&#xa;var __method = &#39;GET&#39;; &#xa;var __timeout = Number(getValue(__rtParams, &#39;timeout&#39;, 10000)); &#xa;var __headers = _headers; &#xa;var __endpoint = __rtBaseUrl + __rtTuiGetStateEndpoint; &#xa;var __queryParameters = &#39;?guardConfigId=&#39; + encodeURIComponent(__configId) +&#xa;    &#39;&amp;phonenumber=&#39; + encodeURIComponent(__ani);&#xa;&#xa;&#xa;log_debug(&#39;__urlState: &#39; + __endpoint + __queryParameters); &#xa; &#xa;__compRequest = jsonHttpRequest( &#xa;    __endpoint + __queryParameters, &#xa;    { method: __method, "timeout": __timeout }, &#xa;    __headers &#xa;); &#xa;&#xa;Logger.debug(&#39;[guardTui] state lookup&#39;, { ani: __ani, configId: __configId });&#xa;&#xa;return __compRequest.then(function (result) { &#xa;    __resultObj = result.response; &#xa;    __callSuccess = result.success; &#xa;    log_debug(&#39;result: &#39; + JSON.stringify(result)); &#xa;    if (!__callSuccess) { &#xa;        _errorMessage = "status: " + result.statusCode + ", error: " + result.error; &#xa;        Logger.warn(&#39;[guardTui] state lookup failed&#39;, { error: _errorMessage, outcome: __rtOutcome }); &#xa;        return; &#xa;    } &#xa;     if (typeof __resultObj === &#39;string&#39;) { &#xa;        try { &#xa;            __resultObj = JSON.parse(__resultObj); &#xa;        } catch (__parseError) { &#xa;            _errorMessage = &#39;state response parse failed&#39;; &#xa;            Logger.warn(&#39;[guardTui] state response parse failed&#39;, { outcome: __rtOutcome }); &#xa;            return; &#xa;        } &#xa;    }&#xa;    if (!__resultObj || !__resultObj.length || !__resultObj[0].guardID) { &#xa;        _errorMessage = &#39;state response empty or missing id&#39;; &#xa;        Logger.warn(&#39;[guardTui] state lookup failed&#39;, { statusCode: result.statusCode, outcome: __rtOutcome }); &#xa;        return; &#xa;    }&#xa;    &#xa;    __guardTuiGuardId = Number(__resultObj[0].guardID) || 0;&#xa;    __guardConfigID = __resultObj[0].guardConfigID;&#xa;    __guardActive = activeFlag(__resultObj[0].guardActive);&#xa;    __guardName = __resultObj[0].guardName;&#xa;&#xa;    __rtOutcome = &#39;nextStep&#39;; &#xa;    Logger.info(&#39;[guardTui] menu staged&#39;, { guardId: __guardTuiGuardId, active: __guardActive, outcome: __rtOutcome }); &#xa;});'
+      Code='if (!__guardTuiEligible) { &#xa;    Logger.info(&#39;[guardTui] state lookup skipped -- not eligible&#39;, { outcome: __rtOutcome }); &#xa;    return; &#xa;} &#xa;&#xa;var __configId = __getValue(__rtParams, &#39;configId&#39;, &#39;&#39;);&#xa;var __ani = getScoped(__getValue(__rtParams, &#39;phoneNumberVar&#39;, varObj.ani), null); &#xa;&#xa;var __method = &#39;GET&#39;; &#xa;var __timeout = Number(__getValue(__rtParams, &#39;timeout&#39;, 10000)); &#xa;var __headers = _headers; &#xa;var __endpoint = __rtBaseUrl + __rtTuiGetStateEndpoint; &#xa;var __queryParameters = &#39;?guardConfigId=&#39; + encodeURIComponent(__configId) +&#xa;    &#39;&amp;phonenumber=&#39; + encodeURIComponent(__ani);&#xa;&#xa;&#xa;log_debug(&#39;__urlState: &#39; + __endpoint + __queryParameters); &#xa; &#xa;__compRequest = jsonHttpRequest( &#xa;    __endpoint + __queryParameters, &#xa;    { method: __method, "timeout": __timeout }, &#xa;    __headers &#xa;); &#xa;&#xa;Logger.debug(&#39;[guardTui] state lookup&#39;, { ani: __ani, configId: __configId });&#xa;&#xa;return __compRequest.then(function (result) { &#xa;    __resultObj = result.response; &#xa;    __callSuccess = result.success; &#xa;    log_debug(&#39;result: &#39; + JSON.stringify(result)); &#xa;    if (!__callSuccess) { &#xa;        _errorMessage = "status: " + result.statusCode + ", error: " + result.error; &#xa;        Logger.warn(&#39;[guardTui] state lookup failed&#39;, { error: _errorMessage, outcome: __rtOutcome }); &#xa;        return; &#xa;    } &#xa;     if (typeof __resultObj === &#39;string&#39;) { &#xa;        try { &#xa;            __resultObj = JSON.parse(__resultObj); &#xa;        } catch (__parseError) { &#xa;            _errorMessage = &#39;state response parse failed&#39;; &#xa;            Logger.warn(&#39;[guardTui] state response parse failed&#39;, { outcome: __rtOutcome }); &#xa;            return; &#xa;        } &#xa;    }&#xa;    if (!__resultObj || !__resultObj.length || !__resultObj[0].guardID) { &#xa;        _errorMessage = &#39;state response empty or missing id&#39;; &#xa;        Logger.warn(&#39;[guardTui] state lookup failed&#39;, { statusCode: result.statusCode, outcome: __rtOutcome }); &#xa;        return; &#xa;    }&#xa;    &#xa;    __guardTuiGuardId = Number(__resultObj[0].guardID) || 0;&#xa;    __guardConfigID = __resultObj[0].guardConfigID;&#xa;    __guardActive = __activeFlag(__resultObj[0].guardActive);&#xa;    __guardName = __resultObj[0].guardName;&#xa;&#xa;    __rtOutcome = &#39;nextStep&#39;; &#xa;    Logger.info(&#39;[guardTui] menu staged&#39;, { guardId: __guardTuiGuardId, active: __guardActive, outcome: __rtOutcome }); &#xa;});'
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
@@ -788,12 +788,12 @@
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
     <object
-      label="{getValue(__rtParams, &#39;resultCurrentlyActivated&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      label="{__getValue(__rtParams, &#39;resultCurrentlyActivated&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       Type="say"
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Text="{getValue(__rtParams, &#39;resultCurrentlyActivated&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      Text="{__getValue(__rtParams, &#39;resultCurrentlyActivated&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       AltTexts=""
       SelectionMode="temporary"
       MaxEntryCount=""
@@ -831,12 +831,12 @@
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
     <object
-      label="{getValue(__rtParams, &#39;resultCurrentlyDeactivated&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      label="{__getValue(__rtParams, &#39;resultCurrentlyDeactivated&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       Type="say"
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Text="{getValue(__rtParams, &#39;resultCurrentlyDeactivated&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      Text="{__getValue(__rtParams, &#39;resultCurrentlyDeactivated&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       AltTexts=""
       SelectionMode="temporary"
       MaxEntryCount=""
@@ -939,12 +939,12 @@
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
     <object
-      label="{getValue(__rtParams, &#39;promptActivate&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      label="{__getValue(__rtParams, &#39;promptActivate&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       Type="say"
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Text="{getValue(__rtParams, &#39;promptActivate&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      Text="{__getValue(__rtParams, &#39;promptActivate&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       AltTexts=""
       SelectionMode="temporary"
       MaxEntryCount=""
@@ -982,12 +982,12 @@
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
     <object
-      label="{getValue(__rtParams, &#39;promptDeactivate&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      label="{__getValue(__rtParams, &#39;promptDeactivate&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       Type="say"
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Text="{getValue(__rtParams, &#39;promptDeactivate&#39; + &#39;_&#39; + language, &#39;&#39;)}"
+      Text="{__getValue(__rtParams, &#39;promptDeactivate&#39; + &#39;_&#39; + language, &#39;&#39;)}"
       AltTexts=""
       SelectionMode="temporary"
       MaxEntryCount=""
@@ -1042,7 +1042,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code='_errorMessage = &#39;&#39;;&#xa;__rtOutcome = &#39;nextStep_Failure&#39;;&#xa;&#xa;if (!(__guardTuiGuardId &gt; 0)) {&#xa;    Logger.warn(&#39;[guardTui] deactivate missing guardId&#39;, { outcome: __rtOutcome });&#xa;    return;&#xa;}&#xa;&#xa;var __method = &#39;POST&#39;;&#xa;var __timeout = Number(getValue(__rtParams, &#39;timeout&#39;, 10000));&#xa;var __headers = _headers;&#xa;var __endpoint = __rtBaseUrl + __rtTuiDeactivateEndpoint;&#xa;var __queryParameters = &#39;/&#39; + encodeURIComponent(__guardTuiGuardId);&#xa;&#xa;log_debug(&#39;__urlDeactivate: &#39; + __endpoint + __queryParameters);&#xa;&#xa;__compRequest = jsonHttpRequest(&#xa;    __endpoint + __queryParameters,&#xa;    { method: __method, "timeout": __timeout },&#xa;    __headers,&#xa;    null&#xa;);&#xa;&#xa;return __compRequest.then(function (result) {&#xa;    __resultObj = result.response;&#xa;    __callSuccess = result.success;&#xa;    log_debug(&#39;result: &#39; + JSON.stringify(result));&#xa;    if (!__callSuccess) {&#xa;        _errorMessage = "status: " + result.statusCode + ", error: " + result.error;&#xa;        Logger.warn(&#39;[guardTui] deactivate failed&#39;, { error: _errorMessage, outcome: __rtOutcome });&#xa;        return;&#xa;    }&#xa;    if (String(__resultObj).toLowerCase() === &#39;true&#39;) {&#xa;        __rtOutcome = &#39;nextStep_Success&#39;;&#xa;        Logger.info(&#39;[guardTui] deactivated&#39;, { outcome: __rtOutcome });&#xa;        return;&#xa;    }&#xa;    __rtOutcome = &#39;nextStep&#39;;&#xa;    Logger.info(&#39;[guardTui] only active member&#39;, { outcome: __rtOutcome });&#xa;});'
+      Code='_errorMessage = &#39;&#39;;&#xa;__rtOutcome = &#39;nextStep_Failure&#39;;&#xa;&#xa;if (!(__guardTuiGuardId &gt; 0)) {&#xa;    Logger.warn(&#39;[guardTui] deactivate missing guardId&#39;, { outcome: __rtOutcome });&#xa;    return;&#xa;}&#xa;&#xa;var __method = &#39;POST&#39;;&#xa;var __timeout = Number(__getValue(__rtParams, &#39;timeout&#39;, 10000));&#xa;var __headers = _headers;&#xa;var __endpoint = __rtBaseUrl + __rtTuiDeactivateEndpoint;&#xa;var __queryParameters = &#39;/&#39; + encodeURIComponent(__guardTuiGuardId);&#xa;&#xa;log_debug(&#39;__urlDeactivate: &#39; + __endpoint + __queryParameters);&#xa;&#xa;__compRequest = jsonHttpRequest(&#xa;    __endpoint + __queryParameters,&#xa;    { method: __method, "timeout": __timeout },&#xa;    __headers,&#xa;    null&#xa;);&#xa;&#xa;return __compRequest.then(function (result) {&#xa;    __resultObj = result.response;&#xa;    __callSuccess = result.success;&#xa;    log_debug(&#39;result: &#39; + JSON.stringify(result));&#xa;    if (!__callSuccess) {&#xa;        _errorMessage = "status: " + result.statusCode + ", error: " + result.error;&#xa;        Logger.warn(&#39;[guardTui] deactivate failed&#39;, { error: _errorMessage, outcome: __rtOutcome });&#xa;        return;&#xa;    }&#xa;    if (String(__resultObj).toLowerCase() === &#39;true&#39;) {&#xa;        __rtOutcome = &#39;nextStep_Success&#39;;&#xa;        Logger.info(&#39;[guardTui] deactivated&#39;, { outcome: __rtOutcome });&#xa;        return;&#xa;    }&#xa;    __rtOutcome = &#39;nextStep&#39;;&#xa;    Logger.info(&#39;[guardTui] only active member&#39;, { outcome: __rtOutcome });&#xa;});'
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
@@ -1068,7 +1068,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code='_errorMessage = &#39;&#39;;&#xa;__rtOutcome = &#39;nextStep_Failure&#39;;&#xa;&#xa;if (!(__guardTuiGuardId &gt; 0)) {&#xa;    Logger.warn(&#39;[guardTui] activate missing guardId&#39;, { outcome: __rtOutcome });&#xa;    return;&#xa;}&#xa;&#xa;var __method = &#39;POST&#39;;&#xa;var __timeout = Number(getValue(__rtParams, &#39;timeout&#39;, 10000));&#xa;var __headers = _headers;&#xa;var __endpoint = __rtBaseUrl + __rtTuiActivateEndpoint;&#xa;var __queryParameters = &#39;/&#39; + encodeURIComponent(__guardTuiGuardId);&#xa;&#xa;log_debug(&#39;__urlActivate: &#39; + __endpoint + __queryParameters);&#xa;&#xa;__compRequest = jsonHttpRequest(&#xa;    __endpoint + __queryParameters,&#xa;    { method: __method, "timeout": __timeout },&#xa;    __headers,&#xa;    null&#xa;);&#xa;&#xa;return __compRequest.then(function (result) {&#xa;    __resultObj = result.response;&#xa;    __callSuccess = result.success;&#xa;    log_debug(&#39;result: &#39; + JSON.stringify(result));&#xa;    if (!__callSuccess) {&#xa;        _errorMessage = "status: " + result.statusCode + ", error: " + result.error;&#xa;        Logger.warn(&#39;[guardTui] activate failed&#39;, { error: _errorMessage, outcome: __rtOutcome });&#xa;        return;&#xa;    }&#xa;    if (String(__resultObj).toLowerCase() !== &#39;true&#39;) {&#xa;        _errorMessage = &#39;activate returned &#39; + String(__resultObj);&#xa;        Logger.warn(&#39;[guardTui] activate failed&#39;, { error: _errorMessage, outcome: __rtOutcome });&#xa;        return;&#xa;    }&#xa;    __rtOutcome = &#39;nextStep_Success&#39;;&#xa;    Logger.info(&#39;[guardTui] activated&#39;, { outcome: __rtOutcome });&#xa;});'
+      Code='_errorMessage = &#39;&#39;;&#xa;__rtOutcome = &#39;nextStep_Failure&#39;;&#xa;&#xa;if (!(__guardTuiGuardId &gt; 0)) {&#xa;    Logger.warn(&#39;[guardTui] activate missing guardId&#39;, { outcome: __rtOutcome });&#xa;    return;&#xa;}&#xa;&#xa;var __method = &#39;POST&#39;;&#xa;var __timeout = Number(__getValue(__rtParams, &#39;timeout&#39;, 10000));&#xa;var __headers = _headers;&#xa;var __endpoint = __rtBaseUrl + __rtTuiActivateEndpoint;&#xa;var __queryParameters = &#39;/&#39; + encodeURIComponent(__guardTuiGuardId);&#xa;&#xa;log_debug(&#39;__urlActivate: &#39; + __endpoint + __queryParameters);&#xa;&#xa;__compRequest = jsonHttpRequest(&#xa;    __endpoint + __queryParameters,&#xa;    { method: __method, "timeout": __timeout },&#xa;    __headers,&#xa;    null&#xa;);&#xa;&#xa;return __compRequest.then(function (result) {&#xa;    __resultObj = result.response;&#xa;    __callSuccess = result.success;&#xa;    log_debug(&#39;result: &#39; + JSON.stringify(result));&#xa;    if (!__callSuccess) {&#xa;        _errorMessage = "status: " + result.statusCode + ", error: " + result.error;&#xa;        Logger.warn(&#39;[guardTui] activate failed&#39;, { error: _errorMessage, outcome: __rtOutcome });&#xa;        return;&#xa;    }&#xa;    if (String(__resultObj).toLowerCase() !== &#39;true&#39;) {&#xa;        _errorMessage = &#39;activate returned &#39; + String(__resultObj);&#xa;        Logger.warn(&#39;[guardTui] activate failed&#39;, { error: _errorMessage, outcome: __rtOutcome });&#xa;        return;&#xa;    }&#xa;    __rtOutcome = &#39;nextStep_Success&#39;;&#xa;    Logger.info(&#39;[guardTui] activated&#39;, { outcome: __rtOutcome });&#xa;});'
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""

@@ -70,7 +70,7 @@ flowchart TD
     RS --> L{"RTDS_REGISTRY.get(type)?"}
     L -->|"kind: js"| H["handler stages __rtOutcome\n→ engine resolves _rtNextStep"]
     H --> RS
-    L -->|"kind: gui"| G["write RTDS_currentOpConfig (params) + RTDS_currentTtsMessages\nreturn exitKey to canvas"]
+    L -->|"kind: gui"| G["write RTDS_currentOpConfig (params + ttsMessages folded in)\nreturn exitKey to canvas"]
     L -->|"unregistered"| W["warn + skip to NextStep"]
     W --> RS
     G --> C["Vocalls GUI component runs\nwrites chosen outcome → _rtNextStep"]
@@ -105,8 +105,11 @@ flowchart TD
   runtime: they stage `__rtParams` + `__rtOutcome` and the engine resolves `_rtNextStep`; the
   loop never leaves `rtds_2_runtime.js`.
 - **GUI-exit** operations hand off via `prepareGuiHandoff`, which writes the whole Params object to
-  `RTDS_currentOpConfig` (plus `RTDS_currentOpId/Type`, the per-language `RTDS_currentTtsMessages`
-  spoken-text map for prompt-playing components, and a default `RTDS_nextStepId`) and returns a
+  `RTDS_currentOpConfig` (plus `RTDS_currentOpId/Type` and a default `RTDS_nextStepId`). For
+  prompt-playing operations (those whose Params carry `prompt` + `applicationId`, e.g. `say`) the
+  per-language `ttsMessages` spoken-text map is **folded into** that same config object under the
+  `ttsMessages` key — the component reads it from `__rtParams.ttsMessages` and resolves `${var}`
+  tokens in the text; there is no separate handoff var. It then returns a
   Type-specific **exit key** string to Vocalls. The matching canvas target runs — a native Designer
   node (transfer / menu / disconnect / …), or a self-contained v2 component such as `guard_tui`
   ([guardTui.js](../components/guardTui.js)) that reads `RTDS_currentOpConfig` like any other

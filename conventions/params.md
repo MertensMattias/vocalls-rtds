@@ -63,6 +63,8 @@ Both whole-string and partial substitution are supported. Pattern is `${ident}` 
 
 A Param that holds per-language TTS text is keyed `<Name>_<LANG>` with **LANG uppercase** — `PromptActivate_NL`, `ResultDenied_FR`, `ResultError_NL`. The base name is PascalCase; the language suffix is the uppercase two-letter code. The stored keys in `__configJSON` **stay uppercase**; lookup is case-insensitive via `getValue`, so a work/say site reading `'<Name>_' + language` matches regardless of the case `language` happens to carry — but author the stored keys uppercase for consistency. See [say-text.md](say-text.md) for how a say node reads these.
 
+This flat-key form is for components with a **fixed set** of authored result prompts (e.g. `guardTui`). A **prompt-playing operation** — one whose Params carry `prompt` + `applicationId` (`say`, PlayPrompt Types) — does **not** use flat keys: it carries a single `ttsMessages` object (`{ "NL": "…", "FR": "…" }`, a routing-table sibling of `params` that the runtime folds into the op config) and reads `getValue(__rtParams, 'ttsMessages', {})[language]`. See [say-text.md](say-text.md) for that contract.
+
 ## Reflect on
 
 - **[grep]** Does `__setupConfig` match the canonical one from [canonical_helpers.js](../.claude/skills/rtds-vocalls-component-gen/references/canonical_helpers.js)?

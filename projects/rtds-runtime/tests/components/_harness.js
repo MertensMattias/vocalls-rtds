@@ -31,9 +31,10 @@ var helpers = require(path.join(process.cwd(), 'core', 'testHelpers'));
 // --- component master-Code execution -------------------------------------
 // The contract tests above exercise the runtime TWIN. The helpers below let a
 // test execute a component's OWN master-layer Code (the entity-encoded JS in the
-// `vocalls-master-layer` object's Code attribute) in an isolated sandbox with NO
-// env library loaded — proving the component's inline helper fallbacks make
-// __setupConfig self-contained. See conventions/params.md + specs/_setupConfig.spec.md.
+// `vocalls-master-layer` object's Code attribute) in a sandbox WITH the shared
+// env library loaded — proving the component's __fn aliases (e.g. __setupConfig)
+// delegate correctly to the shared library functions, with no inline drift.
+// See conventions/params.md + specs/_setupConfig.spec.md.
 
 function decodeEntities(s) {
     return s
@@ -83,10 +84,41 @@ function readNodeAttr(componentName, objectId, attrName) {
     return null;
 }
 
+// The shared env library (rtds_3_vocallsEnv.js) evaluates cleanly in a bare
+// sandbox — it only references Logger/context/varObj at call time, not at load —
+// and exposes the shared helpers (setupConfig, extractParams, getValue, hasKey,
+// getScoped, resolveConfigTokens, walk, nowUTC, activeFlag, ...). Components now
+// alias these via __fn wrappers instead of carrying inline copies, so the master
+// Code must run WITH the shared library loaded for the aliases to resolve. We
+// load it once and cache the source.
+var ENV_LIB_PATH = path.join(
+    process.cwd(), 'projects', 'rtds-runtime', 'globalLibraries', 'active', 'rtds_3_vocallsEnv.js'
+);
+var _envLibSrc = null;
+function envLibSrc() {
+    if (_envLibSrc === null) _envLibSrc = fs.readFileSync(ENV_LIB_PATH, 'utf8');
+    return _envLibSrc;
+}
+
+// isMobileNumber lives in rtds_2_runtime.js, which cannot eval standalone (it
+// needs registry/log globals). The function itself is self-contained, so we
+// provide it verbatim from rtds_2_runtime.js for components whose __isMobileNumber
+// alias delegates to it.
+function sharedIsMobileNumber(phone) {
+    if (phone == null || phone === '') return false;
+    var normalized = String(phone).replace(/[\s\-().]/g, '');
+    if (normalized.indexOf('00') === 0) normalized = '+' + normalized.slice(2);
+    var intl = /^\+[1-9]\d{6,14}$/;
+    var national = /^[1-9]\d{6,14}$/;
+    return intl.test(normalized) || national.test(normalized);
+}
+
 /**
- * Run a component's master Code in an isolated sandbox WITHOUT the env library,
- * so only the component's own inline fallbacks are available. Returns the
- * sandbox (exposing __setupConfig, __activeFlag, etc.).
+ * Run a component's master Code in a sandbox WITH the shared env library loaded,
+ * so the component's __fn aliases resolve to the real shared functions. Returns
+ * the sandbox (exposing __setupConfig, __activeFlag, etc.). This proves the
+ * alias delegation is wired correctly and the resolved-Param contract matches
+ * specs/_setupConfig.spec.md against the real shared implementations.
  *
  * @param {string} componentName e.g. 'sendSms'
  * @param {Object} [seed] optional { varObj, global } overrides
@@ -95,37 +127,34 @@ function readNodeAttr(componentName, objectId, attrName) {
 function loadMasterCode(componentName, seed) {
     seed = seed || {};
     var warns = [];
+    var loggerStub = {
+        debug: function () {}, info: function () {},
+        warn: function () { warns.push(Array.prototype.slice.call(arguments)); },
+        error: function () {}
+    };
     var sb = {
         context: { currentNode: { id: '' } },
-        Logger: {
-            debug: function () {}, info: function () {},
-            warn: function () { warns.push(Array.prototype.slice.call(arguments)); },
-            error: function () {}
-        },
+        Logger: loggerStub,
         varObj: seed.varObj || {}
     };
     sb.global = sb;
     sb.globalThis = sb;
-    // The env library is intentionally absent here (we test the component's own
-    // inline fallbacks), but Active coercion is NOT a fallback — the component's
-    // __activeFlag is a thin alias to the runtime global activeFlag(), which is
-    // always loaded in production. Provide it so the alias resolves; body is the
-    // single Active contract from rtds_3_vocallsEnv.js, verbatim.
-    sb.activeFlag = function (value) {
-        if (Object.prototype.toString.call(value) === '[object Array]') {
-            value = value.length ? value[0] : false;
-        }
-        if (typeof value === 'boolean') return value;
-        if (typeof value === 'number') return value === 1;
-        var s = String(value).trim().toLowerCase();
-        return s === '1' || s === 'true';
-    };
     if (seed.global) {
         for (var key in seed.global) {
             if (seed.global.hasOwnProperty(key)) sb[key] = seed.global[key];
         }
     }
     vm.createContext(sb);
+    // Load the real shared library so component __fn aliases delegate to it.
+    vm.runInContext(envLibSrc(), sb);
+    // rtds_3 installs its own Logger (which POSTs warns via log_debug). Restore
+    // the capturing stub so both the shared resolveConfigTokens and the component
+    // warn through it — and the env logging primitives are no-ops in the sandbox.
+    sb.Logger = loggerStub;
+    sb.log_debug = function () {};
+    sb.log_error = function () {};
+    // Provide isMobileNumber (self-contained, lives in rtds_2 which can't eval here).
+    if (typeof sb.isMobileNumber === 'undefined') sb.isMobileNumber = sharedIsMobileNumber;
     vm.runInContext(readMasterCode(componentName), sb);
     sb.__warns = warns;
     return sb;

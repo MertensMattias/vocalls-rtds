@@ -307,6 +307,69 @@ function resolveConfigTokens(raw, keyName) {
 }
 
 /**
+ * Normalises an operation's raw config into a flat Params object. Accepts the
+ * three shapes a component instance can bind into __configJSON:
+ *   - a JSON string  -> parsed first;
+ *   - an envelope { params: {...} } -> the params sub-object;
+ *   - an already-flat Params object -> itself;
+ *   - null / undefined -> {}.
+ * Never returns null. This is the single Params-extraction path shared by every
+ * GUI component (previously the component-local __extractParams) so the shape
+ * normalisation can never diverge between components.
+ *
+ * @param {string|Object} config - Raw operation config.
+ * @returns {Object} Flat Params object, never null.
+ */
+function extractParams(config) {
+  var parsed = typeof config === "string" ? JSON.parse(config) : config;
+  if (parsed && typeof parsed.params === "object" && parsed.params !== null) {
+    return parsed.params;
+  }
+  return parsed || {};
+}
+
+/**
+ * Resolves a raw operation config into a flat { Key: value } map ready for a
+ * component's work body. The value's TYPE is preserved as authored -- no Number
+ * coercion ('4' stays a string, 4 stays a number). Per key:
+ *   - array-form [value, ...flags] is unwrapped to its first element (matches
+ *     getParam; the GUI flags isDisplayed/isEditable are runtime-irrelevant);
+ *   - the `active` key is coerced to a real boolean via activeFlag;
+ *   - every other STRING value is trimmed and has ${name} / ${a.b} placeholders
+ *     resolved via resolveConfigTokens (varObj-first scope contract; String.replace,
+ *     never new Function -- the Vocalls runtime disables string-eval);
+ *   - non-strings pass through with their type intact.
+ * `active` absent is NOT defaulted here -- the read site decides (SetVariables
+ * defaults true, Send/guard default false). This is the single config-resolution
+ * path shared by every GUI component (previously the component-local __setupConfig),
+ * so init-time resolution can never diverge between a component and its JS twin.
+ *
+ * @param {string|Object} config - Raw operation config (see extractParams).
+ * @returns {Object} Map of Key -> resolved value (no __rt prefix; v2 shape).
+ */
+function setupConfig(config) {
+  var params = extractParams(config);
+  var result = {};
+  var keys = Object.keys(params);
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    var value = params[key];
+    if (Array.isArray(value)) {
+      value = value.length ? value[0] : "";
+    }
+    if (key === "active") {
+      result.active = activeFlag(value);
+      continue;
+    }
+    if (typeof value === "string") {
+      value = resolveConfigTokens(value.replace(/^\s+|\s+$/g, ""), key);
+    }
+    result[key] = value;
+  }
+  return result;
+}
+
+/**
  * Resolves the explicit root named by the first segment of a dot-path, when
  * that segment is one the operator can name as a root:
  *   "varObj"               -> varObj

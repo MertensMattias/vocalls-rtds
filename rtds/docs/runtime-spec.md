@@ -77,7 +77,11 @@ Each operation has:
 - `name` — human-readable label
 - `isFirstOperation` — boolean, true on the entry-point operation(s)
 - `params` — object of typed key/value pairs; values may be scalar or array `[value, ...flags]`
-- `ttsMessages` — optional `{ "NL": "...", "FR": "..." }` map (PlayPrompt only)
+- `ttsMessages` — optional `{ "NL": "...", "FR": "..." }` map of per-language spoken text. Present on
+  **any prompt-playing operation** — i.e. one whose `params` carry `prompt` + `applicationId` (`say`,
+  and any future PlayPrompt-style Type). It is a **sibling** of `params` in the routing table, not a
+  member. The runtime folds a copy into the op config at handoff (see §4.8) so prompt components read
+  it from their resolved config; `${var}` placeholders in the text are resolved by the component.
 
 ### 1.5 Operation types and their Vocalls mapping
 
@@ -167,8 +171,7 @@ All state is stored on `context.session.variables`. No separate "context" object
 | `RTDS_opIndex` | After parseFlow | Map<string, Object> keyed by operation id |
 | `RTDS_currentOpId` | Before GUI handoff | Id of the operation being handed off |
 | `RTDS_currentOpType` | Before GUI handoff | Type of the operation being handed off |
-| `RTDS_currentOpConfig` | Before GUI handoff | The op's whole `params` object (the GUI component reads it to configure itself) |
-| `RTDS_currentTtsMessages` | Before GUI handoff | The op's `ttsMessages` map (`{ "NL": …, "FR": … }`) — per-language spoken text for prompt-playing components; `{}` when absent |
+| `RTDS_currentOpConfig` | Before GUI handoff | The op's whole `params` object (the GUI component reads it to configure itself), **plus** the op's `ttsMessages` folded in under the `ttsMessages` key (`{}` when the op carries none). This is the **single** prompt-text channel — there is no separate ttsMessages var |
 | `RTDS_nextStepId` | Before GUI handoff | Default next step Id (GUI node overwrites this with its outcome) |
 | `RTDS_error` | On error | Error code string |
 | Any SetVariables target | During SetVariables | Written to `varObj` by default (or a dotted target) via `setVariable`; native JSON type preserved, strings token-resolved |
@@ -233,8 +236,7 @@ Returns nothing (sync `undefined`). The engine resolves `_rtNextStep = getValue(
 Before returning an exit key, sets the dispatcher handoff state on `context.session.variables`:
 - `RTDS_currentOpId` = `op.id`
 - `RTDS_currentOpType` = `op.type`
-- `RTDS_currentOpConfig` = `op.params` (the whole config object; the GUI node reads it to configure itself)
-- `RTDS_currentTtsMessages` = `op.ttsMessages` (the per-language `{ "NL": "...", "FR": "..." }` spoken-text map, a sibling of `op.params` — prompt-playing components like `say` read it to speak the caller-facing text; `{}` when the op carries none)
+- `RTDS_currentOpConfig` = a **shallow copy** of `op.params` (the whole config object; the GUI node reads it to configure itself) **with `op.ttsMessages` folded in under the `ttsMessages` key** (`{}` when absent). The copy means `op.params` — the cached routing-table object reused for the whole call — is never mutated. Prompt-playing components (`say`, and any op whose Params carry `prompt` + `applicationId`) read the per-language spoken text from `__rtParams.ttsMessages` and resolve `${var}` tokens on the chosen string. There is **no** separate `RTDS_currentTtsMessages` var: a standalone canvas binding is captured once and replays the first op's text on every later prompt in the call.
 - `RTDS_nextStepId` = the default `NextStep` (the GUI node overwrites this with its branching outcome before re-entry).
 
 The runtime does **not** mirror params into per-key `RTDS_OP_*` session variables — the GUI node reads `RTDS_currentOpConfig` instead.

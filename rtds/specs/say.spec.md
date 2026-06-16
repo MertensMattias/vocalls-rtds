@@ -42,7 +42,7 @@ single `nextStep`.
 
 | Field         | Type                       | Required | Description                                                                                          |
 | ------------- | -------------------------- | -------- | ---------------------------------------------------------------------------------------------------- |
-| `ttsMessages` | `{ "<LANG>": "<text>" }`   | yes (for TTS) | Per-language spoken text, e.g. `{ "NL": "...", "FR": "..." }`. **Not** part of `params` — delivered to the component on `RTDS_currentTtsMessages` by `prepareGuiHandoff`. The component selects `ttsMessages[language]`. |
+| `ttsMessages` | `{ "<LANG>": "<text>" }`   | yes (for TTS) | Per-language spoken text, e.g. `{ "NL": "...", "FR": "..." }`. In the routing table it is a **sibling** of `params`, not a member. `prepareGuiHandoff` **folds a copy into** `RTDS_currentOpConfig` (under the reserved `ttsMessages` key) so it refreshes through `__configJSON` → `__setupConfig` on every loop re-entry; the component reads it via `getValue(__rtParams, 'ttsMessages', …)` and selects `[language]`, then resolves `${var}` tokens on the chosen string via `resolveConfigTokens` (varObj first). This folded config is the **only** prompt-text channel — there is no separate `RTDS_currentTtsMessages` var. |
 
 ### Outputs
 
@@ -59,10 +59,14 @@ Single-branch operation: there is no success/failure split. The component stages
 
 `say` is a **GUI-exit** Type — the engine routes to it via the `play_prompt` exit key and does **not**
 run a JS twin. The spoken text reaches the component only because `prepareGuiHandoff`
-([rtds_2_runtime.js](../../projects/rtds-runtime/globalLibraries/active/rtds_2_runtime.js)) forwards
-the operation-level `ttsMessages` onto `context.session.variables.RTDS_currentTtsMessages` (a sibling
-of `RTDS_currentOpConfig`). See [runtime-spec.md §3 / §4.8](../docs/runtime-spec.md). This forwarding
-is shared infra — it also serves `getLanguage` and any other prompt-playing GUI-exit Type.
+([rtds_2_runtime.js](../../projects/rtds-runtime/globalLibraries/active/rtds_2_runtime.js)) **folds the
+operation-level `ttsMessages` into `RTDS_currentOpConfig`** (under the `ttsMessages` key) — the **single**
+prompt-text channel, with no separate handoff var. The fold is what makes the text refresh per step: the
+component re-reads `__configJSON` (→ `__rtParams`) on every loop re-entry. A standalone canvas binding
+(the retired `RTDS_currentTtsMessages` approach) is captured once and goes **stale** across successive
+`say` ops in the same call — it kept the first op's text, the bug this contract fixes. See
+[runtime-spec.md §3 / §4.8](../docs/runtime-spec.md). This fold is shared infra — it serves **any
+prompt-playing GUI-exit Type** (one whose Params carry `prompt` + `applicationId`), e.g. `getLanguage`.
 
 ### Component structure
 
@@ -80,7 +84,7 @@ language = (typeof language === 'string' && language.trim() !== '') ? language.t
 __rtOutcome = 'nextStep';
 __rtParams  = __setupConfig(__configJSON);
 if (!_headers) { _headers = {}; }
-Logger.debug('[say] config resolved', { params: __rtParams, ttsLangs: Object.keys(__ttsMessages || {}), outcome: __rtOutcome });
+Logger.debug('[say] config resolved', { params: __rtParams, ttsLangs: Object.keys(getValue(__rtParams, 'ttsMessages', {}) || {}), outcome: __rtOutcome });
 ```
 
 `script` (id=29) — active gate + language pick; stages the spoken text into `__sayText` for the
@@ -91,7 +95,15 @@ if (!getValue(__rtParams, 'active', true)) {
     Logger.info('[say] skipped -- inactive', { outcome: 'nextStep' });
     return;
 }
-__sayText = getValue(__ttsMessages, language, '');
+// ttsMessages is folded into the op config by the runtime, so it refreshes every re-entry.
+// It is the SOLE tts source (no standalone __ttsMessages fallback). __setupConfig only
+// token-resolves top-level strings, so ${var} placeholders are resolved on the chosen
+// language string here via resolveConfigTokens (varObj first, then global).
+var __ttsSource = getValue(__rtParams, 'ttsMessages', null);
+__sayText = getValue(__ttsSource, language, '');
+if (typeof __sayText === 'string' && __sayText !== '') {
+    __sayText = resolveConfigTokens(__sayText, 'ttsMessages.' + language);
+}
 if (__sayText === '') {
     Logger.warn('[say] no tts text for language', { language: language, prompt: getValue(__rtParams, 'prompt', '') });
 }
@@ -111,12 +123,14 @@ _rtNextStep = getValue(__rtParams, __rtOutcome, '');
 Logger.info('[say] exit', { outcome: __rtOutcome, nextStep: _rtNextStep });
 ```
 
-Variables block (component-definition seed; on the canvas instance `__configJSON` /
-`__ttsMessages` rebind to `RTDS_currentOpConfig` / `RTDS_currentTtsMessages`):
+Variables block (component-definition seed; on the canvas instance `__configJSON` rebinds to
+`RTDS_currentOpConfig`, which now carries `ttsMessages` folded in). The standalone `__ttsMessages`
+seed is kept only as shape documentation — **no node reads it**; the spoken text is read from
+`__rtParams.ttsMessages`:
 
 ```js
 __configJSON  = { "active": true, "applicationId": 11, "prompt": "Welcome", "nextStep": "00002" };
-__ttsMessages = { "NL": "Welkom bij N-Allo. ...", "FR": "Bienvenue chez N-Allo. ..." };
+__ttsMessages = { "NL": "Welkom bij N-Allo. ...", "FR": "Bienvenue chez N-Allo. ..." };  // inert: doc only
 __environment = environment;
 __sayText     = '';
 __rtOutcome   = 'nextStep';
@@ -141,10 +155,11 @@ contract and are **out of scope**:
 The spoken text (`ttsMessages[language]`, staged into `__sayText`) is rendered through
 `Text="{Speech.ssml(__sayText)}"`, so **SSML markup in the `ttsMessages` values is supported** — e.g.
 `<break time="500ms"/>`, `<prosody rate="slow">…</prosody>`. The RTDS pipeline carries it intact:
-`prepareGuiHandoff` forwards the object by reference, the component does **not** run
-`__setupConfig` / `${}`-token resolution on `__ttsMessages` (only on `__configJSON`), and the
-component XML holds only the `{Speech.ssml(__sayText)}` placeholder — never the literal markup. Two
-authoring caveats:
+`prepareGuiHandoff` folds the object into the op config, and the component XML holds only the
+`{Speech.ssml(__sayText)}` placeholder — never the literal markup. `${var}` placeholders **are**
+resolved: `__setupConfig` skips the nested `ttsMessages` object (it only resolves top-level strings),
+so the work node runs `resolveConfigTokens` on the chosen language string itself (varObj first, then
+global) before staging it into `__sayText`. Two authoring caveats:
 
 - **JSON escaping** — SSML attribute quotes must be valid JSON: `"NL": "… <break time=\"500ms\"/> …"`
   (or use single-quoted SSML attributes to avoid escaping). When authored directly in the seed SQL
@@ -152,8 +167,9 @@ authoring caveats:
 - **Reserved characters** — once SSML is active, literal `&` / `<` in the spoken text must be escaped
   (`&amp;` / `&lt;`).
 
-`${var}` tokens in `ttsMessages` are **not** interpolated (the component does not token-process the
-TTS text) — only relevant if you wanted variable substitution in the spoken text.
+`${var}` tokens in the chosen `ttsMessages[language]` string **are** interpolated: the work node runs
+`resolveConfigTokens` on it (varObj first, then global; bare `${name}` only, no expressions). An
+unresolved placeholder is left raw and a warn is logged — never silently blanked.
 
 ## Open item to verify in Designer
 

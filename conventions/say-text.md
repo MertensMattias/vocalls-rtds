@@ -1,12 +1,50 @@
 # Say / TTS-text conventions
 
-**Scope:** [Component] · **Answers:** *How does a say node read per-language config text? Why default `''` not `false`? How do I branch a say on an HTTP body?*
+**Scope:** [Component] · **Answers:** *How does a say node read per-language config text? When do I use the `ttsMessages` object vs `<Name>_<LANG>` keys? Why default `''` not `false`? How do I branch a say on an HTTP body?*
 
-A say (TTS) node in a v2 component reads its spoken text out of `__rtParams` — the per-language config-text keys resolved at init. The patterns below keep a missing text from being spoken as a literal word and keep say/branch decisions driven by an HTTP body from silently inverting.
+A say (TTS) node in a v2 component reads its spoken text out of `__rtParams` — resolved at init. There are **two per-language text shapes**, and which one you use depends on where the text comes from:
 
-## Reading per-language text — braced `getValue`, default `''`
+| Shape | Used by | Source |
+| ----- | ------- | ------ |
+| **`ttsMessages` object** — `{ "NL": "…", "FR": "…" }` | **Prompt-playing operations** — any op whose Params carry **`prompt` + `applicationId`** (`say`, future PlayPrompt Types) | A routing-table sibling of `params`, folded into the op config by the runtime (see below) |
+| **`<Name>_<LANG>` flat keys** — `resultDenied_NL`, `resultError_FR`, … | Components with a fixed set of authored result prompts (`guardTui`) | Individual Params keys, one per name×language |
 
-A say node reads its text with a braced expression against `__rtParams`, keyed by the normalized `language`:
+The patterns below keep a missing text from being spoken as a literal word and keep say/branch decisions driven by an HTTP body from silently inverting.
+
+## `ttsMessages` object — the prompt-playing contract
+
+If an operation plays a caller-facing prompt — i.e. its Params include **`prompt`** and **`applicationId`** — it carries a sibling **`ttsMessages`** object in the routing table:
+
+```json
+{ "id": "00001", "type": "say",
+  "params": { "active": true, "applicationId": 11, "prompt": "welcome", "nextStep": "00002" },
+  "ttsMessages": { "NL": "Welkom bij N-Allo.", "FR": "Bienvenue chez N-Allo." } }
+```
+
+`prepareGuiHandoff` ([rtds_2_runtime.js](rtds_2_runtime.js)) **folds a copy of `ttsMessages` into the op config** (`RTDS_currentOpConfig`, under the `ttsMessages` key) — it is **not** a separate handoff variable. That fold is what makes the text refresh per step: the component re-reads `__configJSON` → `__setupConfig` → `__rtParams` on every loop re-entry, so each prompt op gets its own text. A standalone canvas binding (a separate `__ttsMessages` property) is captured once and replays the **first** op's text on every later prompt in the call — the exact bug this contract avoids.
+
+The component reads and speaks it like this:
+
+```js
+// work node: pick the language string, then resolve ${var} tokens on it
+var __ttsSource = getValue(__rtParams, 'ttsMessages', null);
+__sayText = getValue(__ttsSource, language, '');
+if (typeof __sayText === 'string' && __sayText !== '') {
+    __sayText = resolveConfigTokens(__sayText, 'ttsMessages.' + language);
+}
+if (__sayText === '') {
+    // nothing to speak for this language -- warn + exit, never speak a literal
+    Logger.warn('[say] no tts text for language', { language: language, prompt: getValue(__rtParams, 'prompt', '') });
+}
+```
+
+Note `__setupConfig` only token-resolves **top-level string** Params, so the nested `ttsMessages` object passes through raw — the component must run `resolveConfigTokens` on the **chosen** language string itself for `${var}` substitution to work (varObj first, then global; bare `${name}` only; unresolved → left raw + warn).
+
+**Rule:** when you author or generate a prompt-playing component (Params have `prompt` + `applicationId`), it MUST carry a `ttsMessages` object and read its spoken text from `getValue(__rtParams, 'ttsMessages', {})[language]` as above — never from a standalone binding, never from a flat `prompt`-keyed string.
+
+## Reading flat `<Name>_<LANG>` text — braced `getValue`, default `''`
+
+For the flat-key shape (fixed authored result prompts, e.g. `guardTui`), a say node reads its text with a braced expression against `__rtParams`, keyed by the normalized `language`:
 
 ```
 {getValue(__rtParams, '<Key>_' + language, '')}
@@ -43,7 +81,9 @@ The body comes back as a string. Neither alternative is safe:
 
 ## Reflect on
 
+- **[grep]** Does the component have `prompt` + `applicationId` in its Params? If so, does it carry a `ttsMessages` object and read its text from `getValue(__rtParams, 'ttsMessages', {})[language]` (NOT a standalone binding, NOT a flat `prompt` string)?
+- **[grep]** Is `${var}` resolution run on the chosen `ttsMessages[language]` string via `resolveConfigTokens` (since `__setupConfig` skips the nested object)?
 - **[grep]** Does every say-text read default to `''` (not `false` and not omitted)?
-- **[grep]** Is per-language text read as `{getValue(__rtParams, '<Key>_' + language, '')}`?
+- **[grep]** Is flat per-language text read as `{getValue(__rtParams, '<Key>_' + language, '')}`?
 - **[grep]** Is `language` written in exactly one place (the init node), uppercased, defaulting to `'NL'`?
 - **[grep]** Is any HTTP-body-driven say/branch decision made with `String(x).toLowerCase() === 'true'` rather than `if (x)` or `!== 'true'`?

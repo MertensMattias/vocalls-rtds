@@ -459,11 +459,12 @@ function executeSetVariables(op) {
 // ===========================================================================
 // prepareGuiHandoff(op)
 //   Sets the dispatcher handoff state on context.session.variables:
-//   RTDS_currentOpId / RTDS_currentOpType, RTDS_currentOpConfig (op.params
-//   delivered to the component), RTDS_currentTtsMessages (op.ttsMessages — the
-//   per-language spoken text for prompt-playing components), and pre-populates
-//   RTDS_nextStepId with the default NextStep (the component overwrites it with
-//   its chosen branching outcome before re-entry).
+//   RTDS_currentOpId / RTDS_currentOpType, RTDS_currentOpConfig (a shallow copy of
+//   op.params delivered to the component, with op.ttsMessages — the per-language
+//   spoken text for prompt-playing ops — folded in under the ttsMessages key; there
+//   is no separate handoff var), and pre-populates RTDS_nextStepId with the default
+//   NextStep (the component overwrites it with its chosen branching outcome before
+//   re-entry).
 // ===========================================================================
 
 /**
@@ -475,12 +476,26 @@ function prepareGuiHandoff(op) {
 
   vars.RTDS_currentOpId = op.id;
   vars.RTDS_currentOpType = op.type;
-  vars.RTDS_currentOpConfig = op.params || {};
+
   // Operation-level ttsMessages ({ "NL": "...", "FR": "..." }) is a sibling of
-  // op.params, not part of it. Forward it on its own session var so prompt-playing
-  // GUI components (say, getLanguage, …) can speak the per-language text; absent on
-  // non-prompt ops, so default to {}.
-  vars.RTDS_currentTtsMessages = op.ttsMessages || {};
+  // op.params in the routing table, not part of it. It is the per-language spoken
+  // text for any prompt-playing op (one whose Params carry prompt + applicationId,
+  // e.g. say). Fold a copy INTO the config object the component re-reads every loop
+  // re-entry (RTDS_currentOpConfig -> __configJSON -> __setupConfig), so the text
+  // refreshes in lockstep with the rest of the Params and the component reads it
+  // from one place (__rtParams.ttsMessages). There is NO separate handoff var: a
+  // standalone binding is captured once on the canvas and goes stale, replaying the
+  // FIRST op's text on every later prompt in the call. We shallow-copy op.params
+  // (never mutate the cached routing-table object, reused for the whole call) and
+  // attach ttsMessages under a reserved key; absent on non-prompt ops, default {}.
+  var cfg = {};
+  var srcParams = op.params || {};
+  var pk = Object.keys(srcParams);
+  for (var i = 0; i < pk.length; i++) {
+    cfg[pk[i]] = srcParams[pk[i]];
+  }
+  cfg.ttsMessages = op.ttsMessages || {};
+  vars.RTDS_currentOpConfig = cfg;
 
   var defaultNext = resolveNextStep(op, null);
   if (defaultNext) {

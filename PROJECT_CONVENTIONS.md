@@ -1,5 +1,6 @@
 # Project Conventions — vocalls-rtds
 
+**v0.8 — 2026-06-16** — Prompt-playing `ttsMessages` contract: any op whose Params carry `prompt` + `applicationId` ships a `ttsMessages` object (routing-table sibling of `params`). The runtime folds it into the op config at handoff (`RTDS_currentOpConfig.ttsMessages`) — there is **no** separate `RTDS_currentTtsMessages` handoff var (retired). Components read `getValue(__rtParams, 'ttsMessages', {})[language]` and resolve `${var}` on the chosen string. Rule 13.5; detail in [conventions/say-text.md](conventions/say-text.md).
 **v0.7 — 2026-06-11** — Redirect/transfer composite conventions: `case` expression labels must equal `Expression` verbatim (Designer validation rule), `__rtOutcome` master seed mandatory for every v2 component, master `Variables` holds only cross-script decls (working vars init-only), `redirect` Timeout + P-Asserted-Identity CLI wiring. Detail in [conventions/component-mxgraph.md §4/§8a](conventions/component-mxgraph.md) and [conventions/component-v2.md §4](conventions/component-v2.md).
 **v0.6 — 2026-06-08** — Param + envelope keys converged on camelCase end to end (contract: [docs/superpowers/plans/camelcase-mapping-table.md](docs/superpowers/plans/camelcase-mapping-table.md)).
 
@@ -104,6 +105,7 @@ Copy this into your scratch when reviewing a file. Each row is one rule from one
 | 13.2| HTTP-body decisions use `String(x).toLowerCase() === 'true'` (not `if (x)` or `!== 'true'`)                     | [Component]   | grep        | [say-text.md](conventions/say-text.md)                                    |
 | 13.3| API-supplied numeric ids normalized with `Number(x) || 0` and tested `> 0` (not `typeof === 'number'`)          | [Component]   | grep        | [naming.md](conventions/naming.md)                                        |
 | 13.4| Language-suffixed config-text keys stored `<Key>_<LANG>` with LANG uppercase; `language` normalized once in init | [Component]   | grep        | [say-text.md](conventions/say-text.md)                                    |
+| 13.5| Prompt-playing op (Params have `prompt` + `applicationId`) carries a `ttsMessages` object, read via `getValue(__rtParams, 'ttsMessages', {})[language]` (runtime folds it into the op config — no separate handoff var); `${var}` resolved on the chosen string | [Component]   | grep        | [say-text.md](conventions/say-text.md)                                    |
 
 A future lint script can run all the `grep` rows mechanically. The `judgment` rows always need a human or agent reasoning about intent.
 
