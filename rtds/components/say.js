@@ -1,6 +1,6 @@
 <mxGraphModel
   dx="4009"
-  dy="2645"
+  dy="2576"
   grid="1"
   gridSize="10"
   guides="1"
@@ -10,8 +10,8 @@
   fold="1"
   page="1"
   pageScale="1"
-  pageWidth="827"
-  pageHeight="1169"
+  pageWidth="850"
+  pageHeight="1100"
 >
   <root>
     <object
@@ -24,7 +24,7 @@
       BackgroundNoise="true"
       BreathInEffect="true"
       Languages="{&#39;nl&#39;:{&#39;isDefault&#39;:true,&#39;languageName&#39;:&#39;Dutch (Belgium)&#39;,&#39;ttsLanguageCode&#39;:&#39;nl-BE&#39;,&#39;ttsVoiceName&#39;:&#39;&#39;,&#39;ttsEngine&#39;:&#39;&#39;,&#39;ttsPitch&#39;:&#39;&#39;,&#39;ttsSpeed&#39;:&#39;&#39;,&#39;ttsVolume&#39;:&#39;&#39;,&#39;prosodyBaseEnabled&#39;:true,&#39;prosodyContourEnabled&#39;:false}}"
-      Variables='__configJSON = {&#xa;    "active": true,&#xa;    "applicationId": 8,&#xa;    "prompt": "Welcome",&#xa;    "nextStep": "00002"&#xa;};&#xa;__ttsMessages = {&#xa;    "NL": "Welkom bij N-Allo. U wordt zo dadelijk verder geholpen.",&#xa;    "FR": "Bienvenue chez N-Allo. Nous traitons votre appel dans un instant."&#xa;};&#xa;__environment = environment;&#xa;__rtOutcome = &#39;nextStep&#39;;&#xa;__rtNextStep &amp;= _rtNextStep;'
+      Variables='__configJSON = {&#xa;    "active": true,&#xa;    "applicationId": 8,&#xa;    "prompt": "Welcome",&#xa;    "nextStep": "00002"&#xa;};&#xa;__environment = environment;&#xa;__rtOutcome = &#39;nextStep&#39;;&#xa;__rtNextStep &amp;= _rtNextStep;'
       PropertiesDefinition='[&#xa;    {&#xa;        "name": "__configJSON",&#xa;        "title": "Operation config (JSON)",&#xa;        "hint": "Full RTDS operation Params object as JSON. Must include all required Params fields for the operation type.",&#xa;        "controlSettings": {&#xa;            "controlType": "text",&#xa;            "maxLength": 5000,&#xa;            "dataType": "string",&#xa;            "readonly": false&#xa;        }&#xa;    },&#xa;    {&#xa;        "name": "__environment",&#xa;        "title": "Environment",&#xa;        "hint": "Deployment environment. Controls which RTDS API endpoint is called.",&#xa;        "controlSettings": {&#xa;            "controlType": "text",&#xa;            "defaultValue": "environment",&#xa;            "maxLength": 100,&#xa;            "dataType": "string",&#xa;            "readonly": false&#xa;        }&#xa;    },&#xa;    {&#xa;        "name": "__nextStep",&#xa;        "title": "Next step (output variable name)",&#xa;        "hint": "Name of the session variable that will receive the next step Id after execution.",&#xa;        "controlSettings": {&#xa;            "controlType": "text",&#xa;            "defaultValue": "_rtNextStep",&#xa;            "maxLength": 100,&#xa;            "dataType": "string",&#xa;            "readonly": false&#xa;        }&#xa;    }&#xa;]'
       EnableUpdateRelations="true"
       AllowGlobalIntent="false"
@@ -37,7 +37,6 @@
       CompanyInformation_nl=""
       GeneralKnowledge_nl=""
       Translations_nl=""
-      Sections="[]"
       id="vocalls-master-layer"
     >
       <mxCell />
