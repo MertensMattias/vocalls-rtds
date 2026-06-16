@@ -9,7 +9,20 @@
       "PowerShell(git -C \"c:\\\\Users\\\\merte\\\\dev\\\\vocalls-rtds\" log --oneline -30 -- conventions/ PROJECT_CONVENTIONS.md)",
       "PowerShell(git -C \"c:\\\\Users\\\\merte\\\\dev\\\\vocalls-rtds\" log --oneline -15 -- .claude/skills/vocalls-handler-spec/)",
       "PowerShell(git -C \"c:\\\\Users\\\\merte\\\\dev\\\\vocalls-rtds\" show 9de4594 --stat)",
-      "PowerShell(head -30)"
+      "PowerShell(head -30)",
+      "PowerShell(\"=== conventions/ ===\")",
+      "PowerShell(\"=== rtds/docs ===\")",
+      "PowerShell(\"=== rtds/specs ===\")",
+      "PowerShell(\"=== rtds/components ===\")",
+      "PowerShell(\"=== docs/ tree ===\"; Get-ChildItem docs -Recurse -File | Select-Object Length, FullName | Format-Table -AutoSize; \"=== scripts ===\"; Get-ChildItem scripts -Recurse -File | Select-Object Length, FullName | Format-Table -AutoSize; \"=== runtime libs ===\"; Get-ChildItem projects\\\\rtds-runtime\\\\globalLibraries\\\\active, projects\\\\rtds-runtime\\\\callScripts | Select-Object @{n='KB';e={[math]::Round\\($_.Length/1KB\\)}}, Name | Format-Table -AutoSize)",
+      "PowerShell(\\(Get-Item \"projects/rtds-runtime/callScripts/main_sourceCode.js\"\\).Length)",
+      "PowerShell(\"=== .claude/skills ===\"; Get-ChildItem .claude\\\\skills -Directory | Select-Object Name; \"=== templates? ===\"; Test-Path templates; \"=== backups ===\"; Get-ChildItem backups -Recurse -File | Select-Object Length, FullName | Format-Table -AutoSize; \"=== callflow dirs ===\"; \\(Get-ChildItem callflow_json_config -File\\).Count; \\(Get-ChildItem callflow_json_config_vocalls_acc -File\\).Count; \\(Get-ChildItem callflow_json_config_vocalls_prd -File\\).Count)",
+      "PowerShell(\"=== guardRouting spec headers ===\")",
+      "PowerShell(\"---\")",
+      "PowerShell(npx jest --config projects/rtds-runtime/jest.config.js 2>&1)",
+      "PowerShell(node ./node_modules/jest/bin/jest.js --runInBand projects/rtds-runtime/tests 2>&1)",
+      "PowerShell(node \"C:\\\\Users\\\\merte\\\\dev\\\\vocalls-rtds\\\\node_modules\\\\jest\\\\bin\\\\jest.js\" --runInBand --rootDir \"C:\\\\Users\\\\merte\\\\dev\\\\vocalls-rtds\" \"projects/rtds-runtime/tests\" 2>&1)",
+      "PowerShell(npx jest projects/rtds-runtime/tests/main.test.js -t resolveConfigTokens --runInBand 2>&1)"
     ]
   }
 }

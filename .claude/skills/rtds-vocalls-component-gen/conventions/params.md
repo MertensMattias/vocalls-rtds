@@ -7,7 +7,7 @@ Param values in `__configJSON` can be any JSON type. **The resolved value's type
 
 1. **Unwraps the array form** `[value, ...flags]` to its first element. The dictionary may emit a Param as `["AdHoc", "isDisplayed", "isEditable"]`; only `[0]` is the value (the trailing flags are GUI hints, runtime-irrelevant). `[]` → `''`. This matches the runtime twin's `getParam`.
 2. **Coerces `Active`** to a real boolean via the global `activeFlag()` (after unwrap): `true` / `1` / `"1"` / `"true"` → active; `false` / `0` / `"0"` / `"false"` / empty / anything else → inactive. The component reaches it through the thin `__activeFlag` alias (which just delegates to the global), and the JS twins call `activeFlag()` directly — one contract, no drift. `Active` is never token-substituted.
-3. **Resolves `${name}` in string values** (only strings) — trims, then substitutes via the shared `resolveConfigTokens(raw, key)` helper. Non-strings (number, boolean, null, object) pass through with their type intact.
+3. **Resolves `${name}` and dot-path `${a.b.c}` in string values** (only strings) — trims, then substitutes via the shared `resolveConfigTokens(raw, key)` helper. The first segment resolves via the scope contract (`getScoped`: `varObj` first, then `global`); any remaining segments are walked as nested properties. Non-strings (number, boolean, null, object) pass through with their type intact.
 
 `Active` is **not** defaulted when absent — the read site decides (`SetVariables` defaults `true`, `Send`/`guard` default `false`).
 
@@ -17,7 +17,7 @@ Param values in `__configJSON` can be any JSON type. **The resolved value's type
 
 ## Unresolved placeholders
 
-Unresolved `${name}` placeholders survive into `__rtParams` as raw text, and `Logger.warn('[__setupConfig] unresolved placeholder', {...})` fires. **Silently substituting `""` for missing variables creates silent bugs — don't.**
+Unresolved `${name}` placeholders survive into `__rtParams` as raw text, and `Logger.warn('[__setupConfig] unresolved placeholder', {...})` fires. A dot-path whose first segment resolves but a later segment is missing is also left raw and warned with the full path. **Silently substituting `""` for missing variables creates silent bugs — don't.**
 
 ## The `${name}` contract — what it will and won't do
 
@@ -30,7 +30,7 @@ Unresolved `${name}` placeholders survive into `__rtParams` as raw text, and `Lo
 
 A `${name}` token resolves **once, at init time**, the moment `__setupConfig(__configJSON)` runs in the init node (§1 above). Whatever the backing var holds *at that instant* is baked into `__rtParams`. A token that needs **call-time state** (a value computed earlier in the call, an API result, a normalized `language`, …) therefore needs its backing variable **final before the init node runs** — otherwise it bakes the init-time default (or stays unresolved and warns). If the state is only known after init, don't push it through `${name}`: read it at the work site with `getScoped`/`getValue`, or compute it in a node that runs before init and write it to `global`/`varObj` first.
 
-Both whole-string and partial substitution are supported. Pattern is `${\w+}` — bare identifiers only.
+Both whole-string and partial substitution are supported. Pattern is `${ident}` or `${ident.ident...}` — bare or dot-notation identifiers. Each segment must be identifier-shaped; no expressions.
 
 ```jsonc
 {
@@ -42,13 +42,14 @@ Both whole-string and partial substitution are supported. Pattern is `${\w+}` �
 
 **What works:**
 
-- ✅ **Bare variable names only** — `${rtSmsBody}`, `${callerName}`, `${RTDS_currentOpId}`. Pattern is `${\w+}` (letters, digits, underscore).
+- ✅ **Bare variable names** — `${rtSmsBody}`, `${callerName}`, `${RTDS_currentOpId}`. Each segment is identifier-shaped (letters, digits, underscore, `$`).
+- ✅ **Dot-notation paths** — `${auth.verified}`, `${config.routing.fallbackLanguage}`. The first segment resolves via the scope contract (`varObj` first, then `global`); remaining segments are walked as nested properties. A missing segment leaves the token raw and warns.
 - ✅ **Partial substitution** — multiple placeholders in one string; non-placeholder text around them is preserved.
 - ✅ **Whole-string substitution** — `"${rtSmsBody}"` resolves to the value (typed `String(...)`), not the stringified form.
 
 **What doesn't work:**
 
-- ❌ **No expressions** — `${user.name}`, `${count + 1}`, `${a || b}`, `${user?.email}` won't work. Only bare identifiers.
+- ❌ **No expressions** — `${count + 1}`, `${a || b}`, `${user?.email}` won't work. Only bare or dot-notation identifiers (each segment identifier-shaped) — `${user.name}` resolves `user.name` as a nested property, it does not evaluate.
 - ❌ **No JS templates** — the Vocalls runtime disables string-eval (`new Function`, `eval`). `__setupConfig` uses `String.replace`, not template-literal evaluation. If you need an expression, compute it in a script node and write to `global` first.
 - ❌ **`Active` is never substituted** — `__setupConfig` coerces it to a real boolean via `__activeFlag` directly. A `${someToggle}` value in `Active` is treated as the string `"${someToggle}"`, which `__activeFlag` reads as inactive (not `"1"`/`"true"`) — almost certainly not what you wanted. Keep `Active` a literal boolean / `1`·`0` / `"1"`·`"0"`.
 

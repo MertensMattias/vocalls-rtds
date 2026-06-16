@@ -248,13 +248,16 @@ function getScoped(key, defaultValue) {
 }
 
 /**
- * Substitutes ${name} placeholders in a string using the RTDS scope contract
- * (getScoped: varObj first, then global). Bare identifiers only -- ${\w+}; no
- * expressions, no dot-notation. A placeholder that resolves nowhere is left raw
- * and a warn is logged (silent "" substitution hides config typos). This is the
- * single token-resolution path shared by every component's __setupConfig and by
- * the runtime twins, so init-time token resolution can never diverge between a
- * GUI component and its JS handler. Uses String.replace, NOT new Function -- the
+ * Substitutes ${name} and dot-path ${a.b.c} placeholders in a string using the
+ * RTDS scope contract: the FIRST segment resolves via getScoped (varObj first,
+ * then global); any remaining segments are walked as plain nested properties
+ * (getNestedValue semantics -- a stored falsy leaf still substitutes). Bare or
+ * dot-notation identifiers only -- each segment must be identifier-shaped; no
+ * expressions. A placeholder that resolves nowhere is left raw and a warn is
+ * logged (silent "" substitution hides config typos). This is the single
+ * token-resolution path shared by every component's __setupConfig and by the
+ * runtime twins, so init-time token resolution can never diverge between a GUI
+ * component and its JS handler. Uses String.replace, NOT new Function -- the
  * Vocalls runtime disables string-eval.
  *
  * @param {string} raw    - The raw value possibly containing ${name} tokens.
@@ -268,17 +271,39 @@ function resolveConfigTokens(raw, keyName) {
   // Sentinel no real stored value can equal, so getScoped's "absent" branch is
   // distinguishable from a legitimately stored null / empty / falsy value.
   var MISSING = " __rtUnresolved ";
-  return raw.replace(/\$\{(\w+)\}/g, function (match, name) {
-    var sub = getScoped(name, MISSING);
-    if (sub !== MISSING) {
-      return String(sub);
-    }
-    Logger.warn("[resolveConfigTokens] unresolved placeholder", {
-      key: keyName,
-      placeholder: name,
-    });
-    return match;
-  });
+  return raw.replace(
+    /\$\{([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)\}/g,
+    function (match, path) {
+      var parts = path.split(".");
+      // First segment resolves via the scope contract (varObj-first, then global).
+      var sub = getScoped(parts[0], MISSING);
+      if (sub !== MISSING) {
+        // Walk remaining segments as nested properties. A missing segment is
+        // unresolved (left raw + warn); a stored falsy leaf still substitutes --
+        // the !== undefined guard distinguishes the two.
+        for (var i = 1; i < parts.length; i++) {
+          if (
+            sub !== null &&
+            sub !== undefined &&
+            sub[parts[i]] !== undefined
+          ) {
+            sub = sub[parts[i]];
+          } else {
+            sub = MISSING;
+            break;
+          }
+        }
+      }
+      if (sub !== MISSING) {
+        return String(sub);
+      }
+      Logger.warn("[resolveConfigTokens] unresolved placeholder", {
+        key: keyName,
+        placeholder: path,
+      });
+      return match;
+    },
+  );
 }
 
 /**

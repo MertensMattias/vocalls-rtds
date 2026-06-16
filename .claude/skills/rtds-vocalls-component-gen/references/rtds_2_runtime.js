@@ -1214,6 +1214,7 @@ function executeSendEmail(op) {
   );
 }
 
+
 // ===========================================================================
 // REGISTRATION -- wires every catalogue Type into RTDS_REGISTRY.
 //
@@ -1225,35 +1226,30 @@ function executeSendEmail(op) {
 // The runtime loop is untouched in either case.
 // ===========================================================================
 
-// --- JS twins DISABLED ---
-// The inline JS handlers (executeSetVariables / executeSendSms /
-// executeSendEmail) are no longer registered. SetVariables / SendSms / SendMail
-// are now handled by their Vocalls canvas components (rtds/components/) via the
-// GUI-exit keys below, NOT inline in the runtime. The executeXxx functions are
-// kept defined above (dead code) so the twins can be re-enabled by restoring
-// the registerRtdsOperation lines. SetAttributes is routed to the same
-// set_variables exit (the canvas setVariables.js handles both).
+// --- JS twins (inline handlers, unified __rtOutcome contract) ---
+// setVariables / setAttributes / sendSms / sendMail dispatch as inline JS twins:
+// each stages __rtParams + __rtOutcome and the engine resolves _rtNextStep (see
+// runStep's JS branch). The registry is last-write-wins, so registering these as
+// JS (and NOT as GUI exits) makes the JS path win. Their canvas components
+// (rtds/components/) remain the lockstep reference but are no longer reached on
+// the live path for these Types. setAttributes shares executeSetVariables.
 registerRtdsOperation("setVariables", executeSetVariables);
-//   registerRtdsOperation("setAttributes", executeSetVariables);
-//   registerRtdsOperation("sendSms", executeSendSms);
-//   registerRtdsOperation("sendMail", executeSendEmail);
+registerRtdsOperation("setAttributes", executeSetVariables);
+registerRtdsOperation("sendSms", executeSendSms);
+registerRtdsOperation("sendMail", executeSendEmail);
 
 // --- GUI-exit Types -- handled by Vocalls components on the canvas ---
-registerRtdsExit("setVariables", "set_variables");
-registerRtdsExit("setAttributes", "set_variables");
-registerRtdsExit("sendSms", "send_sms");
-registerRtdsExit("sendMail", "send_mail");
-registerRtdsExit("workgroupTransfer", "workgroup_transfer");
+registerRtdsExit("internalTransfer", "internal_transfer");
 registerRtdsExit("externalTransfer", "external_transfer");
 registerRtdsExit("menu", "menu");
 registerRtdsExit("getLanguage", "language_menu");
-registerRtdsExit("say", "play_prompt");
+registerRtdsExit("say", "say_message");
 registerRtdsExit("play", "play_audio");
 registerRtdsExit("disconnect", "disconnect");
 registerRtdsExit("guard", "guard_routing");
 registerRtdsExit("guardTui", "guard_tui");
 registerRtdsExit("callback", "callback");
-
+registerRtdsExit("checkSchedule", "check_schedule");
 Logger.info("[RTDS] registry initialised", {
   types: RTDS_REGISTRY.size,
   js: (function () {

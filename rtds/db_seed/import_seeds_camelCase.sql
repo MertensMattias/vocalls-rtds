@@ -468,9 +468,6 @@ INSERT INTO @Attribute
     ('guardTui', 'nextStep',           'string',  1, 1, 0, 0),
 
 
-    /* ---- SendMail ---- (mail dispatch)
-       cc / bcc : semicolon lists; priority 1 high / 2 normal / 3 low;
-       files    : semicolon URL list; timeout : HTTP timeout (ms).               */
     ('sendMail', 'active',           'bit', 1, 0, 0, 0),
     ('sendMail', 'subject',          'string',  1, 0, 0, 0),
     ('sendMail', 'from',             'string',  1, 0, 0, 0),

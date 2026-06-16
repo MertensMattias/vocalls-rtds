@@ -1,5 +1,5 @@
 {
-  "sourceId": "+3257351226",
+  "sourceId": "+3257351187",
   "name": "DIGIPOLIS - DA_HELPDESK",
   "projectId": "",
   "project": "DA HELPDESK",
@@ -27,10 +27,13 @@
       "type": "say",
       "name": "Play: Welcome",
       "params": {
-        "active": [false, "isDisplayed", "isEditable"],
+        "active": [true, "isDisplayed", "isEditable"],
         "applicationId": 11,
         "prompt": ["Welcome_Welcome", "isDisplayed", "isEditable"],
         "nextStep": "00002"
+      },
+      "ttsMessages": {
+        "NL": "Welkom bij de helpdesk van Digipolis."
       }
     },
     {
@@ -145,7 +148,7 @@
         "active": [true, "isDisplayed", "isEditable"],
         "target": ["578041", "isDisplayed", "isEditable"],
         "parameters": {
-          "callIdKey": "${varObj.callIdKey}",
+          "callIdKey": "${callIdKey}",
           "customerName": "${customerName}",
           "customerProject": "${customerProject}"
         },
