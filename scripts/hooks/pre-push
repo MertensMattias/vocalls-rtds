@@ -1,0 +1,36 @@
+#!/bin/sh
+# vocalls-rtds pre-push hook — regenerate synced artifacts before pushing.
+#
+# Runs the generators that produce committed-but-derived files:
+#   gen:catalog, gen:agents, gen:migration-dict, build:skill
+# (build:skill internally re-runs gen:migration-dict, so it is run last).
+#
+# A pre-push hook fires AFTER commits exist, so it cannot fold regenerated
+# files into the commit being pushed. Therefore: if regeneration leaves the
+# working tree dirty, the push is ABORTED and you are told to commit the
+# regenerated output. This keeps what is pushed identical to the sources.
+#
+# Installed via core.hooksPath -> scripts/hooks (see scripts/hooks/install.sh).
+# Bypass once (discouraged): git push --no-verify
+set -e
+
+echo "[pre-push] regenerating synced artifacts ..."
+npm run gen:catalog
+npm run gen:agents
+npm run gen:migration-dict
+npm run build:skill
+
+# Did regeneration change any tracked file?
+if ! git diff --quiet; then
+  echo ""
+  echo "[pre-push] BLOCKED: generated artifacts were out of date." >&2
+  echo "[pre-push] The following tracked files changed after regeneration:" >&2
+  git diff --name-only | sed 's/^/  - /' >&2
+  echo "" >&2
+  echo "[pre-push] Commit the regenerated files, then push again:" >&2
+  echo "    git add -A && git commit -m \"chore: resync generated artifacts\"" >&2
+  echo "[pre-push] (Or bypass once with: git push --no-verify)" >&2
+  exit 1
+fi
+
+echo "[pre-push] artifacts in sync — OK"
