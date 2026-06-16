@@ -1,0 +1,1144 @@
+{
+  "generatedFrom": "rtds/db_seed/import_seeds_camelCase.sql",
+  "generator": "scripts/gen_migration_dictionary.py",
+  "operationTypes": [
+    "setVariables",
+    "checkVariable",
+    "say",
+    "getLanguage",
+    "checkSchedule",
+    "emergency",
+    "guardRouting",
+    "menu",
+    "guardTui",
+    "guard",
+    "disconnect",
+    "play",
+    "condition",
+    "skillUpdate",
+    "flowJump",
+    "callerDataEntry",
+    "voicemailCallback",
+    "callback",
+    "sendSms",
+    "manageCallCapacity",
+    "externalTransfer",
+    "internalTransfer"
+  ],
+  "promptApplicationIds": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "attributes": {
+    "setVariables": [
+      {
+        "name": "active",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "routingId",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "customerName",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "customerProject",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "ivrEvent",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "ivrAction",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "logAttributes",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "nextStep",
+        "type": "string",
+        "required": true,
+        "branch": true
+      }
+    ],
+    "guard": [
+      {
+        "name": "active",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "configId",
+        "type": "int",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "configName",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "dialGuard",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "outboundANI",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "diversion",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "onHoldAudioUrl",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "recordVoicemail",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "acceptCallMenu",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "acceptCallMessage",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "sendSms",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "sendMail",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "nextStep_Success",
+        "type": "string",
+        "required": true,
+        "branch": true
+      },
+      {
+        "name": "nextStep_Failure",
+        "type": "string",
+        "required": true,
+        "branch": true
+      },
+      {
+        "name": "nextStep",
+        "type": "string",
+        "required": true,
+        "branch": true
+      }
+    ],
+    "guardTui": [
+      {
+        "name": "active",
+        "type": "bit",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "configId",
+        "type": "int",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "configName",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "phoneNumberVar",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "resultCurrentlyActivated_NL",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "resultCurrentlyDeactivated_NL",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "promptActivate_NL",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "promptDeactivate_NL",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "resultActivated_NL",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "resultDeactivated_NL",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "resultOnlyActive_NL",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "resultDenied_NL",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "resultError_NL",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "nextStep_Success",
+        "type": "string",
+        "required": true,
+        "branch": true
+      },
+      {
+        "name": "nextStep_Denied",
+        "type": "string",
+        "required": true,
+        "branch": true
+      },
+      {
+        "name": "nextStep_Failure",
+        "type": "string",
+        "required": true,
+        "branch": true
+      },
+      {
+        "name": "nextStep",
+        "type": "string",
+        "required": true,
+        "branch": true
+      }
+    ],
+    "sendMail": [
+      {
+        "name": "active",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "subject",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "from",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "to",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "cc",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "bcc",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "body",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "priority",
+        "type": "int",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "files",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "attachmentNames",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "attachmentData",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "customerKey",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "nextStep_Success",
+        "type": "string",
+        "required": true,
+        "branch": true
+      },
+      {
+        "name": "nextStep_Failure",
+        "type": "string",
+        "required": true,
+        "branch": true
+      },
+      {
+        "name": "nextStep",
+        "type": "string",
+        "required": true,
+        "branch": true
+      }
+    ],
+    "sendSms": [
+      {
+        "name": "active",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "smsAccountId",
+        "type": "int",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "routing",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "from",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "to",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "body",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "nextStep_Success",
+        "type": "string",
+        "required": true,
+        "branch": true
+      },
+      {
+        "name": "nextStep_Failure",
+        "type": "string",
+        "required": true,
+        "branch": true
+      },
+      {
+        "name": "nextStep",
+        "type": "string",
+        "required": true,
+        "branch": true
+      }
+    ],
+    "disconnect": [
+      {
+        "name": "active",
+        "type": "bit",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "prompt",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "applicationId",
+        "type": "int",
+        "required": false,
+        "branch": false
+      }
+    ],
+    "say": [
+      {
+        "name": "active",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "applicationId",
+        "type": "int",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "prompt",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "nextStep",
+        "type": "string",
+        "required": true,
+        "branch": true
+      }
+    ],
+    "play": [
+      {
+        "name": "active",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "audioSource",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "nextStep",
+        "type": "string",
+        "required": true,
+        "branch": true
+      }
+    ],
+    "menu": [
+      {
+        "name": "active",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "applicationId",
+        "type": "int",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "staticPrompt",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "maxTries",
+        "type": "int",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "nextStep_0",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_1",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_2",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_3",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_4",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_5",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_6",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_7",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_8",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_9",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_DefaultChoice",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep",
+        "type": "string",
+        "required": true,
+        "branch": true
+      }
+    ],
+    "workgroupTransfer": [
+      {
+        "name": "active",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "queueName",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "skills",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "priority",
+        "type": "int",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "escapeKey",
+        "type": "int",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "nextStep_EscapeKey",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep",
+        "type": "string",
+        "required": true,
+        "branch": true
+      }
+    ],
+    "externalTransfer": [
+      {
+        "name": "active",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "phoneNumber",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "outboundANI",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "parameters",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "attendTransfer",
+        "type": "bit",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "nextStep_Failure",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep",
+        "type": "string",
+        "required": true,
+        "branch": true
+      }
+    ],
+    "condition": [
+      {
+        "name": "active",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "statistic",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "workgroup",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "operator",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "nextStep_True",
+        "type": "string",
+        "required": true,
+        "branch": true
+      },
+      {
+        "name": "nextStep_False",
+        "type": "string",
+        "required": true,
+        "branch": true
+      },
+      {
+        "name": "nextStep",
+        "type": "string",
+        "required": true,
+        "branch": true
+      }
+    ],
+    "emergency": [
+      {
+        "name": "active",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "emergencyId",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "nextStep_Transfer",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_Disconnect",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_Continue",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_Failure",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep",
+        "type": "string",
+        "required": true,
+        "branch": true
+      }
+    ],
+    "checkSchedule": [
+      {
+        "name": "active",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "applicationId",
+        "type": "int",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "scheduleId",
+        "type": "int",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "nextStep_Open",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_Closed",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_Transfer",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_ExternalTransfer",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_Disconnect",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_Guard_ICT",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_Guard_Klantwacht",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_Guard_Systeemwacht",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_Failure",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep",
+        "type": "string",
+        "required": true,
+        "branch": true
+      }
+    ],
+    "callback": [
+      {
+        "name": "active",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "configId",
+        "type": "int",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "callbackOnANI",
+        "type": "int",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "aniConfirmation",
+        "type": "int",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "allowManualInput",
+        "type": "int",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "manualInputRetries",
+        "type": "int",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "locationFilter",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "aniClassifications",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "aniAttribute",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "customSkills",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "inheritSkills",
+        "type": "int",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "customPriority",
+        "type": "int",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "inheritPriority",
+        "type": "int",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "promptFolder",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "workgroup",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "nextStep_Accepted",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_Rejected",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_Failure",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep",
+        "type": "string",
+        "required": true,
+        "branch": true
+      }
+    ],
+    "flowJump": [
+      {
+        "name": "active",
+        "type": "bit",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "sourceId",
+        "type": "string",
+        "required": true,
+        "branch": false
+      }
+    ],
+    "getLanguage": [
+      {
+        "name": "active",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "applicationId",
+        "type": "int",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "prompt",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "languages",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "maxTries",
+        "type": "int",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "nextStep",
+        "type": "string",
+        "required": true,
+        "branch": true
+      }
+    ],
+    "internalTransfer": [
+      {
+        "name": "active",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "target",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "parameters",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "attendTransfer",
+        "type": "bit",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "nextStep_Failure",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep",
+        "type": "string",
+        "required": true,
+        "branch": true
+      }
+    ],
+    "voicemailCallback": [
+      {
+        "name": "active",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "nextStep_Escape",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_Error",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep",
+        "type": "string",
+        "required": true,
+        "branch": true
+      }
+    ]
+  }
+}

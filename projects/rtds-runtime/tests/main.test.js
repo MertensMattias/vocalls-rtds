@@ -90,15 +90,16 @@ describe('rtds-runtime main.js', function () {
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
             .then(function (result) {
                 expect(typeof result.sandbox.RTDS_OPERATIONS.get).toBe('function');
-                // JS twins are disabled: SetVariables / SetAttributes are no
-                // longer inline JS handlers, they route to the set_variables
-                // GUI-exit (the canvas setVariables.js component).
-                expect(result.sandbox.RTDS_OPERATIONS.has('setVariables')).toBe(false);
-                expect(result.sandbox.RTDS_OPERATIONS.has('setAttributes')).toBe(false);
-                expect(result.sandbox.RTDS_EXIT_KEYS.get('setVariables')).toBe('set_variables');
-                expect(result.sandbox.RTDS_EXIT_KEYS.get('setAttributes')).toBe('set_variables');
+                // JS twins enabled (unified __rtOutcome contract): SetVariables /
+                // SetAttributes dispatch as inline JS handlers, NOT GUI exits.
+                // Registry is last-write-wins, so the JS path wins and no
+                // set_variables exit key is registered for them.
+                expect(result.sandbox.RTDS_OPERATIONS.has('setVariables')).toBe(true);
+                expect(result.sandbox.RTDS_OPERATIONS.has('setAttributes')).toBe(true);
+                expect(result.sandbox.RTDS_EXIT_KEYS.has('setVariables')).toBe(false);
+                expect(result.sandbox.RTDS_EXIT_KEYS.has('setAttributes')).toBe(false);
                 expect(typeof result.sandbox.RTDS_EXIT_KEYS.get).toBe('function');
-                expect(result.sandbox.RTDS_EXIT_KEYS.get('say')).toBe('play_prompt');
+                expect(result.sandbox.RTDS_EXIT_KEYS.get('say')).toBe('say_message');
                 expect(result.sandbox.OP_VAR_PREFIX).toBeUndefined();
                 expect(typeof result.sandbox.fetchAndStart).toBe('function');
                 expect(typeof result.sandbox.resumeFrom).toBe('function');
@@ -301,6 +302,39 @@ describe('rtds-runtime main.js', function () {
             });
     });
 
+    it('resolveConfigTokens resolves dot-notation paths (first segment scoped, tail walked)', function () {
+        return helpers
+            .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
+            .then(function (result) {
+                var sb = result.sandbox;
+                // Dotted: first segment via getScoped (varObj-first), tail walked as nested props.
+                sb.varObj.auth = { verified: true };
+                expect(sb.resolveConfigTokens('${auth.verified}', 'X')).toBe('true');
+                // Deep dotted path off a global-scope object.
+                delete sb.varObj.cfg;
+                sb.cfg = { routing: { fallbackLanguage: 'nl' } };
+                expect(sb.resolveConfigTokens('${cfg.routing.fallbackLanguage}', 'X')).toBe('nl');
+                // Falsy leaves via dotted path still substitute (sentinel correctness).
+                sb.varObj.box = { count: 0, flag: false, note: '' };
+                expect(sb.resolveConfigTokens('[${box.count}|${box.flag}|${box.note}]', 'X')).toBe('[0|false|]');
+                // Missing leaf segment -> left raw + warn (not silently '').
+                expect(sb.resolveConfigTokens('${auth.missing}', 'X')).toBe('${auth.missing}');
+                // Missing root segment of a dotted path -> left raw.
+                delete sb.varObj.nope;
+                delete sb.nope;
+                expect(sb.resolveConfigTokens('${nope.deep}', 'X')).toBe('${nope.deep}');
+                // Plain property access mirrors getNestedValue: a string's own prop resolves.
+                sb.varObj.str = 'hello';
+                expect(sb.resolveConfigTokens('${str.length}', 'X')).toBe('5');
+                // Bare ${name} unchanged when paths are also supported.
+                sb.varObj.tokA = 'fromVarObj';
+                expect(sb.resolveConfigTokens('${tokA}', 'X')).toBe('fromVarObj');
+                // Malformed dotted tokens are not matched (left raw).
+                expect(sb.resolveConfigTokens('${a..b}', 'X')).toBe('${a..b}');
+                expect(sb.resolveConfigTokens('${.x}', 'X')).toBe('${.x}');
+            });
+    });
+
     it('exposes both token helpers: $(name) resolveTokens and ${name} resolveConfigTokens', function () {
         // Two token syntaxes coexist on the runtime surface:
         //   - resolveTokens   resolves $(name) tokens in Param strings (Send* / SetVariables).
@@ -313,18 +347,18 @@ describe('rtds-runtime main.js', function () {
             });
     });
 
-    it('routes SendSMS / SendEmail to GUI-exit (JS twins disabled, functions still defined)', function () {
+    it('dispatches SendSMS / SendEmail as inline JS twins (unified __rtOutcome contract)', function () {
         return helpers
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
             .then(function (result) {
                 var sb = result.sandbox;
-                // Twins disabled: no longer registered as inline JS handlers.
-                expect(sb.RTDS_OPERATIONS.has('sendSms')).toBe(false);
-                expect(sb.RTDS_OPERATIONS.has('sendMail')).toBe(false);
-                // They now route to the canvas components via GUI-exit keys.
-                expect(sb.RTDS_EXIT_KEYS.get('sendSms')).toBe('send_sms');
-                expect(sb.RTDS_EXIT_KEYS.get('sendMail')).toBe('send_mail');
-                // The executeXxx functions remain defined (dead code, re-enableable).
+                // Twins enabled: registered as inline JS handlers (JS path wins,
+                // last-write-wins registry), so no GUI-exit key for these Types.
+                expect(sb.RTDS_OPERATIONS.has('sendSms')).toBe(true);
+                expect(sb.RTDS_OPERATIONS.has('sendMail')).toBe(true);
+                expect(sb.RTDS_EXIT_KEYS.has('sendSms')).toBe(false);
+                expect(sb.RTDS_EXIT_KEYS.has('sendMail')).toBe(false);
+                // The executeXxx handler functions back the registered twins.
                 expect(typeof sb.executeSendSms).toBe('function');
                 expect(typeof sb.executeSendEmail).toBe('function');
             });
@@ -474,7 +508,7 @@ describe('rtds-runtime main.js', function () {
                 var ret = sb.runStep('1');
                 expect(typeof ret.then).toBe('function');
                 return ret.then(function (exitKey) {
-                    expect(exitKey).toBe('play_prompt');
+                    expect(exitKey).toBe('say_message');
                 });
             });
     });
@@ -508,7 +542,7 @@ describe('rtds-runtime main.js', function () {
                 ];
                 sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
                 expect(sb.RTDS_REGISTRY.has('condition')).toBe(false);
-                expect(sb.runStep('1')).toBe('play_prompt');
+                expect(sb.runStep('1')).toBe('say_message');
             });
     });
 

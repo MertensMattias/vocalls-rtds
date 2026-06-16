@@ -4,6 +4,8 @@
 Covers:
   - the rtds-vocalls-component-gen skill bundle (conventions, PROJECT_CONVENTIONS,
     component examples, runtime snapshots) — via build_skill_bundle;
+  - the rtds-callflow-migrator skill's dictionary.json (the seed contract) —
+    via gen_migration_dictionary;
   - AGENTS.md generated from CLAUDE.md — via gen_agents_md.
 
 Both checks re-run the generator transform in memory and compare against the
@@ -47,7 +49,15 @@ def main():
                 "  (run: python scripts/build_skill_bundle.py)"
             )
 
-    # 2. AGENTS.md from CLAUDE.md.
+    # 2. callflow-migrator dictionary.json — regenerated from the seed SQL.
+    gen_migration_dictionary = _load("gen_migration_dictionary")
+    if gen_migration_dictionary.build(write=False):
+        drifted.append(
+            ".claude/skills/rtds-callflow-migrator/references/dictionary.json"
+            "  (run: python scripts/gen_migration_dictionary.py)"
+        )
+
+    # 3. AGENTS.md from CLAUDE.md.
     gen_agents = _load("gen_agents_md")
     want = gen_agents.render()
     have = gen_agents.DEST.read_bytes() if gen_agents.DEST.exists() else None
