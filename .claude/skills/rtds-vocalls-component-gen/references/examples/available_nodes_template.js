@@ -91,7 +91,7 @@
     <object
       label="output"
       Type="transient"
-      OnEnter="global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1);&#xa;Logger.info(&#39;[sendSms] exit&#39;, { outcome: __rtOutcome, nextStep: global[_rtNextStep] });"
+      OnEnter="_rtNextStep = __getValue(__rtParams, __rtOutcome, &#39;&#39;);&#xa;Logger.info(&#39;[sendSms] exit&#39;, { outcome: __rtOutcome, nextStep: _rtNextStep });"
       OnLeave=""
       MaxEntryCount=""
       MaxEntryNodeId=""

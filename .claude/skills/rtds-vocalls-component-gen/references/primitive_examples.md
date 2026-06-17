@@ -198,7 +198,8 @@ in. Each locale carries its TTS configuration.
 ```
 
 In the XML attribute it's collapsed to one line and XML-encoded
-(`&apos;` for `'`). The template carries this default verbatim.
+(`&#39;` for `'` — the numeric entity every shipped component uses; **not**
+`&apos;`). The template carries this default verbatim.
 
 ### Adding more locales
 
@@ -471,7 +472,7 @@ Style B and out of scope.
 <object
   label="output"
   Type="transient"
-  OnEnter="global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1);&#xa;Logger.info(&apos;[&lt;componentName&gt;] exit&apos;, { outcome: __rtOutcome, nextStep: global[_rtNextStep] });"
+  OnEnter="_rtNextStep = __getValue(__rtParams, __rtOutcome, &#39;&#39;);&#xa;Logger.info(&#39;[&lt;componentName&gt;] exit&#39;, { outcome: __rtOutcome, nextStep: _rtNextStep });"
   OnLeave=""
   MaxEntryCount=""
   MaxEntryNodeId=""

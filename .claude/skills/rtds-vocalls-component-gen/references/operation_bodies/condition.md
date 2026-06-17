@@ -1,7 +1,7 @@
 # Pattern: Condition / CheckAttribute (operator-based branching)
 
 Use for any Type whose work body compares two values and picks
-`NextStep_True` or `NextStep_False` based on the result. Reference Types:
+`nextStep_True` or `nextStep_False` based on the result. Reference Types:
 `Condition` (compares a runtime statistic) and `CheckAttribute` (compares
 a session variable).
 
@@ -9,11 +9,12 @@ Logging discipline lives in [logging.md](../../conventions/logging.md).
 Two logs is enough: skip (info) and the branch outcome (info).
 
 **`__rtOutcome` staging.** The work body stages the chosen branch KEY into
-the local `__rtOutcome` (plain `=`, the literal `NextStep_True` /
-`NextStep_False` key name); the output node (id=6 OnEnter) resolves it to
-`global[_rtNextStep]` once with
-`global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1);`. The work
-body never writes `global[_rtNextStep]`.
+the local `__rtOutcome` (plain `=`, the literal camelCase `nextStep_True` /
+`nextStep_False` key name); the output node (id=6 OnEnter) resolves it to the
+bare flow variable `_rtNextStep` once with
+`_rtNextStep = __getValue(__rtParams, __rtOutcome, '');` (fallback `''`, **not**
+`global[_rtNextStep]` and **not** `-1`). The work body never writes
+`_rtNextStep` directly. See [component-v2.md §6–§8](../../conventions/component-v2.md).
 
 ## Operation-specific helper — `__compareAttr`
 
@@ -54,16 +55,16 @@ operator semantics; every `var`-declared local carries `__` per
 ## Skeleton — `CheckAttribute` (lhs is a global by name)
 
 ```js
-if (!getValue(__rtParams, 'Active', false)) {
+if (String(__getValue(__rtParams, 'active', false)).toLowerCase() !== 'true') {
     Logger.info('[checkAttribute] skipped — inactive', { outcome: __rtOutcome });
     return;
 }
 
-var __lhs = global[getValue(__rtParams, 'Attribute', '')];
-var __op  = getValue(__rtParams, 'Operator', 'eq');
-var __rhs = getValue(__rtParams, 'Value', '');
+var __lhs = getScoped(__getValue(__rtParams, 'attribute', ''), '');
+var __op  = __getValue(__rtParams, 'operator', 'eq');
+var __rhs = __getValue(__rtParams, 'value', '');
 
-var __branchKey = __compareAttr(__lhs, __op, __rhs) ? 'NextStep_True' : 'NextStep_False';
+var __branchKey = __compareAttr(__lhs, __op, __rhs) ? 'nextStep_True' : 'nextStep_False';
 __rtOutcome = __branchKey;
 Logger.info('[checkAttribute] branch', { branch: __branchKey, outcome: __rtOutcome });
 ```
@@ -74,17 +75,17 @@ Logger.info('[checkAttribute] branch', { branch: __branchKey, outcome: __rtOutco
 global name (look it up) or a literal value (use as-is):
 
 ```js
-if (!getValue(__rtParams, 'Active', false)) {
+if (String(__getValue(__rtParams, 'active', false)).toLowerCase() !== 'true') {
     Logger.info('[condition] skipped — inactive', { outcome: __rtOutcome });
     return;
 }
 
-var __lhsRaw = getValue(__rtParams, 'Statistic', '');
-var __lhs    = global.hasOwnProperty(__lhsRaw) ? global[__lhsRaw] : __lhsRaw;
-var __op     = getValue(__rtParams, 'Operator', 'eq');
-var __rhs    = getValue(__rtParams, 'Value', '');
+var __lhsRaw = __getValue(__rtParams, 'statistic', '');
+var __lhs    = global.hasOwnProperty(__lhsRaw) ? getScoped(__lhsRaw, '') : __lhsRaw;
+var __op     = __getValue(__rtParams, 'operator', 'eq');
+var __rhs    = __getValue(__rtParams, 'value', '');
 
-var __branchKey = __compareAttr(__lhs, __op, __rhs) ? 'NextStep_True' : 'NextStep_False';
+var __branchKey = __compareAttr(__lhs, __op, __rhs) ? 'nextStep_True' : 'nextStep_False';
 __rtOutcome = __branchKey;
 Logger.info('[condition] branch', { branch: __branchKey, outcome: __rtOutcome });
 ```
@@ -109,7 +110,7 @@ name-keyed lookup with a literal default. `getValue` *is* the
 
 ## Branch keys
 
-Two: `NextStep_True`, `NextStep_False`. No default `NextStep` — the
+Two: `nextStep_True`, `nextStep_False`. No default `nextStep` — the
 operator must configure both branches. If they don't, the missing one
-falls through to `-1` (a no-op) which is usually wrong; flag this when
-generating.
+resolves through `__getValue(__rtParams, __rtOutcome, '')` to the `''`
+fallback (a no-op) which is usually wrong; flag this when generating.

@@ -1,38 +1,48 @@
-// Canonical helpers — copy these verbatim into the master-layer Code attribute
-// of every generated v2 component. They are the foundation every operation
-// builds on.
+// Canonical helpers — copy these into the master-layer Code attribute of every
+// generated v2 component. In the current (post-camelCase) shape they are THIN
+// DELEGATING ALIASES to the runtime env-library globals (rtds_3_vocallsEnv.js),
+// not fat inline reimplementations. This is the form shipped in the canonical
+// sendSms.js / sendMail.js. See component-v2.md §3 and helpers.md.
 //
-// All three are declared without var/let/const so they become global. This is
+// Each alias guards `typeof <global> === 'undefined'` (library-not-loaded
+// safety net: warn + return undefined) and otherwise forwards every argument
+// via `<global>.apply(null, arguments)`. There is NO second implementation to
+// drift from the library — the component and the JS twins resolve through the
+// exact same global. (Earlier skill revisions inlined a full __setupConfig with
+// a `'Active'` PascalCase branch; that diverged from the camelCase `active`
+// contract and from the live components — do not reintroduce it.)
+//
+// All aliases are declared without var/let/const so they become global. This is
 // the Vocalls contract for cross-node visibility.
 //
 // Identifier-prefix rules (load-bearing — see naming.md):
-//   __foo  — component-authored: master-layer functions, the per-component
-//            __rtParams / __rtBaseUrl / __rtEndpoint / __rtNextStep globals,
-//            AND every var-declared local inside any function in this file.
+//   __foo  — component-authored: master-layer functions/aliases, the
+//            per-component __rtParams / __rtBaseUrl / __rtEndpoint / __rtNextStep
+//            globals, AND every var-declared local inside any function/work body.
 //   _foo   — platform-supplied flow variables (_rtNextStep, _rtBaseUrl,
 //            _rtMailEndpoint, _headers).
 //   foo    — runtime/host APIs (global, environment, context, Logger,
-//            getValue, walk, hasKey, activeFlag, jsonHttpRequest, fileExists,
-//            nowUTC).
-//
-// Function parameter names follow the API contract they implement and may
-// stay bare (e.g. getValue(obj, key, defaultValue) keeps the runtime
-// signature). All var-declared locals MUST carry the __ prefix — no
-// exceptions.
-//
-// Convention: every function carries a basic JSDoc block (description + @param +
-// @returns). This is mandatory for every function the skill emits, not just
-// the non-obvious ones.
+//            getValue, activeFlag, setupConfig, extractParams, nowUTC,
+//            jsonHttpRequest, ...). The aliases below forward to these.
 //
 // v2 shape:
-//   - No __init splay. Runtime params live on a single per-component object
-//     __rtParams, populated by __setupConfig(__configJSON).
-//   - __setupConfig returns a flat { Key: value } map (no __rt prefix).
-//   - Read fields via getValue(__rtParams, 'Key', default) — provided by the
-//     runtime env library (rtds_3_vocallsEnv.js). See runtime_pointer.md.
+//   - No __init splay, no __rt<Key> per-Param consts. Runtime params live on a
+//     single per-component object __rtParams, populated in the init node by
+//     __rtParams = __setupConfig(__configJSON).
+//   - __setupConfig delegates to the global setupConfig, which returns a flat
+//     { key: value } map (camelCase keys, no __rt prefix; `active` coerced to a
+//     boolean via activeFlag; ${name} tokens resolved via resolveConfigTokens).
+//   - Read fields via __getValue(__rtParams, 'key', default) — camelCase key.
 //
-// When emitting into the XML attribute, encode:
-//   '  -> &apos;     (preferred for JS strings)
+// Which aliases to emit: ALWAYS __getValue, __activeFlag, __setupConfig (the
+// init node calls __setupConfig; the work/output nodes call __getValue;
+// __setupConfig coercion needs activeFlag). Add __extractParams, __nowUTC, and
+// any op-specific delegate (__isMobileNumber, ...) when the work body uses them.
+// Don't emit an alias the component never calls.
+//
+// When emitting into the XML attribute, encode (matching every shipped
+// component — these all use the NUMERIC single-quote entity, never &apos;):
+//   '  -> &#39;
 //   "  -> &quot;
 //   <  -> &lt;
 //   >  -> &gt;
@@ -41,101 +51,81 @@
 
 
 /**
- * Replaces the last '-'-separated segment of context.currentNode.id with the
- * supplied nodeId. Used when a parent component needs to address a child node
- * by its short id rather than the fully-qualified one Vocalls assigns at run
- * time. Returns the original nodeId untouched when context.currentNode.id is
- * not set (e.g. during isolated unit tests).
+ * Thin alias for the env-library getValue (case-insensitive object read).
+ * Warns and returns undefined if the library has not loaded.
  *
- * @param {string|number} nodeId - The short id to splice into the current node path.
- * @returns {string} The fully-qualified node id, or the original nodeId if no path is set.
+ * @returns {*} getValue(obj, key, defaultValue) result, or undefined if unavailable.
  */
-__makeLocalNodeId = function (nodeId) {
-    if (nodeId !== null && nodeId !== undefined) nodeId = nodeId.toString();
-    if (!context.currentNode.id) return nodeId;
-
-    var __separator = '-';
-    var __output = context.currentNode.id.split(__separator);
-
-    __output[__output.length - 1] = nodeId;
-    return __output.join(__separator);
-};
-
-
-/**
- * Normalises operation config. Accepts:
- *   - a JSON string -> parsed
- *   - an RTDS operation object { Params: {...} } -> returns Params
- *   - a flat Params object -> returned as-is
- *   - null/undefined -> returns {}
- *
- * @param {string|object} config - The raw operation config to normalise.
- * @returns {object} The flat Params object, never null.
- */
-__extractParams = function (config) {
-    var __parsed = typeof config === 'string' ? JSON.parse(config) : config;
-    if (__parsed && typeof __parsed.Params === 'object' && __parsed.Params !== null) {
-        return __parsed.Params;
+__getValue = function () {
+    if (typeof getValue === 'undefined') {
+        Logger.warn('[<componentName>] shared function unavailable -- library not loaded', { fn: 'getValue' });
+        return undefined;
     }
-    return __parsed || {};
+    return getValue.apply(null, arguments);
 };
 
 
 /**
- * Component-local alias for the global activeFlag() (rtds_3_vocallsEnv.js) — the
- * single Active-coercion contract: JSON boolean, number 1/0, string
- * '1'/'0'/'true'/'false' (case-insensitive), array form [value, ...flags]
- * unwrapped first; anything else (incl. an unresolved ${...} placeholder) is
- * inactive. The JS twins call activeFlag() directly; the component calls it
- * through this alias, so Active truthiness can never diverge. activeFlag is a
- * runtime global (the env library always loads first), so this alias needs no
- * fallback of its own.
+ * Thin alias for the env-library activeFlag — the single Active-coercion
+ * contract: JSON boolean, number 1/0, string '1'/'0'/'true'/'false'
+ * (case-insensitive), array form [value, ...flags] unwrapped first; anything
+ * else (incl. an unresolved ${...} placeholder) is inactive. The JS twins call
+ * activeFlag() directly; the component calls it through this alias, so Active
+ * truthiness can never diverge.
  *
- * @param {*} value
- * @returns {boolean}
+ * @returns {boolean} activeFlag(value) result, or undefined if unavailable.
  */
-__activeFlag = function (value) {
-    return activeFlag(value);
-};
-
-
-/**
- * Resolves Params into a flat { Key: value } map (v2 shape — no __rt prefix).
- * The value's TYPE is whatever the JSON wrote — no Number coercion ('4' stays a
- * string, 4 stays a number).
- *
- * Per key:
- *   - Array-form [value, ...flags] is unwrapped to its first element (matches the
- *     runtime twin getParam; the GUI flags isDisplayed / isEditable are
- *     runtime-irrelevant). [] -> ''.
- *   - Active is then coerced to a real boolean via __activeFlag (never
- *     token-substituted). Active absent: NOT defaulted here — the read site
- *     decides (SetVariables true, Send and guard default false).
- *   - Every other STRING value is trimmed and has ${name} placeholders resolved
- *     via resolveConfigTokens (varObj first, then global; bare names only;
- *     String.replace, never new Function). Non-strings (number, boolean, null,
- *     object) pass through with their type intact. Unresolved placeholders are
- *     left raw and logged at warn level.
- *
- * The returned object is assigned to the per-component global `__rtParams`
- * in the init node, and read via getValue(__rtParams, 'Key', default) from
- * the work node. A read site that needs Timeout/ConfigId as a number coerces
- * there (e.g. Number(getValue(__rtParams, 'Timeout', 10000))).
- *
- * @param {string|object} config - Raw operation config (see __extractParams).
- * @returns {object} Map of Key -> resolved value.
- */
-__setupConfig = function (config) {
-    var __params = __extractParams(config);
-    var __result = {};
-    var __keys = Object.keys(__params);
-    for (var __i = 0; __i < __keys.length; __i++) {
-        var __key = __keys[__i];
-        var __value = __params[__key];
-        if (Array.isArray(__value)) __value = __value.length ? __value[0] : '';
-        if (__key === 'Active') { __result.Active = __activeFlag(__value); continue; }
-        if (typeof __value === 'string') __value = resolveConfigTokens(__value.trim(), __key);
-        __result[__key] = __value;
+__activeFlag = function () {
+    if (typeof activeFlag === 'undefined') {
+        Logger.warn('[<componentName>] shared function unavailable -- library not loaded', { fn: 'activeFlag' });
+        return undefined;
     }
-    return __result;
+    return activeFlag.apply(null, arguments);
+};
+
+
+/**
+ * Thin alias for the env-library extractParams (normalises an operation config
+ * to its flat Params object). Emit only when the component needs it directly.
+ *
+ * @returns {object} extractParams(config) result, or undefined if unavailable.
+ */
+__extractParams = function () {
+    if (typeof extractParams === 'undefined') {
+        Logger.warn('[<componentName>] shared function unavailable -- library not loaded', { fn: 'extractParams' });
+        return undefined;
+    }
+    return extractParams.apply(null, arguments);
+};
+
+
+/**
+ * Thin alias for the env-library setupConfig — resolves Params into a flat
+ * { key: value } map (camelCase keys; `active` coerced via activeFlag; ${name}
+ * tokens resolved via resolveConfigTokens; value TYPE preserved from the JSON,
+ * no Number coercion). The init node assigns __rtParams = __setupConfig(__configJSON).
+ *
+ * @returns {object} setupConfig(config) result, or undefined if unavailable.
+ */
+__setupConfig = function () {
+    if (typeof setupConfig === 'undefined') {
+        Logger.warn('[<componentName>] shared function unavailable -- library not loaded', { fn: 'setupConfig' });
+        return undefined;
+    }
+    return setupConfig.apply(null, arguments);
+};
+
+
+/**
+ * Thin alias for the env-library nowUTC (ISO-8601 UTC timestamp). Emit only when
+ * the work body needs a timestamp (HTTP payloads with plannedTime, ...).
+ *
+ * @returns {string} nowUTC() result, or undefined if unavailable.
+ */
+__nowUTC = function () {
+    if (typeof nowUTC === 'undefined') {
+        Logger.warn('[<componentName>] shared function unavailable -- library not loaded', { fn: 'nowUTC' });
+        return undefined;
+    }
+    return nowUTC.apply(null, arguments);
 };

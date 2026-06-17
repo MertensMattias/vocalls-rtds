@@ -5,15 +5,17 @@
 
 JS source embedded as XML attributes uses these entities:
 
-- `'` → `&apos;` (preferred). `&#39;` is also valid XML but breaks byte-diff consistency — **don't mix**.
+- `'` → `&#39;` (the numeric entity). **Every shipped component** (`sendSms.js`, `sendMail.js`, `guardTui.js`, `setVariables.js`, `externalTransfer.js`, …) uses `&#39;` exclusively — `&apos;` appears in **none** of them. `&apos;` is also valid XML, but it does not match the canvas-export form, so a generated component encoded with `&apos;` would not byte-match the live components. Use `&#39;` and **don't mix** the two.
 - `"` → `&quot;`.
 - `<` → `&lt;`, `>` → `&gt;`, `&` → `&amp;`.
 - Newlines → `&#xa;`.
+
+Note Designer alternates the **attribute delimiter** to avoid escaping: master `Code` and the init `Code` are double-quote-delimited (`Code="…"`), while the work-script `Code` and `Variables` are single-quote-delimited (`Code='…'`). Inside either delimiter, JS single quotes are still `&#39;` (never a raw `'`, never `&apos;`).
 
 Indent JS with 4 spaces inside the encoded attribute. Reference encoder: [encode_for_xml_attr.py](../scripts/encode_for_xml_attr.py).
 
 ## Reflect on
 
-- **[grep]** Is the component using `&apos;` everywhere, or mixing `&apos;` and `&#39;`?
+- **[grep]** Is the component using `&#39;` everywhere, with no `&apos;` and no raw single quotes inside attribute values?
 - **[grep]** Are newlines `&#xa;`?
 - **[grep]** Are quote / bracket / ampersand entities encoded correctly?

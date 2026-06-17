@@ -110,8 +110,9 @@ production-reference id-numbering observation.
   output's `OnEnter` log fires exactly once per run, regardless of which
   primitive branch was taken. For `__rtOutcome`-staging Script bodies that
   output node also resolves the staged key once
-  (`global[_rtNextStep] = getValue(__rtParams, __rtOutcome, '');
-  Logger.info('[<componentName>] exit', { outcome: __rtOutcome, nextStep: global[_rtNextStep] });`).
+  (`_rtNextStep = __getValue(__rtParams, __rtOutcome, '');
+  Logger.info('[<componentName>] exit', { outcome: __rtOutcome, nextStep: _rtNextStep });`,
+  bare `_rtNextStep`, **not** `global[_rtNextStep]`).
   Every composite component is a self-contained v2 component on this
   contract — there is no exit-key-returning Script body (GUI-exit routing is
   the engine's job; see [gui_exit.md](gui_exit.md)).
@@ -247,7 +248,7 @@ This is the shape of the shipped `rtds/components/externalTransfer.js` and
   [../primitive_examples.md §7.10](../primitive_examples.md).
 - **Timeout (E):** a `timeout` Param → `Timeout="{__transferTimeout}"`;
   work body resolves
-  `__transferTimeout = Number(getValue(__rtParams, 'timeout', 30));`, init
+  `__transferTimeout = Number(__getValue(__rtParams, 'timeout', 30));`, init
   pre-declares `__transferTimeout = 30;`.
 - **CLI / P-Asserted-Identity (F):** an `outboundAni` Param sets the
   calling-party identity by appending `P-Asserted-Identity:<number>;` to
@@ -271,14 +272,14 @@ it does **not** `walk` Params into `RTDS_OP_*` and does **not** `return` an
 exit key (GUI-exit routing is the engine's job — see [gui_exit.md](gui_exit.md)):
 
 ```js
-if (!getValue(__rtParams, 'Active', false)) {
-    Logger.info('[<componentName>] skipped — inactive', { outcome: 'NextStep' });
+if (String(__getValue(__rtParams, 'active', false)).toLowerCase() !== 'true') {
+    Logger.info('[<componentName>] skipped — inactive', { outcome: 'nextStep' });
     return;
 }
 
-// ... validate inputs, pivot __rtOutcome = 'NextStep_Failure',
+// ... validate inputs, pivot __rtOutcome = 'nextStep_Failure',
 //     fire jsonHttpRequest(...).then(success, error), stage the chosen
-//     'NextStep_*' key into __rtOutcome ...
+//     'nextStep_*' key into __rtOutcome ...
 ```
 
 `__rtOutcome` is resolved once at the output node (id=6) with the `''`

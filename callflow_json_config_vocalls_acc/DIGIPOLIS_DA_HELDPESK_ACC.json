@@ -1,9 +1,9 @@
 {
-  "sourceId": "+3257351187",
+  "sourceId": "+3257351180",
   "name": "DIGIPOLIS - DA_HELPDESK",
-  "projectId": "",
+  "projectId": "127",
   "project": "DA HELPDESK",
-  "promptLibraryId": "",
+  "promptLibraryId": "33",
   "promptLibrary": "DIGIPOLIS\\DA\\HELPDESK",
   "supportedLanguages": "NL",
   "operations": [
@@ -29,11 +29,11 @@
       "params": {
         "active": [true, "isDisplayed", "isEditable"],
         "applicationId": 11,
-        "prompt": ["Welcome_Welcome", "isDisplayed", "isEditable"],
+        "prompt": ["Welcome", "isDisplayed", "isEditable"],
         "nextStep": "00002"
       },
       "ttsMessages": {
-        "NL": "Welkom bij de helpdesk van Digipolis."
+        "NL": "Welkom bij Digipolis helpdesk."
       }
     },
     {
@@ -127,7 +127,7 @@
       "type": "say",
       "name": "Play: AdHoc",
       "params": {
-        "active": [false, "isDisplayed", "isEditable"],
+        "active": [true, "isDisplayed", "isEditable"],
         "applicationId": 6,
         "prompt": [
           "AdHoc_ExceptionToepassingenVertraging",
@@ -147,13 +147,9 @@
       "params": {
         "active": [true, "isDisplayed", "isEditable"],
         "target": ["578041", "isDisplayed", "isEditable"],
-        "parameters": {
-          "callIdKey": "${callIdKey}",
-          "customerName": "${customerName}",
-          "customerProject": "${customerProject}"
-        },
+        "parameters": "{\r\n          \"callIdKey\": \"${callIdKey}\",\r\n          \"customerName\": \"${customerName}\",\r\n          \"customerProject\": \"${customerProject}\"\r\n        }",
         "attendTransfer": true,
-        "timeout": 30,
+        "timeout": 30000,
         "nextStep_Failure": "00100",
         "nextStep": "00100"
       }
@@ -178,8 +174,8 @@
         "phoneNumber": ["+3257352046", "isDisplayed", "isEditable"],
         "outboundANI": "",
         "parameters": "",
-        "attendTransfer": false,
-        "timeout": 30,
+        "attendTransfer": true,
+        "timeout": 30000,
         "nextStep_Failure": "00098",
         "nextStep": "00100"
       }
@@ -204,8 +200,8 @@
         "phoneNumber": ["+3257352048", "isDisplayed", "isEditable"],
         "outboundANI": "",
         "parameters": "",
-        "attendTransfer": false,
-        "timeout": 30,
+        "attendTransfer": true,
+        "timeout": 30000,
         "nextStep_Failure": "00098",
         "nextStep": "00100"
       }
@@ -216,16 +212,19 @@
       "name": "Route-To: External Number",
       "params": {
         "active": [true, "isDisplayed", "isEditable"],
-        "phoneNumber": ["", "isDisplayed", "isEditable"],
+        "phoneNumber": [
+          "${schedulerTransferNumber}",
+          "isDisplayed",
+          "isEditable"
+        ],
         "outboundANI": "",
         "parameters": "",
         "attendTransfer": false,
-        "timeout": 30,
+        "timeout": 30000,
         "nextStep_Failure": "00098",
         "nextStep": "00100"
       }
     },
-
     {
       "id": "00098",
       "type": "setVariables",

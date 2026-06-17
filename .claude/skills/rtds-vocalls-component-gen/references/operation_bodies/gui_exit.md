@@ -14,7 +14,7 @@ the engine calls `prepareGuiHandoff(op)` in `rtds_2_runtime.js`, which:
 - writes `context.session.variables.RTDS_currentOpId` and `RTDS_currentOpType`,
 - writes `context.session.variables.RTDS_currentOpConfig = op.params` — the
   **whole** Params object, not per-key `RTDS_OP_*` variables,
-- pre-populates `RTDS_nextStepId` with the default `NextStep`,
+- pre-populates `RTDS_nextStepId` with the default `nextStep` Param,
 - returns the Type's **exit key** string to Vocalls, which routes the call to
   the matching canvas target.
 

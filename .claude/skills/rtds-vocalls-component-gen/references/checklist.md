@@ -63,23 +63,27 @@ when anything looks off — it is the structural source of truth.
 
 ## Init node body
 
-- [ ] Exactly four lines: `__rtParams = __setupConfig(__configJSON)`,
-      `_headers` guard, `__rtOutcome = 'NextStep_Failure';` (stages the
-      default failure outcome), `Logger.debug` of `__rtParams`.
+- [ ] Exactly four lines: `__rtOutcome = 'nextStep';` (the did-nothing default
+      seed), `__rtParams = __setupConfig(__configJSON)`, `_headers` guard,
+      `Logger.debug` of `__rtParams`.
 - [ ] Log prefix `[<componentName>]` matches the work-node log prefix.
 
 ## Script (work) node body
 
-- [ ] First statement stages the default outcome KEY:
-      `__rtOutcome = 'NextStep';` (or branch-specific variant). The work
-      body **stages** `__rtOutcome` with plain `=` and the literal Params
-      key name — it never writes `global[_rtNextStep]` directly (the output
-      node resolves it once). **GUI-exit operations are the exception** —
-      they `return '<exit_key>'` and do not stage `__rtOutcome`.
-- [ ] `Active` guard: `if (!getValue(__rtParams, 'Active', false)) { ... return; }`.
-- [ ] All Param reads go through `getValue` / `getValueOrFalsy` / `hasKey`.
-- [ ] HTTP operations: `__rtOutcome = 'NextStep_Failure';` staged **before**
-      the network call, success branch stages `__rtOutcome = 'NextStep_Success';`
+- [ ] First statement re-stages the default outcome KEY:
+      `__rtOutcome = 'nextStep';` (camelCase; or branch-specific variant). The
+      work body **stages** `__rtOutcome` with plain `=` and the literal
+      camelCase Params key name — it never writes `_rtNextStep` directly (the
+      output node resolves it once). **GUI-exit *target* components are NOT an
+      exception** — they are ordinary v2 components that stage `__rtOutcome`;
+      no component body ever `return`s an exit key (the engine's
+      `prepareGuiHandoff` emits it).
+- [ ] `active` guard:
+      `if (String(__getValue(__rtParams, 'active', false)).toLowerCase() !== 'true') { ... return; }`.
+- [ ] All Param reads go through the `__`-aliased delegates
+      (`__getValue` / `__getValueOrFalsy` / `hasKey`) with camelCase key names.
+- [ ] HTTP operations: `__rtOutcome = 'nextStep_Failure';` staged **before**
+      the network call, success branch stages `__rtOutcome = 'nextStep_Success';`
       inside the `.then` success callback.
 - [ ] HTTP operations: **both** `.then` callbacks present; error callback
       uses `Logger.error(msg, ctx, err)` (passes the caught error as 3rd arg).
@@ -92,7 +96,7 @@ when anything looks off — it is the structural source of truth.
       `log_debug` / `log_error` calls.
 - [ ] Init node uses `Logger.debug` with `{ params: __rtParams }`.
 - [ ] Skip-on-inactive uses `Logger.info` with `{ outcome: __rtOutcome }`
-      (GUI-exit skip uses `{ outcome: 'NextStep' }`).
+      (GUI-exit *target* skip uses `{ outcome: 'nextStep' }`).
 - [ ] Work-body terminal outcomes carry `outcome: __rtOutcome` in
       `context` (not `nextStep`); the resolved `nextStep` is logged once
       at the output node.
@@ -107,16 +111,22 @@ when anything looks off — it is the structural source of truth.
 ## Output node
 
 - [ ] Resolves the staged outcome **once**:
-      `global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1);`
-      then `Logger.info('[<componentName>] exit', { outcome: __rtOutcome, nextStep: global[_rtNextStep] });`
-      (XML-encoded). This is the **only** place `global[_rtNextStep]` is
-      written. GUI-exit components are the exception — they route on the
-      returned exit key and need no `__rtOutcome` resolution here.
+      `_rtNextStep = __getValue(__rtParams, __rtOutcome, '');`
+      then `Logger.info('[<componentName>] exit', { outcome: __rtOutcome, nextStep: _rtNextStep });`
+      (XML-encoded). The write target is the bare flow variable `_rtNextStep`
+      (placeholder-bound to the engine global via `__rtNextStep &= _rtNextStep`),
+      **not** `global[_rtNextStep]`, and the fallback is `''` (**not** `-1`).
+      This is the **only** place the step id is written. GUI-exit *target*
+      components are **not** an exception — they are ordinary v2 components that
+      stage `__rtOutcome` and resolve here like any other; the exit key that
+      routes to them is emitted by the engine's `prepareGuiHandoff`, never
+      returned by a component body.
 
 ## XML encoding
 
 - [ ] All JS attribute bodies use `&#xa;` for newlines.
-- [ ] JS single quotes encoded as `&apos;`.
+- [ ] JS single quotes encoded as `&#39;` (the numeric entity every shipped
+      component uses — **not** `&apos;`; don't mix the two).
 - [ ] Angle brackets in JS encoded as `&lt;` / `&gt;`.
 - [ ] Ampersands in JS encoded as `&amp;` (including in `&=`).
 - [ ] No XML comments anywhere.
@@ -200,8 +210,9 @@ skip this section.
       equivalent.** No `__makeLocalNodeId('<primitive-id>')` calls; no
       primitive ids returned as exit keys. The Script still stages
       `__rtOutcome` for a routing-table next step (resolved once at the
-      output node) or returns a canonical GUI-exit key from
-      [operation_bodies/gui_exit.md](operation_bodies/gui_exit.md).
+      output node) — it never returns a GUI-exit key; that routing is the
+      engine's job (see
+      [operation_bodies/gui_exit.md](operation_bodies/gui_exit.md)).
 - [ ] Primitive attribute values (`Text`, `Expression`, `VariableName`,
       `VariableValue`, `Destination`, `Grammar`, etc.) are **not** JS
       and do **not** carry the `__` prefix. JS inside `OnEnter` /
@@ -211,10 +222,10 @@ skip this section.
       attribute values. `${name}` markup in primitive attributes is for
       the engine, not for `__setupConfig`.
 - [ ] Output node's `OnEnter` log
-      (`Logger.info('[<componentName>] exit', { outcome: __rtOutcome, nextStep: global[_rtNextStep] });`,
-      after resolving `global[_rtNextStep] = getValue(__rtParams, __rtOutcome, -1);`)
-      is the single exit-trace event. It fires once on the way out,
-      regardless of which primitive branch was taken.
+      (`Logger.info('[<componentName>] exit', { outcome: __rtOutcome, nextStep: _rtNextStep });`,
+      after resolving `_rtNextStep = __getValue(__rtParams, __rtOutcome, '');`
+      — bare `_rtNextStep`, `''` fallback) is the single exit-trace event. It
+      fires once on the way out, regardless of which primitive branch was taken.
 - [ ] Diff against [operation_bodies/composite.md](operation_bodies/composite.md)
       worked example: explicit-edge rule, parent-id rule, and
       free-integer numbering all hold.

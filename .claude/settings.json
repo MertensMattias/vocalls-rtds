@@ -22,7 +22,12 @@
       "PowerShell(npx jest --config projects/rtds-runtime/jest.config.js 2>&1)",
       "PowerShell(node ./node_modules/jest/bin/jest.js --runInBand projects/rtds-runtime/tests 2>&1)",
       "PowerShell(node \"C:\\\\Users\\\\merte\\\\dev\\\\vocalls-rtds\\\\node_modules\\\\jest\\\\bin\\\\jest.js\" --runInBand --rootDir \"C:\\\\Users\\\\merte\\\\dev\\\\vocalls-rtds\" \"projects/rtds-runtime/tests\" 2>&1)",
-      "PowerShell(npx jest projects/rtds-runtime/tests/main.test.js -t resolveConfigTokens --runInBand 2>&1)"
+      "PowerShell(npx jest projects/rtds-runtime/tests/main.test.js -t resolveConfigTokens --runInBand 2>&1)",
+      "Read(//c/Users/merte/claude_coop/rtds_vocalls_development/tts_workfolder/**)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\merte\\claude_coop\\rtds_vocalls_development\\tts_workfolder\\CURRENT_SCRIPTS",
+      "c:\\Users\\merte\\claude_coop\\rtds_vocalls_development\\tts_workfolder\\RTDS-RoutingTable-Admin\\procs"
     ]
   }
 }
