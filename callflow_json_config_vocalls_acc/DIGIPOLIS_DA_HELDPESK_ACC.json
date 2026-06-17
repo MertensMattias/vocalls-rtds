@@ -14,6 +14,7 @@
       "isFirstOperation": true,
       "params": {
         "active": [true, "isDisplayed", "isEditable"],
+        "keysToLog": ["customerName", "customerProject", "routingId", "ivrEvent", "ivrAction"],
         "customerName": "DA",
         "customerProject": "HELPDESK",
         "routingId": "DA_HELPDESK",
