@@ -420,6 +420,10 @@ INSERT INTO @Attribute
     ('setVariables', 'ivrEvent',         'string',  0, 0, 0, 0),
     ('setVariables', 'ivrAction',        'string',  0, 0, 0, 0),
     ('setVariables', 'logAttributes',    'string',  0, 0, 0, 0),
+    -- keysToLog: JSON array of varObj keys the KeyLog end-of-call POST snapshots
+    -- (rtds_3_vocallsEnv.js). logAttributes above is the legacy PureConnect
+    -- pipe-separated equivalent, kept for old-config imports.
+    ('setVariables', 'keysToLog',        'string',  0, 0, 0, 0),
     ('setVariables', 'nextStep',         'string',  1, 1, 0, 0),
 
 
@@ -623,6 +627,7 @@ INSERT INTO @Attribute
     ('checkSchedule', 'nextStep_Open',                'string',  0, 1, 0, 0),
     ('checkSchedule', 'nextStep_Closed',              'string',  0, 1, 0, 0),
     ('checkSchedule', 'nextStep_Transfer',            'string',  0, 1, 0, 0),
+    ('checkSchedule', 'nextStep_Holiday',             'string',  0, 1, 0, 0),
     ('checkSchedule', 'nextStep_ExternalTransfer',    'string',  0, 1, 0, 0),
     ('checkSchedule', 'nextStep_Disconnect',          'string',  0, 1, 0, 0),
     ('checkSchedule', 'nextStep_Guard_ICT',           'string',  0, 1, 0, 0),

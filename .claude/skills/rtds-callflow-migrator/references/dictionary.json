@@ -84,6 +84,12 @@
         "branch": false
       },
       {
+        "name": "keysToLog",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
         "name": "nextStep",
         "type": "string",
         "required": true,
@@ -855,6 +861,12 @@
       },
       {
         "name": "nextStep_Transfer",
+        "type": "string",
+        "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep_Holiday",
         "type": "string",
         "required": false,
         "branch": true

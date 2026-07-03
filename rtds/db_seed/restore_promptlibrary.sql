@@ -1,12 +1,7 @@
 /* ============================================================================
-   restore_promptlibrary.sql
-   Restores rtds.PromptLibrary from the backup table rtds_PromptLibrary_tmp.
+   restore_promptlibrary
 
-   Source of truth: the 216 verified rows captured from rtds_PromptLibrary_tmp.
-   The rows are embedded as explicit VALUES so this script is self-contained
-   and does NOT depend on the backup table still existing at run time.
 
-   What it does (single all-or-nothing transaction):
      1. Disables the RoutingTable -> PromptLibrary FK so the table can be wiped.
      2. DELETEs all existing rows from rtds.PromptLibrary.
      3. SET IDENTITY_INSERT ON and re-inserts every row with its original

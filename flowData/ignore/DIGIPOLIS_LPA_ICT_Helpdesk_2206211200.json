@@ -1,0 +1,148 @@
+{
+	"SourceId": "136167",
+	"Name": "Digipolis LPA ICT Helpdesk",
+	"ProjectId":"96",
+	"Project": "DIGIPOLIS_LPA",
+	"PromptLibrary": "DIGIPOLIS\\LPA\\ICT_HELPDESK",
+	"SupportedLanguages": "NL",
+	"Operations":
+	[
+		{
+			"Id": "00000",
+			"Type": "SetAttributes",
+			"Name": "Call Initialization",
+			"IsFirstOperation": true,
+			"Params": {
+				"LogAttributes": "RTDS_ProjectName|Eic_RemoteId",
+				"NextStep": "00001"
+			}
+		},
+		{
+			"Id": "00001",
+			"Type": "Schedule",
+			"Name": "Check Business Hours",
+			"Params": {
+				"ApplicationId": "1",
+				"ScheduleID": "17",
+				"NextStep_Open": "00002",
+				"NextStep_Guard_Klantwacht": "00095",
+				"NextStep_Guard_Systeemwacht": "00096",
+				"NextStep_Transfer": "00097",
+				"NextStep_Closed": "00098",
+				"NextStep_Disconnect": "00099",
+				"NextStep": "00099"
+			}
+		},
+
+		
+		{
+			"Id": "00002",
+			"Type": "PlayPrompt",
+			"Name": "Welcome",
+			"Params": {
+				"Active": "1",
+				"Prompt": "Welcome.wav",
+				"NextStep": "00003"
+			}
+		},
+		{
+			"Id": "00003",
+			"Type": "PlayPrompt",
+			"Name": "Extra",
+			"Params": {
+				"Active": "0",
+				"ApplicationId": "6",
+				"Prompt": "Extra",
+				"NextStep": "00004"
+			}
+		},
+		{
+			"Id": "00004",
+			"Type": "PlayPrompt",
+			"Name": "Exceptions",
+			"Params": {
+				"Active": "1",
+				"ApplicationId": "6",
+				"Prompt": "AdHoc_ExceptionDrukte",
+				"NextStep": "00005"
+			}
+		},
+		{
+			"Id": "00005",
+			"Type": "WorkgroupTransfer",
+			"Name": "To Workgroep Helpdesk",
+			"Params": {
+				"QueueName": "DEV_VOICE_01_V",
+				"Skills": "DEV",
+				"Priority": "100",
+				"NextStep": "00006"
+			}
+		},
+		{
+			"Id": "00006",
+			"Type": "PlayPrompt",
+			"Name": "Queue Audio",
+			"Params": {
+				"Prompt": "Queue_Waitmessage01",
+				"NextStep": "00007"
+			}
+		},
+		{
+			"Id": "00007",
+			"Type": "PlayPrompt",
+			"Name": "Queue Audio",
+			"Params": {
+				"Prompt": "Queue_Waitmessage02",
+				"NextStep": "00006"
+			}
+		},
+			{
+			"Id": "00095",
+			"Type": "Guard",
+			"Name": "Guard_Klantwacht",
+			"Params": {
+				"Active": 1,
+				"GuardId": "DIGIPOLIS DA_HELPDESK KLANTWACHT Config",
+				"NextStep": "00098"
+			}
+		},
+			{
+			"Id": "00096",
+			"Type": "Guard",
+			"Name": "Guard_Systeemwacht",
+			"Params": {
+				"Active": 1,
+				"GuardId": "DIGIPOLIS DA_HELPDESK SYSTEEMWACHT Config",
+				"NextStep": "00098"
+			}
+		},
+		{
+			"Id": "00097",
+			"Type": "ExternalTransfer",
+			"Name": "Tranfer to external phone number",
+			"Params": {
+				"PhoneNumber": "",
+				"OutboundANI": "",
+				"PerformCallAnalysis": "Yes",
+				"DiversionReason": "8",
+				"Timeout": "30",
+				"NextStep_Busy": "00099",
+				"NextStep_RNA": "00099",
+				"NextStep": "00100"
+			}
+		},
+		{
+			"Id": "00098",
+			"Type": "Disconnect",
+			"Name": "RTDS - Disconnect"
+		},
+		{
+			"Id": "00099",
+			"Type": "Disconnect",
+			"Name": "RTDS - IVR Error",
+			"Params": {
+				"Prompt": "Scheduler_ClosedDisconnect"
+			}
+		}
+	]
+}

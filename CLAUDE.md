@@ -75,4 +75,25 @@ Several artifacts are now **generated** — edit the source, then regenerate; ne
 - `projects/*/.vocalls/` is gitignored (local state only).
 - When the conventions doc and a file in the repo disagree, **one of them is wrong** — flag it and resolve it before continuing.
 
+## Working style
+
+How any agent should work in this repo.
+
+### Act & scope
+
+- When you have enough information to act, act. Don't re-derive facts already established in the conversation or re-litigate decisions the user has already made. When weighing a choice, give one recommendation, not a survey of options you won't pursue.
+- Build only what the task requires: no extra features, refactors, or abstractions beyond it; do the simplest thing that works well. Skip error handling, fallbacks, and validation for scenarios that cannot happen — trust internal code and framework guarantees, and validate only at system boundaries (user input, external APIs). Change code directly rather than adding feature flags or backwards-compatibility shims.
+- Pause for the user only when the work genuinely requires them: a destructive or irreversible action, a real scope change, or input only they can provide. Then ask and end the turn — never end a turn on a promise of work not yet done.
+
+### Reporting
+
+- Lead with the outcome. The first sentence of a final message answers "what happened" or "what did you find" — the TL;DR — with supporting detail after.
+- Verify before you claim. Audit each progress claim against a tool result from this session; report only work you can point to evidence for. If tests fail, say so with the output; if a step was skipped or is unverified, say that explicitly; when something is done and verified, state it plainly without hedging.
+- Keep output short by being selective — drop details that don't change what the reader does next — not by compressing into fragments, abbreviations, arrow chains (`A → B → fails`), or jargon. Terse shorthand between tool calls is fine (that's thinking out loud); the final summary is for a reader who saw none of it: complete sentences, terms spelled out, each file, commit, or flag introduced in its own plain-language clause. After a long unattended run, write the final message as a re-grounding, not a continuation — outcome first, then the one or two things you need from the user, without the working vocabulary you built up along the way.
+
+### Delegation & lessons
+
+- Delegate independent subtasks to subagents and keep working while they run; intervene if a subagent goes off track or is missing relevant context.
+- Record lessons one per note file with a one-line summary at the top — corrections and confirmed approaches alike, including why they mattered. Don't save what the repo or chat history already records; update an existing note rather than creating a duplicate; delete notes that turn out to be wrong.
+
 [**AGENTS.md**](AGENTS.md) is the cross-vendor sibling of this file with identical content.

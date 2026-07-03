@@ -41,8 +41,11 @@ RUNTIME = (
 # spec frontmatter (catalog.component), and so are exempt from check #2:
 #   - voicemaildetector.js: hand-built mxGraph reference, not a routing-table
 #     operation (cited throughout component-mxgraph.md).
+#   - checkSchedule.helpers.js: shared-library dependency bundle for
+#     checkSchedule.js (claimed by scheduler.spec.md), not its own operation.
 SPECLESS_COMPONENTS = {
     "voicemaildetector.js",
+    "checkSchedule.helpers.js",
 }
 
 

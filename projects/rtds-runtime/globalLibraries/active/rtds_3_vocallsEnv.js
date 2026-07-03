@@ -760,19 +760,23 @@ Logger = {
       events: [eventObj],
     };
     var self = this;
-    return jsonHttpRequest(apiUrl, { method: "POST" }, _headers, requestBody)
-      .withTimeout(this.config.timeout)
-      .then(
-        function (result) {
-          return { success: true, response: result };
-        },
-        function (error) {
-          log_debug(
-            "[Logger] postEventToAPI error | " + self.sanitizeForLog(error),
-          );
-          return { success: false, error: error };
-        },
-      );
+    if (typeof _headers === "undefined" || !_headers) _headers = {};
+    return jsonHttpRequest(
+      apiUrl,
+      { method: "POST", timeout: this.config.timeout },
+      _headers,
+      requestBody,
+    ).then(
+      function (result) {
+        return { success: true, response: result };
+      },
+      function (error) {
+        log_debug(
+          "[Logger] postEventToAPI error | " + self.sanitizeForLog(error),
+        );
+        return { success: false, error: error };
+      },
+    );
   },
 
   /**
@@ -818,7 +822,7 @@ Logger = {
       msg += " | Context: " + this.sanitizeForLog(ctx, 300);
     }
     log_debug(msg);
-    this.postEventToAPI(
+    return this.postEventToAPI(
       this.buildEventDetail({
         eventType: "LOGGED",
         severity: "WARN",
@@ -848,7 +852,7 @@ Logger = {
       if (stack) msg += " | Stack: " + stack;
     }
     log_error(msg);
-    this.postEventToAPI(
+    return this.postEventToAPI(
       this.buildEventDetail({
         eventType: "LOGGED",
         severity: "ERROR",
@@ -877,7 +881,7 @@ Logger = {
     if (errorObj && errorObj.message) msg += " | Error: " + errorObj.message;
     log_debug(msg);
     if (isError) {
-      this.postEventToAPI(
+      return this.postEventToAPI(
         this.buildEventDetail({
           eventType: "API_ERROR",
           severity: "ERROR",
@@ -887,7 +891,7 @@ Logger = {
         }),
       );
     } else if (this.config.logAllApiCalls) {
-      this.postEventToAPI(
+      return this.postEventToAPI(
         this.buildEventDetail({
           eventType: "API_CALL",
           severity: "INFO",
@@ -1160,4 +1164,169 @@ function storeSessionVariables() {
   Logger.info(
     "storeSessionVariables: stored varObj to session (ts: " + timestamp + ")",
   );
+}
+
+// ============================================================================
+// END-OF-CALL FINALISERS
+//   onCallEnd is the modular finaliser slot the platform termination callback
+//   (onCallResult) runs after the finalize data tail. Add a finaliser by
+//   pushing one finalize(...) line into onCallEnd -- no edit to the callback.
+//
+//   The redirect gate: varObj.redirect === true means this leg is tearing down
+//   to hand off to a GUI component, NOT a real end-of-call (applyVarObjDefaults
+//   sets it false on a fresh/restored leg; storeSessionVariables sets it true
+//   on handoff). finalize() consults it per-finaliser via runOnRedirect, so a
+//   finaliser like KeyLog skips on a handoff while a future one can opt in.
+// ============================================================================
+
+/**
+ * Run one finaliser with the redirect gate and fault isolation.
+ *
+ * @param {string} name - label for trace logging
+ * @param {Function} fn - the finaliser; may return a promise or undefined
+ * @param {boolean} runOnRedirect - true to run even on a redirect (handoff) leg
+ * @returns {*} whatever fn returns (often a promise), or undefined when skipped
+ *              or when fn throws
+ */
+function finalize(name, fn, runOnRedirect) {
+  var isRedirect =
+    typeof varObj !== "undefined" && varObj && varObj.redirect === true;
+  if (isRedirect && !runOnRedirect) {
+    log_debug("[finalize] skip " + name + " (redirect leg)");
+    return undefined;
+  }
+  try {
+    return fn();
+  } catch (e) {
+    log_error("[finalize] " + name + " threw | " + (e && e.message));
+    return undefined;
+  }
+}
+
+/**
+ * Fold a list of mixed values into a single promise that resolves once every
+ * thenable in the list has settled. Non-thenables are ignored. Returns
+ * undefined when nothing async was scheduled, so a fully-synchronous finalise
+ * pass adds no microtask.
+ *
+ * @param {Array} list
+ * @returns {Object|undefined} a thenable, or undefined when nothing is pending
+ */
+function _awaitAll(list) {
+  var pending = [];
+  if (list) {
+    for (var i = 0; i < list.length; i++) {
+      var item = list[i];
+      if (item && typeof item.then === "function") {
+        pending.push(item);
+      }
+    }
+  }
+  if (pending.length === 0) {
+    return undefined;
+  }
+  var chained = pending[0];
+  for (var j = 1; j < pending.length; j++) {
+    (function (next) {
+      chained = chained.then(
+        function () {
+          return next;
+        },
+        function () {
+          return next;
+        },
+      );
+    })(pending[j]);
+  }
+  return chained;
+}
+
+/**
+ * Modular end-of-call slot. One finalize(...) line per finaliser; the third
+ * arg opts a finaliser into running on a redirect (handoff) leg. Returns a
+ * promise the platform awaits, or undefined when nothing async ran.
+ *
+ * @returns {Object|undefined}
+ */
+function onCallEnd() {
+  Logger.debug(
+    "[onCallEnd] varObj | " +
+      Logger.sanitizeForLog(
+        typeof varObj !== "undefined" ? varObj : null,
+        10000,
+      ),
+  );
+  var pending = [];
+  pending.push(finalize("KeyLog", KeyLog, false)); // skip on redirect
+  // Future finalisers -- one line each, e.g.:
+  //   pending.push(finalize("CdbLog", CdbLog, false));
+  //   pending.push(finalize("HeartbeatPing", HeartbeatPing, true)); // runs on redirect too
+  return _awaitAll(pending);
+}
+
+/**
+ * KeyLog -- POST a snapshot of the call's configured keysToLog attributes to
+ * the IVR API at end-of-call. Reads the per-flow keysToLog list (written onto
+ * varObj by the first setVariables op) and the value of each named key via
+ * getScoped. No keysToLog, or no resolvable values, means no POST.
+ *
+ * Pure build + POST: the redirect gate lives in finalize(), not here, so KeyLog
+ * stays reusable and testable in isolation.
+ *
+ * @returns {Object|undefined} the request promise, or undefined when skipped
+ */
+function KeyLog() {
+  var names = getScoped("keysToLog", null);
+  if (!names || typeof names.length !== "number" || names.length === 0) {
+    log_debug("[KeyLog] no keysToLog -- skipping");
+    return undefined;
+  }
+
+  var keys = [];
+  for (var i = 0; i < names.length; i++) {
+    var keyName = names[i];
+    if (!keyName) {
+      continue;
+    }
+    var value = getScoped(keyName, null);
+    if (value === null || value === undefined) {
+      continue;
+    }
+    keys.push({ name: String(keyName), value: value });
+  }
+
+  if (keys.length === 0) {
+    log_debug("[KeyLog] keysToLog set but no values resolved -- skipping");
+    return undefined;
+  }
+
+  var body = {
+    callIdKey: Logger.getCallIdKey(),
+    routingId: Logger.getRoutingId(),
+    keys: keys,
+  };
+
+  var timeout = 10000;
+  try {
+    return jsonHttpRequest(
+      _rtBaseUrl + _rtKeyLogEndpoint,
+      { method: "POST", timeout: timeout },
+      _headers,
+      body,
+    ).then(
+      function (result) {
+        log_debug("[KeyLog] POST ok | keys=" + keys.length);
+        return { success: true, response: result };
+      },
+      function (error) {
+        log_error(
+          "[KeyLog] POST failed | " + (error && (error.message || error)),
+        );
+        return { success: false, error: error };
+      },
+    );
+  } catch (e) {
+    log_error("[KeyLog] request threw | " + (e && e.message));
+    return undefined;
+  }
 }

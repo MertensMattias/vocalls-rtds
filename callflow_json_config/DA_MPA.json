@@ -1,0 +1,335 @@
+{
+    "sourceId": "+3237271660",
+    "name": "DIGIPOLIS - MPA_GAPA",
+    "project": "DIGIPOLIS_MPA",
+    "promptLibrary": "DIGIPOLIS\\MPA\\GAPA",
+    "supportedLanguages": "NL",
+    "operations": [
+        {
+            "id": "00000",
+            "type": "setVariables",
+            "name": "Call Initialization",
+            "isFirstOperation": true,
+            "params": {
+                "active": true,
+                "keysToLog": "[\"customerName\", \"customerProject\", \"routingId\", \"language\", \"ani\", \"dnis\", \"interactionStartTime\", \"routingKey\", \"ivrEvent\", \"ivrAction\" ]",
+                "customerName": "DA",
+                "customerProject": "MPA",
+                "routingId": "DA-MPA",
+                "ivrEvent": "9999",
+                "ivrAction": "CT",
+                "nextStep": "00001"
+            }
+        },
+        {
+            "id": "00001",
+            "type": "say",
+            "name": "Play: Welcome",
+            "params": {
+                "active": [true, "isDisplayed", "isEditable"],
+                "applicationId": 11,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00024"
+            },
+            "ttsMessages": {
+                "NL": "Welkom bij Mobiliteit en Parkeren Antwerpen."
+            }
+        },
+        {
+            "id": "00004",
+            "type": "checkSchedule",
+            "name": "Check: Scheduler",
+            "params": {
+                "active": true,
+                "applicationId": 1,
+                "scheduleId": 7,
+                "nextStep_Open": "00010",
+                "nextStep_Closed": "00011",
+                "nextStep_Transfer": "00012",
+                "nextStep_Holiday": "00014",
+                "nextStep_Failure": "00013",
+                "nextStep": "00013"
+            }
+        },
+        {
+            "id": "00010",
+            "type": "setVariables",
+            "name": "Set: Cognos Open",
+            "params": {
+                "active": true,
+                "ivrEvent": "1200",
+                "ivrAction": "CT",
+                "nextStep": "00026"
+            }
+        },
+        {
+            "id": "00011",
+            "type": "setVariables",
+            "name": "Set: Cognos Closed",
+            "params": {
+                "active": true,
+                "ivrEvent": "1201",
+                "ivrAction": "DC",
+                "nextStep": "00030"
+            }
+        },
+        {
+            "id": "00012",
+            "type": "setVariables",
+            "name": "Set: Cognos Transfer",
+            "params": {
+                "active": true,
+                "ivrEvent": "1201",
+                "ivrAction": "TX",
+                "nextStep": "00040"
+            }
+        },
+        {
+            "id": "00013",
+            "type": "setVariables",
+            "name": "Set: Cognos Scheduler Error (treat as Open)",
+            "params": {
+                "active": true,
+                "ivrEvent": "1200",
+                "ivrAction": "CT",
+                "nextStep": "00026"
+            }
+        },
+        {
+            "id": "00014",
+            "type": "setVariables",
+            "name": "Set: Cognos Holiday",
+            "params": {
+                "active": true,
+                "ivrEvent": "1201",
+                "ivrAction": "DC",
+                "nextStep": "00031"
+            }
+        },
+        {
+            "id": "00020",
+            "type": "say",
+            "name": "Play: End Of Menu",
+            "params": {
+                "active": [true, "isDisplayed", "isEditable"],
+                "applicationId": 13,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00055"
+            },
+            "ttsMessages": {
+                "NL": "U hebt het einde van het keuzemenu bereikt, indien u een keuze hebt gemaakt wordt de verbinding verbroken"
+            }
+        },
+        {
+            "id": "00021",
+            "type": "say",
+            "name": "Play: GAS Boete Info",
+            "params": {
+                "active": [true, "isDisplayed", "isEditable"],
+                "applicationId": 13,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00100"
+            },
+            "ttsMessages": {
+                "NL": "Welkom bij de dienst GAS, stilstaan en parkeren.\nVanaf 1 juni 2019 zijn wij telefonisch niet meer bereikbaar.\nVia www punt \"Antwerpen\"punt \"b\" \"e\"; Onder de rubriek ‘met de auto’ kan u onder GAS boetes een lijst terugvinden met de meest gestelde vragen. Indien u hier geen antwoord op uw vraag vindt, kan u een e-mail sturen naar GAS, underscore, parkeren at Antwerpen punt \"b\" \"e\".\nVermeld in elke e-mail steeds het dossiernummer zodat de dienst u vlot kan verder helpen.\nWij wensen u een prettige dag verder."
+            }
+        },
+        {
+            "id": "00022",
+            "type": "say",
+            "name": "Play: Bezwaar Info",
+            "params": {
+                "active": [true, "isDisplayed", "isEditable"],
+                "applicationId": 13,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00100"
+            },
+            "ttsMessages": {
+                "NL": "Bezwaar indienen kan niet telefonisch. \nWenst u bezwaar in te dienen, dan kan dit via ons online portaal: www punt \"antwerpen\" punt \"b\" \"e\" , slash, parkeerportaal.\nOf via post, ter attentie van: Mobiliteit en Parkeren Antwerpen, Grote Markt 1, 2000 Antwerpen.\nDe nodige gegevens kan u ook terugvinden op uw kennisgeving of aanmaning.\nWij wensen u een prettige dag verder."
+            }
+        },
+        {
+            "id": "00024",
+            "type": "say",
+            "name": "Play: AdHoc Welcome",
+            "params": {
+                "active": [false, "isDisplayed", "isEditable"],
+                "applicationId": 6,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00050"
+            },
+            "ttsMessages": {
+                "NL": "Dit is een variabele boodschap die geactiveerd kan worden."
+            }
+        },
+        {
+            "id": "00025",
+            "type": "say",
+            "name": "Play: AdHoc After Main Menu",
+            "params": {
+                "active": [false, "isDisplayed", "isEditable"],
+                "applicationId": 6,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00004"
+            },
+            "ttsMessages": {
+                "NL": "Dit is een variabele boodschap die geactiveerd kan worden."
+            }
+        },
+        {
+            "id": "00026",
+            "type": "say",
+            "name": "Play: Please Hold",
+            "params": {
+                "active": [true, "isDisplayed", "isEditable"],
+                "applicationId": 13,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00060"
+            },
+            "ttsMessages": {
+                "NL": "Blijf aan de lijn, een medewerker staat u zo dadelijk te woord."
+            }
+        },
+        {
+            "id": "00030",
+            "type": "say",
+            "name": "Play: Scheduler Closed",
+            "params": {
+                "active": [true, "isDisplayed", "isEditable"],
+                "applicationId": 1,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00100"
+            },
+            "ttsMessages": {
+                "NL": "Goeiedag.\nWelkom bij Mobiliteit en Parkeren Antwerpen.\nMomenteel is onze dienst gesloten.\nWij zijn telefonisch bereikbaar van maandag tot en met vrijdag.\nOp maandag, woensdag en vrijdag van 9 uur tot 13 uur, en op dinsdag en donderdag van 12 uur 30 tot 16 uur 30.\nU kan ondertussen een kijkje nemen op onze website www punt parkeren in \"antwerpen\" punt \"b\" \"e\", waar u mogelijk al een antwoord op uw vraag vindt.\nWij wensen u een prettige dag verder"
+            }
+        },
+        {
+            "id": "00031",
+            "type": "say",
+            "name": "Play: Scheduler Holiday",
+            "params": {
+                "active": [true, "isDisplayed", "isEditable"],
+                "applicationId": 1,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00100"
+            },
+            "ttsMessages": {
+                "NL": "Goeie dag. \nWelkom bij Mobiliteit en Parkeren Antwerpen. \nMomenteel zijn we gesloten wegens een feest- of brugdag.\nWij zijn telefonisch bereikbaar van maandag tot en met vrijdag. \nOp maandag, woensdag en vrijdag van 9 uur tot 13 uur, en op dinsdag en donderdag van 12 uur 30 tot 16 uur 30. \nU kan ondertussen een kijkje nemen op onze website www punt parkeren in \"antwerpen\" punt \"b\" \"e\", waar u mogelijk al een antwoord op uw vraag vindt. \nWij wensen u een prettige dag verder"
+            }
+        },
+        {
+            "id": "00040",
+            "type": "externalTransfer",
+            "name": "Route-To: Scheduler Transfer Number",
+            "params": {
+                "active": true,
+                "phoneNumber": ["${schedulerTransferNumber}", "isDisplayed", "isEditable"],
+                "outboundANI": "",
+                "parameters": "",
+                "attendTransfer": false,
+                "timeout": 30000,
+                "nextStep_Failure": "00100",
+                "nextStep": "00100"
+            }
+        },
+        {
+            "id": "00050",
+            "type": "menu",
+            "name": "Menu: Main",
+            "params": {
+                "active": true,
+                "applicationId": 13,
+                "staticPrompt": "unknown",
+                "timeout": 15000,
+                "maxTries": 3,
+                "nextStep_1": "00051",
+                "nextStep_2": "00052",
+                "nextStep_3": "00053",
+                "nextStep_DefaultChoice": "00020",
+                "nextStep": "00020"
+            },
+            "ttsMessages": {
+                "NL": "Ontving u een gasboete, druk 1.\nWil u bezwaar indienen voor een parkeerretributie of een parkeervergoeding,druk 2.\nHeeft u een informatieve vraag over een parkeervergunning voor bewoners, of een andere infovraag rond parkeren? druk 3."
+            }
+        },
+        {
+            "id": "00051",
+            "type": "setVariables",
+            "name": "Set: Cognos GAS Boete",
+            "params": {
+                "active": true,
+                "ivrEvent": "3001",
+                "ivrAction": "DC",
+                "nextStep": "00021"
+            }
+        },
+        {
+            "id": "00052",
+            "type": "setVariables",
+            "name": "Set: Cognos Bezwaar",
+            "params": {
+                "active": true,
+                "ivrEvent": "3002",
+                "ivrAction": "DC",
+                "nextStep": "00022"
+            }
+        },
+        {
+            "id": "00053",
+            "type": "setVariables",
+            "name": "Set: Cognos Parkeren Info",
+            "params": {
+                "active": true,
+                "ivrEvent": "3003",
+                "ivrAction": "CT",
+                "nextStep": "00025"
+            }
+        },
+        {
+            "id": "00055",
+            "type": "setVariables",
+            "name": "Set: Cognos End Of Menu",
+            "params": {
+                "active": true,
+                "ivrEvent": "3999",
+                "ivrAction": "DC",
+                "nextStep": "00021"
+            }
+        },
+        {
+            "id": "00060",
+            "type": "internalTransfer",
+            "name": "Route-To: MPA_GAPA",
+            "params": {
+                "active": true,
+                "target": ["570045", "isDisplayed", "isEditable"],
+                "parameters": "{\r\n                    \"callIdKey\": \"${callIdKey}\",\r\n                    \"customerName\": \"${customerName}\",\r\n                    \"customerProject\": \"${customerProject}\"\r\n                }",
+                "attendTransfer": true,
+                "timeout": 30000,
+                "nextStep_Failure": "00070",
+                "nextStep": "00100"
+            }
+        },
+        {
+            "id": "00070",
+            "type": "say",
+            "name": "Play: Transfer Not Accepted (Technical Issues)",
+            "params": {
+                "active": [true, "isDisplayed", "isEditable"],
+                "applicationId": 14,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00100"
+            },
+            "ttsMessages": {
+                "NL": "Momenteel is onze dienst wegens technische storingen tijdelijk telefonisch niet bereikbaar. \nProbeert u het later opnieuw. Onze excuses voor het ongemak."
+            }
+        },
+        {
+            "id": "00100",
+            "type": "disconnect",
+            "name": "RTDS: Disconnect",
+            "params": {}
+        }
+    ]
+}

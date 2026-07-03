@@ -309,3 +309,135 @@ describe('onCallResult — termination callback (from main_sourceCode.js)', func
         });
     });
 });
+
+describe('onCallEnd / KeyLog — modular end-of-call finaliser', function () {
+    // Capture KeyLog (and any finaliser) POSTs by stubbing jsonHttpRequest. The
+    // KeyLog endpoint is the only api.example URL these tests reach.
+    function withKeyLogCapture(sb) {
+        var capture = { calls: 0, lastUrl: null, lastBody: null, lastOpts: null };
+        sb._rtBaseUrl = 'https://api.example';
+        sb._rtKeyLogEndpoint = '/ivrapi-acc/api/KeyLog';
+        sb._headers = {};
+        sb.jsonHttpRequest = function (url, opts, headers, body) {
+            capture.calls += 1;
+            capture.lastUrl = url;
+            capture.lastBody = body;
+            capture.lastOpts = opts;
+            return {
+                then: function (onOk) {
+                    return Promise.resolve(onOk({ success: true, statusCode: 200 }));
+                }
+            };
+        };
+        return capture;
+    }
+
+    it('KeyLog POSTs configured keysToLog with resolved values on a real end-of-call', function () {
+        return boot().then(function (sb) {
+            var cap = withKeyLogCapture(sb);
+            sb.varObj.redirect = false;
+            sb.varObj.keysToLog = ['customerName', 'routingId'];
+            sb.varObj.customerName = 'DA';
+            sb.varObj.routingId = 'DA_HELPDESK';
+            sb.varObj.callIdKey = 'call-1';
+
+            var out = sb.onCallEnd();
+
+            expect(cap.calls).toBe(1);
+            expect(cap.lastUrl).toBe('https://api.example/ivrapi-acc/api/KeyLog');
+            expect(cap.lastOpts.method).toBe('POST');
+            expect(typeof cap.lastOpts.timeout).toBe('number');
+            expect(cap.lastBody.callIdKey).toBe('call-1');
+            expect(cap.lastBody.routingId).toBe('DA_HELPDESK');
+            expect(cap.lastBody.keys).toEqual([
+                { name: 'customerName', value: 'DA' },
+                { name: 'routingId', value: 'DA_HELPDESK' }
+            ]);
+            expect(out && typeof out.then).toBe('function'); // awaitable
+            return out;
+        });
+    });
+
+    it('redirect gate: KeyLog does NOT POST on a redirect (handoff) leg', function () {
+        return boot().then(function (sb) {
+            var cap = withKeyLogCapture(sb);
+            sb.varObj.redirect = true;                        // handoff, not a real end-of-call
+            sb.varObj.keysToLog = ['customerName'];
+            sb.varObj.customerName = 'DA';
+
+            var out = sb.onCallEnd();
+
+            expect(cap.calls).toBe(0);                        // gated out
+            expect(out).toBeUndefined();                      // nothing async scheduled
+        });
+    });
+
+    it('runOnRedirect=true: a finaliser opted in DOES run on a redirect leg', function () {
+        return boot().then(function (sb) {
+            sb.varObj.redirect = true;
+            var ranSkip = false, ranOptIn = false;
+
+            var skipResult = sb.finalize('SkipOnRedirect', function () { ranSkip = true; }, false);
+            var optInResult = sb.finalize('RunOnRedirect', function () { ranOptIn = true; }, true);
+
+            expect(ranSkip).toBe(false);                      // default: skipped on redirect
+            expect(ranOptIn).toBe(true);                      // opt-in: ran on redirect
+            expect(skipResult).toBeUndefined();
+            expect(optInResult).toBeUndefined();
+        });
+    });
+
+    it('fault isolation: a throwing finaliser does not stop a later one', function () {
+        return boot().then(function (sb) {
+            sb.varObj.redirect = false;
+            var ranAfter = false;
+
+            sb.finalize('Boom', function () { throw new Error('kaboom'); }, false);
+            sb.finalize('After', function () { ranAfter = true; }, false);
+
+            expect(ranAfter).toBe(true);                      // second finaliser still ran
+        });
+    });
+
+    it('no keysToLog: KeyLog skips the POST entirely', function () {
+        return boot().then(function (sb) {
+            var cap = withKeyLogCapture(sb);
+            sb.varObj.redirect = false;
+            delete sb.varObj.keysToLog;
+
+            var out = sb.KeyLog();
+
+            expect(cap.calls).toBe(0);
+            expect(out).toBeUndefined();
+        });
+    });
+
+    it('keysToLog set but no resolvable values: KeyLog skips the POST', function () {
+        return boot().then(function (sb) {
+            var cap = withKeyLogCapture(sb);
+            sb.varObj.redirect = false;
+            sb.varObj.keysToLog = ['neverSet', 'alsoMissing'];
+
+            var out = sb.KeyLog();
+
+            expect(cap.calls).toBe(0);
+            expect(out).toBeUndefined();
+        });
+    });
+
+    it('onCallEnd is awaitable and resolves after the KeyLog POST settles', function () {
+        return boot().then(function (sb) {
+            var cap = withKeyLogCapture(sb);
+            sb.varObj.redirect = false;
+            sb.varObj.keysToLog = ['customerName'];
+            sb.varObj.customerName = 'DA';
+
+            var out = sb.onCallEnd();
+
+            expect(out && typeof out.then).toBe('function');
+            return out.then(function () {
+                expect(cap.calls).toBe(1);
+            });
+        });
+    });
+});

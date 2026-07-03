@@ -1,0 +1,161 @@
+{
+    "sourceId": "+3233386588",
+    "name": "DIGIPOLIS - PM_INFOPLUS_ZIEKTE",
+    "project": "DIGIPOLIS_PM",
+    "promptLibrary": "DIGIPOLIS\\PM\\INFOPLUS_ZIEKTE",
+    "supportedLanguages": "NL",
+    "operations": [
+        {
+            "id": "00000",
+            "type": "setVariables",
+            "name": "Call Initialization",
+            "isFirstOperation": true,
+            "params": {
+                "active": true,
+                "keysToLog": "[\"customerName\", \"customerProject\", \"routingId\", \"language\", \"ani\", \"dnis\", \"interactionStartTime\", \"routingKey\", \"ivrEvent\", \"ivrAction\" ]",
+                "customerName": "DA",
+                "customerProject": "PM_ZIEKTE",
+                "routingId": "DA-PM-ZIEKTE",
+                "ivrEvent": "9999",
+                "ivrAction": "CT",
+                "nextStep": "00004"
+            }
+        },
+        {
+            "id": "00004",
+            "type": "checkSchedule",
+            "name": "Check: Scheduler",
+            "params": {
+                "active": true,
+                "applicationId": 1,
+                "scheduleId": 44,
+                "nextStep_Open": "00010",
+                "nextStep_Closed": "00011",
+                "nextStep_Transfer": "00012",
+                "nextStep_Failure": "00013",
+                "nextStep": "00013"
+            }
+        },
+        {
+            "id": "00010",
+            "type": "setVariables",
+            "name": "Set: Cognos Open",
+            "params": {
+                "active": true,
+                "ivrEvent": "1200",
+                "ivrAction": "CT",
+                "nextStep": "00024"
+            }
+        },
+        {
+            "id": "00011",
+            "type": "setVariables",
+            "name": "Set: Cognos Closed",
+            "params": {
+                "active": true,
+                "ivrEvent": "1201",
+                "ivrAction": "DC",
+                "nextStep": "00030"
+            }
+        },
+        {
+            "id": "00012",
+            "type": "setVariables",
+            "name": "Set: Cognos Transfer",
+            "params": {
+                "active": true,
+                "ivrEvent": "1201",
+                "ivrAction": "TX",
+                "nextStep": "00040"
+            }
+        },
+        {
+            "id": "00013",
+            "type": "setVariables",
+            "name": "Set: Cognos Scheduler Error (treat as Open)",
+            "params": {
+                "active": true,
+                "ivrEvent": "1200",
+                "ivrAction": "CT",
+                "nextStep": "00024"
+            }
+        },
+        {
+            "id": "00024",
+            "type": "say",
+            "name": "Play: AdHoc",
+            "params": {
+                "active": [false, "isDisplayed", "isEditable"],
+                "applicationId": 6,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00060"
+            },
+            "ttsMessages": {
+                "NL": "Dit is een variabele boodschap die geactiveerd kan worden."
+            }
+        },
+        {
+            "id": "00030",
+            "type": "say",
+            "name": "Play: Scheduler Closed",
+            "params": {
+                "active": [true, "isDisplayed", "isEditable"],
+                "applicationId": 1,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00100"
+            },
+            "ttsMessages": {
+                "NL": "Welkom bij infoplus.\nOp dit moment is onze dienst gesloten.\nBen je artikel 60 medewerker en wil je je ziek melden, bel dan naar je baas.\nVoor alle andere vragen kan je ons telefonisch bereiken elke werkdag van 6 uur 30 tot 17 uur,\nJe kan ook altijd een melding maken via het medewerkersportaal van de stad. Bedankt voor je begrip."
+            }
+        },
+        {
+            "id": "00040",
+            "type": "externalTransfer",
+            "name": "Route-To: Scheduler Transfer Number",
+            "params": {
+                "active": true,
+                "phoneNumber": ["${schedulerTransferNumber}", "isDisplayed", "isEditable"],
+                "outboundANI": "",
+                "parameters": "",
+                "attendTransfer": false,
+                "timeout": 30000,
+                "nextStep_Failure": "00100",
+                "nextStep": "00100"
+            }
+        },
+        {
+            "id": "00060",
+            "type": "internalTransfer",
+            "name": "Route-To: PM_INFOPLUS_ZIEKTE",
+            "params": {
+                "active": true,
+                "target": ["570011", "isDisplayed", "isEditable"],
+                "parameters": "{\r\n                    \"callIdKey\": \"${callIdKey}\",\r\n                    \"customerName\": \"${customerName}\",\r\n                    \"customerProject\": \"${customerProject}\"\r\n                }",
+                "attendTransfer": true,
+                "timeout": 30000,
+                "nextStep_Failure": "00070",
+                "nextStep": "00100"
+            }
+        },
+        {
+            "id": "00070",
+            "type": "say",
+            "name": "Play: Transfer Not Accepted (Exceptionally Closed)",
+            "params": {
+                "active": [true, "isDisplayed", "isEditable"],
+                "applicationId": 14,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00100"
+            },
+            "ttsMessages": {
+                "NL": "Welkom bij infoplus, we zijn uitzonderlijk telefonisch niet bereikbaar, je kan op later tijdstip terugbellen. Als medewerker van de stad vind je op het medewerkersportaal informatie over je personeelsaangelegenheden. Hebt u toch nog een vraag stel ze dan via vragen infoplus. Bedankt voor uw begrip."
+            }
+        },
+        {
+            "id": "00100",
+            "type": "disconnect",
+            "name": "RTDS: Disconnect",
+            "params": {}
+        }
+    ]
+}

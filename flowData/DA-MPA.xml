@@ -1,0 +1,871 @@
+<mxGraphModel dx="3313" dy="1976" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100">
+  <root>
+    <object label="" MaxEntryCount="" MaxEntryNodeId="" SpeechRecognitionEngine="" Code="" Extensions="" BackgroundNoise="false" BreathInEffect="false" Languages="{&#39;nl&#39;:{&#39;isDefault&#39;:true,&#39;languageName&#39;:&#39;Dutch&#39;,&#39;ttsLanguageCode&#39;:&#39;nl-BE&#39;,&#39;ttsVoiceName&#39;:&#39;nl-BE-Wavenet-A&#39;,&#39;ttsEngine&#39;:&#39;Google&#39;,&#39;ttsPitch&#39;:&#39;1.0&#39;,&#39;ttsSpeed&#39;:&#39;1.0&#39;,&#39;ttsVolume&#39;:&#39;1.0&#39;,&#39;prosodyBaseEnabled&#39;:true,&#39;prosodyContourEnabled&#39;:false}}" Variables="apiSuccess = false; &#xa;apiResponse = null; &#xa;language = null; &#xa; &#xa;adhocWelcome = false; &#xa;adhocAfterMainMenu = false;&#xa;emergencyActive = false; &#xa;emergencyAction = &#39;Continue&#39;; &#xa;transferNumber = &#39;&#39;;" HintGrammar="" PropertiesDefinition="" EnableUpdateRelations="true" AllowGlobalIntent="false" Translations="" ManualId="" LastLanguage="default" id="vocalls-master-layer">
+      <mxCell />
+    </object>
+    <mxCell id="baselayer" parent="vocalls-master-layer" />
+    <object label="START" Type="start" id="vocalls-0-0">
+      <mxCell style="startNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-0.030000000000001137" y="-1020" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="343" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="baselayer" source="0" target="333" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="" Type="dial" OnEnter="" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" id="0">
+      <mxCell style="dialNode" parent="baselayer" vertex="1">
+        <mxGeometry y="-280" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="globalLibrary" LibraryGuid="4e28fe74-9eed-43d2-a583-79b265cc1024" LibraryVersion="null" SupportedLanguages="" id="250">
+      <mxCell style="globalLibraryNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-579.53" y="-914" width="200" height="60" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="nallo_B_segmentExecutors" id="251">
+      <mxCell style="globalLibraryInnerNode" parent="250" vertex="1">
+        <mxGeometry x="10" y="16" width="180" height="34" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="globalLibrary" LibraryGuid="e67d3f82-2a7f-46fe-b433-380766277e8e" LibraryVersion="null" SupportedLanguages="" id="252">
+      <mxCell style="globalLibraryNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-579.53" y="-820" width="200" height="60" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="nallo_C_segmentStore" id="253">
+      <mxCell style="globalLibraryInnerNode" parent="252" vertex="1">
+        <mxGeometry x="10" y="16" width="180" height="34" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="globalLibrary" LibraryGuid="e866cf13-5e02-4645-a230-4891d79266b6" LibraryVersion="null" SupportedLanguages="" id="254">
+      <mxCell style="globalLibraryNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-579.53" y="-730" width="200" height="60" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="nallo_Y_lineMap" id="255">
+      <mxCell style="globalLibraryInnerNode" parent="254" vertex="1">
+        <mxGeometry x="10" y="16" width="180" height="34" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="globalLibrary" LibraryGuid="ebf23470-3039-4001-80b5-5602c62f9384" LibraryVersion="null" SupportedLanguages="" id="256">
+      <mxCell style="globalLibraryNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-579.53" y="-640" width="200" height="60" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="nallo_Z_Global" id="257">
+      <mxCell style="globalLibraryInnerNode" parent="256" vertex="1">
+        <mxGeometry x="10" y="16" width="180" height="34" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="globalLibrary" LibraryGuid="5e871d58-c2ad-463a-a453-5e0ee6864415" LibraryVersion="null" SupportedLanguages="" id="248">
+      <mxCell style="globalLibraryNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-579.53" y="-1010" width="200" height="60" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="nallo_A_Config" id="249">
+      <mxCell style="globalLibraryInnerNode" parent="248" vertex="1">
+        <mxGeometry x="10" y="16" width="180" height="34" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="case" OnEnter="" OnLeave="" MaxEntryNodeId="" MaxEntryCount="" id="338">
+      <mxCell style="caseNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-87.5" y="380" width="305" height="156" as="geometry" />
+      </mxCell>
+    </object>
+    <object id="339">
+      <mxCell style="caseInnerNode" parent="338" vertex="1">
+        <mxGeometry x="10" y="16" width="285" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="adhocWelcome == true" DynamicNextId="" SubType="expression" Expression="adhocWelcome == true" DynamicNextTabGuid="" id="340">
+      <mxCell style="expressionNode" parent="338" vertex="1">
+        <mxGeometry x="10" y="56" width="285" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="adhocWelcome == false" DynamicNextId="" SubType="expression" Expression="adhocWelcome == false" DynamicNextTabGuid="" id="341">
+      <mxCell style="expressionNode" parent="338" vertex="1">
+        <mxGeometry x="10" y="86" width="285" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="no choice" DynamicNextId="" SubType="default" id="342">
+      <mxCell style="defaultNode" parent="338" vertex="1">
+        <mxGeometry x="10" y="116" width="285" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="444" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="354" target="443" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="" Type="counter" OnEnter="" OnLeave="" MaxEntryNodeId="" MaxEntryCount="" VariableName="" id="354">
+      <mxCell style="counterNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-538" y="1209.03" width="160" height="201.98" as="geometry" />
+      </mxCell>
+    </object>
+    <object id="355">
+      <mxCell style="counterInnerNode" parent="354" vertex="1">
+        <mxGeometry x="10" y="16" width="140" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="&amp;lt; 4" DynamicNextId="" SubType="expression" Expression="&lt; 4" DynamicNextTabGuid="" id="356">
+      <mxCell style="expressionNode" parent="354" vertex="1">
+        <mxGeometry x="10" y="56" width="140" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="154" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="baselayer" edge="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="5" y="1970" as="sourcePoint" />
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="240" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="baselayer" source="13" target="14" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="ScheduleAPI" Type="script" OnEnter="" OnLeave="" DynamicNextId="" Code="var request = null;&#xa;&#xa;try {&#xa;    factoryConfig = &quot;schedulingApi&quot;;&#xa;    request = executeApiCall(factoryConfig, varObj, segmentState);&#xa;}&#xa;catch (error) {&#xa;    log_error(&#39;ScheduleAPI: error occured with message &#39; + error.message);&#xa;}&#xa;&#xa;return request.then(function (result) {&#xa;    if (result.success === true) {&#xa;        log_debug(&#39;-----START LOG-----&#39;);&#xa;        log_debug(&#39;ScheduleAPI: success&#39;);&#xa;        log_debug(&#39;ScheduleAPI: result: &#39; + JSON.stringify(result.response));&#xa;        log_debug(&#39;action:&#39; + result.response.action);&#xa;        log_debug(&#39;actionDetail:&#39; + result.response.actionDetail);&#xa;        log_debug(&#39;-----END LOG-----&#39;);&#xa;        apiSuccess = result.response.action;&#xa;        _transferNumber = result.response.actionDetail;&#xa;    } else {&#xa;        log_error(&#39;ScheduleAPI: api failed&#39;);&#xa;        log_debug(&#39;ScheduleAPI: result: &#39; + JSON.stringify(result));&#xa;    }&#xa;});" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="13">
+      <mxCell style="scriptNode" parent="baselayer" vertex="1">
+        <mxGeometry x="1501" y="2560" width="168" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="21" target="23" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="Goeiedag.&lt;br&gt;Welkom bij Mobiliteit en Parkeren Antwerpen.&lt;br&gt;Momenteel is onze dienst gesloten.&lt;br&gt;Wij zijn telefonisch bereikbaar van maandag tot en met vrijdag.&lt;br&gt;Op maandag, woensdag en vrijdag van 9 uur tot 13 uur, en op dinsdag en donderdag van 12 uur 30 tot 16 uur 30.&lt;br&gt;U kan ondertussen een kijkje nemen op onze website www punt parkeren in &quot;antwerpen&quot; punt &quot;b&quot; &quot;e&quot;, waar u mogelijk al een antwoord op uw vraag vindt.&lt;br&gt;Wij wensen u een prettige dag verder" Type="say" OnEnter="context.returnTo = context.currentNode.id" OnLeave="" DynamicNextId="" Text="Goeiedag.&#xa;Welkom bij Mobiliteit en Parkeren Antwerpen.&#xa;Momenteel is onze dienst gesloten.&#xa;Wij zijn telefonisch bereikbaar van maandag tot en met vrijdag.&#xa;Op maandag, woensdag en vrijdag van 9 uur tot 13 uur, en op dinsdag en donderdag van 12 uur 30 tot 16 uur 30.&#xa;U kan ondertussen een kijkje nemen op onze website www punt parkeren in &quot;antwerpen&quot; punt &quot;b&quot; &quot;e&quot;, waar u mogelijk al een antwoord op uw vraag vindt.&#xa;Wij wensen u een prettige dag verder" AltTexts="" SelectionMode="permanent" MaxEntryCount="" MaxEntryNodeId="" Language="" Voice="" Text_nl="De service-desk van N-Allo is momenteel gesloten. Indien u een dringende oproep heeft gelieve aan de lijn te blijven, wij verbinden u door met een technieker van wacht." AltTexts_nl="" DynamicNextTabGuid="" ContinueAfter="" WaitForPrevious="false" Cache="true" EscapeXML="true" OutputFilter="" id="21">
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
+        <mxGeometry x="2170" y="2896" width="390" height="224" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="hung" OnEnter="" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" id="23">
+      <mxCell style="hungNode" parent="baselayer" vertex="1">
+        <mxGeometry x="2680" y="2974" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="160" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="baselayer" edge="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="555" y="2438.5" as="sourcePoint" />
+      </mxGeometry>
+    </mxCell>
+    <object label="" Type="redirect" OnEnter="" OnLeave="" Destination="{_transferNumber}" MaxEntryCount="" MaxEntryNodeId="" Parameters="" ResultVariableName="" TransferType="blind" SuccessCondition="" MessageText="" MessageCache="true" MessageVoice="" MessageLanguage="" id="177">
+      <mxCell style="redirectNode" parent="baselayer" vertex="1">
+        <mxGeometry x="319.9999999999998" y="2830" width="160" height="120" as="geometry" />
+      </mxCell>
+    </object>
+    <object id="178">
+      <mxCell style="redirectInnerNode" parent="177" vertex="1">
+        <mxGeometry x="10" y="16" width="140" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="not accepted" DynamicNextId="" SubType="default" id="179">
+      <mxCell style="defaultNode" parent="177" vertex="1">
+        <mxGeometry x="10" y="56" width="140" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="115" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" edge="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="2479.999999999999" y="6123" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="132" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=-0.023;entryY=0.588;entryDx=0;entryDy=0;entryPerimeter=0;" parent="baselayer" source="122" target="209" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="" Type="dtmf" OnEnter="" OnLeave="" Timeout="15000" MaxEntryCount="" MaxEntryNodeId="" MinTimeout="" id="363">
+      <mxCell style="dtmfNode" parent="baselayer" vertex="1">
+        <mxGeometry x="20" y="1060" width="160" height="216" as="geometry" />
+      </mxCell>
+    </object>
+    <object id="364">
+      <mxCell style="dtmfInnerNode" parent="363" vertex="1">
+        <mxGeometry x="10" y="16" width="140" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="1" DynamicNextId="" SubType="choice" Key="1" id="365">
+      <mxCell style="choiceNode" parent="363" vertex="1">
+        <mxGeometry x="10" y="56" width="140" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="2" DynamicNextId="" SubType="choice" Key="2" id="366">
+      <mxCell style="choiceNode" parent="363" vertex="1">
+        <mxGeometry x="10" y="86" width="140" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="3" DynamicNextId="" SubType="choice" Key="3" id="367">
+      <mxCell style="choiceNode" parent="363" vertex="1">
+        <mxGeometry x="10" y="116" width="140" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="no input" DynamicNextId="" SubType="noInput" id="368">
+      <mxCell style="noInputNode" parent="363" vertex="1">
+        <mxGeometry x="10" y="146" width="140" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="Dit is een emergency boodschap die geactiveerd kan worden." Type="say" OnEnter="context.returnTo = context.currentNode.id" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Language="" Voice="" SelectionMode="temporary" Cache="True" Text="Dit is een emergency boodschap die geactiveerd kan worden." AltTexts="" id="122">
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
+        <mxGeometry x="1860" y="3630" width="390" height="100" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="hung" OnEnter="" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" id="138">
+      <mxCell style="hungNode" parent="baselayer" vertex="1">
+        <mxGeometry x="3910" y="3657.25" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="155" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="baselayer" edge="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="5" y="2215" as="sourcePoint" />
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="161" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="baselayer" source="156" target="117" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="Check Emergency" Type="label" OnEnter="" OnLeave="" DynamicNextId="" Title="Check Emergency" MaxEntryNodeId="" MaxEntryCount="" id="156">
+      <mxCell style="labelNode" parent="baselayer" vertex="1">
+        <mxGeometry x="1474.97" y="3560" width="220" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="hung" OnEnter="" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" id="184">
+      <mxCell style="hungNode" parent="baselayer" vertex="1">
+        <mxGeometry x="100" y="2871" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="199" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="baselayer" edge="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="5" y="2140" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="201" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" edge="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="960" y="5900" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="210" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="209" target="127" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="1000ms" Type="pause" OnEnter="" OnLeave="" DynamicNextId="" Interval="1000" MaxEntryNodeId="" MaxEntryCount="" id="209">
+      <mxCell style="pauseNode" parent="baselayer" vertex="1">
+        <mxGeometry x="2320" y="3630" width="130" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="241" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="221" target="235" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="" Type="say" OnEnter="context.returnTo = context.currentNode.id" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Language="" Voice="" SelectionMode="temporary" Cache="true" Text="" AltTexts="" DynamicNextTabGuid="" ContinueAfter="" WaitForPrevious="false" EscapeXML="true" id="221">
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
+        <mxGeometry x="830" y="2850" width="140" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="243" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="235" target="177" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="Log" Type="script" OnEnter="" OnLeave="" DynamicNextId="" Code="log_debug(&quot;Transfer Log: Call is transferred to  &quot; +  _transferNumber);" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="235">
+      <mxCell style="scriptNode" parent="baselayer" vertex="1">
+        <mxGeometry x="580" y="2850" width="168" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="214" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="275" target="21" edge="1">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points" />
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="260" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="baselayer" source="vocalls-0-0" target="258" edge="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="64.97" y="-980" as="sourcePoint" />
+        <mxPoint x="-20.03" y="-670" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="265" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="baselayer" source="258" target="261" edge="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="64.97" y="-870" as="sourcePoint" />
+        <mxPoint x="619.97" y="-500" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <object label="initializeCallFlowContext" Type="script" OnEnter="" OnLeave="" DynamicNextId="" Code="Logger.info(&#39;--- Initializing Call Flow Context ---&#39;); &#xa; &#xa;try { &#xa;    initializeCallFlowContext(&#39;&#39;); &#xa;    Logger.info(&#39;Call flow initialized successfully&#39;); &#xa;} catch (error) { &#xa;    Logger.error(&#39;Call flow initialization failed&#39;, {}, error); &#xa;    throw error; &#xa;} &#xa; &#xa;// Verify initialization succeeded &#xa;if (!varObj) { &#xa;    Logger.error(&#39;CRITICAL: varObj is null after initialization&#39;); &#xa;    throw new Error(&#39;varObj initialization failed&#39;); &#xa;} &#xa; &#xa;if (!segmentDic) { &#xa;    Logger.error(&#39;CRITICAL: segmentDic is null after initialization&#39;); &#xa;    throw new Error(&#39;segmentDic initialization failed&#39;); &#xa;} &#xa; &#xa;if (!segmentState) { &#xa;    Logger.error(&#39;CRITICAL: segmentState is null after initialization&#39;); &#xa;    throw new Error(&#39;segmentState initialization failed&#39;); &#xa;}&#xa;&#xa;&#xa;// Log initialization results &#xa;Logger.info(&#39;Initialization complete&#39;, { &#xa;    callIdKey: varObj.callIdKey, &#xa;    customerName: varObj.customerName, &#xa;    customerProject: varObj.customerProject, &#xa;    configKey: varObj.configKey, &#xa;    language: varObj.language, &#xa;    environment: varObj.environment, &#xa;    debugCall: varObj.debugCall, &#xa;    ani: varObj.ani, &#xa;    dnis: varObj.dnis, &#xa;    currentSegment: segmentState.currentSegment, &#xa;    segmentCount: segmentDic.size &#xa;});&#xa;&#xa;headerContext = {&#xa;    callIdKey: varObj.callIdKey,&#xa;    customerName: customerName,&#xa;    customerProject: customerProject,&#xa;&#xa;};&#xa;headerContext = JSON.stringify(headerContext);" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="268">
+      <mxCell style="scriptNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-19.03" y="-580" width="168" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="273" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="baselayer" source="271" target="0" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="init" Type="script" OnEnter="" OnLeave="" DynamicNextId="" Code="varObj.routingKey = &#39;DA-MPA&#39;;
+&#xa;varObj.ivrEvent = &#39;9999&#39;;
+&#xa;varObj.ivrAction = &#39;CT&#39;;" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="271">
+      <mxCell style="scriptNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-19.03" y="-430" width="168" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="272" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="baselayer" source="268" target="271" edge="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="64.96999999999909" y="-500" as="sourcePoint" />
+        <mxPoint x="65.47000000000091" y="-310" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <object label="event: 1201&lt;br&gt;action: DC" Type="script" OnEnter="" OnLeave="" DynamicNextId="" Code="varObj.ivrEvent = &#39;1201&#39;;
+&#xa;varObj.ivrAction = &#39;DC&#39;;" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="275">
+      <mxCell style="scriptNode" parent="baselayer" vertex="1">
+        <mxGeometry x="1812" y="2954" width="168" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="279" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="274" target="221" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="event: 1201&lt;br&gt;action: TX" Type="script" OnEnter="" OnLeave="" DynamicNextId="" Code="varObj.ivrEvent = &#39;1201&#39;;
+&#xa;varObj.ivrAction = &#39;TX&#39;;" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="274">
+      <mxCell style="scriptNode" parent="baselayer" vertex="1">
+        <mxGeometry x="1092" y="2850" width="168" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="289" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="baselayer" source="282" target="156" edge="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="1585" y="3460" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <object label="event: 1200&lt;br&gt;action: CT" Type="script" OnEnter="" OnLeave="" DynamicNextId="" Code="varObj.ivrEvent = &#39;1200&#39;;
+&#xa;varObj.ivrAction = &#39;CT&#39;;" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="282">
+      <mxCell style="scriptNode" parent="baselayer" vertex="1">
+        <mxGeometry x="1501" y="3300" width="168" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="287" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="baselayer" source="284" target="282" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="Log" Type="script" OnEnter="" OnLeave="" DynamicNextId="" Code="log_debug(&quot;----------------------------------&quot;); &#xa;log_debug(&quot;Error happening with the scheduler&quot;); &#xa;log_debug(&quot;Handeling call as line is opened&quot;); &#xa;log_debug(&quot;----------------------------------&quot;);" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="284">
+      <mxCell style="scriptNode" parent="baselayer" vertex="1">
+        <mxGeometry x="1499.97" y="3158" width="168" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="component" ComponentGuid="da71a20a-d4d4-431c-bda4-1dca3d981ad5" ComponentVersion="nLusD6pZFFSsXAqdhcj3FQ==" SupportedLanguages="" __retriesOnFailure="1" __tokenUrl="&quot;https://login.microsoftonline.com/24139d14-c62c-4c47-8bdd-ce71ea1d50cf/oauth2/v2.0/token&quot;" __clientIdAcc="&quot;29ff6118-7b55-44b8-8e95-03636d3334f8&quot;" __clientIdPrd="&quot;487c3298-394e-4ef3-9ca2-b0eda87b1a14&quot;" __environment="environment" __forceTokenReload="false" SingleInput="0" ManualId="" EnableUpdateRelations="true" AllowGlobalIntent="false" PropertiesDefinition="&#39;[ \n    { \n        \&#39;name\&#39;: \&#39;__retriesOnFailure\&#39;, \n        \&#39;title\&#39;: \&#39;The total amount of tries\&#39;, \n        \&#39;hint\&#39;: \&#39;Select the total tries to retrieve a valid Okta Auth header.\&#39;, \n        \&#39;controlSettings\&#39;: { \n            \&#39;controlType\&#39;: \&#39;dropdown\&#39;, \n            \&#39;defaultValue\&#39;: 1, \n            \&#39;dataType\&#39;: \&#39;number\&#39;,  \n            \&#39;options\&#39;: [ \n                1, \n                2, \n                3 \n            ] \n        } \n    }, \n    { \n        \&#39;name\&#39;: \&#39;__forceTokenReload\&#39;, \n        \&#39;title\&#39;: \&#39;Forced token reload\&#39;, \n        \&#39;controlSettings\&#39;: { \n            \&#39;controlType\&#39;: \&#39;dropdown\&#39;, \n            \&#39;defaultValue\&#39;: \&#39;false\&#39;, \n            \&#39;options\&#39;: [ \n                \&#39;true\&#39;, \n                \&#39;false\&#39; \n            ] \n        } \n    } \n]&#39;" id="261">
+      <mxCell style="component3Node" parent="baselayer" vertex="1">
+        <mxGeometry x="-12.529999999999944" y="-790" width="155" height="120" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="nalOktaAuth" id="262">
+      <mxCell style="componentInnerNode" parent="261" vertex="1">
+        <mxGeometry x="10" y="16" width="135" height="34" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="&lt;font color=&quot;#333333&quot;&gt;&lt;span style=&quot;font-weight: normal&quot;&gt;getTokenFailure&lt;br&gt;&lt;/span&gt;&lt;/font&gt;" ComponentId="23" SubType="transient" Kind="output" id="263">
+      <mxCell style="component3OutputNode" parent="261" vertex="1">
+        <mxGeometry x="10" y="50" width="135" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="&lt;font color=&quot;#333333&quot;&gt;&lt;span style=&quot;font-weight: normal&quot;&gt;getTokenSuccess&lt;br&gt;&lt;/span&gt;&lt;/font&gt;" ComponentId="17" SubType="transient" Kind="output" id="264">
+      <mxCell style="component3OutputNode" parent="261" vertex="1">
+        <mxGeometry x="10" y="80" width="135" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="component" ComponentGuid="953a6f47-b453-4d6f-96eb-d67f2a222bcf" ComponentVersion="dPdDs3WsUtvPUYJ6ZgJ2Jw==" SupportedLanguages="" __environment="null" SingleInput="0" SingleOutput="6" ManualId="" EnableUpdateRelations="true" AllowGlobalIntent="false" PropertiesDefinition="" id="258">
+      <mxCell style="component3Node" parent="baselayer" vertex="1">
+        <mxGeometry x="-12.529999999999944" y="-920" width="155" height="60" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="getEnvironment" id="259">
+      <mxCell style="componentInnerNode" parent="258" vertex="1">
+        <mxGeometry x="10" y="16" width="135" height="34" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="266" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="baselayer" source="263" target="268" edge="1">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="152.97" y="-725" />
+          <mxPoint x="152.97" y="-630" />
+          <mxPoint x="64.97" y="-630" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="267" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="baselayer" source="264" target="268" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="140" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="296" target="135" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="413" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="290" target="407" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="event: 1204&lt;br&gt;action: CT" Type="script" OnEnter="" OnLeave="" DynamicNextId="" Code="varObj.ivrEvent = &#39;1204&#39;;
+&#xa;varObj.ivrAction = &#39;CT&#39;;" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="290">
+      <mxCell style="scriptNode" parent="baselayer" vertex="1">
+        <mxGeometry x="2952" y="4200" width="168" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="295" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="293" target="138" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="event: 1204&lt;br&gt;action: DC" Type="script" OnEnter="" OnLeave="" DynamicNextId="" Code="varObj.ivrEvent = &#39;1204&#39;;
+&#xa;varObj.ivrAction = &#39;DC&#39;;" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="293">
+      <mxCell style="scriptNode" parent="baselayer" vertex="1">
+        <mxGeometry x="3300" y="3637.25" width="168" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="event: 1204&lt;br&gt;action: TX" Type="script" OnEnter="" OnLeave="" DynamicNextId="" Code="varObj.ivrEvent = &#39;1204&#39;;
+&#xa;varObj.ivrAction = &#39;TX&#39;;" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="296">
+      <mxCell style="scriptNode" parent="baselayer" vertex="1">
+        <mxGeometry x="3120" y="3920" width="168" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="34" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" edge="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="360" y="2391" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="344" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="baselayer" source="333" target="336" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="Welkom bij Mobiliteit en Parkeren Antwerpen. " Type="say" OnEnter="context.returnTo = context.currentNode.id" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Language="" Voice="" SelectionMode="temporary" Cache="true" Text="Welkom bij Mobiliteit en Parkeren Antwerpen. " AltTexts="" DynamicNextTabGuid="" ContinueAfter="" WaitForPrevious="false" EscapeXML="true" id="333">
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-88.5" y="-140" width="306" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="348" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="baselayer" source="334" target="337" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="Dit is een variabele boodschap die geactiveerd kan worden." Type="say" OnEnter="context.returnTo = context.currentNode.id" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Language="" Voice="" SelectionMode="permanent" Cache="" Text="Dit is een variabele boodschap die geactiveerd kan worden." AltTexts="" DynamicNextTabGuid="" ContinueAfter="" WaitForPrevious="false" EscapeXML="true" OutputFilter="" id="334">
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
+        <mxGeometry x="417.5" y="403.5" width="390" height="95" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="346" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="baselayer" source="335" target="338" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="Check AdHocMessage" Type="label" OnEnter="" OnLeave="" DynamicNextId="" Title="Check AdHocMessage" MaxEntryNodeId="" MaxEntryCount="" id="335">
+      <mxCell style="labelNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-95" y="210" width="320" height="75" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="345" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="baselayer" source="336" target="335" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="800ms" Type="pause" OnEnter="" OnLeave="" DynamicNextId="" Interval="800" MaxEntryNodeId="" MaxEntryCount="" id="336">
+      <mxCell style="pauseNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-2.2737367544323206e-13" y="60" width="130" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="427" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="baselayer" source="337" target="349" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="800ms" Type="pause" OnEnter="" OnLeave="" DynamicNextId="" Interval="800" MaxEntryNodeId="" MaxEntryCount="" id="337">
+      <mxCell style="pauseNode" parent="baselayer" vertex="1">
+        <mxGeometry x="547.5" y="545" width="130" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="347" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="340" target="334" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="428" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="baselayer" source="349" target="363" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="Ontving u een gasboete, druk 1.&#xa;Wil u bezwaar indienen voor een parkeerretributie of een parkeervergoeding,druk 2.&#xa;Heeft u een informatieve vraag over een parkeervergunning voor bewoners, of een andere infovraag rond parkeren? druk 3." Type="say" OnEnter="context.returnTo = context.currentNode.id" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Language="" Voice="" SelectionMode="permanent" Cache="" Text="Ontving u een gasboete, druk 1.&#xa;Wil u bezwaar indienen voor een parkeerretributie of een parkeervergoeding,druk 2.&#xa;Heeft u een informatieve vraag over een parkeervergunning voor bewoners, of een andere infovraag rond parkeren? druk 3." AltTexts="" DynamicNextTabGuid="" ContinueAfter="" WaitForPrevious="false" EscapeXML="true" OutputFilter="" id="349">
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
+        <mxGeometry x="70" y="720" width="390" height="138" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="430" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="352" target="349" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="Wij hebben u keuze niet herkend, probeer opnieuw alsjeblief" Type="say" OnEnter="context.returnTo = context.currentNode.id" OnLeave="" DynamicNextId="" Text="Wij hebben u keuze niet herkend, probeer opnieuw alsjeblief" AltTexts="" SelectionMode="temporary" MaxEntryCount="" MaxEntryNodeId="" Language="" Voice="" Text_nl="De service-desk van N-Allo is momenteel gesloten. Indien u een dringende oproep heeft gelieve aan de lijn te blijven, wij verbinden u door met een technieker van wacht." AltTexts_nl="" DynamicNextTabGuid="" ContinueAfter="" WaitForPrevious="false" Cache="true" EscapeXML="true" id="352">
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-722.53" y="711.5" width="390" height="95" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="hung" OnEnter="" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" id="358">
+      <mxCell style="hungNode" parent="baselayer" vertex="1">
+        <mxGeometry x="2020" y="828" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="359" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="360" target="362" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="IVREvent = &#39;3999&#39;" Type="setvar" OnEnter="" OnLeave="" DynamicNextId="" VariableName="IVREvent" VariableValue="&#39;3999&#39;" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="360">
+      <mxCell style="setvarNode" parent="baselayer" vertex="1">
+        <mxGeometry x="720" y="891" width="223.25" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="361" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="baselayer" source="362" target="372" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="IVRAction = &#39;DC&#39;" Type="setvar" OnEnter="" OnLeave="" DynamicNextId="" VariableName="IVRAction" VariableValue="&#39;DC&#39;" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="362">
+      <mxCell style="setvarNode" parent="baselayer" vertex="1">
+        <mxGeometry x="1220" y="891" width="233.25" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="434" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="372" target="358" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="Welkom bij de dienst GAS, stilstaan en parkeren.&#xa;Vanaf 1 juni 2019 zijn wij telefonisch niet meer bereikbaar.&#xa;Via www punt &quot;Antwerpen&quot;punt &quot;b&quot; &quot;e&quot;; Onder de rubriek ‘met de auto’ kan u onder GAS boetes een lijst terugvinden met de meest gestelde vragen. Indien u hier geen antwoord op uw vraag vindt, kan u een e-mail sturen naar GAS, underscore, parkeren at Antwerpen punt &quot;b&quot; &quot;e&quot;.&#xa;Vermeld in elke e-mail steeds het dossiernummer zodat de dienst u vlot kan verder helpen.&#xa;Wij wensen u een prettige dag verder." Type="say" OnEnter="context.returnTo = context.currentNode.id" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Language="" Voice="" SelectionMode="permanent" Cache="true" Text="Welkom bij de dienst GAS, stilstaan en parkeren.&#xa;Vanaf 1 juni 2019 zijn wij telefonisch niet meer bereikbaar.&#xa;Via www punt &quot;Antwerpen&quot;punt &quot;b&quot; &quot;e&quot;; Onder de rubriek ‘met de auto’ kan u onder GAS boetes een lijst terugvinden met de meest gestelde vragen. Indien u hier geen antwoord op uw vraag vindt, kan u een e-mail sturen naar GAS, underscore, parkeren at Antwerpen punt &quot;b&quot; &quot;e&quot;.&#xa;Vermeld in elke e-mail steeds het dossiernummer zodat de dienst u vlot kan verder helpen.&#xa;Wij wensen u een prettige dag verder." AltTexts="" DynamicNextTabGuid="" ContinueAfter="" WaitForPrevious="false" EscapeXML="true" OutputFilter="" id="372">
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
+        <mxGeometry x="1654" y="1015" width="390" height="210" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="432" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="373" target="374" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="IVREvent = &#39;3001&#39;" Type="setvar" OnEnter="" OnLeave="" DynamicNextId="" VariableName="IVREvent" VariableValue="&#39;3001&#39;" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="373">
+      <mxCell style="setvarNode" parent="baselayer" vertex="1">
+        <mxGeometry x="740" y="1091" width="223.25" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="433" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="374" target="372" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="IVRAction = &#39;DC&#39;" Type="setvar" OnEnter="" OnLeave="" DynamicNextId="" VariableName="IVRAction" VariableValue="&#39;DC&#39;" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="374">
+      <mxCell style="setvarNode" parent="baselayer" vertex="1">
+        <mxGeometry x="1241" y="1080" width="233.25" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="385" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;" parent="baselayer" source="379" target="358" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="Bezwaar indienen kan niet telefonisch. &#xa;Wenst u bezwaar in te dienen, dan kan dit via ons online portaal: www punt &quot;antwerpen&quot; punt &quot;b&quot; &quot;e&quot; , slash, parkeerportaal.&#xa;Of via post, ter attentie van: Mobiliteit en Parkeren Antwerpen, Grote Markt 1, 2000 Antwerpen.&#xa;De nodige gegevens kan u ook terugvinden op uw kennisgeving of aanmaning.&#xa;Wij wensen u een prettige dag verder." Type="say" OnEnter="context.returnTo = context.currentNode.id" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Language="" Voice="" SelectionMode="permanent" Cache="" Text="Bezwaar indienen kan niet telefonisch. &#xa;Wenst u bezwaar in te dienen, dan kan dit via ons online portaal: www punt &quot;antwerpen&quot; punt &quot;b&quot; &quot;e&quot; , slash, parkeerportaal.&#xa;Of via post, ter attentie van: Mobiliteit en Parkeren Antwerpen, Grote Markt 1, 2000 Antwerpen.&#xa;De nodige gegevens kan u ook terugvinden op uw kennisgeving of aanmaning.&#xa;Wij wensen u een prettige dag verder." AltTexts="" DynamicNextTabGuid="" ContinueAfter="" WaitForPrevious="false" EscapeXML="true" OutputFilter="" id="379">
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
+        <mxGeometry x="1654" y="1338.5" width="390" height="230" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="380" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="381" target="379" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="IVRAction = &#39;DC&#39;" Type="setvar" OnEnter="" OnLeave="" DynamicNextId="" VariableName="IVRAction" VariableValue="&#39;DC&#39;" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="381">
+      <mxCell style="setvarNode" parent="baselayer" vertex="1">
+        <mxGeometry x="1240" y="1413.5" width="233.25" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="384" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="382" target="381" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="IVREvent = &#39;3002&#39;" Type="setvar" OnEnter="" OnLeave="" DynamicNextId="" VariableName="IVREvent" VariableValue="&#39;3002&#39;" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="382">
+      <mxCell style="setvarNode" parent="baselayer" vertex="1">
+        <mxGeometry x="760" y="1413.5" width="223.25" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="386" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="387" target="389" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="IVREvent = &#39;3003&#39;" Type="setvar" OnEnter="" OnLeave="" DynamicNextId="" VariableName="IVREvent" VariableValue="&#39;3003&#39;" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="387">
+      <mxCell style="setvarNode" parent="baselayer" vertex="1">
+        <mxGeometry x="760" y="1740" width="223.25" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="388" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="389" target="390" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="IVRAction = &#39;CT&#39;" Type="setvar" OnEnter="" OnLeave="" DynamicNextId="" VariableName="IVRAction" VariableValue="&#39;CT&#39;" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="389">
+      <mxCell style="setvarNode" parent="baselayer" vertex="1">
+        <mxGeometry x="1249.25" y="1740" width="233.25" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="400" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="baselayer" source="390" target="394" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="Check AdHocMessage" Type="label" OnEnter="" OnLeave="" DynamicNextId="" Title="Check AdHocMessage" MaxEntryNodeId="" MaxEntryCount="" id="390">
+      <mxCell style="labelNode" parent="baselayer" vertex="1">
+        <mxGeometry x="1616.75" y="1745" width="320" height="75" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="392" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="baselayer" source="393" target="13" edge="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="1590" y="2460" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <object label="Dit is een variabele boodschap die geactiveerd kan worden." Type="say" OnEnter="context.returnTo = context.currentNode.id" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Language="" Voice="" SelectionMode="temporary" Cache="True" Text="Dit is een variabele boodschap die geactiveerd kan worden." AltTexts="" id="393">
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
+        <mxGeometry x="2135" y="2113.5" width="390" height="95" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="185" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="179" target="184" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="" Type="case" OnEnter="" OnLeave="" MaxEntryNodeId="" MaxEntryCount="" id="394">
+      <mxCell style="caseNode" parent="baselayer" vertex="1">
+        <mxGeometry x="1624.25" y="2090" width="305" height="156" as="geometry" />
+      </mxCell>
+    </object>
+    <object id="395">
+      <mxCell style="caseInnerNode" parent="394" vertex="1">
+        <mxGeometry x="10" y="16" width="285" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="adhocAfterMainMenu == true" DynamicNextId="" SubType="expression" Expression="adhocAfterMainMenu == true" DynamicNextTabGuid="" id="396">
+      <mxCell style="expressionNode" parent="394" vertex="1">
+        <mxGeometry x="10" y="56" width="285" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="adhocAfterMainMenu == false" DynamicNextId="" SubType="expression" Expression="adhocAfterMainMenu == false" DynamicNextTabGuid="" id="397">
+      <mxCell style="expressionNode" parent="394" vertex="1">
+        <mxGeometry x="10" y="86" width="285" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="no choice" DynamicNextId="" SubType="default" id="398">
+      <mxCell style="defaultNode" parent="394" vertex="1">
+        <mxGeometry x="10" y="116" width="285" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="hung" OnEnter="" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" id="401">
+      <mxCell style="hungNode" parent="baselayer" vertex="1">
+        <mxGeometry x="4913.25" y="4443" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="402" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="403" target="406" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="Blijf aan de lijn, een medewerker staat u zo dadelijk te woord." Type="say" OnEnter="context.returnTo = context.currentNode.id" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Language="" Voice="" SelectionMode="temporary" Cache="True" Text="Blijf aan de lijn, een medewerker staat u zo dadelijk te woord." AltTexts="" id="403">
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
+        <mxGeometry x="3356" y="4200" width="390" height="95" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="423" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="404" target="401" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="Momenteel is onze dienst wegens technische storingen tijdelijk telefonisch niet bereikbaar. &#xa;Probeert u het later opnieuw. Onze excuses voor het ongemak." Type="say" OnEnter="context.returnTo = context.currentNode.id" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" DynamicNextId="" Language="" Voice="" SelectionMode="permanent" Cache="" Text="Momenteel is onze dienst wegens technische storingen tijdelijk telefonisch niet bereikbaar. &#xa;Probeert u het later opnieuw. Onze excuses voor het ongemak." AltTexts="" DynamicNextTabGuid="" ContinueAfter="" WaitForPrevious="false" EscapeXML="true" OutputFilter="" id="404">
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
+        <mxGeometry x="4408.25" y="4408" width="390" height="109" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="405" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="406" target="409" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="Transfer to Tringer&lt;br&gt;QueueName = MPA" Type="label" OnEnter="" OnLeave="" DynamicNextId="" Title="Transfer to Tringer&#xa;QueueName = MPA" MaxEntryNodeId="" MaxEntryCount="" id="406">
+      <mxCell style="labelNode" parent="baselayer" vertex="1">
+        <mxGeometry x="3840" y="4187.5" width="198" height="120" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="414" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="407" target="403" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="500ms" Type="pause" OnEnter="" OnLeave="" DynamicNextId="" Interval="500" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="407">
+      <mxCell style="pauseNode" parent="baselayer" vertex="1">
+        <mxGeometry x="3210" y="4200" width="130" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="case" OnEnter="" OnLeave="" MaxEntryNodeId="" MaxEntryCount="" id="117">
+      <mxCell style="caseNode" parent="baselayer" vertex="1">
+        <mxGeometry x="1432.5" y="3774.5" width="305" height="156" as="geometry" />
+      </mxCell>
+    </object>
+    <object id="118">
+      <mxCell style="caseInnerNode" parent="117" vertex="1">
+        <mxGeometry x="10" y="16" width="285" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="emergencyActive == true" DynamicNextId="" SubType="expression" Expression="emergencyActive == true" DynamicNextTabGuid="" id="119">
+      <mxCell style="expressionNode" parent="117" vertex="1">
+        <mxGeometry x="10" y="56" width="285" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="emergencyActive == false" DynamicNextId="" SubType="expression" Expression="emergencyActive == false" DynamicNextTabGuid="" id="120">
+      <mxCell style="expressionNode" parent="117" vertex="1">
+        <mxGeometry x="10" y="86" width="285" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="no choice" DynamicNextId="" SubType="default" id="121">
+      <mxCell style="defaultNode" parent="117" vertex="1">
+        <mxGeometry x="10" y="116" width="285" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="415" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" parent="baselayer" source="120" target="290" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="416" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" parent="baselayer" source="121" target="290" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="422" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="119" target="122" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="" Type="case" OnEnter="" OnLeave="" MaxEntryNodeId="" MaxEntryCount="" id="127">
+      <mxCell style="caseNode" parent="baselayer" vertex="1">
+        <mxGeometry x="2570" y="3576.25" width="305" height="187.5" as="geometry" />
+      </mxCell>
+    </object>
+    <object id="128">
+      <mxCell style="caseInnerNode" parent="127" vertex="1">
+        <mxGeometry x="10" y="16" width="285" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="emergencyAction== &#39;Continue&#39;" DynamicNextId="" SubType="expression" Expression="emergencyAction== &#39;Continue&#39;" DynamicNextTabGuid="" id="129">
+      <mxCell style="expressionNode" parent="127" vertex="1">
+        <mxGeometry x="10" y="56" width="285" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="emergencyAction == &#39;Disconnect&#39;" DynamicNextId="" SubType="expression" Expression="emergencyAction == &#39;Disconnect&#39;" DynamicNextTabGuid="" id="130">
+      <mxCell style="expressionNode" parent="127" vertex="1">
+        <mxGeometry x="10" y="86" width="285" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="emergencyAction == &#39;Transfer&#39;" DynamicNextId="" SubType="expression" Expression="emergencyAction == &#39;Transfer&#39;" DynamicNextTabGuid="" id="133">
+      <mxCell style="expressionNode" parent="127" vertex="1">
+        <mxGeometry x="10" y="116" width="285" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="no choice" DynamicNextId="" SubType="default" id="131">
+      <mxCell style="defaultNode" parent="127" vertex="1">
+        <mxGeometry x="10" y="146" width="285" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="298" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="129" target="290" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="294" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="130" target="293" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="297" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="133" target="296" edge="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="2825.25" y="3874" as="sourcePoint" />
+        <mxPoint x="3350.25" y="3970" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="299" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="131" target="290" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="" Type="redirect" OnEnter="" OnLeave="" Destination="{transferNumber}" MaxEntryCount="" MaxEntryNodeId="" Parameters="" ResultVariableName="" TransferType="Unspecified" SuccessCondition="" MessageText="" MessageCache="true" MessageVoice="" MessageLanguage="" id="135">
+      <mxCell style="redirectNode" parent="baselayer" vertex="1">
+        <mxGeometry x="3650" y="3900" width="160" height="120" as="geometry" />
+      </mxCell>
+    </object>
+    <object id="136">
+      <mxCell style="redirectInnerNode" parent="135" vertex="1">
+        <mxGeometry x="10" y="16" width="140" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="not accepted" DynamicNextId="" SubType="default" id="137">
+      <mxCell style="defaultNode" parent="135" vertex="1">
+        <mxGeometry x="10" y="56" width="140" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="143" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="baselayer" source="137" target="138" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="383" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="366" target="382" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="391" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="367" target="387" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="369" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;" parent="baselayer" source="368" target="354" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="399" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="396" target="393" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="420" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="baselayer" source="397" target="13" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="421" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.589;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" parent="baselayer" source="398" target="13" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="425" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="341" target="349" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="426" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="342" target="349" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="429" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="356" target="352" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="431" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="365" target="373" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="436" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="437" target="438" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="&lt;br/&gt;Goeie dag. &lt;br/&gt;Welkom bij Mobiliteit en Parkeren Antwerpen. &lt;br/&gt;Momenteel zijn we gesloten wegens een feest- of brugdag.&lt;br/&gt;Wij zijn telefonisch bereikbaar van maandag tot en met vrijdag. &lt;br/&gt;Op maandag, woensdag en vrijdag van 9 uur tot 13 uur, en op dinsdag en donderdag van 12 uur 30 tot 16 uur 30. &lt;br/&gt;U kan ondertussen een kijkje nemen op onze website&amp;nbsp;www punt parkeren in &quot;antwerpen&quot; punt &quot;b&quot; &quot;e&quot;,&amp;nbsp;waar u mogelijk al een antwoord op uw vraag vindt. &lt;br/&gt;Wij wensen u een prettige dag verder&lt;br/&gt;" Type="say" OnEnter="context.returnTo = context.currentNode.id" OnLeave="" DynamicNextId="" Text="&#xa;Goeie dag. &#xa;Welkom bij Mobiliteit en Parkeren Antwerpen. &#xa;Momenteel zijn we gesloten wegens een feest- of brugdag.&#xa;Wij zijn telefonisch bereikbaar van maandag tot en met vrijdag. &#xa;Op maandag, woensdag en vrijdag van 9 uur tot 13 uur, en op dinsdag en donderdag van 12 uur 30 tot 16 uur 30. &#xa;U kan ondertussen een kijkje nemen op onze website www punt parkeren in &quot;antwerpen&quot; punt &quot;b&quot; &quot;e&quot;, waar u mogelijk al een antwoord op uw vraag vindt. &#xa;Wij wensen u een prettige dag verder&#xa;" AltTexts="" SelectionMode="permanent" MaxEntryCount="" MaxEntryNodeId="" Language="" Voice="" Text_nl="De service-desk van N-Allo is momenteel gesloten. Indien u een dringende oproep heeft gelieve aan de lijn te blijven, wij verbinden u door met een technieker van wacht." AltTexts_nl="" DynamicNextTabGuid="" ContinueAfter="" WaitForPrevious="false" Cache="true" EscapeXML="true" OutputFilter="" id="437">
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
+        <mxGeometry x="2146.5" y="2626" width="390" height="196" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="hung" OnEnter="" OnLeave="" MaxEntryCount="" MaxEntryNodeId="" id="438">
+      <mxCell style="hungNode" parent="baselayer" vertex="1">
+        <mxGeometry x="2656.5" y="2704" width="130" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="439" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="440" target="437" edge="1">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points" />
+      </mxGeometry>
+    </mxCell>
+    <object label="event: 1201&lt;br&gt;action: DC" Type="script" OnEnter="" OnLeave="" DynamicNextId="" Code="varObj.ivrEvent = &#39;1201&#39;;
+&#xa;varObj.ivrAction = &#39;DC&#39;;" MaxEntryNodeId="" MaxEntryCount="" DynamicNextTabGuid="" id="440">
+      <mxCell style="scriptNode" parent="baselayer" vertex="1">
+        <mxGeometry x="1788.5" y="2684" width="168" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="case" OnEnter="" OnLeave="" MaxEntryNodeId="" MaxEntryCount="" id="14">
+      <mxCell style="caseNode" parent="baselayer" vertex="1">
+        <mxGeometry x="1501" y="2850" width="205" height="216" as="geometry" />
+      </mxCell>
+    </object>
+    <object id="15">
+      <mxCell style="caseInnerNode" parent="14" vertex="1">
+        <mxGeometry x="10" y="16" width="185" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="apiSuccess == &#39;Holiday&#39;" DynamicNextId="" SubType="expression" Expression="apiSuccess == &#39;Holiday&#39;" DynamicNextTabGuid="" id="435">
+      <mxCell style="expressionNode" parent="14" vertex="1">
+        <mxGeometry x="10" y="56" width="185" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="apiSuccess == &#39;Transfer&#39;" DynamicNextId="" SubType="expression" Expression="apiSuccess == &#39;Transfer&#39;" DynamicNextTabGuid="" id="215">
+      <mxCell style="expressionNode" parent="14" vertex="1">
+        <mxGeometry x="10" y="86" width="185" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="apiSuccess == &#39;Closed&#39;" DynamicNextId="" SubType="expression" Expression="apiSuccess == &#39;Closed&#39;" id="213">
+      <mxCell style="expressionNode" parent="14" vertex="1">
+        <mxGeometry x="10" y="116" width="185" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="apiSuccess == &#39;Open&#39;" DynamicNextId="" SubType="expression" Expression="apiSuccess == &#39;Open&#39;" DynamicNextTabGuid="" id="17">
+      <mxCell style="expressionNode" parent="14" vertex="1">
+        <mxGeometry x="10" y="146" width="185" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="Error&lt;br&gt;" DynamicNextId="" SubType="default" id="190">
+      <mxCell style="defaultNode" parent="14" vertex="1">
+        <mxGeometry x="10" y="176" width="185" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="278" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="215" target="274" edge="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="1442.499999999999" y="2964" as="sourcePoint" />
+        <mxPoint x="889.9999999999991" y="2960" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="277" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="213" target="275" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="424" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="17" target="282" edge="1">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="1420" y="3024" />
+          <mxPoint x="1420" y="3340" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="288" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="baselayer" source="190" target="284" edge="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="1584.999999999999" y="3069" as="sourcePoint" />
+        <mxPoint x="1584.999999999999" y="3200" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="442" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="435" target="440" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="445" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="baselayer" source="443" target="360" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object label="U hebt het einde van het keuzemenu bereikt, indien u een keuze hebt gemaakt wordt de verbinding verbroken" Type="say" OnEnter="context.returnTo = context.currentNode.id" OnLeave="" DynamicNextId="" Text="U hebt het einde van het keuzemenu bereikt, indien u een keuze hebt gemaakt wordt de verbinding verbroken" AltTexts="" SelectionMode="temporary" MaxEntryCount="" MaxEntryNodeId="" Language="" Voice="" Text_nl="De service-desk van N-Allo is momenteel gesloten. Indien u een dringende oproep heeft gelieve aan de lijn te blijven, wij verbinden u door met een technieker van wacht." AltTexts_nl="" DynamicNextTabGuid="" ContinueAfter="" WaitForPrevious="false" Cache="true" EscapeXML="true" id="443">
+      <mxCell style="sayNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-387.53" y="883.5" width="390" height="95" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="" Type="redirect" OnEnter="" OnLeave="" Destination="570045" MaxEntryCount="" MaxEntryNodeId="" Parameters="X-Context: { headerContext };" ResultVariableName="" TransferType="attend" SuccessCondition="" MessageText="" MessageCache="true" MessageVoice="" MessageLanguage="" id="409">
+      <mxCell style="redirectNode" parent="baselayer" vertex="1">
+        <mxGeometry x="4135" y="4180" width="160" height="120" as="geometry" />
+      </mxCell>
+    </object>
+    <object id="410">
+      <mxCell style="redirectInnerNode" parent="409" vertex="1">
+        <mxGeometry x="10" y="16" width="140" height="40" as="geometry" />
+      </mxCell>
+    </object>
+    <object label="not accepted" DynamicNextId="" SubType="default" id="411">
+      <mxCell style="defaultNode" parent="409" vertex="1">
+        <mxGeometry x="10" y="56" width="140" height="30" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell id="412" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="baselayer" source="411" target="404" edge="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+  </root>
+</mxGraphModel>

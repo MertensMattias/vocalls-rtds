@@ -1,0 +1,237 @@
+{
+    "sourceId": "+3233437414",
+    "name": "DIGIPOLIS - SW_SV",
+    "project": "DIGIPOLIS_DA_SW_SV",
+    "promptLibrary": "DIGIPOLIS\\SW\\SV",
+    "supportedLanguages": "NL",
+    "operations": [
+        {
+            "id": "00000",
+            "type": "setVariables",
+            "name": "Call Initialization",
+            "isFirstOperation": true,
+            "params": {
+                "active": true,
+                "keysToLog": "[\"customerName\", \"customerProject\", \"routingId\", \"language\", \"ani\", \"dnis\", \"interactionStartTime\", \"routingKey\", \"ivrEvent\", \"ivrAction\" ]",
+                "customerName": "DA",
+                "customerProject": "SW_OMGEVING",
+                "routingId": "DA-SW-OMGEVING",
+                "ivrEvent": "9999",
+                "ivrAction": "CT",
+                "nextStep": "00004"
+            }
+        },
+        {
+            "id": "00004",
+            "type": "checkSchedule",
+            "name": "Check: Scheduler",
+            "params": {
+                "active": true,
+                "applicationId": 1,
+                "scheduleId": 41,
+                "nextStep_Open": "00010",
+                "nextStep_Closed": "00011",
+                "nextStep_Transfer": "00012",
+                "nextStep_Failure": "00013",
+                "nextStep": "00013"
+            }
+        },
+        {
+            "id": "00010",
+            "type": "setVariables",
+            "name": "Set: Cognos Open",
+            "params": {
+                "active": true,
+                "ivrEvent": "1200",
+                "ivrAction": "CT",
+                "nextStep": "00001"
+            }
+        },
+        {
+            "id": "00011",
+            "type": "setVariables",
+            "name": "Set: Cognos Closed",
+            "params": {
+                "active": true,
+                "ivrEvent": "1201",
+                "ivrAction": "DC",
+                "nextStep": "00030"
+            }
+        },
+        {
+            "id": "00012",
+            "type": "setVariables",
+            "name": "Set: Cognos Transfer",
+            "params": {
+                "active": true,
+                "ivrEvent": "1201",
+                "ivrAction": "TX",
+                "nextStep": "00040"
+            }
+        },
+        {
+            "id": "00013",
+            "type": "setVariables",
+            "name": "Set: Cognos Scheduler Error (treat as Open)",
+            "params": {
+                "active": true,
+                "ivrEvent": "1200",
+                "ivrAction": "CT",
+                "nextStep": "00001"
+            }
+        },
+        {
+            "id": "00001",
+            "type": "say",
+            "name": "Play: Welcome",
+            "params": {
+                "active": [
+                    true,
+                    "isDisplayed",
+                    "isEditable"
+                ],
+                "applicationId": 11,
+                "prompt": [
+                    "unknown",
+                    "isDisplayed",
+                    "isEditable"
+                ],
+                "nextStep": "00024"
+            },
+            "ttsMessages": {
+                "NL": "Welkom bij de afdeling Omgeving!\nWist je dat je op onze website uitgebreide informatie over omgevingsvergunningen vindt: ga naar omgeving punt antwerpen punt b e,.\nBlijf aan de lijn als je telefonisch verder geholpen wil worden, bedankt voor jouw geduld en begrip.\nWe helpen je zo snel mogelijk verder.\nOm onze dienstverlening te verbeteren, registreren we je klantvraag en vragen we enkele persoonsgegevens op."
+            }
+        },
+        {
+            "id": "00024",
+            "type": "say",
+            "name": "Play: AdHoc",
+            "params": {
+                "active": [
+                    false,
+                    "isDisplayed",
+                    "isEditable"
+                ],
+                "applicationId": 6,
+                "prompt": [
+                    "unknown",
+                    "isDisplayed",
+                    "isEditable"
+                ],
+                "nextStep": "00025"
+            },
+            "ttsMessages": {
+                "NL": "Dit is een variabele boodschap die geactiveerd kan worden."
+            }
+        },
+        {
+            "id": "00025",
+            "type": "say",
+            "name": "Play: Transfer Announcement",
+            "params": {
+                "active": [
+                    true,
+                    "isDisplayed",
+                    "isEditable"
+                ],
+                "applicationId": 13,
+                "prompt": [
+                    "unknown",
+                    "isDisplayed",
+                    "isEditable"
+                ],
+                "nextStep": "00060"
+            },
+            "ttsMessages": {
+                "NL": "U wordt zo dadelijk doorverbonden"
+            }
+        },
+        {
+            "id": "00030",
+            "type": "say",
+            "name": "Play: Scheduler Closed",
+            "params": {
+                "active": [
+                    true,
+                    "isDisplayed",
+                    "isEditable"
+                ],
+                "applicationId": 1,
+                "prompt": [
+                    "unknown",
+                    "isDisplayed",
+                    "isEditable"
+                ],
+                "nextStep": "00100"
+            },
+            "ttsMessages": {
+                "NL": "Welkom bij de afdeling Omgeving! \nHet callcenter is nu gesloten.\nWe begrijpen dat persoonlijk contact belangrijk kan zijn, daarom zijn we telefonisch bereikbaar van maandag tot vrijdag, tussen 9 uur en 12 uur. - \nJe kan ons steeds opbellen tijdens deze tijden om direct met één van onze medewerkers te spreken.\nWe nodigen je uit om onze website te bezoeken op omgeving punt antwerpen punt b e,.\nZo heb je direct toegang tot informatie over omgevingsvergunningen."
+            }
+        },
+        {
+            "id": "00040",
+            "type": "externalTransfer",
+            "name": "Route-To: Scheduler Transfer Number",
+            "params": {
+                "active": true,
+                "phoneNumber": [
+                    "${schedulerTransferNumber}",
+                    "isDisplayed",
+                    "isEditable"
+                ],
+                "outboundANI": "",
+                "parameters": "",
+                "attendTransfer": false,
+                "timeout": 30000,
+                "nextStep_Failure": "00100",
+                "nextStep": "00100"
+            }
+        },
+        {
+            "id": "00060",
+            "type": "internalTransfer",
+            "name": "Route-To: SW_OMGEVING",
+            "params": {
+                "active": true,
+                "target": [
+                    "570030",
+                    "isDisplayed",
+                    "isEditable"
+                ],
+                "parameters": "{\r\n                    \"callIdKey\": \"${callIdKey}\",\r\n                    \"customerName\": \"${customerName}\",\r\n                    \"customerProject\": \"${customerProject}\"\r\n                }",
+                "attendTransfer": true,
+                "timeout": 30000,
+                "nextStep_Failure": "00070",
+                "nextStep": "00100"
+            }
+        },
+        {
+            "id": "00070",
+            "type": "say",
+            "name": "Play: Transfer Not Accepted (Exceptionally Closed)",
+            "params": {
+                "active": [
+                    true,
+                    "isDisplayed",
+                    "isEditable"
+                ],
+                "applicationId": 14,
+                "prompt": [
+                    "unknown",
+                    "isDisplayed",
+                    "isEditable"
+                ],
+                "nextStep": "00100"
+            },
+            "ttsMessages": {
+                "NL": "Welkom bij de afdeling Omgeving! \nVandaag zijn we uitzonderlijk gesloten. \nWe begrijpen dat persoonlijk contact belangrijk kan zijn, daarom zijn we doorgaans telefonisch bereikbaar van maandag tot vrijdag, tussen 9 uur en 12 uur.\nJe kan ons steeds opbellen binnen deze tijden om direct met één van onze medewerkers te spreken. \nWe nodigen je uit om onze website te bezoeken op omgeving punt antwerpen punt b e,.\nZo heb je direct toegang tot informatie over omgevingsvergunningen."
+            }
+        },
+        {
+            "id": "00100",
+            "type": "disconnect",
+            "name": "RTDS: Disconnect",
+            "params": {}
+        }
+    ]
+}

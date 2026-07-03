@@ -1,0 +1,201 @@
+{
+    "sourceId": "+3233383899",
+    "name": "DIGIPOLIS - SW_LEZ_BACKOFFICE",
+    "project": "DIGIPOLIS_DA_SW_LEZ",
+    "promptLibrary": "DIGIPOLIS\\SW\\LEZ_BACKOFFICE",
+    "supportedLanguages": "NL",
+    "operations": [
+        {
+            "id": "00000",
+            "type": "setVariables",
+            "name": "Call Initialization",
+            "isFirstOperation": true,
+            "params": {
+                "active": true,
+                "keysToLog": "[\"customerName\", \"customerProject\", \"routingId\", \"language\", \"ani\", \"dnis\", \"interactionStartTime\", \"routingKey\", \"ivrEvent\", \"ivrAction\" ]",
+                "customerName": "DA",
+                "customerProject": "SW_LEZ_BACKOFFICE",
+                "routingId": "DA-SW-LEZ-BACKOFFICE",
+                "ivrEvent": "9999",
+                "ivrAction": "CT",
+                "nextStep": "00004"
+            }
+        },
+        {
+            "id": "00004",
+            "type": "checkSchedule",
+            "name": "Check: Scheduler",
+            "params": {
+                "active": true,
+                "applicationId": 1,
+                "scheduleId": 43,
+                "nextStep_Open": "00010",
+                "nextStep_Closed": "00011",
+                "nextStep_Transfer": "00012",
+                "nextStep_Holiday": "00014",
+                "nextStep_Failure": "00013",
+                "nextStep": "00013"
+            }
+        },
+        {
+            "id": "00010",
+            "type": "setVariables",
+            "name": "Set: Cognos Open",
+            "params": {
+                "active": true,
+                "ivrEvent": "1200",
+                "ivrAction": "CT",
+                "nextStep": "00024"
+            }
+        },
+        {
+            "id": "00011",
+            "type": "setVariables",
+            "name": "Set: Cognos Closed",
+            "params": {
+                "active": true,
+                "ivrEvent": "1201",
+                "ivrAction": "DC",
+                "nextStep": "00030"
+            }
+        },
+        {
+            "id": "00012",
+            "type": "setVariables",
+            "name": "Set: Cognos Transfer",
+            "params": {
+                "active": true,
+                "ivrEvent": "1201",
+                "ivrAction": "TX",
+                "nextStep": "00040"
+            }
+        },
+        {
+            "id": "00013",
+            "type": "setVariables",
+            "name": "Set: Cognos Scheduler Error (treat as Open)",
+            "params": {
+                "active": true,
+                "ivrEvent": "1200",
+                "ivrAction": "CT",
+                "nextStep": "00024"
+            }
+        },
+        {
+            "id": "00014",
+            "type": "setVariables",
+            "name": "Set: Cognos Holiday",
+            "params": {
+                "active": true,
+                "ivrEvent": "1201",
+                "ivrAction": "DC",
+                "nextStep": "00031"
+            }
+        },
+        {
+            "id": "00024",
+            "type": "say",
+            "name": "Play: AdHoc",
+            "params": {
+                "active": [false, "isDisplayed", "isEditable"],
+                "applicationId": 6,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00025"
+            },
+            "ttsMessages": {
+                "NL": "Dit is een variabele boodschap die geactiveerd kan worden."
+            }
+        },
+        {
+            "id": "00025",
+            "type": "say",
+            "name": "Play: Transfer Announcement",
+            "params": {
+                "active": [true, "isDisplayed", "isEditable"],
+                "applicationId": "unknown",
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00060"
+            },
+            "ttsMessages": {
+                "NL": "U wordt zo dadelijk doorverbonden"
+            }
+        },
+        {
+            "id": "00030",
+            "type": "say",
+            "name": "Play: Scheduler Closed",
+            "params": {
+                "active": [true, "isDisplayed", "isEditable"],
+                "applicationId": 1,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00100"
+            },
+            "ttsMessages": {
+                "NL": "Welkom bij het contactcenter van de Lage Emissie Zone. Momenteel is onze dienst gesloten.\nCheck op onze website www punt slim naar antwerpen punt \"b\" \"e\", schuine streep, \"L\" \"E\" \"Z\", voor alle info over de lage emissiezone of om uw voertuig te registreren.\nHeeft u een boete ontvangen en heeft u na het lezen van de brief nog een vraag, dan kan u ons op de volgende dagen bereiken, maandag, woensdag en vrijdag tussen 9 en 13 uur, en dinsdag en donderdag tussen half 1 en halfvijf."
+            }
+        },
+        {
+            "id": "00031",
+            "type": "say",
+            "name": "Play: Scheduler Holiday",
+            "params": {
+                "active": [true, "isDisplayed", "isEditable"],
+                "applicationId": 1,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00100"
+            },
+            "ttsMessages": {
+                "NL": "Welkom bij het contactcenter van Lage Emissie Zone, vandaag is onze dienst gesloten wegens een feest- of brugdag.\nCheck op onze website www punt slim naar antwerpen punt \"b\" \"e\", schuine streep, \"L\" \"E\" \"Z\", voor alle info over de lage emissiezone of om uw voertuig te registreren.\nHeeft u een boete ontvangen en heeft u na het lezen van de brief nog een vraag, dan kan u ons op de volgende dagen bereiken,\nmaandag, woensdag en vrijdag tussen 9 en 13 uur, en dinsdag en donderdag tussen half 1 en halfvijf."
+            }
+        },
+        {
+            "id": "00040",
+            "type": "externalTransfer",
+            "name": "Route-To: Scheduler Transfer Number",
+            "params": {
+                "active": true,
+                "phoneNumber": ["${schedulerTransferNumber}", "isDisplayed", "isEditable"],
+                "outboundANI": "",
+                "parameters": "",
+                "attendTransfer": false,
+                "timeout": 30000,
+                "nextStep_Failure": "00100",
+                "nextStep": "00100"
+            }
+        },
+        {
+            "id": "00060",
+            "type": "internalTransfer",
+            "name": "Route-To: SW_LEZ_BACKOFFICE",
+            "params": {
+                "active": true,
+                "target": ["570022", "isDisplayed", "isEditable"],
+                "parameters": "{\r\n                    \"callIdKey\": \"${callIdKey}\",\r\n                    \"customerName\": \"${customerName}\",\r\n                    \"customerProject\": \"${customerProject}\"\r\n                }",
+                "attendTransfer": true,
+                "timeout": 30000,
+                "nextStep_Failure": "00070",
+                "nextStep": "00100"
+            }
+        },
+        {
+            "id": "00070",
+            "type": "say",
+            "name": "Play: Transfer Not Accepted (Exceptionally Closed)",
+            "params": {
+                "active": [true, "isDisplayed", "isEditable"],
+                "applicationId": 14,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00100"
+            },
+            "ttsMessages": {
+                "NL": "Welkom bij de infolijn van de lage emissie zone, momenteel is deze dienst uitzonderlijk gesloten.\nGelieve op een andere moment terug te bellen, bedankt voor uw begrip. check of registreer uw wagen op onze website www punt slim naar antwerpen punt \"b\" \"e\", schuine streep, \"L\" \"E\" \"Z\""
+            }
+        },
+        {
+            "id": "00100",
+            "type": "disconnect",
+            "name": "RTDS: Disconnect",
+            "params": {}
+        }
+    ]
+}

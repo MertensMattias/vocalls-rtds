@@ -414,15 +414,75 @@ function resolveNextStep(op, resultKey) {
  * @param {Object} op
  * @returns {{ nextStepId: ?string }}
  */
+/* function executeSetVariables(op) {
+    var params = op.params;
+    if (!params) {
+        return { nextStepId: null };
+    }
+
+    // Active defaults to true for SetVariables: a large body of older config
+    // never sets the key, and historically those ops always wrote. Only an
+    // explicit Active:false skips. (Send* ops default false -- opt-in.)
+    if (!activeFlag(getParam(op, "active", true))) {
+        var skipNext = resolveNextStep(op, null);
+        Logger.info("[RTDS] SetVariables skipped -- inactive", {
+            nextStep: skipNext ? skipNext : "(none)",
+        });
+        return { nextStepId: skipNext };
+    }
+
+    var CONTROL = { active: 1, nextstep: 1 };
+
+    var keys = Object.keys(params);
+    var written = 0;
+    for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        if (CONTROL[String(key).toLowerCase()]) {
+            continue;
+        }
+
+        var raw = getParam(op, key, null); // unwrap array form, keep native type
+        var value = typeof raw === "string" ? resolveTokens(raw) : raw; // strings only
+        setVariable(key, value); // dot-path write; varObj by default
+        written++;
+    }
+
+    var nextStepId = resolveNextStep(op, null);
+    Logger.debug("[RTDS] SetVariables done", {
+        opName: op.name,
+        count: written,
+        nextStep: nextStepId ? nextStepId : "(none)",
+    });
+    return { nextStepId: nextStepId };
+} */
+
+function tryParseJSONValue(value) {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  var trimmed = value.trim();
+
+  if (
+    (trimmed.charAt(0) === "[" && trimmed.charAt(trimmed.length - 1) === "]") ||
+    (trimmed.charAt(0) === "{" && trimmed.charAt(trimmed.length - 1) === "}")
+  ) {
+    try {
+      return JSON.parse(trimmed);
+    } catch (e) {
+      return value;
+    }
+  }
+
+  return value;
+}
+
 function executeSetVariables(op) {
   var params = op.params;
   if (!params) {
     return { nextStepId: null };
   }
 
-  // Active defaults to true for SetVariables: a large body of older config
-  // never sets the key, and historically those ops always wrote. Only an
-  // explicit Active:false skips. (Send* ops default false -- opt-in.)
   if (!activeFlag(getParam(op, "active", true))) {
     var skipNext = resolveNextStep(op, null);
     Logger.info("[RTDS] SetVariables skipped -- inactive", {
@@ -441,9 +501,11 @@ function executeSetVariables(op) {
       continue;
     }
 
-    var raw = getParam(op, key, null); // unwrap array form, keep native type
-    var value = typeof raw === "string" ? resolveTokens(raw) : raw; // strings only
-    setVariable(key, value); // dot-path write; varObj by default
+    var raw = getParam(op, key, null);
+    var value = typeof raw === "string" ? resolveTokens(raw) : raw;
+    value = tryParseJSONValue(value);
+
+    setVariable(key, value);
     written++;
   }
 
@@ -1228,7 +1290,6 @@ function executeSendEmail(op) {
     },
   );
 }
-
 
 // ===========================================================================
 // REGISTRATION -- wires every catalogue Type into RTDS_REGISTRY.

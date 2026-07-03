@@ -1,0 +1,311 @@
+{
+    "sourceId": "+3233382565",
+    "name": "DIGIPOLIS - CC-MELDJEAAN",
+    "project": "DIGIPOLIS_CC",
+    "promptLibrary": "DIGIPOLIS\\CC\\MELDJEAAN",
+    "supportedLanguages": "NL",
+    "operations": [
+        {
+            "id": "00000",
+            "type": "setVariables",
+            "name": "Call Initialization",
+            "isFirstOperation": true,
+            "params": {
+                "active": true,
+                "keysToLog": "[\"customerName\", \"customerProject\", \"routingId\", \"language\", \"ani\", \"dnis\", \"interactionStartTime\", \"routingKey\", \"ivrEvent\", \"ivrAction\" ]",
+                "customerName": "DA",
+                "customerProject": "CC_MELDJEAAN",
+                "routingId": "DA-CC-MELDJEAAN",
+                "ivrEvent": "9999",
+                "ivrAction": "CT",
+                "nextStep": "00004"
+            }
+        },
+        {
+            "id": "00004",
+            "type": "checkSchedule",
+            "name": "Check: Scheduler",
+            "params": {
+                "active": true,
+                "applicationId": 1,
+                "scheduleId": 20,
+                "nextStep_Open": "00010",
+                "nextStep_Closed": "00011",
+                "nextStep_Transfer": "00012",
+                "nextStep_Failure": "00013",
+                "nextStep": "00013"
+            }
+        },
+        {
+            "id": "00010",
+            "type": "setVariables",
+            "name": "Set: Cognos Open",
+            "params": {
+                "active": true,
+                "ivrEvent": "1200",
+                "ivrAction": "CT",
+                "nextStep": "00020"
+            }
+        },
+        {
+            "id": "00011",
+            "type": "setVariables",
+            "name": "Set: Cognos Closed",
+            "params": {
+                "active": true,
+                "ivrEvent": "1201",
+                "ivrAction": "DC",
+                "nextStep": "00030"
+            }
+        },
+        {
+            "id": "00012",
+            "type": "setVariables",
+            "name": "Set: Cognos Transfer",
+            "params": {
+                "active": true,
+                "ivrEvent": "1201",
+                "ivrAction": "TX",
+                "nextStep": "00040"
+            }
+        },
+        {
+            "id": "00013",
+            "type": "setVariables",
+            "name": "Set: Cognos Scheduler Error (treat as Open)",
+            "params": {
+                "active": true,
+                "ivrEvent": "1200",
+                "ivrAction": "CT",
+                "nextStep": "00020"
+            }
+        },
+        {
+            "id": "00020",
+            "type": "say",
+            "name": "Play: Welcome",
+            "params": {
+                "active": [true, "isDisplayed", "isEditable"],
+                "applicationId": 11,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00024"
+            },
+            "ttsMessages": {
+                "NL": "Welkom bij de helpdesk Meld Je Aan."
+            }
+        },
+        {
+            "id": "00021",
+            "type": "say",
+            "name": "Play: Transfer Announcement (Lager)",
+            "params": {
+                "active": [true, "isDisplayed", "isEditable"],
+                "applicationId": "unknown",
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00060"
+            },
+            "ttsMessages": {
+                "NL": "U wordt zo dadelijk doorverbonden"
+            }
+        },
+        {
+            "id": "00022",
+            "type": "say",
+            "name": "Play: Transfer Announcement (Middelbaar)",
+            "params": {
+                "active": [true, "isDisplayed", "isEditable"],
+                "applicationId": "unknown",
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00061"
+            },
+            "ttsMessages": {
+                "NL": "U wordt zo dadelijk doorverbonden"
+            }
+        },
+        {
+            "id": "00023",
+            "type": "say",
+            "name": "Play: Transfer Announcement (Buitengewoon)",
+            "params": {
+                "active": [true, "isDisplayed", "isEditable"],
+                "applicationId": "unknown",
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00062"
+            },
+            "ttsMessages": {
+                "NL": "U wordt zo dadelijk doorverbonden"
+            }
+        },
+        {
+            "id": "00024",
+            "type": "say",
+            "name": "Play: AdHoc",
+            "params": {
+                "active": [false, "isDisplayed", "isEditable"],
+                "applicationId": 6,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00050"
+            },
+            "ttsMessages": {
+                "NL": "Dit is een variabele boodschap die geactiveerd kan worden."
+            }
+        },
+        {
+            "id": "00030",
+            "type": "say",
+            "name": "Play: Scheduler Closed",
+            "params": {
+                "active": [true, "isDisplayed", "isEditable"],
+                "applicationId": 1,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00100"
+            },
+            "ttsMessages": {
+                "NL": "Welkom bij de helpdesk Meld je aan. \nMomenteel zijn we gesloten.\nU kan ons elke werkdag telefonisch bereiken van 9 uur tot 16 uur. \nMisschien vind u al een antwoord op uw vraag op onze website, Meld je aan ,punt antwerpen.be. \nU kan ook mailen naar helpdesk, punt Meld je aan, at , stad.antwerpen.be, en dan behandelen we u vraag zo snel mogelijk. \nBedankt voor uw oproep."
+            }
+        },
+        {
+            "id": "00040",
+            "type": "externalTransfer",
+            "name": "Route-To: Scheduler Transfer Number",
+            "params": {
+                "active": true,
+                "phoneNumber": ["${schedulerTransferNumber}", "isDisplayed", "isEditable"],
+                "outboundANI": "",
+                "parameters": "",
+                "attendTransfer": false,
+                "timeout": 30000,
+                "nextStep_Failure": "00100",
+                "nextStep": "00100"
+            }
+        },
+        {
+            "id": "00050",
+            "type": "menu",
+            "name": "Menu: Inschrijvingen Onderwijs",
+            "params": {
+                "active": true,
+                "applicationId": "unknown",
+                "staticPrompt": "unknown",
+                "nextStep_1": "00051",
+                "nextStep_2": "00052",
+                "nextStep_3": "00053",
+                "nextStep_DefaultChoice": "00054",
+                "nextStep": "00054"
+            },
+            "ttsMessages": {
+                "NL": "\nVoor vragen over inschrijven in het kleuter of lager onderwijs, druk 1.\nVoor vragen over inschrijven in het secundair onderwijs, druk 2.\nVoor vragen over inschrijven in het buitengewoon onderwijs, druk 3."
+            }
+        },
+        {
+            "id": "00051",
+            "type": "setVariables",
+            "name": "Set: Cognos Keuze 1 (Lager)",
+            "params": {
+                "active": true,
+                "ivrEvent": "3001",
+                "ivrAction": "CT",
+                "routingId": "DA-CC-MELDJEAAN-LAGER",
+                "nextStep": "00021"
+            }
+        },
+        {
+            "id": "00052",
+            "type": "setVariables",
+            "name": "Set: Cognos Keuze 2 (Middelbaar)",
+            "params": {
+                "active": true,
+                "ivrEvent": "3002",
+                "ivrAction": "CT",
+                "routingId": "DA-CC-MELDJEAAN-MIDDELBAAR",
+                "nextStep": "00022"
+            }
+        },
+        {
+            "id": "00053",
+            "type": "setVariables",
+            "name": "Set: Cognos Keuze 3 (Buitengewoon)",
+            "params": {
+                "active": true,
+                "ivrEvent": "3003",
+                "ivrAction": "CT",
+                "routingId": "DA-CC-MELDJEAAN-BUITENGEWOON",
+                "nextStep": "00023"
+            }
+        },
+        {
+            "id": "00054",
+            "type": "setVariables",
+            "name": "Set: Cognos No Input (default Lager)",
+            "params": {
+                "active": true,
+                "ivrEvent": "1201",
+                "ivrAction": "TX",
+                "routingId": "DA-CC-MELDJEAAN-LAGER",
+                "nextStep": "00021"
+            }
+        },
+        {
+            "id": "00060",
+            "type": "internalTransfer",
+            "name": "Route-To: Meldjeaan Lager",
+            "params": {
+                "active": true,
+                "target": ["570001", "isDisplayed", "isEditable"],
+                "parameters": "{\r\n                    \"callIdKey\": \"${callIdKey}\",\r\n                    \"customerName\": \"${customerName}\",\r\n                    \"customerProject\": \"${customerProject}\"\r\n                }",
+                "attendTransfer": true,
+                "timeout": 30000,
+                "nextStep_Failure": "00070",
+                "nextStep": "00100"
+            }
+        },
+        {
+            "id": "00061",
+            "type": "internalTransfer",
+            "name": "Route-To: Meldjeaan Middelbaar",
+            "params": {
+                "active": true,
+                "target": ["570002", "isDisplayed", "isEditable"],
+                "parameters": "{\r\n                    \"callIdKey\": \"${callIdKey}\",\r\n                    \"customerName\": \"${customerName}\",\r\n                    \"customerProject\": \"${customerProject}\"\r\n                }",
+                "attendTransfer": true,
+                "timeout": 30000,
+                "nextStep_Failure": "00070",
+                "nextStep": "00100"
+            }
+        },
+        {
+            "id": "00062",
+            "type": "internalTransfer",
+            "name": "Route-To: Meldjeaan Buitengewoon",
+            "params": {
+                "active": true,
+                "target": ["570003", "isDisplayed", "isEditable"],
+                "parameters": "{\r\n                    \"callIdKey\": \"${callIdKey}\",\r\n                    \"customerName\": \"${customerName}\",\r\n                    \"customerProject\": \"${customerProject}\"\r\n                }",
+                "attendTransfer": true,
+                "timeout": 30000,
+                "nextStep_Failure": "00070",
+                "nextStep": "00100"
+            }
+        },
+        {
+            "id": "00070",
+            "type": "say",
+            "name": "Play: Transfer Not Accepted (Exceptionally Closed)",
+            "params": {
+                "active": [true, "isDisplayed", "isEditable"],
+                "applicationId": 14,
+                "prompt": ["unknown", "isDisplayed", "isEditable"],
+                "nextStep": "00100"
+            },
+            "ttsMessages": {
+                "NL": "Welkom bij de helpdesk Meld je aan. Momenteel zijn we uitzondelijk gesloten. Gelieve op een ander moment terug te bellen. Bedankt voor u begrip."
+            }
+        },
+        {
+            "id": "00100",
+            "type": "disconnect",
+            "name": "RTDS: Disconnect",
+            "params": {}
+        }
+    ]
+}

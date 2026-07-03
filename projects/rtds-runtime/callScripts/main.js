@@ -112,6 +112,9 @@ _rtPromptLanguageMap = { 1: "NL", 2: "FR", 3: "DE", 4: "EN" };
 // Phonebook lookup endpoint. Available for future use.
 _rtPhonebookEndpoint = `/phonebookapi-${environment}`;
 
+// KeyLog endpoint. KeyLog (an onCallEnd finaliser) POSTs to _rtBaseUrl + this.
+_rtKeyLogEndpoint = `/ivrapi-${environment}/api/KeyLog`;
+
 // Self-naming pointer. Per the storage.md contract, components write the next
 // step id via global[_rtNextStep] = ... and the Re-Entry Script reads it back
 // via global[_rtNextStep]. Holding the slot's own name keeps that indirection
@@ -149,11 +152,31 @@ function onCallResult() {
     context.session.variables.RTDS_nextStepId ||
     context.session.variables.RTDS_currentOpId;
 
-  // finalizeFrom returns the runStep task; returning it here makes the
-  // platform await the data tail (incl. async SendSMS/SendEmail POSTs)
-  // before tearing the session down.
-  return finalizeFrom(resumeAt);
-  // Sequential finaliser slot (separate effort): KeyLog(); SegmentLog();
+  // finalizeFrom returns the runStep task; the platform awaits whatever we
+  // return here before tearing the session down. Run the data tail first, then
+  // the modular finaliser slot (onCallEnd), folding both into one awaited
+  // result. The finalize exit-key (e.g. 'disconnect') stays the resolved value
+  // -- onCallEnd's finalisers are awaited for their side effects, not their
+  // return -- so KeyLog and any future finaliser complete before teardown.
+  var task = finalizeFrom(resumeAt);
+  if (task && typeof task.then === "function") {
+    return task.then(function (finalResult) {
+      var fin = onCallEnd();
+      if (fin && typeof fin.then === "function") {
+        return fin.then(function () {
+          return finalResult;
+        });
+      }
+      return finalResult;
+    });
+  }
+  var finSync = onCallEnd();
+  if (finSync && typeof finSync.then === "function") {
+    return finSync.then(function () {
+      return task;
+    });
+  }
+  return task;
 }
 
 // +==========================================================================+
