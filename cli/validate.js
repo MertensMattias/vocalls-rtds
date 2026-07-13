@@ -180,7 +180,7 @@ const main = () => {
         const projectName = projectDetails?.name ?? opts.project ?? envConfig.activeProject;
 
         if (!projectName) {
-            throw new Error('No active project. Run: npm run init');
+            throw new Error('No active project. Run: npm run switch -- <name>');
         }
 
         const callScriptsPath =

@@ -15,7 +15,6 @@
   "type": "commonjs",
   "main": "core/minimalVocallsCore.js",
   "scripts": {
-    "init": "node cli/init.js",
     "simulate": "node cli/simulate.js",
     "simulate:flow": "node cli/simulate-flow.js",
     "validate": "node cli/validate.js",

@@ -131,8 +131,15 @@ platform termination callback closes that gap.
 
 - **`onCallResult()`** (master-layer `Code` property) fires on every end-of-call path. Guarded
   by `_endFlowSemaphore` (idempotent), it resumes from `RTDS_nextStepId || RTDS_currentOpId`
-  (both staged by `prepareGuiHandoff`) via `finalizeFrom` and **returns the resulting task** so
-  the platform awaits it.
+  (both staged by `prepareGuiHandoff`) via `finalizeFrom`, then runs the modular finaliser slot
+  `onCallEnd()`, folding both into one awaited result and **returning it** so the platform awaits
+  the whole tail before teardown.
+- **`onCallEnd()`** (in `rtds_3_vocallsEnv.js`) is the modular end-of-call slot: one
+  `finalize(name, fn, runOnRedirect)` line per finaliser, run with a redirect gate and fault
+  isolation. The first finaliser is **`KeyLog`**, which POSTs a snapshot of the call's configured
+  `keysToLog` attributes to `_rtBaseUrl + _rtKeyLogEndpoint` (skipped on a redirect/handoff leg).
+  Finalisers are awaited for their side effects, not their return; the finalize exit-key stays the
+  resolved value. Add a finaliser by pushing one `finalize(...)` line — no edit to `onCallResult`.
 - **`finalizeFrom(nextStepId)`** sets the **`RTDS_finalizing`** flag, then reuses the normal
   `runStep` engine — there is no separate loop. While the flag is set, `runStep`'s GUI-exit
   branch is **filtered**: instead of `prepareGuiHandoff` + an exit key, it logs
