@@ -88,6 +88,16 @@ _rtMailEndpoint = `/mailapi-${environment}/api/SendMail`;
 //   _rtBaseUrl + _rtGetSourceIdEndpoint + '?sourceId=' + encodeURIComponent(sourceId)
 _rtGetSourceIdEndpoint = `/routingtablesapi-${environment}/api/routing-table/source`;
 
+// Fallback config cache (fetchAndStart). Attempt 1 runs at _rtFetchTimeoutMs;
+// a transient failure serves the last known-good config from Storage; a cache
+// miss retries once at _rtFetchRetryTimeoutMs. _rtConfigCacheEnabled=false is
+// the ops kill switch (no Storage reads/writes, single GET at the retry
+// timeout). Entries older than _rtConfigCacheMaxAgeMs are treated as a miss.
+_rtFetchTimeoutMs = 2000;
+_rtFetchRetryTimeoutMs = 10000;
+_rtConfigCacheEnabled = true;
+_rtConfigCacheMaxAgeMs = 604800000; // 7 days
+
 // GuardTUI access-check endpoint. Used by the guardTui component.
 _rtTuiCheckAccessEndpoint = `/rtdsapi-${environment}/api/Guards/AnyGuardWithPhoneNumberAndConfig`;
 

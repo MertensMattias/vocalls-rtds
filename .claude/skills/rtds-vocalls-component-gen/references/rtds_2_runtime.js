@@ -820,84 +820,161 @@ function finalizeFrom(nextStepId) {
 //   to the entry-point operation. Used by the initial Script node on every
 //   call. URL: _rtBaseUrl + _rtGetSourceIdEndpoint + '?sourceId=' + encodeURIComponent(sourceId).
 //   Both globals must be set by the platform-init layer before this runs.
+//
+//   Network-first with Storage fallback (see
+//   docs/superpowers/specs/2026-07-14-routing-table-fallback-cache-design.md):
+//   attempt 1 GET at _rtFetchTimeoutMs; on success the parsed config is
+//   persisted to Storage (rtdsConfig_<sourceId>.json) and the flow starts.
+//   On a transient failure (timeout / rejection / 5xx / parse error) the last
+//   known-good cached config is served instead; on a cache miss one patient
+//   retry runs at _rtFetchRetryTimeoutMs. A 4xx is authoritative -- the API
+//   says this sourceId has no flow -- so it disconnects without touching the
+//   cache. RTDS_error is written ONLY on paths that return 'disconnect': the
+//   SegmentLog terminal classifier treats a truthy RTDS_error as an error
+//   call, so a cache-served call must leave it unset.
 // ===========================================================================
+
+/**
+ * Storage filename for a sourceId's cached config. SourceIds are phone-shaped
+ * (e.g. +3233389999); anything outside [A-Za-z0-9_+-] becomes '_'.
+ *
+ * @param {string} sourceId
+ * @returns {string}
+ */
+function configCacheKey(sourceId) {
+  return (
+    "rtdsConfig_" + String(sourceId).replace(/[^A-Za-z0-9_+-]/g, "_") + ".json"
+  );
+}
+
+/**
+ * Last known-good cache entry for sourceId, or null on any miss (absent file,
+ * unreadable, corrupt JSON, wrong shape). Tolerates both Storage.readFile
+ * shapes: production returns the raw string (or falsy), the simulator returns
+ * { success, text, error }.
+ *
+ * @param {string} sourceId
+ * @returns {?{sourceId: string, fetchedAt: number, config: Object}}
+ */
+function readConfigCache(sourceId) {
+  try {
+    var res = Storage.readFile(configCacheKey(sourceId));
+    var raw = res && typeof res === "object" && "text" in res ? res.text : res;
+    if (!raw || typeof raw !== "string") {
+      return null;
+    }
+    var entry = JSON.parse(raw);
+    if (!entry || !entry.config || typeof entry.fetchedAt !== "number") {
+      return null;
+    }
+    return entry;
+  } catch (readErr) {
+    return null;
+  }
+}
+
+/**
+ * Best-effort full-replacement write of the fallback cache entry. Never
+ * throws into the caller -- a failed write costs the fallback, not the call.
+ *
+ * @param {string} sourceId
+ * @param {Object} body - parsed routing-table JSON (already validated startable)
+ */
+function writeConfigCache(sourceId, body) {
+  try {
+    var res = Storage.writeFile(
+      configCacheKey(sourceId),
+      JSON.stringify({
+        sourceId: sourceId,
+        fetchedAt: new Date().getTime(),
+        config: body,
+      }),
+    );
+    if (res && res.success === false) {
+      Logger.warn("[RTDS] config cache write failed", {
+        sourceId: sourceId,
+        error: res.error,
+      });
+    }
+  } catch (writeErr) {
+    Logger.warn("[RTDS] config cache write failed", {
+      sourceId: sourceId,
+      error: writeErr && writeErr.message,
+    });
+  }
+}
+
+/**
+ * One GET of the routing table. Never rejects -- every outcome maps to a
+ * plain object so fetchAndStart composes with .then(onOk) only:
+ *   { ok: true,  body }                        200 + parsed body
+ *   { ok: false, authoritative: true,  code }  4xx -- the API's answer is final
+ *   { ok: false, authoritative: false, code }  timeout / rejection / 5xx / parse
+ * Does NOT write RTDS_error; only fetchAndStart's disconnect arms may.
+ *
+ * @param {string} url
+ * @param {number} timeoutMs
+ * @returns {Promise<Object>}
+ */
+function requestRoutingTable(url, timeoutMs) {
+  return jsonHttpRequest(url, { method: "GET" }, _headers)
+    .withTimeout(timeoutMs)
+    .then(
+      function (rawResult) {
+        var result = rawResult;
+        if (typeof result === "string") {
+          try {
+            result = JSON.parse(result);
+          } catch (envErr) {
+            Logger.warn("[RTDS] fetchAndStart: envelope parse failed", {
+              error: envErr.message,
+            });
+            return {
+              ok: false,
+              authoritative: false,
+              code: "RTDS_RESULT_PARSE_ERROR",
+            };
+          }
+        }
+
+        if (!result || result.success !== true || result.statusCode !== 200) {
+          var status = result && result.statusCode;
+          Logger.warn("[RTDS] fetchAndStart: API failure", { status: status });
+          return {
+            ok: false,
+            authoritative:
+              typeof status === "number" && status >= 400 && status < 500,
+            code: "RTDS_API_ERROR_" + (status || "UNKNOWN"),
+          };
+        }
+
+        var body = result.response;
+        if (typeof body === "string") {
+          try {
+            body = JSON.parse(body);
+          } catch (bodyErr) {
+            Logger.warn("[RTDS] fetchAndStart: body parse failed", {
+              error: bodyErr.message,
+            });
+            return { ok: false, authoritative: false, code: "RTDS_PARSE_ERROR" };
+          }
+        }
+
+        return { ok: true, body: body };
+      },
+      function (err) {
+        Logger.warn("[RTDS] fetchAndStart: request rejected", {
+          error: err && err.message ? err.message : String(err),
+        });
+        return { ok: false, authoritative: false, code: "RTDS_REQUEST_ERROR" };
+      },
+    );
+}
 
 /**
  * @param {string} sourceId
  * @returns {Promise<string>|string} Exit key (or a promise resolving to one).
  */
-// function fetchAndStart(sourceId) {
-//   if (!sourceId) {
-//     log_error("[RTDS] fetchAndStart: sourceId is empty");
-//     context.session.variables.RTDS_error = "RTDS_NO_SOURCE_ID";
-//     return "disconnect";
-//   }
-//   var url =
-//     _rtBaseUrl +
-//     _rtGetSourceIdEndpoint +
-//     "?sourceId=" +
-//     encodeURIComponent(sourceId);
-//   Logger.info("[RTDS] fetching routing table", { sourceId: sourceId });
-//   return jsonHttpRequest(url, { method: "GET" }, _headers)
-//     .withTimeout(10000)
-//     .then(
-//       function (rawResult) {
-//         var result = rawResult;
-//         if (typeof result === "string") {
-//           try {
-//             result = JSON.parse(result);
-//           } catch (parseErr) {
-//             log_error(
-//               "[RTDS] fetchAndStart: envelope parse failed | " +
-//                 parseErr.message,
-//             );
-//             context.session.variables.RTDS_error = "RTDS_RESULT_PARSE_ERROR";
-//             return "disconnect";
-//           }
-//         }
-
-//         if (!result || result.success !== true || result.statusCode !== 200) {
-//           var status = result && result.statusCode;
-//           log_error("[RTDS] fetchAndStart: API failure | status=" + status);
-//           context.session.variables.RTDS_error =
-//             "RTDS_API_ERROR_" + (status || "UNKNOWN");
-//           return "disconnect";
-//         }
-
-//         var body = result.response;
-//         if (typeof body === "string") {
-//           try {
-//             body = JSON.parse(body);
-//           } catch (parseErr) {
-//             log_error(
-//               "[RTDS] fetchAndStart: body parse failed | " + parseErr.message,
-//             );
-//             context.session.variables.RTDS_error = "RTDS_PARSE_ERROR";
-//             return "disconnect";
-//           }
-//         }
-
-//         Logger.info("[RTDS] routing table received", {
-//           sourceId: sourceId,
-//           name: body && body.name,
-//         });
-
-//         var firstOp = parseFlow(body);
-//         if (!firstOp) {
-//           log_error("[RTDS] fetchAndStart: no entry operation");
-//           context.session.variables.RTDS_error = "RTDS_NO_ENTRY_POINT";
-//           return "disconnect";
-//         }
-//         return runStep(firstOp.id);
-//       },
-//       function (err) {
-//         var errMsg = err && err.message ? err.message : String(err);
-//         log_error("[RTDS] fetchAndStart: request rejected | " + errMsg);
-//         context.session.variables.RTDS_error = "RTDS_REQUEST_ERROR";
-//         return "disconnect";
-//       },
-//     );
-// }
 
 function fetchAndStart(sourceId) {
   if (!sourceId) {
@@ -954,67 +1031,95 @@ function fetchAndStart(sourceId) {
     "?sourceId=" +
     encodeURIComponent(sourceId);
 
+  var cacheEnabled =
+    typeof _rtConfigCacheEnabled === "undefined" ||
+    _rtConfigCacheEnabled !== false;
+  var fetchTimeoutMs =
+    typeof _rtFetchTimeoutMs !== "undefined" && _rtFetchTimeoutMs > 0
+      ? _rtFetchTimeoutMs
+      : 2000;
+  var retryTimeoutMs =
+    typeof _rtFetchRetryTimeoutMs !== "undefined" && _rtFetchRetryTimeoutMs > 0
+      ? _rtFetchRetryTimeoutMs
+      : 10000;
+  var maxAgeMs =
+    typeof _rtConfigCacheMaxAgeMs !== "undefined" && _rtConfigCacheMaxAgeMs > 0
+      ? _rtConfigCacheMaxAgeMs
+      : 604800000;
+
+  function startFromApi(body) {
+    Logger.info("[RTDS] routing table received from API", {
+      sourceId: sourceId,
+      name: body && body.name,
+    });
+    var firstOp = parseFlow(body);
+    if (!firstOp) {
+      log_error("[RTDS] fetchAndStart: no entry operation");
+      context.session.variables.RTDS_error = "RTDS_NO_ENTRY_POINT";
+      return "disconnect";
+    }
+    // Persist only a config parseFlow could start -- a bad API deploy must
+    // never poison the fallback.
+    if (cacheEnabled) {
+      writeConfigCache(sourceId, body);
+    }
+    context.session.variables.RTDS_configSource = "api";
+    return runStep(firstOp.id);
+  }
+
+  function disconnectWith(code) {
+    log_error("[RTDS] fetchAndStart: " + code);
+    context.session.variables.RTDS_error = code;
+    return "disconnect";
+  }
+
   Logger.info("[RTDS] fetching routing table", { sourceId: sourceId });
 
-  return jsonHttpRequest(url, { method: "GET" }, _headers)
-    .withTimeout(10000)
-    .then(
-      function (rawResult) {
-        var result = rawResult;
-        if (typeof result === "string") {
-          try {
-            result = JSON.parse(result);
-          } catch (parseErr) {
-            log_error(
-              "[RTDS] fetchAndStart: envelope parse failed | " +
-                parseErr.message,
-            );
-            context.session.variables.RTDS_error = "RTDS_RESULT_PARSE_ERROR";
-            return "disconnect";
-          }
-        }
+  if (!cacheEnabled) {
+    // Kill switch: no Storage reads or writes, single patient GET -- exactly
+    // the pre-cache behavior.
+    return requestRoutingTable(url, retryTimeoutMs).then(function (r) {
+      return r.ok ? startFromApi(r.body) : disconnectWith(r.code);
+    });
+  }
 
-        if (!result || result.success !== true || result.statusCode !== 200) {
-          var status = result && result.statusCode;
-          log_error("[RTDS] fetchAndStart: API failure | status=" + status);
-          context.session.variables.RTDS_error =
-            "RTDS_API_ERROR_" + (status || "UNKNOWN");
-          return "disconnect";
-        }
+  return requestRoutingTable(url, fetchTimeoutMs).then(function (r) {
+    if (r.ok) {
+      return startFromApi(r.body);
+    }
+    if (r.authoritative) {
+      return disconnectWith(r.code);
+    }
 
-        var body = result.response;
-        if (typeof body === "string") {
-          try {
-            body = JSON.parse(body);
-          } catch (parseErr) {
-            log_error(
-              "[RTDS] fetchAndStart: body parse failed | " + parseErr.message,
-            );
-            context.session.variables.RTDS_error = "RTDS_PARSE_ERROR";
-            return "disconnect";
-          }
-        }
-
-        Logger.info("[RTDS] routing table received from API", {
+    // Transient failure -- serve the last known-good config if usable.
+    var cached = readConfigCache(sourceId);
+    var ageMs = cached ? new Date().getTime() - cached.fetchedAt : null;
+    if (cached && ageMs <= maxAgeMs) {
+      // parseFlow writes RTDS_error itself when the config is unusable; that
+      // side effect must not survive a fall-through to the retry -- SegmentLog
+      // classifies a truthy RTDS_error as an error call.
+      var prevError = context.session.variables.RTDS_error;
+      var cachedFirstOp = parseFlow(cached.config);
+      if (cachedFirstOp) {
+        Logger.warn("[RTDS] fetchAndStart: serving config from cache", {
           sourceId: sourceId,
-          name: body && body.name,
+          ageMs: ageMs,
+          error: r.code,
         });
+        context.session.variables.RTDS_configSource = "cache";
+        return runStep(cachedFirstOp.id);
+      }
+      context.session.variables.RTDS_error = prevError;
+    }
 
-        var firstOp = parseFlow(body);
-        if (!firstOp) {
-          log_error("[RTDS] fetchAndStart: no entry operation");
-          context.session.variables.RTDS_error = "RTDS_NO_ENTRY_POINT";
-          return "disconnect";
-        }
-        return runStep(firstOp.id);
-      },
-      function (err) {
-        var errMsg = err && err.message ? err.message : String(err);
-        log_error("[RTDS] fetchAndStart: request rejected | " + errMsg);
-        context.session.variables.RTDS_error = "RTDS_REQUEST_ERROR";
-        return "disconnect";
-      },
+    Logger.warn(
+      "[RTDS] fetchAndStart: transient failure, no usable cache -- retrying",
+      { sourceId: sourceId, error: r.code },
     );
+    return requestRoutingTable(url, retryTimeoutMs).then(function (r2) {
+      return r2.ok ? startFromApi(r2.body) : disconnectWith(r2.code);
+    });
+  });
 }
 
 // ===========================================================================

@@ -150,7 +150,15 @@ function runScript(scriptName, options) {
             if (options.returnSandbox) {
                 result.sandbox = resultSandbox;
             }
-            resolve(result);
+            // Let the script's load-time promise chains (e.g. fetchAndStart's
+            // fallback/retry hops and the S4 exit-key logging) fully settle
+            // before the test body runs -- tests may replace sandbox globals
+            // like jsonHttpRequest, and a lingering chain must not observe
+            // those replacements. setImmediate runs after the current
+            // microtask queue has fully drained, including chained .then hops.
+            setImmediate(function () {
+                resolve(result);
+            });
         } catch (error) {
             reject(error);
         }

@@ -131,8 +131,13 @@ Call arrives
     |
     +-- fetchAndStart(sourceId)
     |       jsonHttpRequest(_rtBaseUrl + _rtGetSourceIdEndpoint + '?sourceId=...')
-    |       .withTimeout(10000)
+    |       .withTimeout(_rtFetchTimeoutMs = 2000)
     |       parse JSON
+    |       on success: write Storage fallback cache (rtdsConfig_<sourceId>.json)
+    |       on transient failure (timeout/rejection/5xx/parse):
+    |         serve cached config if fresh (< _rtConfigCacheMaxAgeMs), else
+    |         retry once .withTimeout(_rtFetchRetryTimeoutMs = 10000)
+    |       on 4xx: disconnect (authoritative; cache never served)
     |       parseFlow(json)
     |         --> writes header to context.session.variables
     |         --> builds opIndex, writes to context.session.variables.RTDS_opIndex
@@ -173,7 +178,8 @@ All state is stored on `context.session.variables`. No separate "context" object
 | `RTDS_currentOpType` | Before GUI handoff | Type of the operation being handed off |
 | `RTDS_currentOpConfig` | Before GUI handoff | The op's whole `params` object (the GUI component reads it to configure itself), **plus** the op's `ttsMessages` folded in under the `ttsMessages` key (`{}` when the op carries none). This is the **single** prompt-text channel — there is no separate ttsMessages var |
 | `RTDS_nextStepId` | Before GUI handoff | Default next step Id (GUI node overwrites this with its outcome) |
-| `RTDS_error` | On error | Error code string |
+| `RTDS_error` | On error | Error code string. Written **only** on paths that return `'disconnect'` — a cache-served call leaves it unset (end-of-call log classifiers read it) |
+| `RTDS_configSource` | After a successful `fetchAndStart` | `'api'` (fresh fetch) or `'cache'` (served from the Storage fallback) |
 | Any SetVariables target | During SetVariables | Written to `varObj` by default (or a dotted target) via `setVariable`; native JSON type preserved, strings token-resolved |
 
 ---
@@ -309,7 +315,9 @@ Becomes `varObj.To = <resolved ATTR_EmailTo>` (or empty string if not set). The 
 
 | Situation | Behaviour |
 |---|---|
-| RTDS API unreachable or non-200 | `Logger.error`, write `RTDS_error`, return `"disconnect"` |
+| Routing-table fetch: timeout / rejection / 5xx / parse failure (transient) | Serve the Storage fallback cache if fresh; on cache miss retry once at `_rtFetchRetryTimeoutMs`; only if the retry also fails: `log_error`, write `RTDS_error`, return `"disconnect"` |
+| Routing-table fetch: 4xx (authoritative) | `log_error`, write `RTDS_error = 'RTDS_API_ERROR_<status>'`, return `"disconnect"` — the cache is never served |
+| Other RTDS API unreachable or non-200 | `Logger.error`, write `RTDS_error`, return `"disconnect"` |
 | JSON parse failure | `Logger.error`, write `RTDS_error`, return `"disconnect"` |
 | No `isFirstOperation` operation | `Logger.error`, write `RTDS_error = 'RTDS_NO_ENTRY_POINT'`, return `"disconnect"` |
 | `nextStepId` not in opIndex | `Logger.warn`, write `RTDS_error`, return `"disconnect"` |

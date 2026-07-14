@@ -1,7 +1,10 @@
 # Routing-table config cache — design
 
 **Date:** 2026-06-01
-**Status:** Approved (pending spec review)
+**Status:** Superseded by `2026-07-14-routing-table-fallback-cache-design.md` — the
+network-first fallback design avoids this spec's fire-and-forget caveat entirely
+(every cache write happens on an awaited path) and keeps the API authoritative on
+every healthy call.
 **Pattern:** serve-cache-first / stale-while-revalidate, with a max-age safety net
 
 ## Problem

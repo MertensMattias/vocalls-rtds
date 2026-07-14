@@ -64,7 +64,7 @@ Entry C is the platform termination callback (`onCallResult`, in the master-laye
 
 ```mermaid
 flowchart TD
-    A["Entry A: fetchAndStart(sourceId)"] --> F["HTTP GET routing table\n_rtBaseUrl + _rtGetSourceIdEndpoint"]
+    A["Entry A: fetchAndStart(sourceId)"] --> F["HTTP GET routing table (2s)\nfallback: Storage cache, then one 10s retry"]
     F --> P["parseFlow(json)\n→ ordered ops + RTDS_* header bag"]
     P --> RS["runStep(startOpId)"]
     RS --> L{"RTDS_REGISTRY.get(type)?"}
@@ -80,7 +80,17 @@ flowchart TD
 
 - **`fetchAndStart(sourceId)`** — fetches the routing table over HTTP
   (`jsonHttpRequest` against `_rtBaseUrl` + `_rtGetSourceIdEndpoint`, with `_headers`), then
-  `parseFlow` → `runStep`.
+  `parseFlow` → `runStep`. Network-first with a Storage fallback (design:
+  `docs/superpowers/specs/2026-07-14-routing-table-fallback-cache-design.md`): attempt 1 runs at
+  `_rtFetchTimeoutMs` (2 s); on success the startable config is persisted to Storage
+  (`rtdsConfig_<sanitized sourceId>.json`, `{sourceId, fetchedAt, config}`) and
+  `RTDS_configSource = 'api'`. On a transient failure (timeout / rejection / 5xx / parse error)
+  the last known-good cached config is served instead (`RTDS_configSource = 'cache'`); on a cache
+  miss (absent, corrupt, or older than `_rtConfigCacheMaxAgeMs`) one patient retry runs at
+  `_rtFetchRetryTimeoutMs` (10 s). A 4xx is authoritative — disconnect, never served from cache.
+  `_rtConfigCacheEnabled = false` is the ops kill switch (single GET at the retry timeout,
+  Storage untouched). `RTDS_error` is written only on paths that actually return `'disconnect'`
+  — a cache-served call leaves it unset (end-of-call log classifiers read it).
 - **`parseFlow(json)`** — turns the routing-table JSON into an ordered op list and writes the
   `RTDS_*` header bag (sourceId, name, project, promptLibrary, supportedLanguages) into the
   session.
