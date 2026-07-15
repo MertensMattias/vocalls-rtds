@@ -1005,8 +1005,9 @@ function fetchAndStart(sourceId) {
       }
     }
 
-    Logger.info("[RTDS] fetchAndStart: using _devBody routing table", {
+    Logger.info("[RTDS] routing table resolved", {
       sourceId: sourceId,
+      source: "devBody",
       name: devBody && devBody.name,
     });
 
@@ -1047,9 +1048,12 @@ function fetchAndStart(sourceId) {
       ? _rtConfigCacheMaxAgeMs
       : 604800000;
 
-  function startFromApi(body) {
-    Logger.info("[RTDS] routing table received from API", {
+  // source: 'api' (attempt 1 / kill-switch GET) or 'api-retry' (the patient
+  // second attempt after a cache miss). Both persist as RTDS_configSource='api'.
+  function startFromApi(body, source) {
+    Logger.info("[RTDS] routing table resolved", {
       sourceId: sourceId,
+      source: source,
       name: body && body.name,
     });
     var firstOp = parseFlow(body);
@@ -1079,13 +1083,13 @@ function fetchAndStart(sourceId) {
     // Kill switch: no Storage reads or writes, single patient GET -- exactly
     // the pre-cache behavior.
     return requestRoutingTable(url, retryTimeoutMs).then(function (r) {
-      return r.ok ? startFromApi(r.body) : disconnectWith(r.code);
+      return r.ok ? startFromApi(r.body, "api") : disconnectWith(r.code);
     });
   }
 
   return requestRoutingTable(url, fetchTimeoutMs).then(function (r) {
     if (r.ok) {
-      return startFromApi(r.body);
+      return startFromApi(r.body, "api");
     }
     if (r.authoritative) {
       return disconnectWith(r.code);
@@ -1101,10 +1105,12 @@ function fetchAndStart(sourceId) {
       var prevError = context.session.variables.RTDS_error;
       var cachedFirstOp = parseFlow(cached.config);
       if (cachedFirstOp) {
-        Logger.warn("[RTDS] fetchAndStart: serving config from cache", {
+        // warn, not info: a cache serve means the API just failed.
+        Logger.warn("[RTDS] routing table resolved", {
           sourceId: sourceId,
+          source: "cache",
           ageMs: ageMs,
-          error: r.code,
+          apiError: r.code,
         });
         context.session.variables.RTDS_configSource = "cache";
         return runStep(cachedFirstOp.id);
@@ -1117,7 +1123,7 @@ function fetchAndStart(sourceId) {
       { sourceId: sourceId, error: r.code },
     );
     return requestRoutingTable(url, retryTimeoutMs).then(function (r2) {
-      return r2.ok ? startFromApi(r2.body) : disconnectWith(r2.code);
+      return r2.ok ? startFromApi(r2.body, "api-retry") : disconnectWith(r2.code);
     });
   });
 }

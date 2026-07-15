@@ -159,8 +159,13 @@ whenever `context.session.variables.RTDS_error` is truthy. Two consequences:
 
 - `context.session.variables.RTDS_configSource = 'api' | 'cache'` — set on every
   successful start, for reporting and troubleshooting.
-- Cache serve is a `Logger.warn` with `sourceId`, cache age in ms, and the triggering
-  error code. Cache write failure is a `Logger.warn`, never fatal.
+- One uniform `[RTDS] routing table resolved` log line fires exactly once per call
+  at the point the config is committed, with a `source` field saying how the
+  sourceId was resolved: `api` (attempt 1 or kill-switch GET), `api-retry` (patient
+  second attempt after a cache miss), `cache` (Storage fallback; logged at `warn`
+  level with `ageMs` + the triggering `apiError`, since a cache serve means the API
+  just failed), or `devBody` (dev fixture, no network). Cache write failure is a
+  `Logger.warn`, never fatal.
 
 ## Testing
 
