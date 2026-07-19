@@ -90,11 +90,12 @@
    SetVariables writes named session variables. Although these are conceptually
    dynamic, the import's UNKNOWN_PARAM check validates EVERY param against
    Dic_Attribute, so the variables this flow uses are catalogued explicitly here
-   alongside the control keys 'active' and 'nextStep': 'routingId',
-   'isHelpdeskCall', 'iVREvent', dotted paths like 'auth.verified', plus flow
-   keys 'customerName', 'customerProject', 'ivrEvent', 'ivrAction'. If another flow
-   introduces a new SetVariables variable, add a matching row here or the import
-   will THROW 54016 for that key.
+   alongside the control keys 'active' and 'nextStep': 'routingId', dotted paths
+   like 'auth.verified', plus flow keys 'customerName', 'customerProject',
+   'ivrEvent', 'ivrAction', and the session vars 'language', 'ani', 'dnis',
+   'interactionStartTime', 'routingKey'. If another flow introduces a new
+   SetVariables variable, add a matching row here or the import will THROW 54016
+   for that key.
 
    The 'disconnect' in this contract has Params: {} -- it ends the call and has
    no nextStep. Only the universal 'active' control flag is seeded by
@@ -265,27 +266,29 @@ SET IDENTITY_INSERT rtds.Dic_OperationType ON;
 INSERT INTO rtds.Dic_OperationType ([DicOperationTypeID], [Name], [DateCreated], [CreatedBy], [DateUpdated], [UpdatedBy])
 SELECT v.* FROM (VALUES
   (1,  N'setVariables',        N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (2,  N'checkVariable',       N'2023-11-27 15:42:49.9300000', N'rtds-seed', NULL, NULL),
+  -- (2,  N'checkVariable',       N'2023-11-27 15:42:49.9300000', N'rtds-seed', NULL, NULL),  -- no component
   (3,  N'say',                 N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (4,  N'getLanguage',         N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  -- (4,  N'getLanguage',         N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),  -- no component
   (5,  N'checkSchedule',       N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (6,  N'emergency',           N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (7,  N'guardRouting',        N'2022-04-20 11:47:56.5100000', N'rtds-seed', NULL, NULL),
+  -- (6,  N'emergency',           N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),  -- no component
+  -- (7,  N'guardRouting',        N'2022-04-20 11:47:56.5100000', N'rtds-seed', NULL, NULL),  -- legacy name; attrs under 'guard'
   (8,  N'menu',                N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
   (9,  N'guardTui',            N'2022-04-20 11:48:35.3830000', N'rtds-seed', NULL, NULL),
   (10, N'guard',               N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
   (11, N'disconnect',          N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (12, N'play',                N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (13, N'condition',           N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (14, N'skillUpdate',         N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
+  -- (12, N'play',                N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),  -- no component
+  -- (13, N'condition',           N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),  -- no component
+  -- (14, N'skillUpdate',         N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),  -- no component
   (15, N'flowJump',            N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (16, N'callerDataEntry',     N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (17, N'voicemailCallback',   N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (18, N'callback',            N'2021-10-29 12:02:57.5000000', N'rtds-seed', NULL, NULL),
+  -- (16, N'callerDataEntry',     N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),  -- no component
+  -- (17, N'voicemailCallback',   N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),  -- no component
+  -- (18, N'callback',            N'2021-10-29 12:02:57.5000000', N'rtds-seed', NULL, NULL),  -- no component
   (19, N'sendSms',             N'2022-04-20 11:48:39.7930000', N'rtds-seed', NULL, NULL),
-  (20, N'manageCallCapacity',  N'2025-03-11 12:52:49.2470000', N'rtds-seed', NULL, NULL),
+  -- (20, N'manageCallCapacity',  N'2025-03-11 12:52:49.2470000', N'rtds-seed', NULL, NULL),  -- no component
   (21, N'externalTransfer',    N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
-  (22, N'internalTransfer',    N'2026-06-08 00:00:00.0000000', N'rtds-seed', NULL, NULL)
+  (22, N'internalTransfer',    N'2026-06-08 00:00:00.0000000', N'rtds-seed', NULL, NULL),
+  (23, N'sendMail',            N'2026-06-12 08:47:21.8981290', N'rtds-seed', NULL, NULL)
+  -- (24, N'workgroupTransfer',   N'2026-06-12 08:47:21.8981290', N'rtds-seed', NULL, NULL)   -- no component
 ) AS v([DicOperationTypeID], [Name], [DateCreated], [CreatedBy], [DateUpdated], [UpdatedBy])
 WHERE NOT EXISTS (
     SELECT 1 FROM rtds.Dic_OperationType t WHERE t.[DicOperationTypeID] = v.[DicOperationTypeID]
@@ -317,7 +320,8 @@ SELECT v.* FROM (VALUES
   (12, N'Voicemail',     N'Voicemail', N'2021-11-09 14:02:36.2930000', N'rtds-seed', NULL, NULL),
   (13, N'Info',          N'Info',      N'2021-11-22 15:52:00.6030000', N'rtds-seed', NULL, NULL),
   (14, N'Exception',     N'Exception', N'2021-11-29 12:19:10.1300000', N'rtds-seed', NULL, NULL),
-  (15, N'Emergency',     N'Emergency', N'2022-06-09 09:35:39.9470000', N'rtds-seed', NULL, NULL)
+  (15, N'Emergency',     N'Emergency', N'2022-06-09 09:35:39.9470000', N'rtds-seed',        NULL, NULL),
+  (16, N'Disconnect',    N'Disconnect',N'2026-06-22 16:20:35.5500000', N'GDG546@engie.com', NULL, NULL)
 ) AS v([DicPromptApplicationID], [Name], [FilePrefix], [DateCreated], [CreatedBy], [DateUpdated], [UpdatedBy])
 WHERE NOT EXISTS (
     SELECT 1 FROM rtds.Dic_PromptApplication t WHERE t.[DicPromptApplicationID] = v.[DicPromptApplicationID]
@@ -358,35 +362,28 @@ SET IDENTITY_INSERT rtds.Dic_PromptLanguage OFF;
 DECLARE @OperationType TABLE (Name varchar(255) NOT NULL PRIMARY KEY);
 
 INSERT INTO @OperationType (Name) VALUES
+    /* Active — shipped component and/or runtime GUI-exit */
     ('setVariables'),
     ('guard'),
     ('guardTui'),
     ('sendMail'),
     ('sendSms'),
     ('disconnect'),
-
-    /* ---- helpdesk-flow types (DA_HELDPESK + LPA_ICT_HELDPESK) ---- */
-    ('play'),
     ('say'),
     ('menu'),
     ('externalTransfer'),
+    ('checkSchedule'),
+    ('flowJump'),
+    ('internalTransfer');
+    /* COMMENTED — no Vocalls component (uncomment type + @Attribute block to re-enable):
+    ('play'),
     ('workgroupTransfer'),
-
     ('condition'),
     ('emergency'),
-    ('checkSchedule'),
     ('callback'),
-    ('flowJump'),
-
-    /* ---- n-allo_reception flow types (sourceId +3224581030) ----
-       internalTransfer is a NEW type. getLanguage is the renamed languageMenu.
-       voicemailCallback gains its first catalogued attributes here. The prompt-
-       playing type 'say' (formerly playPrompt) and 'play' (formerly playAudio)
-       are catalogued above. None are runtime-wired as inline twins (getLanguage
-       keeps its GUI-exit). */
     ('getLanguage'),
-    ('internalTransfer'),
     ('voicemailCallback');
+    */
 
 DECLARE @Attribute TABLE (
     Ord            int           IDENTITY(1,1) NOT NULL,  -- catalogue order (drives DicAttributeID assignment)
@@ -419,11 +416,15 @@ INSERT INTO @Attribute
     ('setVariables', 'customerProject',  'string',  0, 0, 0, 0),
     ('setVariables', 'ivrEvent',         'string',  0, 0, 0, 0),
     ('setVariables', 'ivrAction',        'string',  0, 0, 0, 0),
-    ('setVariables', 'logAttributes',    'string',  0, 0, 0, 0),
     -- keysToLog: JSON array of varObj keys the KeyLog end-of-call POST snapshots
-    -- (rtds_3_vocallsEnv.js). logAttributes above is the legacy PureConnect
-    -- pipe-separated equivalent, kept for old-config imports.
+    -- (rtds_3_vocallsEnv.js).
     ('setVariables', 'keysToLog',        'string',  0, 0, 0, 0),
+    -- session vars written by the flow (match live DB Dic_Attribute ids 178-182)
+    ('setVariables', 'language',             'string',  0, 0, 0, 0),
+    ('setVariables', 'ani',                  'string',  0, 0, 0, 0),
+    ('setVariables', 'dnis',                 'string',  0, 0, 0, 0),
+    ('setVariables', 'interactionStartTime', 'string',  0, 0, 0, 0),
+    ('setVariables', 'routingKey',           'string',  0, 0, 0, 0),
     ('setVariables', 'nextStep',         'string',  1, 1, 0, 0),
 
 
@@ -443,7 +444,7 @@ INSERT INTO @Attribute
     ('guard', 'sendMail',          'bit', 1, 0, 0, 0),
     ('guard', 'nextStep_Success',  'string',  1, 1, 0, 0),
     ('guard', 'nextStep_Failure',  'string',  1, 1, 0, 0),
-    ('guard', 'nextStep',          'string',  1, 1, 0, 0)
+    ('guard', 'nextStep',          'string',  1, 1, 0, 0),
 
 
     /* ---- GuardTUI ---- (self-service guard activate/deactivate line)
@@ -513,24 +514,18 @@ INSERT INTO @Attribute
     ('disconnect', 'applicationId',  'int', 0, 0, 0, 0),
 
     /* ========================================================================
-       HELPDESK-FLOW TYPES  (DA_HELDPESK +3233387777, LPA_ICT_HELDPESK +3233389999)
+       ACTIVE COMPONENT / RUNTIME TYPES (see @OperationType above)
        ------------------------------------------------------------------------
-       Attribute names and DataTypes are factored from the legacy source params.
        NOTE on 'applicationId': the importer special-cases a param literally
        named 'Application' -> attribute 'ApplicationID' (resolved to an integer
-       id). The helpdesk flows instead use the literal key 'applicationId', so it
-       is catalogued here verbatim as a plain integer attribute (no resolution).
-       If you switch the flows to the resolving 'Application' form, drop these
-       'applicationId' rows and rely on the importer's built-in 'ApplicationID'.
+       id). Flows that use the literal key 'applicationId' catalogue it verbatim
+       as a plain integer attribute (no resolution).
        NOTE on dynamic branch keys: 'menu' uses per-choice 'nextStep_<digit>' and
-       'checkSchedule' uses 'nextStep_Guard_<name>'. The dictionary is exact-match, so
-       only the suffixes seen in these two flows are seeded. A new choice digit or
+       'checkSchedule' uses 'nextStep_Guard_<name>'. The dictionary is exact-match,
+       so only the suffixes used in live flows are seeded. A new choice digit or
        guard name needs a matching row or the import THROWs 54016 for that key.
-       Runtime status (rtds_2_runtime.js): PlayPrompt/PlayAudio/Menu/Workgroup-
-       Transfer/ExternalTransfer/Callback have GUI-exit keys registered;
-       Condition/Emergency/CheckSchedule/FlowJump are NOT yet registered (runtime
-       will skip to nextStep). Cataloguing here unblocks the IMPORT; wiring the
-       unregistered four is separate work.
+       Blocks for types without a shipped component are commented below — search
+       for "COMMENTED — no Vocalls component".
        ======================================================================== */
 
     /* ---- Say ---- (TTS / prompt-library playback; formerly playPrompt)         */
@@ -539,32 +534,78 @@ INSERT INTO @Attribute
     ('say', 'prompt',         'string',  1, 0, 0, 0),
     ('say', 'nextStep',       'string',  1, 1, 0, 0),
 
-    /* ---- Play ---- (named audio-source playback; formerly playAudio)           */
+    /*
+    ---- COMMENTED: play (no rtds/components/*.js) ----
     ('play', 'active',          'bit', 1, 0, 0, 0),
     ('play', 'audioSource',     'string',  1, 0, 0, 0),
     ('play', 'timeout',         'int', 0, 0, 0, 0),
     ('play', 'nextStep',        'string',  1, 1, 0, 0),
+    */
 
-    /* ---- Menu ---- (DTMF menu; per-choice nextStep_<digit> branches)           */
-    ('menu', 'active',                  'bit', 1, 0, 0, 0),
-    ('menu', 'applicationId',           'int', 0, 0, 0, 0),
-    ('menu', 'staticPrompt',            'string',  0, 0, 0, 0),
-    ('menu', 'timeout',                 'int', 0, 0, 0, 0),
-    ('menu', 'maxTries',                'int', 0, 0, 0, 0),
-    ('menu', 'nextStep_0',              'string',  0, 1, 0, 0),
-    ('menu', 'nextStep_1',              'string',  0, 1, 0, 0),
-    ('menu', 'nextStep_2',              'string',  0, 1, 0, 0),
-    ('menu', 'nextStep_3',              'string',  0, 1, 0, 0),
-    ('menu', 'nextStep_4',              'string',  0, 1, 0, 0),
-    ('menu', 'nextStep_5',              'string',  0, 1, 0, 0),
-    ('menu', 'nextStep_6',              'string',  0, 1, 0, 0),
-    ('menu', 'nextStep_7',              'string',  0, 1, 0, 0),
-    ('menu', 'nextStep_8',              'string',  0, 1, 0, 0),
-    ('menu', 'nextStep_9',              'string',  0, 1, 0, 0),
-    ('menu', 'nextStep_DefaultChoice',  'string',  0, 1, 0, 0),
-    ('menu', 'nextStep',                'string',  1, 1, 0, 0),
+    /* ---- Menu ---- (DTMF menu; gui_exit v2 component + legacy helpdesk import)
+       Reconciled to rtds/components/menu.js and rtds/specs/menu.spec.md.
+       Per-language TTS slots (guardTui pattern): staticMessage_<LANG>,
+       menuChoiceMessage_<key>_<LANG>, noChoiceMessage_<LANG>,
+       invalidChoiceMessage_<LANG>, maxTriesMessage_<LANG>.
+       Legacy helpdesk flows still use 'staticPrompt' (wav filename) and
+       'applicationId' -- kept for backward-compatible import.
+       Branch keys: nextStep_<key> (0-9, *, #), nextStep_DefaultChoice,
+       nextStep_Failure. Add *_DE / more langs when a flow supports them.         */
+    ('menu', 'active',                      'bit', 1, 0, 0, 0),
+    ('menu', 'applicationId',               'int', 0, 0, 0, 0),
+    ('menu', 'staticPrompt',                'string',  0, 0, 0, 0),
+    ('menu', 'staticMessage_NL',            'string',  0, 0, 0, 0),
+    ('menu', 'staticMessage_FR',            'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_0_NL',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_1_NL',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_2_NL',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_3_NL',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_4_NL',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_5_NL',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_6_NL',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_7_NL',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_8_NL',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_9_NL',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_*_NL',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_#_NL',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_0_FR',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_1_FR',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_2_FR',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_3_FR',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_4_FR',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_5_FR',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_6_FR',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_7_FR',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_8_FR',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_9_FR',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_*_FR',      'string',  0, 0, 0, 0),
+    ('menu', 'menuChoiceMessage_#_FR',      'string',  0, 0, 0, 0),
+    ('menu', 'noChoiceMessage_NL',          'string',  0, 0, 0, 0),
+    ('menu', 'noChoiceMessage_FR',          'string',  0, 0, 0, 0),
+    ('menu', 'invalidChoiceMessage_NL',     'string',  0, 0, 0, 0),
+    ('menu', 'invalidChoiceMessage_FR',     'string',  0, 0, 0, 0),
+    ('menu', 'maxTriesMessage_NL',          'string',  0, 0, 0, 0),
+    ('menu', 'maxTriesMessage_FR',          'string',  0, 0, 0, 0),
+    ('menu', 'timeout',                     'int', 0, 0, 0, 0),
+    ('menu', 'maxTries',                    'int', 0, 0, 0, 0),
+    ('menu', 'nextStep_0',                  'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_1',                  'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_2',                  'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_3',                  'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_4',                  'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_5',                  'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_6',                  'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_7',                  'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_8',                  'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_9',                  'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_*',                  'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_#',                  'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_DefaultChoice',      'string',  0, 1, 0, 0),
+    ('menu', 'nextStep_Failure',            'string',  0, 1, 0, 0),
+    ('menu', 'nextStep',                    'string',  1, 1, 0, 0),
 
-    /* ---- WorkgroupTransfer ---- (queue to an ACD workgroup)                    */
+    /*
+    ---- COMMENTED: workgroupTransfer (no rtds/components/*.js) ----
     ('workgroupTransfer', 'active',             'bit', 1, 0, 0, 0),
     ('workgroupTransfer', 'queueName',          'string',  1, 0, 0, 0),
     ('workgroupTransfer', 'skills',             'string',  0, 0, 0, 0),
@@ -572,6 +613,7 @@ INSERT INTO @Attribute
     ('workgroupTransfer', 'escapeKey',          'int', 0, 0, 0, 0),
     ('workgroupTransfer', 'nextStep_EscapeKey', 'string',  0, 1, 0, 0),
     ('workgroupTransfer', 'nextStep',           'string',  1, 1, 0, 0),
+    */
 
     /* ---- ExternalTransfer ---- (transfer to an external phone number)
        Param vocabulary reconciled to the shipped component rtds/components/
@@ -596,7 +638,8 @@ INSERT INTO @Attribute
     ('externalTransfer', 'nextStep_Failure', 'string',  0, 1, 0, 0),
     ('externalTransfer', 'nextStep',         'string',  1, 1, 0, 0),
 
-    /* ---- Condition ---- (branch on an ACD statistic; NOT yet runtime-wired)    */
+    /*
+    ---- COMMENTED: condition (no rtds/components/*.js) ----
     ('condition', 'active',          'bit', 1, 0, 0, 0),
     ('condition', 'statistic',       'string',  1, 0, 0, 0),
     ('condition', 'workgroup',       'string',  1, 0, 0, 0),
@@ -606,7 +649,7 @@ INSERT INTO @Attribute
     ('condition', 'nextStep_False',  'string',  1, 1, 0, 0),
     ('condition', 'nextStep',        'string',  1, 1, 0, 0),
 
-    /* ---- Emergency ---- (emergency-prompt check; NOT yet runtime-wired)        */
+    ---- COMMENTED: emergency (no rtds/components/*.js) ----
     ('emergency', 'active',               'bit', 1, 0, 0, 0),
     ('emergency', 'emergencyId',          'string',  1, 0, 0, 0),
     ('emergency', 'nextStep_Transfer',    'string',  0, 1, 0, 0),
@@ -614,8 +657,9 @@ INSERT INTO @Attribute
     ('emergency', 'nextStep_Continue',    'string',  0, 1, 0, 0),
     ('emergency', 'nextStep_Failure',     'string',  0, 1, 0, 0),
     ('emergency', 'nextStep',             'string',  1, 1, 0, 0),
+    */
 
-    /* ---- CheckSchedule ---- (open/closed/guard routing; NOT yet runtime-wired.
+    /* ---- CheckSchedule ---- (open/closed/guard routing; GUI-exit registered).
        Component checkSchedule.js exists. The component branches dynamically on
        'nextStep_' + the API's returned action, so every action it can route to
        needs a row here (exact-match, else 54016). The shipped __configJSON emits
@@ -624,6 +668,7 @@ INSERT INTO @Attribute
     ('checkSchedule', 'active',                       'bit', 1, 0, 0, 0),
     ('checkSchedule', 'applicationId',                'int', 0, 0, 0, 0),
     ('checkSchedule', 'scheduleId',                   'int', 1, 0, 0, 0),
+    ('checkSchedule', 'timeout',                      'int', 0, 0, 0, 0),
     ('checkSchedule', 'nextStep_Open',                'string',  0, 1, 0, 0),
     ('checkSchedule', 'nextStep_Closed',              'string',  0, 1, 0, 0),
     ('checkSchedule', 'nextStep_Transfer',            'string',  0, 1, 0, 0),
@@ -636,7 +681,8 @@ INSERT INTO @Attribute
     ('checkSchedule', 'nextStep_Failure',             'string',  0, 1, 0, 0),
     ('checkSchedule', 'nextStep',                     'string',  1, 1, 0, 0),
 
-    /* ---- Callback ---- (queue callback; DA_HELDPESK only)                      */
+    /*
+    ---- COMMENTED: callback (no rtds/components/*.js) ----
     ('callback', 'active',               'bit', 1, 0, 0, 0),
     ('callback', 'configId',             'int', 1, 0, 0, 0),
     ('callback', 'callbackOnANI',        'int', 1, 0, 0, 0),
@@ -656,32 +702,22 @@ INSERT INTO @Attribute
     ('callback', 'nextStep_Rejected',    'string',  0, 1, 0, 0),
     ('callback', 'nextStep_Failure',     'string',  0, 1, 0, 0),
     ('callback', 'nextStep',             'string',  1, 1, 0, 0),
+    */
 
     /* ---- FlowJump ---- (jump to another routing table by SourceId; NOT yet
        runtime-wired. Only the target SourceId is carried.)                       */
     ('flowJump', 'active',           'bit', 0, 0, 0, 0),
     ('flowJump', 'sourceId',         'string',  1, 0, 0, 0),
 
-    /* ========================================================================
-       N-ALLO_RECEPTION FLOW TYPES  (sourceId +3224581030)
-       ------------------------------------------------------------------------
-       Catalogued from rtds/samples/n-allo_reception.json. 'internalTransfer' is a
-       NEW type; 'getLanguage' is the renamed 'languageMenu'; 'voicemailCallback'
-       gains its first attributes. The flow's prompt-playing nodes use 'say'
-       (formerly playPrompt), catalogued above. None are runtime-wired as inline
-       twins (getLanguage keeps its GUI-exit).
-       ======================================================================== */
-
-    /* ---- GetLanguage ---- (NL/FR language selector; renamed from languageMenu).
-       Branches per chosen language via exact-match nextStep_<langKey> keys
-       (NL/FR for this flow), plus the fallthrough nextStep. Add a nextStep_<key>
-       row if a flow supports more languages (exact-match, else 54016).           */
+    /*
+    ---- COMMENTED: getLanguage (no rtds/components/*.js) ----
     ('getLanguage', 'active', 'bit', 1, 0, 0, 0),
     ('getLanguage', 'applicationId',  'int', 0, 0, 0, 0),
     ('getLanguage', 'prompt',  'string',  0, 0, 0, 0),
     ('getLanguage', 'languages',     'string',  1, 0, 0, 0),
     ('getLanguage', 'maxTries',      'int', 0, 0, 0, 0),
     ('getLanguage', 'nextStep',      'string',  1, 1, 0, 0),
+    */
 
     /* ---- InternalTransfer ---- (direct internal hand-off; NEW type, not yet
        runtime-wired). Param vocabulary reconciled to the shipped component
@@ -699,14 +735,15 @@ INSERT INTO @Attribute
     ('internalTransfer', 'attendTransfer',   'bit', 0, 0, 0, 0),
     ('internalTransfer', 'timeout',          'int', 0, 0, 0, 0),
     ('internalTransfer', 'nextStep_Failure', 'string',  0, 1, 0, 0),
-    ('internalTransfer', 'nextStep',         'string',  1, 1, 0, 0),
+    ('internalTransfer', 'nextStep',         'string',  1, 1, 0, 0);
 
-    /* ---- VoicemailCallback ---- (control keys only; the recording content params
-       are passthrough and intentionally NOT catalogued -- the flow drops them.)  */
+    /*
+    ---- COMMENTED: voicemailCallback (no rtds/components/*.js) ----
     ('voicemailCallback', 'active',           'bit', 1, 0, 0, 0),
     ('voicemailCallback', 'nextStep_Escape',  'string',  0, 1, 0, 0),
     ('voicemailCallback', 'nextStep_Error',   'string',  0, 1, 0, 0),
     ('voicemailCallback', 'nextStep',         'string',  1, 1, 0, 0);
+    */
 
 /* ============================================================================
    SECTION 2 -- SEED THE DICTIONARY (no need to edit below this line)
@@ -827,6 +864,7 @@ FROM    rtds.Dic_OperationType ot
 JOIN    rtds.Dic_Attribute     da ON da.DicOperationTypeID = ot.DicOperationTypeID
 JOIN    rtds.Dic_AttributeType at ON at.DicAttributeTypeID = da.DicAttributeTypeID
 WHERE   ot.Name IN ('setVariables', 'guard', 'guardTui', 'sendMail', 'sendSms', 'disconnect',
-                    'say', 'getLanguage', 'internalTransfer', 'voicemailCallback')
+                    'say', 'menu', 'checkSchedule', 'flowJump',
+                    'externalTransfer', 'internalTransfer')
 ORDER BY ot.Name, da.IsNext, da.Name;
 */

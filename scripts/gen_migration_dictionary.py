@@ -71,8 +71,24 @@ def _block(text, start_marker, end_marker):
     return text[s:e]
 
 
+def strip_seed_comments(text):
+    """Drop SQL block comments and full-line ``--`` comments before parsing.
+
+    Commented ``@Attribute`` blocks and ``--``-prefixed ``Dic_OperationType``
+    rows are intentionally excluded from the generated dictionary contract.
+    """
+    text = re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL)
+    kept = []
+    for line in text.splitlines():
+        if line.lstrip().startswith("--"):
+            continue
+        kept.append(line)
+    return "\n".join(kept)
+
+
 def parse_seed(text):
     """Parse the seed SQL into the dictionary structure (ordered)."""
+    text = strip_seed_comments(text)
     # Operation types — bounded to the Dic_OperationType INSERT ... AS v(...) block.
     optype_block = _block(
         text,

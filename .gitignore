@@ -26,3 +26,8 @@ __pycache__/
 # Local scratch / backup artifacts (not part of the repo)
 .rewind-backup/
 *.bak
+
+# Generated / source call-flow configs (kept on disk, not tracked)
+!jsonConfig/
+!oldJsonConfig/
+

@@ -1,0 +1,62 @@
+{
+	"SourceId": "+3257351052",
+  "Name": "DIGIPOLIS - LPA_ICT_GUARD_TUI",
+	"Project": "LPA ICT",
+	"PromptLibrary": "DIGIPOLIS\\LPA\\ICT_HELPDESK",
+	"SupportedLanguages": "NL",
+	"Operations":
+	[
+		{
+			"Id": "00000",
+			"Type": "SetAttributes",
+			"Name": "Call Initialization",
+			"IsFirstOperation": true,
+			"Params": {
+				"LogAttributes": "RTDS_ProjectName|Eic_RemoteId|ATTR_RoutingId|ATTR_CallflowId|ATTR_IVREvent|ATTR_IVRAction",
+				"CallflowId": " LPA_ICT_GUARD_TUI",
+				"RoutingId": " LPA_ICT_GUARD_TUI",
+				"IVREvent": "9999",
+				"IVRAction": "CT",
+				"NextStep": "00001"
+			}
+		},
+		{
+			"Id": "00001",
+			"Type": "guardTui",
+			"Name": "LPA_ICT",
+			"Params": {
+				"Active": 1,
+				"ConfigId": 3,
+				"ConfigName": "LPA_ICT",
+				"NextStep_Success": "00098",
+				"NextStep_Failure": "00099",
+				"NextStep": "00098"
+			}
+		},
+		{
+			"Id": "00098",
+			"Type": "SetAttributes",
+			"Name": "Set: Congnos Success",
+			"Params": {
+				"IVREvent": "1200",
+				"IVRAction": "CT",
+				"NextStep": "00100"
+			}
+		},
+        {
+            "Id": "00099",
+            "Type": "SetAttributes",
+            "Name": "Set: Congnos Failure",
+            "Params": {
+                "IVREvent": "9999",
+                "IVRAction": "DC",
+                "NextStep": "00100"
+            }
+        },
+		{
+			"Id": "00100",
+			"Type": "Disconnect",
+			"Name": "RTDS: Disconnect"
+		}
+	]
+}

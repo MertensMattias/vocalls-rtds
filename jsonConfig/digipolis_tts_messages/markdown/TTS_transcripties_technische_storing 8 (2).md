@@ -1,0 +1,19 @@
+# TTS_transcripties_technische_storing 8 (2)
+
+| Prompt key | TTS-tekst |
+| --- | --- |
+| BL_BEDRIJVENLOKET | Door een technische storing kunnen wij momenteel uw oproep niet beantwoorden. Gelieve ons te verontschuldigen en op een later tijdstip terug te bellen. Voor informatie kan u ook terecht op onze website www.ondernemeninantwerpen.be. |
+| CC_MELDJEAAN_LAGER | Welkom bij de helpdesk Meld je aan. Omwille van een storing zijn we momenteel onbereikbaar. Onze excuses daarvoor. Wij proberen dit zo snel mogelijk op te lossen. |
+| CORONA_INFOLIJN | Door een technische storing kunnen wij momenteel uw oproep niet beantwoorden. Gelieve ons te verontschuldigen en op een later tijdstip terug te bellen. Voor informatie kan u ook terecht op onze website www.visitantwerpen.be. Typ corona in de zoekbalk. |
+| DA_ABC | Wegens onvoorziene technische storingen kunnen wij momenteel uw oproep niet beantwoorden. Wij trachten dit zo snel mogelijk op te lossen. Onze normale openingsuren zijn op weekdagen van 9 tot 12 uur en van 13 uur tot 16 uur 30, behalve op vrijdagnamiddag. |
+| LPA_BL | Goeiedag, op dit moment is de blauwe lijn van de politiezone Antwerpen jammer genoeg niet bereikbaar. Wij proberen dit zo snel mogelijk op te lossen. Heeft u een niet-dringende melding of wilt u een afspraak maken, dan kan dit ook via onze website www.politieantwerpen.be. Heeft u dringende politiehulp nodig, bel dan één nul één. |
+| LPA_FILOG | Welkom bij de directie FILOG. Door onvoorziene omstandigheden kunnen wij momenteel uw oproep niet beantwoorden. Gelieve ons te verontschuldigen en op een later tijdstip terug te bellen. |
+| LPA_HRM | Welkom bij de directie HRM. Door onvoorziene omstandigheden kunnen wij momenteel uw oproep niet beantwoorden. Gelieve ons te verontschuldigen en op een later tijdstip terug te bellen of te mailen naar hrm apenstaartje politie punt antwerpen punt be. |
+| LPA_REGIO | Beste klant, door technische storingen zijn wij momenteel niet bereikbaar. Wij proberen dit zo snel mogelijk op te lossen. Voor dringende politiehulp dient u te bellen naar het noodnummer één één twee. Alvast onze excuses voor het ongemak. |
+| PM_INFOPLUS_ZIEKTE | Momenteel is InfoPlus telefonisch niet te bereiken vanwege een technisch probleem. We trachten dit zo snel mogelijk op te lossen. U kan altijd een melding maken via het medewerkersportaal. Wij beantwoorden deze zo snel mogelijk. |
+| SCC_INFO | Door een technische storing kunnen wij momenteel uw oproep niet beantwoorden. Gelieve ons te verontschuldigen en op een later tijdstip terug te bellen. Voor informatie, afspraken en meldingen kan u ook terecht op onze website www.antwerpen.be. |
+| SCC_SLUIKSTORT | Door een technische storing kunnen wij momenteel uw oproep niet beantwoorden. Gelieve ons te verontschuldigen en op een later tijdstip terug te bellen. |
+| SCC_TOERISME | Door een technische storing kunnen wij momenteel uw oproep niet beantwoorden. Gelieve ons te verontschuldigen en op een later tijdstip terug te bellen. Voor informatie kan u ook terecht op onze website www.visitantwerpen.be. |
+| SW_LEZ | Wegens onvoorziene technische storingen kunnen wij momenteel uw oproep niet beantwoorden. Gelieve ons te verontschuldigen en op een later tijdstip terug te bellen of stuur een mail naar lez apenstaartje antwerpen punt be. Check www.slimnaarantwerpen.be, schuine streep, l e z, voor alle info over de lage-emissiezone of om uw voertuig te registreren. |
+| SW_SV | Wegens onvoorziene technische storingen kunnen wij momenteel uw oproep niet beantwoorden. Wij trachten dit zo snel mogelijk op te lossen. Onze normale openingsuren zijn maandag en woensdag van 9 tot 13 uur. |
+| SW_TS | Welkom bij Mobiliteit en Parkeren Antwerpen. Door onvoorziene omstandigheden kunnen wij momenteel uw oproep niet beantwoorden. Gelieve ons te verontschuldigen en op een later tijdstip terug te bellen. |

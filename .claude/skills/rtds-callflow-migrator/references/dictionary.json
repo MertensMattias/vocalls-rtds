@@ -3,27 +3,17 @@
   "generator": "scripts/gen_migration_dictionary.py",
   "operationTypes": [
     "setVariables",
-    "checkVariable",
     "say",
-    "getLanguage",
     "checkSchedule",
-    "emergency",
-    "guardRouting",
     "menu",
     "guardTui",
     "guard",
     "disconnect",
-    "play",
-    "condition",
-    "skillUpdate",
     "flowJump",
-    "callerDataEntry",
-    "voicemailCallback",
-    "callback",
     "sendSms",
-    "manageCallCapacity",
     "externalTransfer",
-    "internalTransfer"
+    "internalTransfer",
+    "sendMail"
   ],
   "promptApplicationIds": [
     1,
@@ -37,7 +27,8 @@
     12,
     13,
     14,
-    15
+    15,
+    16
   ],
   "attributes": {
     "setVariables": [
@@ -78,13 +69,37 @@
         "branch": false
       },
       {
-        "name": "logAttributes",
+        "name": "keysToLog",
         "type": "string",
         "required": false,
         "branch": false
       },
       {
-        "name": "keysToLog",
+        "name": "language",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "ani",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "dnis",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "interactionStartTime",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "routingKey",
         "type": "string",
         "required": false,
         "branch": false
@@ -510,32 +525,6 @@
         "branch": true
       }
     ],
-    "play": [
-      {
-        "name": "active",
-        "type": "bit",
-        "required": true,
-        "branch": false
-      },
-      {
-        "name": "audioSource",
-        "type": "string",
-        "required": true,
-        "branch": false
-      },
-      {
-        "name": "timeout",
-        "type": "int",
-        "required": false,
-        "branch": false
-      },
-      {
-        "name": "nextStep",
-        "type": "string",
-        "required": true,
-        "branch": true
-      }
-    ],
     "menu": [
       {
         "name": "active",
@@ -551,6 +540,174 @@
       },
       {
         "name": "staticPrompt",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "staticMessage_NL",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "staticMessage_FR",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "menuChoiceMessage_0_NL",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "menuChoiceMessage_1_NL",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "menuChoiceMessage_2_NL",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "menuChoiceMessage_3_NL",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "menuChoiceMessage_4_NL",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "menuChoiceMessage_5_NL",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "menuChoiceMessage_6_NL",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "menuChoiceMessage_7_NL",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "menuChoiceMessage_8_NL",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "menuChoiceMessage_9_NL",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "menuChoiceMessage_0_FR",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "menuChoiceMessage_1_FR",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "menuChoiceMessage_2_FR",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "menuChoiceMessage_3_FR",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "menuChoiceMessage_4_FR",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "menuChoiceMessage_5_FR",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "menuChoiceMessage_6_FR",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "menuChoiceMessage_7_FR",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "menuChoiceMessage_8_FR",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "menuChoiceMessage_9_FR",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "noChoiceMessage_NL",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "noChoiceMessage_FR",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "invalidChoiceMessage_NL",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "invalidChoiceMessage_FR",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "maxTriesMessage_NL",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "maxTriesMessage_FR",
         "type": "string",
         "required": false,
         "branch": false
@@ -634,45 +791,7 @@
         "branch": true
       },
       {
-        "name": "nextStep",
-        "type": "string",
-        "required": true,
-        "branch": true
-      }
-    ],
-    "workgroupTransfer": [
-      {
-        "name": "active",
-        "type": "bit",
-        "required": true,
-        "branch": false
-      },
-      {
-        "name": "queueName",
-        "type": "string",
-        "required": true,
-        "branch": false
-      },
-      {
-        "name": "skills",
-        "type": "string",
-        "required": false,
-        "branch": false
-      },
-      {
-        "name": "priority",
-        "type": "int",
-        "required": false,
-        "branch": false
-      },
-      {
-        "name": "escapeKey",
-        "type": "int",
-        "required": false,
-        "branch": false
-      },
-      {
-        "name": "nextStep_EscapeKey",
+        "name": "nextStep_Failure",
         "type": "string",
         "required": false,
         "branch": true
@@ -734,100 +853,6 @@
         "branch": true
       }
     ],
-    "condition": [
-      {
-        "name": "active",
-        "type": "bit",
-        "required": true,
-        "branch": false
-      },
-      {
-        "name": "statistic",
-        "type": "string",
-        "required": true,
-        "branch": false
-      },
-      {
-        "name": "workgroup",
-        "type": "string",
-        "required": true,
-        "branch": false
-      },
-      {
-        "name": "operator",
-        "type": "string",
-        "required": true,
-        "branch": false
-      },
-      {
-        "name": "value",
-        "type": "string",
-        "required": true,
-        "branch": false
-      },
-      {
-        "name": "nextStep_True",
-        "type": "string",
-        "required": true,
-        "branch": true
-      },
-      {
-        "name": "nextStep_False",
-        "type": "string",
-        "required": true,
-        "branch": true
-      },
-      {
-        "name": "nextStep",
-        "type": "string",
-        "required": true,
-        "branch": true
-      }
-    ],
-    "emergency": [
-      {
-        "name": "active",
-        "type": "bit",
-        "required": true,
-        "branch": false
-      },
-      {
-        "name": "emergencyId",
-        "type": "string",
-        "required": true,
-        "branch": false
-      },
-      {
-        "name": "nextStep_Transfer",
-        "type": "string",
-        "required": false,
-        "branch": true
-      },
-      {
-        "name": "nextStep_Disconnect",
-        "type": "string",
-        "required": false,
-        "branch": true
-      },
-      {
-        "name": "nextStep_Continue",
-        "type": "string",
-        "required": false,
-        "branch": true
-      },
-      {
-        "name": "nextStep_Failure",
-        "type": "string",
-        "required": false,
-        "branch": true
-      },
-      {
-        "name": "nextStep",
-        "type": "string",
-        "required": true,
-        "branch": true
-      }
-    ],
     "checkSchedule": [
       {
         "name": "active",
@@ -845,6 +870,12 @@
         "name": "scheduleId",
         "type": "int",
         "required": true,
+        "branch": false
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "required": false,
         "branch": false
       },
       {
@@ -914,122 +945,6 @@
         "branch": true
       }
     ],
-    "callback": [
-      {
-        "name": "active",
-        "type": "bit",
-        "required": true,
-        "branch": false
-      },
-      {
-        "name": "configId",
-        "type": "int",
-        "required": true,
-        "branch": false
-      },
-      {
-        "name": "callbackOnANI",
-        "type": "int",
-        "required": true,
-        "branch": false
-      },
-      {
-        "name": "aniConfirmation",
-        "type": "int",
-        "required": true,
-        "branch": false
-      },
-      {
-        "name": "allowManualInput",
-        "type": "int",
-        "required": true,
-        "branch": false
-      },
-      {
-        "name": "manualInputRetries",
-        "type": "int",
-        "required": true,
-        "branch": false
-      },
-      {
-        "name": "locationFilter",
-        "type": "string",
-        "required": false,
-        "branch": false
-      },
-      {
-        "name": "aniClassifications",
-        "type": "string",
-        "required": false,
-        "branch": false
-      },
-      {
-        "name": "aniAttribute",
-        "type": "string",
-        "required": false,
-        "branch": false
-      },
-      {
-        "name": "customSkills",
-        "type": "string",
-        "required": false,
-        "branch": false
-      },
-      {
-        "name": "inheritSkills",
-        "type": "int",
-        "required": false,
-        "branch": false
-      },
-      {
-        "name": "customPriority",
-        "type": "int",
-        "required": false,
-        "branch": false
-      },
-      {
-        "name": "inheritPriority",
-        "type": "int",
-        "required": false,
-        "branch": false
-      },
-      {
-        "name": "promptFolder",
-        "type": "string",
-        "required": false,
-        "branch": false
-      },
-      {
-        "name": "workgroup",
-        "type": "string",
-        "required": false,
-        "branch": false
-      },
-      {
-        "name": "nextStep_Accepted",
-        "type": "string",
-        "required": false,
-        "branch": true
-      },
-      {
-        "name": "nextStep_Rejected",
-        "type": "string",
-        "required": false,
-        "branch": true
-      },
-      {
-        "name": "nextStep_Failure",
-        "type": "string",
-        "required": false,
-        "branch": true
-      },
-      {
-        "name": "nextStep",
-        "type": "string",
-        "required": true,
-        "branch": true
-      }
-    ],
     "flowJump": [
       {
         "name": "active",
@@ -1042,44 +957,6 @@
         "type": "string",
         "required": true,
         "branch": false
-      }
-    ],
-    "getLanguage": [
-      {
-        "name": "active",
-        "type": "bit",
-        "required": true,
-        "branch": false
-      },
-      {
-        "name": "applicationId",
-        "type": "int",
-        "required": false,
-        "branch": false
-      },
-      {
-        "name": "prompt",
-        "type": "string",
-        "required": false,
-        "branch": false
-      },
-      {
-        "name": "languages",
-        "type": "string",
-        "required": true,
-        "branch": false
-      },
-      {
-        "name": "maxTries",
-        "type": "int",
-        "required": false,
-        "branch": false
-      },
-      {
-        "name": "nextStep",
-        "type": "string",
-        "required": true,
-        "branch": true
       }
     ],
     "internalTransfer": [
@@ -1115,32 +992,6 @@
       },
       {
         "name": "nextStep_Failure",
-        "type": "string",
-        "required": false,
-        "branch": true
-      },
-      {
-        "name": "nextStep",
-        "type": "string",
-        "required": true,
-        "branch": true
-      }
-    ],
-    "voicemailCallback": [
-      {
-        "name": "active",
-        "type": "bit",
-        "required": true,
-        "branch": false
-      },
-      {
-        "name": "nextStep_Escape",
-        "type": "string",
-        "required": false,
-        "branch": true
-      },
-      {
-        "name": "nextStep_Error",
         "type": "string",
         "required": false,
         "branch": true

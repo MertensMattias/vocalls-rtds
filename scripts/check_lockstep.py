@@ -119,6 +119,17 @@ def spec_param_names(spec_filename):
 
 # ---- seed Dic_Attribute names ---------------------------------------------
 
+def strip_seed_comments(text):
+    """Drop SQL block comments and full-line ``--`` comments before parsing."""
+    text = re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL)
+    kept = []
+    for line in text.splitlines():
+        if line.lstrip().startswith("--"):
+            continue
+        kept.append(line)
+    return "\n".join(kept)
+
+
 def seed_param_names_by_optype():
     """Map seed OperationType (e.g. 'sendSms') -> set of AttributeName.
 
@@ -128,7 +139,7 @@ def seed_param_names_by_optype():
     <opType> is the camelCase, suffix-free operation type (the temporary
     '_vocalls' suffix was dropped in the camelCase-contract migration).
     """
-    text = SEED.read_text(encoding="utf-8")
+    text = strip_seed_comments(SEED.read_text(encoding="utf-8"))
     out = {}
     # Anchor on the attribute-type column ('string'|'int'|'bit'); only
     # the @Attribute rows have it, so the @OperationType VALUES list (type names

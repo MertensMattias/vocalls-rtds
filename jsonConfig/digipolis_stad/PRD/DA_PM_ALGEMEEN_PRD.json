@@ -1,0 +1,171 @@
+{
+    "sourceId": "+3233381300",
+    "name": "DIGIPOLIS: PM-INFOPLUS-ALGEMEEN",
+    "project": "DIGIPOLIS_PM",
+    "promptLibrary": "DIGIPOLIS\\PM\\INFOPLUS_ALGEMEEN",
+    "supportedLanguages": "NL",
+    "operations": [
+        {
+            "id": "00000",
+            "type": "setVariables",
+            "name": "Call Initialization",
+            "isFirstOperation": true,
+            "params": {
+                "active": true,
+                "keysToLog": "[\"customerName\", \"customerProject\", \"routingId\", \"language\", \"ani\", \"dnis\", \"interactionStartTime\", \"routingKey\", \"ivrEvent\", \"ivrAction\" ]",
+                "customerName": "DA",
+                "customerProject": "PM-ALGEMEEN",
+                "routingId": "DA-PM-ALGEMEEN",
+                "ivrEvent": "9999",
+                "ivrAction": "CT",
+                "nextStep": "00004"
+            }
+        },
+        {
+            "id": "00004",
+            "type": "checkSchedule",
+            "name": "Check: Scheduler",
+            "params": {
+                "active": true,
+                "applicationId": 1,
+                "scheduleId": 11,
+                "nextStep_Open": "00010",
+                "nextStep_Closed": "00011",
+                "nextStep_Transfer": "00012",
+                "nextStep_Failure": "00013",
+                "nextStep": "00013"
+            }
+        },
+        {
+            "id": "00010",
+            "type": "setVariables",
+            "name": "Set: Cognos Open",
+            "params": {
+                "active": true,
+                "ivrEvent": "1200",
+                "ivrAction": "CT",
+                "nextStep": "00024"
+            }
+        },
+        {
+            "id": "00011",
+            "type": "setVariables",
+            "name": "Set: Cognos Closed",
+            "params": {
+                "active": true,
+                "ivrEvent": "1201",
+                "ivrAction": "DC",
+                "nextStep": "00100"
+            }
+        },
+        {
+            "id": "00012",
+            "type": "setVariables",
+            "name": "Set: Cognos Transfer",
+            "params": {
+                "active": true,
+                "ivrEvent": "1201",
+                "ivrAction": "TX",
+                "nextStep": "00040"
+            }
+        },
+        {
+            "id": "00013",
+            "type": "setVariables",
+            "name": "Set: Cognos Scheduler Error (treat as Open)",
+            "params": {
+                "active": true,
+                "ivrEvent": "1200",
+                "ivrAction": "CT",
+                "nextStep": "00024"
+            }
+        },
+        {
+            "id": "00024",
+            "type": "say",
+            "name": "Play: AdHoc",
+            "params": {
+                "active": [
+                    false,
+                    "isDisplayed",
+                    "isEditable"
+                ],
+                "applicationId": 6,
+                "prompt": [
+                    "AdHoc_Message",
+                    "isDisplayed",
+                    "isEditable"
+                ],
+                "nextStep": "00060"
+            },
+            "ttsMessages": {
+                "NL": ""
+            }
+        },
+        {
+            "id": "00040",
+            "type": "externalTransfer",
+            "name": "Route-To: Scheduler Transfer Number",
+            "params": {
+                "active": true,
+                "phoneNumber": [
+                    "${schedulerTransferNumber}",
+                    "isDisplayed",
+                    "isEditable"
+                ],
+                "outboundANI": "",
+                "parameters": "",
+                "attendTransfer": false,
+                "timeout": 30000,
+                "nextStep_Failure": "00100",
+                "nextStep": "00100"
+            }
+        },
+        {
+            "id": "00060",
+            "type": "internalTransfer",
+            "name": "Route-To: PM_ALGEMEEN",
+            "params": {
+                "active": true,
+                "target": [
+                    "570010",
+                    "isDisplayed",
+                    "isEditable"
+                ],
+                "parameters": "{\r\n                    \"callIdKey\": \"${callIdKey}\",\r\n                    \"customerName\": \"${customerName}\",\r\n                    \"customerProject\": \"${customerProject}\"\r\n                }",
+                "attendTransfer": true,
+                "timeout": 30000,
+                "nextStep_Failure": "00070",
+                "nextStep": "00100"
+            }
+        },
+        {
+            "id": "00070",
+            "type": "say",
+            "name": "Play: Exception",
+            "params": {
+                "active": [
+                    true,
+                    "isDisplayed",
+                    "isEditable"
+                ],
+                "applicationId": 14,
+                "prompt": [
+                    "Exception_Vocalls",
+                    "isDisplayed",
+                    "isEditable"
+                ],
+                "nextStep": "00100"
+            },
+            "ttsMessages": {
+                "NL": "Welkom bij InfoPlus. We zijn uitzonderlijk telefonisch niet bereikbaar. Je kan op een later tijdstip terugbellen. Als medewerker van de stad vind je op het medewerkersportaal informatie over je personeelsaangelegenheden. Heb je toch nog een vraag? Stel ze dan via Vraag aan InfoPlus. Bedankt voor je begrip."
+            }
+        },
+        {
+            "id": "00100",
+            "type": "disconnect",
+            "name": "RTDS: Disconnect",
+            "params": {}
+        }
+    ]
+}

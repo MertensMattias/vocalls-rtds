@@ -1,0 +1,27 @@
+DicOperationTypeID	Name	DateCreated	CreatedBy	DateUpdated	UpdatedBy
+------------------	----	-----------	---------	-----------	---------
+1	setVariables	2021-06-30 11:07:51.4330000	rtds-seed	NULL	NULL
+2	checkVariable	2023-11-27 15:42:49.9300000	rtds-seed	NULL	NULL
+3	say	2021-06-30 11:07:51.4330000	rtds-seed	NULL	NULL
+4	getLanguage	2021-06-30 11:07:51.4330000	rtds-seed	NULL	NULL
+5	checkSchedule	2021-06-30 11:07:51.4330000	rtds-seed	NULL	NULL
+6	emergency	2021-06-30 11:07:51.4330000	rtds-seed	NULL	NULL
+7	guardRouting	2022-04-20 11:47:56.5100000	rtds-seed	NULL	NULL
+8	menu	2021-06-30 11:07:51.4330000	rtds-seed	NULL	NULL
+9	guardTui	2022-04-20 11:48:35.3830000	rtds-seed	NULL	NULL
+10	guard	2021-06-30 11:07:51.4330000	rtds-seed	NULL	NULL
+11	disconnect	2021-06-30 11:07:51.4330000	rtds-seed	NULL	NULL
+12	play	2021-06-30 11:07:51.4330000	rtds-seed	NULL	NULL
+13	condition	2021-06-30 11:07:51.4330000	rtds-seed	NULL	NULL
+14	skillUpdate	2021-06-30 11:07:51.4330000	rtds-seed	NULL	NULL
+15	flowJump	2021-06-30 11:07:51.4330000	rtds-seed	NULL	NULL
+16	callerDataEntry	2021-06-30 11:07:51.4330000	rtds-seed	NULL	NULL
+17	voicemailCallback	2021-06-30 11:07:51.4330000	rtds-seed	NULL	NULL
+18	callback	2021-10-29 12:02:57.5000000	rtds-seed	NULL	NULL
+19	sendSms	2022-04-20 11:48:39.7930000	rtds-seed	NULL	NULL
+20	manageCallCapacity	2025-03-11 12:52:49.2470000	rtds-seed	NULL	NULL
+21	externalTransfer	2021-06-30 11:07:51.4330000	rtds-seed	NULL	NULL
+22	internalTransfer	2026-06-08 00:00:00.0000000	rtds-seed	NULL	NULL
+23	sendMail	2026-06-12 08:47:21.8981290	rtds-seed	NULL	NULL
+24	workgroupTransfer	2026-06-12 08:47:21.8981290	rtds-seed	NULL	NULL
+

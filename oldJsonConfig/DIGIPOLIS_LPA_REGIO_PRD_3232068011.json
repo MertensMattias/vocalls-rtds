@@ -1,0 +1,218 @@
+{
+	"SourceId": "+3232068011",
+	"Name": "DIGIPOLIS - LPA_REGIO",
+	"ProjectId": "122",
+	"Project": "LPA REGIO",
+	"PromptLibrary": "DIGIPOLIS\\LPA\\REGIO",
+	"SupportedLanguages": "NL",
+	"Operations": [
+		{
+			"Id": "00000",
+			"Type": "SetAttributes",
+			"Name": "Call Initialization",
+			"IsFirstOperation": true,
+			"Params": {
+				"LogAttributes": "RTDS_ProjectName|Eic_RemoteId|ATTR_RoutingId|ATTR_CallflowId|ATTR_IVREvent|ATTR_IVRAction|ATTR_CQR|ATTR_CQS",
+				"CallflowId": "LPA_REGIO",
+				"RoutingId": "LPA_REGIO",
+				"IVREvent": "9999",
+				"IVRAction": "CT",
+				"Custom_AcdCategoriesAdd": "ACD_IN",
+				"ATTR_Customer": "DIGIPOLIS_LPA",
+				"NextStep": "00001"
+			}
+		},
+		{
+			"Id": "00001",
+			"Type": "Schedule",
+			"Name": "Check: Scheduler",
+			"Params": {
+				"ApplicationId": "1",
+				"ScheduleID": "9",
+				"NextStep_Open": "00011",
+				"NextStep_Transfer": "00012",
+				"NextStep_Closed": "00013",
+				"NextStep": "00099"
+			}
+		},
+		{
+			"Id": "00011",
+			"Type": "SetAttributes",
+			"Name": "Set: Congnos Open",
+			"Params": {
+				"IVREvent": "1200",
+				"IVRAction": "CT",
+				"NextStep": "00040"
+			}
+		},
+		{
+			"Id": "00012",
+			"Type": "SetAttributes",
+			"Name": "Set: Congnos Transfer",
+			"Params": {
+				"IVREvent": "1200",
+				"IVRAction": "TX",
+				"NextStep": "00090"
+			}
+		},
+		{
+			"Id": "00013",
+			"Type": "SetAttributes",
+			"Name": "Set: Congnos Closed",
+			"Params": {
+				"IVREvent": "1201",
+				"IVRAction": "DC",
+				"NextStep": "00100"
+			}
+		},
+		{
+			"Id": "00040",
+			"Type": "PlayPrompt",
+			"Name": "Play: Welcome",
+			"Params": {
+				"Active": [
+					"1",
+					"isDisplayed",
+					"isEditable"
+				],
+				"ApplicationId": "11",
+				"Prompt": [
+					"Welcome_Welcome.wav",
+					"isDisplayed",
+					"isEditable"
+				],
+				"NextStep": "00041"
+			}
+		},
+		{
+			"Id": "00041",
+			"Type": "PlayPrompt",
+			"Name": "Play: Extra",
+			"Params": {
+				"Active": [
+					"0",
+					"isDisplayed",
+					"isEditable"
+				],
+				"ApplicationId": "6",
+				"Prompt": [
+					"Adhoc_Extra.wav",
+					"isDisplayed",
+					"isEditable"
+				],
+				"NextStep": "00042"
+			}
+		},
+		{
+			"Id": "00042",
+			"Type": "Condition",
+			"Name": "Check: Staffing",
+			"Params": {
+				"Statistic": "AgentsLoggedIn",
+				"Workgroup": "LPA_REGIO_V",
+				"Operator": "gt",
+				"Value": "0",
+				"NextStep_True": "00043",
+				"NextStep_False": "00098"
+			}
+		},
+		{
+			"Id": "00043",
+			"Type": "Condition",
+			"Name": "Check: MaxQueue",
+			"Params": {
+				"Statistic": "CallsWaiting",
+				"Workgroup": "LPA_REGIO_V",
+				"Operator": "gt",
+				"Value": "39",
+				"NextStep_True": "00097",
+				"NextStep_False": "00045"
+			}
+		},
+		{
+			"Id": "00045",
+			"Type": "PlayPrompt",
+			"Name": "Play: PreQueue",
+			"Params": {
+				"Active":"1",
+				"ApplicationId": "5",
+				"Prompt": "Queue_Prequeue.wav",
+			
+				"NextStep": "00050"
+			}
+		},
+		{
+			"Id": "00050",
+			"Type": "WorkgroupTransfer",
+			"Name": "Route-To: LPA REGIO",
+			"Params": {
+				"QueueName": "LPA_REGIO_V",
+				"Skills": "LPA_CENTRUM_QM",
+				"Priority": "100",
+				"NextStep": "00051"
+			}
+		},
+		{
+			"Id": "00051",
+			"Type": "PlayPrompt",
+			"Name": "Queue: Message 1",
+			"Params": {
+				"Prompt": "Queue_Waitmessage01",
+				"NextStep": "00052"
+			}
+		},
+		{
+			"Id": "00052",
+			"Type": "PlayPrompt",
+			"Name": "Queue: Message 2",
+			"Params": {
+				"Prompt": "Queue_Waitmessage02",
+				"NextStep": "00051"
+			}
+		},
+		{
+			"Id": "00090",
+			"Type": "ExternalTransfer",
+			"Name": "Route-To: External Number",
+			"Params": {
+				"PhoneNumber": "",
+				"OutboundANI": "",
+				"PerformCallAnalysis": "Yes",
+				"DiversionReason": "8",
+				"Timeout": "30",
+				"NextStep_Busy": "00099",
+				"NextStep_RNA": "00099",
+				"NextStep": "00100"
+			}
+		},
+		{
+			"Id": "00097",
+			"Type": "Disconnect",
+			"Name": "RTDS: MaxQueue Disconnect",
+			"Params": {
+				"Prompt": "PreQueue_MaxQueueDisconnect.wav"
+			}
+		},
+		{
+			"Id": "00098",
+			"Type": "Disconnect",
+			"Name": "RTDS: NoStaffing Disconnect",
+			"Params": {
+				"Prompt": "PreQueue_NoStaffingDisconnect.wav"
+			}
+		},
+		{
+			"Id": "00099",
+			"Type": "Disconnect",
+			"Name": "RTDS: Exception Disconnect",
+			"Params": {
+				"Prompt": "Scheduler_ExceptionDisconnect.wav"
+			}
+		},
+		{
+			"Id": "00100",
+			"Type": "Disconnect",
+			"Name": "RTDS: Disconnect"
+		}
+	]
+}

@@ -1,0 +1,6 @@
+DicAttributeTypeID	Name	DateCreated	CreatedBy	DateUpdated	UpdatedBy
+------------------	----	-----------	---------	-----------	---------
+1	bit	2026-06-12 08:47:21.8981290	rtds-seed	NULL	NULL
+2	int	2026-06-12 08:47:21.8981290	rtds-seed	NULL	NULL
+3	string	2026-06-12 08:47:21.8981290	rtds-seed	NULL	NULL
+

@@ -1,0 +1,193 @@
+{
+  "sourceId": "+3257351108",
+  "name": "DIGIPOLIS: SW-TS",
+  "project": "DIGIPOLIS_DA_SW_TS",
+  "promptLibrary": "DIGIPOLIS\\SW\\TS",
+  "supportedLanguages": "NL",
+  "operations": [
+    {
+      "id": "00000",
+      "type": "setVariables",
+      "name": "Call Initialization",
+      "isFirstOperation": true,
+      "params": {
+        "active": true,
+        "routingId": "DA-SW-TS",
+        "customerName": "DA",
+        "customerProject": "SW-TS",
+        "ivrEvent": "9999",
+        "ivrAction": "CT",
+        "keysToLog": "[\"customerName\", \"customerProject\", \"routingId\", \"language\", \"ani\", \"dnis\", \"interactionStartTime\", \"routingKey\", \"ivrEvent\", \"ivrAction\" ]",
+        "nextStep": "00004"
+      }
+    },
+    {
+      "id": "00004",
+      "type": "checkSchedule",
+      "name": "Check: Scheduler",
+      "params": {
+        "active": true,
+        "applicationId": 1,
+        "scheduleId": 3022,
+        "nextStep_Open": "00010",
+        "nextStep_Closed": "00011",
+        "nextStep_Transfer": "00012",
+        "nextStep_Failure": "00010",
+        "nextStep": "00010"
+      }
+    },
+    {
+      "id": "00010",
+      "type": "setVariables",
+      "name": "Set: Cognos Open",
+      "params": {
+        "active": true,
+        "ivrEvent": "1200",
+        "ivrAction": "CT",
+        "nextStep": "00024"
+      }
+    },
+    {
+      "id": "00011",
+      "type": "setVariables",
+      "name": "Set: Cognos Closed",
+      "params": {
+        "active": true,
+        "ivrEvent": "1201",
+        "ivrAction": "DC",
+        "nextStep": "00100"
+      }
+    },
+    {
+      "id": "00012",
+      "type": "setVariables",
+      "name": "Set: Cognos Transfer",
+      "params": {
+        "active": true,
+        "ivrEvent": "1201",
+        "ivrAction": "TX",
+        "nextStep": "00090"
+      }
+    },
+    {
+      "id": "00024",
+      "type": "say",
+      "name": "Play: AdHoc",
+      "params": {
+        "active": [
+          false,
+          "isDisplayed",
+          "isEditable"
+        ],
+        "applicationId": 6,
+        "prompt": [
+          "Adhoc_Extra",
+          "isDisplayed",
+          "isEditable"
+        ],
+        "nextStep": "00025"
+      },
+      "ttsMessages": {
+        "NL": "Welkom bij de dienst Tijdelijke Signalisatie. Vanaf vrijdag 24 april wijzigen onze telefoonpermanentie-uren. Wij zijn bereikbaar van maandag tot en met vrijdag tussen 9 uur 's ochtends en 1 uur 's middags, uitgezonderd feest- en brugdagen."
+      }
+    },
+    {
+      "id": "00025",
+      "type": "say",
+      "name": "Play: PreQueue",
+      "params": {
+        "active": [
+          false,
+          "isDisplayed",
+          "isEditable"
+        ],
+        "applicationId": 4,
+        "prompt": [
+          "PreQueue_PreQueue",
+          "isDisplayed",
+          "isEditable"
+        ],
+        "nextStep": "00060"
+      },
+      "ttsMessages": {
+        "NL": "U wordt zo dadelijk doorverbonden"
+      }
+    },
+    {
+      "id": "00060",
+      "type": "internalTransfer",
+      "name": "Route-To: SW-TS",
+      "params": {
+        "active": true,
+        "target": [
+          "578030",
+          "isDisplayed",
+          "isEditable"
+        ],
+        "parameters": "{\r\n                    \"callIdKey\": \"${callIdKey}\",\r\n                    \"customerName\": \"${customerName}\",\r\n                    \"customerProject\": \"${customerProject}\"\r\n                }",
+        "attendTransfer": true,
+        "timeout": 30000,
+        "nextStep_Failure": "00098",
+        "nextStep": "00100"
+      }
+    },
+    {
+      "id": "00090",
+      "type": "externalTransfer",
+      "name": "Route-To: Scheduler Transfer Number",
+      "params": {
+        "active": true,
+        "phoneNumber": [
+          "${schedulerTransferNumber}",
+          "isDisplayed",
+          "isEditable"
+        ],
+        "outboundANI": "",
+        "parameters": "",
+        "attendTransfer": false,
+        "timeout": 30000,
+        "nextStep_Failure": "00098",
+        "nextStep": "00100"
+      }
+    },
+    {
+      "id": "00098",
+      "type": "setVariables",
+      "name": "Set: Cognos Error",
+      "params": {
+        "active": true,
+        "ivrEvent": "9999",
+        "ivrAction": "DC",
+        "nextStep": "00099"
+      }
+    },
+    {
+      "id": "00099",
+      "type": "say",
+      "name": "Play: Exception",
+      "params": {
+        "active": [
+          true,
+          "isDisplayed",
+          "isEditable"
+        ],
+        "applicationId": 14,
+        "prompt": [
+          "Exception_Unexpected",
+          "isDisplayed",
+          "isEditable"
+        ],
+        "nextStep": "00100"
+      },
+      "ttsMessages": {
+        "NL": "Momenteel is deze dienst uitzonderlijk gesloten. Gelieve op een ander moment terug te bellen. Bedankt voor uw begrip."
+      }
+    },
+    {
+      "id": "00100",
+      "type": "disconnect",
+      "name": "RTDS: Disconnect",
+      "params": {}
+    }
+  ]
+}

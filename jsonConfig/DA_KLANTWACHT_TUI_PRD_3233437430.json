@@ -1,0 +1,78 @@
+{
+  "sourceId": "+3233437430",
+  "name": "DIGIPOLIS - DA_KLANTWACHT_TUI",
+  "project": "DA HELPDESK",
+  "promptLibrary": "DIGIPOLIS\\DA\\KLANTWACHT",
+  "supportedLanguages": "NL",
+  "operations": [
+    {
+      "id": "00000",
+      "type": "setVariables",
+      "name": "Call Initialization",
+      "isFirstOperation": true,
+      "params": {
+        "active": true,
+        "keysToLog": "[\"customerName\", \"customerProject\", \"routingId\", \"language\", \"ani\", \"dnis\", \"interactionStartTime\", \"routingKey\", \"ivrEvent\", \"ivrAction\" ]",
+        "customerName": "DA",
+        "customerProject": "KLANTWACHT",
+        "routingId": "DA-KLANTWACHT-TUI",
+        "ivrEvent": "9999",
+        "ivrAction": "CT",
+        "nextStep": "00001"
+      }
+    },
+    {
+      "id": "00001",
+      "type": "guardTui",
+      "name": "DA-KLANTWACHT-TUI",
+      "params": {
+        "active": true,
+        "configId": [1, "isDisplayed", "isEditable" ],
+        "configName": "KLANTWACHT",
+        "phoneNumberVar": "ani",
+        "timeout": 10000,
+        "resultCurrentlyActivated_NL": [ "U bent momenteel actief voor de wachtdienst ${CustomerProject}.", "isDisplayed", "isEditable" ],
+        "resultCurrentlyDeactivated_NL": [ "U bent momenteel niet actief op ${CustomerProject}.", "isDisplayed", "isEditable" ],
+        "promptActivate_NL": [ "Druk op 7 om uzelf te activeren.", "isDisplayed", "isEditable" ],
+        "promptDeactivate_NL": [ "Druk op 3 om uzelf te deactiveren.", "isDisplayed", "isEditable" ],
+        "resultActivated_NL": [ "Uw nummer is succesvol geactiveerd.", "isDisplayed", "isEditable" ],
+        "resultDeactivated_NL": [ "Uw nummer is succesvol gedeactiveerd.", "isDisplayed", "isEditable" ],
+        "resultOnlyActive_NL": [ "U bent momenteel als enige geactiveerd. Daarom kunt u zichzelf nu niet deactiveren.", "isDisplayed", "isEditable" ],
+        "resultDenied_NL": [ "U bent niet bevoegd om van deze dienst gebruik te maken. Gelieve contact op te nemen met uw verantwoordelijke indien u hierover vragen heeft.", "isDisplayed", "isEditable" ],
+        "resultError_NL": [ "Er is een technische fout opgetreden. Gelieve dit probleem te melden aan uw verantwoordelijke.", "isDisplayed", "isEditable" ],
+        "nextStep_Success": "00098",
+        "nextStep_Denied": "00099",
+        "nextStep_Failure": "00099",
+        "nextStep": "00098"
+      }
+    },
+    {
+      "id": "00098",
+      "type": "setVariables",
+      "name": "Set: Cognos Success",
+      "params": {
+        "active": true,
+        "ivrEvent": "1200",
+        "ivrAction": "CT",
+        "nextStep": "00100"
+      }
+    },
+    {
+      "id": "00099",
+      "type": "setVariables",
+      "name": "Set: Cognos Failure",
+      "params": {
+        "active": true,
+        "ivrEvent": "9999",
+        "ivrAction": "DC",
+        "nextStep": "00100"
+      }
+    },
+    {
+      "id": "00100",
+      "type": "disconnect",
+      "name": "RTDS: Disconnect",
+      "params": {}
+    }
+  ]
+}

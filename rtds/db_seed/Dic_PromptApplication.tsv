@@ -1,0 +1,16 @@
+DicPromptApplicationID	Name	FilePrefix	DateCreated	CreatedBy	DateUpdated	UpdatedBy
+----------------------	----	----------	-----------	---------	-----------	---------
+1	Scheduler	Scheduler	2021-06-30 11:08:13.6400000	rtds-seed	NULL	NULL
+2	Callback	CB	2021-06-30 11:08:13.6400000	rtds-seed	NULL	NULL
+3	Survey	Survey	2021-06-30 11:08:13.6400000	rtds-seed	NULL	NULL
+4	PreQueue	PreQueue	2021-06-30 11:08:13.6400000	rtds-seed	NULL	NULL
+5	Queue	Queue	2021-06-30 11:08:13.6400000	rtds-seed	NULL	NULL
+6	AdHocMessages	AdHoc	2021-06-30 11:08:13.6400000	rtds-seed	NULL	NULL
+7	Menu	Menu	2021-07-23 11:26:02.6600000	rtds-seed	NULL	NULL
+11	Welcome	Welcome	2021-10-22 11:49:45.7700000	rtds-seed	NULL	NULL
+12	Voicemail	Voicemail	2021-11-09 14:02:36.2930000	rtds-seed	NULL	NULL
+13	Info	Info	2021-11-22 15:52:00.6030000	rtds-seed	NULL	NULL
+14	Exception	Exception	2021-11-29 12:19:10.1300000	rtds-seed	NULL	NULL
+15	Emergency	Emergency	2022-06-09 09:35:39.9470000	rtds-seed	NULL	NULL
+16	Disconnect	Disconnect	2026-06-22 16:20:35.5500000	GDG546@engie.com	NULL	NULL
+
