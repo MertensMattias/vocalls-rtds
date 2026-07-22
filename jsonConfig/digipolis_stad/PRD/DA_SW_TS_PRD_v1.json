@@ -74,9 +74,17 @@
       "type": "say",
       "name": "Play: AdHoc",
       "params": {
-        "active": [false, "isDisplayed", "isEditable"],
+        "active": [
+          false,
+          "isDisplayed",
+          "isEditable"
+        ],
         "applicationId": 6,
-        "prompt": ["Adhoc_Extra", "isDisplayed", "isEditable"],
+        "prompt": [
+          "AdHoc_Message",
+          "isDisplayed",
+          "isEditable"
+        ],
         "nextStep": "00025"
       },
       "ttsMessages": {
@@ -88,9 +96,17 @@
       "type": "say",
       "name": "Play: PreQueue",
       "params": {
-        "active": [false, "isDisplayed", "isEditable"],
+        "active": [
+          false,
+          "isDisplayed",
+          "isEditable"
+        ],
         "applicationId": 4,
-        "prompt": ["PreQueue_PreQueue", "isDisplayed", "isEditable"],
+        "prompt": [
+          "PreQueue_PreQueue",
+          "isDisplayed",
+          "isEditable"
+        ],
         "nextStep": "00060"
       },
       "ttsMessages": {
@@ -103,7 +119,11 @@
       "name": "Route-To: SW-TS",
       "params": {
         "active": true,
-        "target": ["570040", "isDisplayed", "isEditable"],
+        "target": [
+          "570040",
+          "isDisplayed",
+          "isEditable"
+        ],
         "parameters": "{\r\n                    \"callIdKey\": \"${callIdKey}\",\r\n                    \"customerName\": \"${customerName}\",\r\n                    \"customerProject\": \"${customerProject}\"\r\n                }",
         "attendTransfer": true,
         "timeout": 30000,
@@ -146,9 +166,17 @@
       "type": "say",
       "name": "Play: Exception",
       "params": {
-        "active": [true, "isDisplayed", "isEditable"],
+        "active": [
+          true,
+          "isDisplayed",
+          "isEditable"
+        ],
         "applicationId": 14,
-        "prompt": ["Exception_Unexpected", "isDisplayed", "isEditable"],
+        "prompt": [
+          "Exception_Unexpected",
+          "isDisplayed",
+          "isEditable"
+        ],
         "nextStep": "00100"
       },
       "ttsMessages": {

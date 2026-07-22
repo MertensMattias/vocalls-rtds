@@ -103,7 +103,7 @@
         ],
         "applicationId": 6,
         "prompt": [
-          "unknown",
+          "AdHoc_Message",
           "isDisplayed",
           "isEditable"
         ],
@@ -125,7 +125,7 @@
         ],
         "applicationId": 4,
         "prompt": [
-          "unknown",
+          "PreQueue_PreQueue",
           "isDisplayed",
           "isEditable"
         ],

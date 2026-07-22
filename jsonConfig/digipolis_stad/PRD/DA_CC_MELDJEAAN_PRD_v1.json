@@ -81,7 +81,7 @@
         ],
         "applicationId": 6,
         "prompt": [
-          "unknown",
+          "AdHoc_Message",
           "isDisplayed",
           "isEditable"
         ],
@@ -97,8 +97,6 @@
       "name": "Menu: Inschrijvingen Onderwijs",
       "params": {
         "active": true,
-        "applicationId": 7,
-        "staticPrompt": "Menu_Main",
         "staticMessage_NL": "Welkom bij de helpdesk Meld je aan. Voor vragen over inschrijven in het kleuter of lager onderwijs, druk 1. Voor vragen over inschrijven in het secundair onderwijs, druk twee. Voor vragen over inschrijven in het buitengewoon onderwijs, druk 3.",
         "invalidChoiceMessage_NL": "We hebben uw keuze niet herkend. Probeer opnieuw alstublieft.",
         "maxTriesMessage_NL": "U wordt zo dadelijk doorverbonden.",
@@ -159,7 +157,7 @@
         ],
         "applicationId": 4,
         "prompt": [
-          "Adhoc_Transfer",
+          "PreQueue_Transfer",
           "isDisplayed",
           "isEditable"
         ],

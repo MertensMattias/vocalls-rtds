@@ -173,7 +173,7 @@
         ],
         "applicationId": 14,
         "prompt": [
-          "Exception_Vocalls",
+          "Exception_Unexpected",
           "isDisplayed",
           "isEditable"
         ],

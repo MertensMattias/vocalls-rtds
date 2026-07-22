@@ -533,18 +533,6 @@
         "branch": false
       },
       {
-        "name": "applicationId",
-        "type": "int",
-        "required": false,
-        "branch": false
-      },
-      {
-        "name": "staticPrompt",
-        "type": "string",
-        "required": false,
-        "branch": false
-      },
-      {
         "name": "staticMessage_NL",
         "type": "string",
         "required": false,
@@ -791,12 +779,6 @@
         "branch": true
       },
       {
-        "name": "nextStep_Failure",
-        "type": "string",
-        "required": false,
-        "branch": true
-      },
-      {
         "name": "nextStep",
         "type": "string",
         "required": true,
@@ -892,12 +874,6 @@
       },
       {
         "name": "nextStep_Transfer",
-        "type": "string",
-        "required": false,
-        "branch": true
-      },
-      {
-        "name": "nextStep_Holiday",
         "type": "string",
         "required": false,
         "branch": true

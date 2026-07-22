@@ -103,7 +103,7 @@
         ],
         "applicationId": 6,
         "prompt": [
-          "unknown",
+          "AdHoc_Message",
           "isDisplayed",
           "isEditable"
         ],

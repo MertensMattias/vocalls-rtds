@@ -71,11 +71,21 @@
       "name": "Menu: Main",
       "params": {
         "active": true,
-        "applicationId": 7,
-        "staticPrompt": "Menu_Main",
-        "staticMessage_NL": "Ontving u een gasboete? Druk 1. Wilt u bezwaar indienen voor een parkeerretributie of een parkeervergunning? Druk 2. Heeft u een informatieve vraag over een parkeervergunning voor bewoners of een andere infovraag rond parkeren? Druk 3.",
-        "invalidChoiceMessage_NL": "We hebben uw keuze niet herkend. Probeer opnieuw alstublieft.",
-        "maxTriesMessage_NL": "U wordt zo dadelijk doorverbonden.",
+        "staticMessage_NL": [
+          "Ontving u een gasboete? Druk 1. Wilt u bezwaar indienen voor een parkeerretributie of een parkeervergunning? Druk 2. Heeft u een informatieve vraag over een parkeervergunning voor bewoners of een andere infovraag rond parkeren? Druk 3.",
+          "isDisplayed",
+          "isEditable"
+        ],
+        "invalidChoiceMessage_NL": [
+          "We hebben uw keuze niet herkend. Probeer opnieuw alstublieft.",
+          "isDisplayed",
+          "isEditable"
+        ],
+        "maxTriesMessage_NL": [
+          "U wordt zo dadelijk doorverbonden.",
+          "isDisplayed",
+          "isEditable"
+        ],
         "timeout": 8000,
         "maxTries": 3,
         "nextStep_1": "00011",
@@ -228,7 +238,6 @@
         "nextStep_Open": "00044",
         "nextStep_Closed": "00045",
         "nextStep_Transfer": "00046",
-        "nextStep_Holiday": "00047",
         "nextStep_Failure": "00044",
         "nextStep": "00044"
       }

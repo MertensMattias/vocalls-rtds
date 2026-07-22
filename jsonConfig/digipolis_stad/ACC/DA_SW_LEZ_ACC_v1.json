@@ -24,7 +24,7 @@
     {
       "id": "00001",
       "type": "say",
-      "name": "Play: Welcome (Monitoring Notice)",
+      "name": "Play: Welcome",
       "params": {
         "active": [
           true,
@@ -40,7 +40,7 @@
         "nextStep": "00024"
       },
       "ttsMessages": {
-        "NL": "Gesprekken kunnen meebeluisterd worden \"voor coaching\" en kwaliteitsdoeleinden."
+        "NL": "Gesprekken kunnen meebeluisterd worden voor coaching en kwaliteitsdoeleinden."
       }
     },
     {
@@ -54,7 +54,6 @@
         "nextStep_Open": "00010",
         "nextStep_Closed": "00011",
         "nextStep_Transfer": "00012",
-        "nextStep_Holiday": "00014",
         "nextStep_Failure": "00010",
         "nextStep": "00010"
       }
@@ -207,7 +206,7 @@
         ],
         "applicationId": 14,
         "prompt": [
-          "Exception_Vocalls",
+          "Exception_Unexpected",
           "isDisplayed",
           "isEditable"
         ],

@@ -57,8 +57,12 @@
    1. (Optional) edit the catalogue data block in SECTION 1.
    2. On a database that already has data, FIRST set @dryRun = 1 (MODE TOGGLE
       below) and run once: it does all the work inside the transaction, prints
-      the would-be insert/update counts, then ROLLs BACK so nothing is persisted.
-      Review the counts, then set @dryRun = 0 and run again to commit.
+      the would-be insert/update counts AND the full list of affected keys
+      (SECTION 2b), then ROLLs BACK so nothing is persisted. Review the listing,
+      then set @dryRun = 0 and run again to commit. The listing survives the
+      rollback because the OUTPUT rows are captured into table variables, which
+      are not transactional -- so a dry run shows exactly which keys WOULD be
+      inserted or updated, not merely how many.
    3. Re-run any time -- idempotent (find-or-create + sync). Missing catalogue
       rows are inserted. Existing Dic_Attribute rows for types in SECTION 1 are
       updated when DataType or GUI flags drift from the seed. Rows outside this
@@ -535,25 +539,25 @@ INSERT INTO @Attribute
     ('say', 'nextStep',       'string',  1, 1, 0, 0),
 
     /*
-    ---- COMMENTED: play (no rtds/components/*.js) ----
+    ---- COMMENTED: play (no file in rtds/components) ----
     ('play', 'active',          'bit', 1, 0, 0, 0),
     ('play', 'audioSource',     'string',  1, 0, 0, 0),
     ('play', 'timeout',         'int', 0, 0, 0, 0),
     ('play', 'nextStep',        'string',  1, 1, 0, 0),
     */
 
-    /* ---- Menu ---- (DTMF menu; gui_exit v2 component + legacy helpdesk import)
-       Reconciled to rtds/components/menu.js and rtds/specs/menu.spec.md.
-       Per-language TTS slots (guardTui pattern): staticMessage_<LANG>,
-       menuChoiceMessage_<key>_<LANG>, noChoiceMessage_<LANG>,
-       invalidChoiceMessage_<LANG>, maxTriesMessage_<LANG>.
-       Legacy helpdesk flows still use 'staticPrompt' (wav filename) and
-       'applicationId' -- kept for backward-compatible import.
-       Branch keys: nextStep_<key> (0-9, *, #), nextStep_DefaultChoice,
-       nextStep_Failure. Add *_DE / more langs when a flow supports them.         */
+    /* ---- Menu ---- (DTMF menu; gui_exit v2 component)
+       Seeded STRICTLY from the shipped component rtds/components/menu.js
+       (__configJSON), plus 'nextStep_DefaultChoice' which the component does not
+       declare but every live flow supplies. Per-language TTS slots (guardTui
+       pattern): staticMessage_<LANG>, menuChoiceMessage_<key>_<LANG>,
+       noChoiceMessage_<LANG>, invalidChoiceMessage_<LANG>, maxTriesMessage_<LANG>.
+       The legacy helpdesk keys 'staticPrompt' (wav filename), 'applicationId' and
+       the unused 'nextStep_Failure' were REMOVED -- the prompt now comes from the
+       staticMessage_<LANG> slots. The _v1 flow configs were stripped to match.
+       Branch keys: nextStep_<key> (0-9, *, #), nextStep_DefaultChoice.
+       Add *_DE / more langs when a flow supports them.                            */
     ('menu', 'active',                      'bit', 1, 0, 0, 0),
-    ('menu', 'applicationId',               'int', 0, 0, 0, 0),
-    ('menu', 'staticPrompt',                'string',  0, 0, 0, 0),
     ('menu', 'staticMessage_NL',            'string',  0, 0, 0, 0),
     ('menu', 'staticMessage_FR',            'string',  0, 0, 0, 0),
     ('menu', 'menuChoiceMessage_0_NL',      'string',  0, 0, 0, 0),
@@ -601,11 +605,10 @@ INSERT INTO @Attribute
     ('menu', 'nextStep_*',                  'string',  0, 1, 0, 0),
     ('menu', 'nextStep_#',                  'string',  0, 1, 0, 0),
     ('menu', 'nextStep_DefaultChoice',      'string',  0, 1, 0, 0),
-    ('menu', 'nextStep_Failure',            'string',  0, 1, 0, 0),
     ('menu', 'nextStep',                    'string',  1, 1, 0, 0),
 
     /*
-    ---- COMMENTED: workgroupTransfer (no rtds/components/*.js) ----
+    ---- COMMENTED: workgroupTransfer (no file in rtds/components) ----
     ('workgroupTransfer', 'active',             'bit', 1, 0, 0, 0),
     ('workgroupTransfer', 'queueName',          'string',  1, 0, 0, 0),
     ('workgroupTransfer', 'skills',             'string',  0, 0, 0, 0),
@@ -639,7 +642,7 @@ INSERT INTO @Attribute
     ('externalTransfer', 'nextStep',         'string',  1, 1, 0, 0),
 
     /*
-    ---- COMMENTED: condition (no rtds/components/*.js) ----
+    ---- COMMENTED: condition (no file in rtds/components) ----
     ('condition', 'active',          'bit', 1, 0, 0, 0),
     ('condition', 'statistic',       'string',  1, 0, 0, 0),
     ('condition', 'workgroup',       'string',  1, 0, 0, 0),
@@ -649,7 +652,7 @@ INSERT INTO @Attribute
     ('condition', 'nextStep_False',  'string',  1, 1, 0, 0),
     ('condition', 'nextStep',        'string',  1, 1, 0, 0),
 
-    ---- COMMENTED: emergency (no rtds/components/*.js) ----
+    ---- COMMENTED: emergency (no file in rtds/components) ----
     ('emergency', 'active',               'bit', 1, 0, 0, 0),
     ('emergency', 'emergencyId',          'string',  1, 0, 0, 0),
     ('emergency', 'nextStep_Transfer',    'string',  0, 1, 0, 0),
@@ -672,7 +675,6 @@ INSERT INTO @Attribute
     ('checkSchedule', 'nextStep_Open',                'string',  0, 1, 0, 0),
     ('checkSchedule', 'nextStep_Closed',              'string',  0, 1, 0, 0),
     ('checkSchedule', 'nextStep_Transfer',            'string',  0, 1, 0, 0),
-    ('checkSchedule', 'nextStep_Holiday',             'string',  0, 1, 0, 0),
     ('checkSchedule', 'nextStep_ExternalTransfer',    'string',  0, 1, 0, 0),
     ('checkSchedule', 'nextStep_Disconnect',          'string',  0, 1, 0, 0),
     ('checkSchedule', 'nextStep_Guard_ICT',           'string',  0, 1, 0, 0),
@@ -682,7 +684,7 @@ INSERT INTO @Attribute
     ('checkSchedule', 'nextStep',                     'string',  1, 1, 0, 0),
 
     /*
-    ---- COMMENTED: callback (no rtds/components/*.js) ----
+    ---- COMMENTED: callback (no file in rtds/components) ----
     ('callback', 'active',               'bit', 1, 0, 0, 0),
     ('callback', 'configId',             'int', 1, 0, 0, 0),
     ('callback', 'callbackOnANI',        'int', 1, 0, 0, 0),
@@ -710,7 +712,7 @@ INSERT INTO @Attribute
     ('flowJump', 'sourceId',         'string',  1, 0, 0, 0),
 
     /*
-    ---- COMMENTED: getLanguage (no rtds/components/*.js) ----
+    ---- COMMENTED: getLanguage (no file in rtds/components) ----
     ('getLanguage', 'active', 'bit', 1, 0, 0, 0),
     ('getLanguage', 'applicationId',  'int', 0, 0, 0, 0),
     ('getLanguage', 'prompt',  'string',  0, 0, 0, 0),
@@ -738,7 +740,7 @@ INSERT INTO @Attribute
     ('internalTransfer', 'nextStep',         'string',  1, 1, 0, 0);
 
     /*
-    ---- COMMENTED: voicemailCallback (no rtds/components/*.js) ----
+    ---- COMMENTED: voicemailCallback (no file in rtds/components) ----
     ('voicemailCallback', 'active',           'bit', 1, 0, 0, 0),
     ('voicemailCallback', 'nextStep_Escape',  'string',  0, 1, 0, 0),
     ('voicemailCallback', 'nextStep_Error',   'string',  0, 1, 0, 0),
@@ -760,8 +762,48 @@ DECLARE @attrTypeNew int = 0;
 DECLARE @attrNew     int = 0;
 DECLARE @attrUpd     int = 0;
 
+/* ----------------------------------------------------------------------------
+   CHANGE LOG (OUTPUT capture)
+   ----------------------------------------------------------------------------
+   Steps 1/3/4/5 below capture the rows they actually touch via OUTPUT ... INTO
+   these table variables, so the run can list WHICH keys changed instead of only
+   how many. SECTION 2b at the end prints them.
+
+   Why INTO a table variable rather than a bare OUTPUT clause:
+     * A bare OUTPUT returns a result set, which is DISCARDED by the dry-run
+       ROLLBACK -- exactly the case we want the listing for.
+     * Table variables are NOT transactional: their contents survive ROLLBACK,
+       so the dry-run listing is still printed after the rollback.
+     * INSERT ... OUTPUT (bare) is also illegal alongside the ORDER BY that step
+       4 needs to assign DicAttributeID in catalogue order; OUTPUT ... INTO is
+       permitted there.
+   Purely additive: no existing INSERT/UPDATE semantics are changed.
+   ---------------------------------------------------------------------------- */
+DECLARE @logOpType TABLE (Name varchar(255));
+
+DECLARE @logAttrType TABLE (Name varchar(255));
+
+DECLARE @logAttrNew TABLE (
+    DicOperationTypeID int,
+    Name               varchar(255),
+    DicAttributeTypeID int,
+    IsRequired         bit,
+    IsNext             bit
+);
+
+DECLARE @logAttrUpd TABLE (
+    DicOperationTypeID int,
+    Name               varchar(255),
+    OldTypeID          int, NewTypeID  int,
+    OldRequired        bit, NewRequired bit,
+    OldNext            bit, NewNext     bit,
+    OldDisplayed       bit, NewDisplayed bit,
+    OldEditable        bit, NewEditable  bit
+);
+
 /* -- 1. find-or-create Dic_OperationType ------------------------------------ */
 INSERT INTO rtds.Dic_OperationType (Name, DateCreated, CreatedBy)
+OUTPUT inserted.Name INTO @logOpType (Name)
 SELECT o.Name, @now, @CreatedBy
 FROM   @OperationType o
 WHERE  NOT EXISTS (
@@ -784,6 +826,7 @@ AND    NOT EXISTS (SELECT 1 FROM rtds.Dic_AttributeType x WHERE x.Name = 'int');
 
 /* -- 3. find-or-create Dic_AttributeType (string / int / bit) --------------- */
 INSERT INTO rtds.Dic_AttributeType (Name, DateCreated, CreatedBy)
+OUTPUT inserted.Name INTO @logAttrType (Name)
 SELECT DISTINCT a.AttributeType, @now, @CreatedBy
 FROM   @Attribute a
 WHERE  NOT EXISTS (
@@ -794,6 +837,9 @@ SET @attrTypeNew = @@ROWCOUNT;
 INSERT INTO rtds.Dic_Attribute
     (DicOperationTypeID, DicAttributeTypeID, Name,
      IsRequired, IsNext, IsDisplayed, IsEditable, DateCreated, CreatedBy)
+OUTPUT inserted.DicOperationTypeID, inserted.Name, inserted.DicAttributeTypeID,
+       inserted.IsRequired, inserted.IsNext
+  INTO @logAttrNew (DicOperationTypeID, Name, DicAttributeTypeID, IsRequired, IsNext)
 SELECT ot.DicOperationTypeID,
        at.DicAttributeTypeID,
        a.AttributeName,
@@ -816,6 +862,16 @@ SET    d.DicAttributeTypeID = at.DicAttributeTypeID,
        d.IsNext             = a.IsNext,
        d.IsDisplayed        = a.IsDisplayed,
        d.IsEditable         = a.IsEditable
+OUTPUT deleted.DicOperationTypeID, deleted.Name,
+       deleted.DicAttributeTypeID, inserted.DicAttributeTypeID,
+       deleted.IsRequired,  inserted.IsRequired,
+       deleted.IsNext,      inserted.IsNext,
+       deleted.IsDisplayed, inserted.IsDisplayed,
+       deleted.IsEditable,  inserted.IsEditable
+  INTO @logAttrUpd (DicOperationTypeID, Name,
+                    OldTypeID, NewTypeID, OldRequired, NewRequired,
+                    OldNext, NewNext, OldDisplayed, NewDisplayed,
+                    OldEditable, NewEditable)
 FROM   rtds.Dic_Attribute d
 JOIN   rtds.Dic_OperationType ot ON ot.DicOperationTypeID = d.DicOperationTypeID
 JOIN   @Attribute a
@@ -845,6 +901,122 @@ PRINT '  Dic_AttributeType rows inserted: ' + CAST(@attrTypeNew AS varchar(10));
 PRINT '  Dic_Attribute     rows inserted: ' + CAST(@attrNew     AS varchar(10));
 PRINT '  Dic_Attribute     rows updated:  ' + CAST(@attrUpd     AS varchar(10));
 PRINT '  (0 on a line means that step had nothing to do.)';
+
+/* ============================================================================
+   SECTION 2b -- CHANGE LISTING (which keys, not just how many)
+   ----------------------------------------------------------------------------
+   Prints the rows captured by the OUTPUT clauses above. Runs AFTER the
+   COMMIT/ROLLBACK on purpose: the @log* table variables are not transactional,
+   so this listing survives the dry-run rollback and shows exactly what a real
+   run WOULD do. Read-only -- it only reads the table variables and resolves
+   ids to names against the (already committed or rolled-back) dictionary.
+   ============================================================================ */
+DECLARE @line varchar(500);
+
+IF EXISTS (SELECT 1 FROM @logOpType)
+BEGIN
+    PRINT '';
+    PRINT '  -- Dic_OperationType INSERTED --------------------------------';
+    DECLARE cOpType CURSOR LOCAL FAST_FORWARD FOR
+        SELECT '    + ' + Name FROM @logOpType ORDER BY Name;
+    OPEN cOpType;
+    FETCH NEXT FROM cOpType INTO @line;
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        PRINT @line;
+        FETCH NEXT FROM cOpType INTO @line;
+    END
+    CLOSE cOpType; DEALLOCATE cOpType;
+END
+
+IF EXISTS (SELECT 1 FROM @logAttrType)
+BEGIN
+    PRINT '';
+    PRINT '  -- Dic_AttributeType INSERTED --------------------------------';
+    DECLARE cAttrType CURSOR LOCAL FAST_FORWARD FOR
+        SELECT '    + ' + Name FROM @logAttrType ORDER BY Name;
+    OPEN cAttrType;
+    FETCH NEXT FROM cAttrType INTO @line;
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        PRINT @line;
+        FETCH NEXT FROM cAttrType INTO @line;
+    END
+    CLOSE cAttrType; DEALLOCATE cAttrType;
+END
+
+IF EXISTS (SELECT 1 FROM @logAttrNew)
+BEGIN
+    PRINT '';
+    PRINT '  -- Dic_Attribute INSERTED (operationType.attributeName : type) --';
+    -- LEFT JOIN the dictionaries: on a dry run they have been rolled back, so a
+    -- freshly-created op-type/attr-type id may no longer resolve -- fall back to
+    -- the raw id rather than dropping the row from the listing.
+    DECLARE cAttrNew CURSOR LOCAL FAST_FORWARD FOR
+        SELECT '    + '
+             + ISNULL(ot.Name, '#' + CAST(l.DicOperationTypeID AS varchar(10)))
+             + '.' + l.Name
+             + ' : ' + ISNULL(at.Name, '#' + CAST(l.DicAttributeTypeID AS varchar(10)))
+             + CASE WHEN l.IsRequired = 1 THEN ' [required]' ELSE '' END
+             + CASE WHEN l.IsNext     = 1 THEN ' [branch]'   ELSE '' END
+        FROM   @logAttrNew l
+        LEFT   JOIN rtds.Dic_OperationType ot ON ot.DicOperationTypeID = l.DicOperationTypeID
+        LEFT   JOIN rtds.Dic_AttributeType at ON at.DicAttributeTypeID = l.DicAttributeTypeID
+        ORDER BY ISNULL(ot.Name, ''), l.Name;
+    OPEN cAttrNew;
+    FETCH NEXT FROM cAttrNew INTO @line;
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        PRINT @line;
+        FETCH NEXT FROM cAttrNew INTO @line;
+    END
+    CLOSE cAttrNew; DEALLOCATE cAttrNew;
+END
+
+IF EXISTS (SELECT 1 FROM @logAttrUpd)
+BEGIN
+    PRINT '';
+    PRINT '  -- Dic_Attribute UPDATED (old -> new; only changed fields shown) --';
+    PRINT '  !! Review these: the seed is expected to be purely ADDITIVE here.';
+    DECLARE cAttrUpd CURSOR LOCAL FAST_FORWARD FOR
+        SELECT '    ~ '
+             + ISNULL(ot.Name, '#' + CAST(l.DicOperationTypeID AS varchar(10)))
+             + '.' + l.Name + ' :'
+             + CASE WHEN l.OldTypeID <> l.NewTypeID
+                    THEN ' type ' + ISNULL(dOld.Name, '#' + CAST(l.OldTypeID AS varchar(10)))
+                       + '->'     + ISNULL(dNew.Name, '#' + CAST(l.NewTypeID AS varchar(10)))
+                    ELSE '' END
+             + CASE WHEN l.OldRequired  <> l.NewRequired
+                    THEN ' isRequired '  + CAST(l.OldRequired  AS varchar(1)) + '->' + CAST(l.NewRequired  AS varchar(1)) ELSE '' END
+             + CASE WHEN l.OldNext      <> l.NewNext
+                    THEN ' isNext '      + CAST(l.OldNext      AS varchar(1)) + '->' + CAST(l.NewNext      AS varchar(1)) ELSE '' END
+             + CASE WHEN l.OldDisplayed <> l.NewDisplayed
+                    THEN ' isDisplayed ' + CAST(l.OldDisplayed AS varchar(1)) + '->' + CAST(l.NewDisplayed AS varchar(1)) ELSE '' END
+             + CASE WHEN l.OldEditable  <> l.NewEditable
+                    THEN ' isEditable '  + CAST(l.OldEditable  AS varchar(1)) + '->' + CAST(l.NewEditable  AS varchar(1)) ELSE '' END
+        FROM   @logAttrUpd l
+        LEFT   JOIN rtds.Dic_OperationType ot   ON ot.DicOperationTypeID   = l.DicOperationTypeID
+        LEFT   JOIN rtds.Dic_AttributeType dOld ON dOld.DicAttributeTypeID = l.OldTypeID
+        LEFT   JOIN rtds.Dic_AttributeType dNew ON dNew.DicAttributeTypeID = l.NewTypeID
+        ORDER BY ISNULL(ot.Name, ''), l.Name;
+    OPEN cAttrUpd;
+    FETCH NEXT FROM cAttrUpd INTO @line;
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        PRINT @line;
+        FETCH NEXT FROM cAttrUpd INTO @line;
+    END
+    CLOSE cAttrUpd; DEALLOCATE cAttrUpd;
+END
+
+IF NOT EXISTS (SELECT 1 FROM @logOpType)
+   AND NOT EXISTS (SELECT 1 FROM @logAttrType)
+   AND NOT EXISTS (SELECT 1 FROM @logAttrNew)
+   AND NOT EXISTS (SELECT 1 FROM @logAttrUpd)
+BEGIN
+    PRINT '';
+    PRINT '  -- No changes: the dictionary already matches the seed. --';
+END
 END TRY
 BEGIN CATCH
     IF XACT_STATE() <> 0 ROLLBACK TRANSACTION;

@@ -26,9 +26,17 @@
       "type": "say",
       "name": "Play: Welcome",
       "params": {
-        "active": [true, "isDisplayed", "isEditable"],
+        "active": [
+          true,
+          "isDisplayed",
+          "isEditable"
+        ],
         "applicationId": 11,
-        "prompt": ["Welcome", "isDisplayed", "isEditable"],
+        "prompt": [
+          "Welcome",
+          "isDisplayed",
+          "isEditable"
+        ],
         "nextStep": "00005"
       },
       "ttsMessages": {
@@ -40,9 +48,17 @@
       "type": "say",
       "name": "Play: AdHoc information",
       "params": {
-        "active": [false, "isDisplayed", "isEditable"],
+        "active": [
+          false,
+          "isDisplayed",
+          "isEditable"
+        ],
         "applicationId": 6,
-        "prompt": ["Adhoc_Extra", "isDisplayed", "isEditable"],
+        "prompt": [
+          "Adhoc_Extra",
+          "isDisplayed",
+          "isEditable"
+        ],
         "nextStep": "00010"
       },
       "ttsMessages": {
@@ -55,8 +71,6 @@
       "name": "Menu: Main",
       "params": {
         "active": true,
-        "applicationId": 7,
-        "staticPrompt": "Menu_Main",
         "staticMessage_NL": "Ontving u een gasboete? Druk 1. Wilt u bezwaar indienen voor een parkeerretributie of een parkeervergunning? Druk 2. Heeft u een informatieve vraag over een parkeervergunning voor bewoners of een andere infovraag rond parkeren? Druk 3.",
         "invalidChoiceMessage_NL": "We hebben uw keuze niet herkend. Probeer opnieuw alstublieft.",
         "maxTriesMessage_NL": "U wordt zo dadelijk doorverbonden.",
@@ -107,9 +121,17 @@
       "type": "say",
       "name": "Play: End Of Menu",
       "params": {
-        "active": [true, "isDisplayed", "isEditable"],
+        "active": [
+          true,
+          "isDisplayed",
+          "isEditable"
+        ],
         "applicationId": 13,
-        "prompt": ["Info_Choice_NOCHOICE", "isDisplayed", "isEditable"],
+        "prompt": [
+          "Info_Choice_NOCHOICE",
+          "isDisplayed",
+          "isEditable"
+        ],
         "nextStep": "00025"
       },
       "ttsMessages": {
@@ -132,9 +154,17 @@
       "type": "say",
       "name": "Play: GAS Boete Info",
       "params": {
-        "active": [true, "isDisplayed", "isEditable"],
+        "active": [
+          true,
+          "isDisplayed",
+          "isEditable"
+        ],
         "applicationId": 13,
-        "prompt": ["Info_Choice_GAS", "isDisplayed", "isEditable"],
+        "prompt": [
+          "Info_Choice_GAS",
+          "isDisplayed",
+          "isEditable"
+        ],
         "nextStep": "00100"
       },
       "ttsMessages": {
@@ -146,9 +176,17 @@
       "type": "say",
       "name": "Play: Bezwaar Info",
       "params": {
-        "active": [true, "isDisplayed", "isEditable"],
+        "active": [
+          true,
+          "isDisplayed",
+          "isEditable"
+        ],
         "applicationId": 13,
-        "prompt": ["Info_Choice_BEZWAAR", "isDisplayed", "isEditable"],
+        "prompt": [
+          "Info_Choice_BEZWAAR",
+          "isDisplayed",
+          "isEditable"
+        ],
         "nextStep": "00100"
       },
       "ttsMessages": {
@@ -160,9 +198,17 @@
       "type": "say",
       "name": "Play: AdHoc After Main Menu",
       "params": {
-        "active": [false, "isDisplayed", "isEditable"],
+        "active": [
+          false,
+          "isDisplayed",
+          "isEditable"
+        ],
         "applicationId": 6,
-        "prompt": ["Adhoc_Extra", "isDisplayed", "isEditable"],
+        "prompt": [
+          "Adhoc_Extra",
+          "isDisplayed",
+          "isEditable"
+        ],
         "nextStep": "00040"
       },
       "ttsMessages": {
@@ -180,7 +226,6 @@
         "nextStep_Open": "00044",
         "nextStep_Closed": "00045",
         "nextStep_Transfer": "00046",
-        "nextStep_Holiday": "00047",
         "nextStep_Failure": "00044",
         "nextStep": "00044"
       }
@@ -219,24 +264,21 @@
       }
     },
     {
-      "id": "00047",
-      "type": "setVariables",
-      "name": "Set: Cognos Holiday",
-      "params": {
-        "active": true,
-        "ivrEvent": "1201",
-        "ivrAction": "DC",
-        "nextStep": "00100"
-      }
-    },
-    {
       "id": "00050",
       "type": "say",
-      "name": "Play: Please Hold",
+      "name": "Play: PreQueue",
       "params": {
-        "active": [true, "isDisplayed", "isEditable"],
+        "active": [
+          true,
+          "isDisplayed",
+          "isEditable"
+        ],
         "applicationId": 4,
-        "prompt": ["Menu_Transfer", "isDisplayed", "isEditable"],
+        "prompt": [
+          "PreQueue_Transfer",
+          "isDisplayed",
+          "isEditable"
+        ],
         "nextStep": "00060"
       },
       "ttsMessages": {
@@ -249,7 +291,11 @@
       "name": "Route-To: MPA_GAPA",
       "params": {
         "active": true,
-        "target": ["570045", "isDisplayed", "isEditable"],
+        "target": [
+          "570045",
+          "isDisplayed",
+          "isEditable"
+        ],
         "parameters": "{\r\n                    \"callIdKey\": \"${callIdKey}\",\r\n                    \"customerName\": \"${customerName}\",\r\n                    \"customerProject\": \"${customerProject}\"\r\n                }",
         "attendTransfer": true,
         "timeout": 30000,
@@ -292,9 +338,17 @@
       "type": "say",
       "name": "Play: Exception",
       "params": {
-        "active": [true, "isDisplayed", "isEditable"],
+        "active": [
+          true,
+          "isDisplayed",
+          "isEditable"
+        ],
         "applicationId": 14,
-        "prompt": ["Emergency_Emergency", "isDisplayed", "isEditable"],
+        "prompt": [
+          "Exception_Unexpected",
+          "isDisplayed",
+          "isEditable"
+        ],
         "nextStep": "00100"
       },
       "ttsMessages": {
