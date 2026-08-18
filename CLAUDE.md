@@ -36,7 +36,7 @@ Other `projects/<name>/` dirs (e.g. `demo`) are local workspaces; `projects/*/.v
 - `rtds/docs/runtime-architecture.md` — how the runtime is wired (**start here**)
 - `rtds/docs/operations-catalog.md` — per-operation inventory (pattern / component / runtime / seed status)
 - `rtds/docs/runtime-spec.md` — field-level contract (Params, endpoints, exit keys); `rtds/docs/logging-design.md`; `rtds/docs/segmentLog_reference.md` (segment-logging design)
-- `rtds/specs/` — one `*.spec.md` per operation **that has a component** in `rtds/components/` (source handler + target component in each header). Today (12): `externalTransfer`, `flowJump`, `guardRouting` (+ `guardRouting.v2`), `guardTui`, `internalTransfer`, `say`, `scheduler` (component `checkSchedule.js`), `sendEmail` (component `sendMail.js`), `sendSms`, `setVariables`, `voicemaildetector`. Operations without a component carry no spec.
+- `rtds/specs/` — one `*.spec.md` per operation **that has a component** in `rtds/components/` (source handler + target component in each header). Today (14): `condition`, `externalTransfer`, `flowJump`, `guardRouting` (+ `guardRouting.v2`), `guardTui`, `internalTransfer`, `menu`, `say`, `scheduler` (component `checkSchedule.js`), `sendEmail` (component `sendMail.js`), `sendSms`, `setVariables`, `voicemaildetector`. Operations without a component carry no spec.
 - `rtds/components/` — Vocalls Designer mxGraph component exports (`*.js`)
 - `rtds/pureconnect_handlers/` — source PureConnect Interaction Designer handler XML (read-only reference)
 - `rtds/api_swagger/` — Swagger/OpenAPI for the RTDS HTTP APIs; `rtds/db_seed/` — dictionary + flow SQL; `rtds/samples/` — sample payloads

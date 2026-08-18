@@ -534,14 +534,14 @@ describe('rtds-runtime main.js', function () {
             .runScript('main', { project: 'rtds-runtime', returnSandbox: true, stubs: STUBS })
             .then(function (result) {
                 var sb = result.sandbox;
-                // Unregistered type 'condition' (mock removed) → must skip to
+                // Unregistered type 'emergency' (no handler yet) → must skip to
                 // NextStep '2' (a GUI-exit op) rather than hard-disconnect.
                 var ops = [
-                    { id: '1', type: 'condition', name: 'c', isFirstOperation: true, params: { nextStep: '2' } },
+                    { id: '1', type: 'emergency', name: 'e', isFirstOperation: true, params: { nextStep: '2' } },
                     { id: '2', type: 'say', name: 'p', params: {} }
                 ];
                 sb.context.session.variables.RTDS_opIndex = sb.buildOpIndex(ops);
-                expect(sb.RTDS_REGISTRY.has('condition')).toBe(false);
+                expect(sb.RTDS_REGISTRY.has('emergency')).toBe(false);
                 expect(sb.runStep('1')).toBe('say_message');
             });
     });

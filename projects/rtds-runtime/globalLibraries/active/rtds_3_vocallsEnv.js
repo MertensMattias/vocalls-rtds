@@ -122,6 +122,190 @@ function activeFlag(value) {
 }
 
 /**
+ * Evaluates the condition operation's predicate. Single shared body for the
+ * canvas component (via its __evaluateCondition alias) and the runtime twin
+ * (executeCondition), so the predicate can never diverge between the two
+ * paths -- same doctrine as activeFlag / setupConfig.
+ *
+ * Operators (matched case-insensitively):
+ *   eq / ne              -- numeric compare when BOTH sides parse as finite
+ *                           numbers ("007" eq "7" is true); otherwise
+ *                           case-insensitive string compare.
+ *   gt / lt / ge / le    -- numeric only; a non-numeric operand warns and
+ *                           returns false (fail-safe).
+ *   contains/notContains -- case-insensitive substring of compareTo in value.
+ *   isEmpty              -- true when value trims to ""; compareTo ignored.
+ * Unknown operator warns and returns false (fail-safe).
+ *
+ * @param {*} value     - Left-hand operand (stringified).
+ * @param {*} operator  - Operator name.
+ * @param {*} compareTo - Right-hand operand (stringified; ignored by isEmpty).
+ * @returns {boolean}
+ */
+function evaluateCondition(value, operator, compareTo) {
+  var op = String(operator == null ? "" : operator)
+    .trim()
+    .toLowerCase();
+  var lhs = String(value == null ? "" : value);
+  var rhs = String(compareTo == null ? "" : compareTo);
+
+  if (op === "isempty") {
+    return lhs.trim() === "";
+  }
+  if (op === "contains" || op === "notcontains") {
+    var found = lhs.toLowerCase().indexOf(rhs.toLowerCase()) !== -1;
+    return op === "contains" ? found : !found;
+  }
+
+  var lTrim = lhs.trim();
+  var rTrim = rhs.trim();
+  var bothNumeric =
+    lTrim !== "" &&
+    rTrim !== "" &&
+    isFinite(Number(lTrim)) &&
+    isFinite(Number(rTrim));
+
+  if (op === "eq" || op === "ne") {
+    var equal = bothNumeric
+      ? Number(lTrim) === Number(rTrim)
+      : lhs.toLowerCase() === rhs.toLowerCase();
+    return op === "eq" ? equal : !equal;
+  }
+
+  if (op === "gt" || op === "lt" || op === "ge" || op === "le") {
+    if (!bothNumeric) {
+      Logger.warn(
+        "[evaluateCondition] non-numeric operand for ordering operator -- false",
+        { operator: op, value: lhs, compareTo: rhs }
+      );
+      return false;
+    }
+    var ln = Number(lTrim);
+    var rn = Number(rTrim);
+    if (op === "gt") return ln > rn;
+    if (op === "lt") return ln < rn;
+    if (op === "ge") return ln >= rn;
+    return ln <= rn;
+  }
+
+  Logger.warn("[evaluateCondition] unknown operator -- false", { operator: op });
+  return false;
+}
+
+/**
+ * Resolves a clock statistic for the condition operation, in platform-local
+ * time (Europe/Brussels in production). Shared by the condition component
+ * (__clockStatistic alias) and the executeCondition twin.
+ *
+ *   "time" -> HHMM integer (14:59 -> 1459)
+ *   "date" -> YYYYMMDD integer (2026-01-05 -> 20260105)
+ *
+ * @param {string} kind - "time" or "date" (case-insensitive).
+ * @param {Date}   [d]  - Optional date override (tests); defaults to now.
+ * @returns {?number} The integer value, or null for an unknown kind.
+ */
+function clockStatistic(kind, d) {
+  var k = String(kind == null ? "" : kind).trim().toLowerCase();
+  var now = d || new Date();
+  if (k === "time") {
+    return now.getHours() * 100 + now.getMinutes();
+  }
+  if (k === "date") {
+    return (
+      now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate()
+    );
+  }
+  Logger.warn("[clockStatistic] unknown clock statistic -- null", { kind: k });
+  return null;
+}
+
+/**
+ * Extracts one numeric statistic from a wallboard queue-stats response for
+ * the condition operation. Shared by the condition component
+ * (__extractQueueStatistic alias) and the executeCondition twin.
+ *
+ * The response is an array of queue objects, e.g.
+ *   [{ "name": "SW_TS", "waiting": 0, "longest_wait": "00:00",
+ *      "received": 18, "answered": 18, "abandoned": 0, "accessibility": 100 }]
+ *
+ * The queue is matched on `name` case-insensitively. The statistic is matched
+ * against the queue object's own fields case-insensitively and ignoring
+ * underscores ("longestWait" and "longest_wait" both match). A "mm:ss"
+ * duration string is converted to total seconds; other values go through
+ * Number(). Returns null when the queue, the field, or a numeric value cannot
+ * be resolved -- the caller treats null as a failed (false) evaluation.
+ *
+ * @param {Array}  list      - Parsed wallboard response array.
+ * @param {string} queue     - Queue name to select.
+ * @param {string} statistic - Field name to extract.
+ * @returns {?number}
+ */
+function extractQueueStatistic(list, queue, statistic) {
+  if (
+    Object.prototype.toString.call(list) !== "[object Array]" ||
+    !queue ||
+    !statistic
+  ) {
+    return null;
+  }
+  var queueLower = String(queue).toLowerCase();
+  var statKey = String(statistic).toLowerCase().replace(/_/g, "");
+
+  var entry = null;
+  for (var i = 0; i < list.length; i++) {
+    if (
+      list[i] &&
+      String(list[i].name).toLowerCase() === queueLower
+    ) {
+      entry = list[i];
+      break;
+    }
+  }
+  if (!entry) {
+    Logger.warn("[extractQueueStatistic] queue not in response -- null", {
+      queue: queue,
+    });
+    return null;
+  }
+
+  var raw;
+  var found = false;
+  for (var field in entry) {
+    if (
+      entry.hasOwnProperty(field) &&
+      String(field).toLowerCase().replace(/_/g, "") === statKey
+    ) {
+      raw = entry[field];
+      found = true;
+      break;
+    }
+  }
+  if (!found) {
+    Logger.warn("[extractQueueStatistic] statistic not in response -- null", {
+      queue: queue,
+      statistic: statistic,
+    });
+    return null;
+  }
+
+  // "mm:ss" duration -> total seconds.
+  if (typeof raw === "string" && /^\d+:\d{2}$/.test(raw.trim())) {
+    var parts = raw.trim().split(":");
+    return Number(parts[0]) * 60 + Number(parts[1]);
+  }
+  var n = Number(raw);
+  if (!isFinite(n)) {
+    Logger.warn("[extractQueueStatistic] non-numeric statistic -- null", {
+      queue: queue,
+      statistic: statistic,
+      value: raw,
+    });
+    return null;
+  }
+  return n;
+}
+
+/**
  * Case-insensitive existence check.
  *
  * @param {Object} obj

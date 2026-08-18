@@ -281,7 +281,7 @@ SELECT v.* FROM (VALUES
   (10, N'guard',               N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
   (11, N'disconnect',          N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
   -- (12, N'play',                N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),  -- no component
-  -- (13, N'condition',           N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),  -- no component
+  (13, N'condition',           N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
   -- (14, N'skillUpdate',         N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),  -- no component
   (15, N'flowJump',            N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),
   -- (16, N'callerDataEntry',     N'2021-06-30 11:07:51.4330000', N'rtds-seed', NULL, NULL),  -- no component
@@ -378,11 +378,11 @@ INSERT INTO @OperationType (Name) VALUES
     ('externalTransfer'),
     ('checkSchedule'),
     ('flowJump'),
-    ('internalTransfer');
+    ('internalTransfer'),
+    ('condition');
     /* COMMENTED — no Vocalls component (uncomment type + @Attribute block to re-enable):
     ('play'),
     ('workgroupTransfer'),
-    ('condition'),
     ('emergency'),
     ('callback'),
     ('getLanguage'),
@@ -641,17 +641,30 @@ INSERT INTO @Attribute
     ('externalTransfer', 'nextStep_Failure', 'string',  0, 1, 0, 0),
     ('externalTransfer', 'nextStep',         'string',  1, 1, 0, 0),
 
-    /*
-    ---- COMMENTED: condition (no file in rtds/components) ----
+    /* ---- Condition ---- (generic predicate branch. Reworked from the legacy
+       ACD-statistic handler; legacy names map Statistic->statistic
+       (CallsWaiting->waiting, Time->time), Workgroup->queue, Value->compareTo.
+       The left operand comes from statistic -- 'time'/'date' clock values
+       (HHMM/YYYYMMDD local), or a wallboard queue-statistic field (waiting,
+       longest_wait, received, answered, abandoned, accessibility) fetched for
+       `queue` from _rtQueueStatsUrl -- or, when statistic is empty, from value
+       (usually a ${var} placeholder resolved at init). operator is one of
+       eq|ne|gt|lt|ge|le|contains|notContains|isEmpty (case-insensitive);
+       compareTo is ignored by isEmpty; timeout is the stats-HTTP timeout (ms).
+       Fail-safe: unknown operator, non-numeric ordering operand, missing
+       queue, or a failed stats lookup evaluates false -> nextStep_False.       */
     ('condition', 'active',          'bit', 1, 0, 0, 0),
-    ('condition', 'statistic',       'string',  1, 0, 0, 0),
-    ('condition', 'workgroup',       'string',  1, 0, 0, 0),
+    ('condition', 'statistic',       'string',  0, 0, 0, 0),
+    ('condition', 'queue',           'string',  0, 0, 0, 0),
+    ('condition', 'value',           'string',  0, 0, 0, 0),
     ('condition', 'operator',        'string',  1, 0, 0, 0),
-    ('condition', 'value',           'string',  1, 0, 0, 0),
+    ('condition', 'compareTo',       'string',  0, 0, 0, 0),
+    ('condition', 'timeout',         'int', 0, 0, 0, 0),
     ('condition', 'nextStep_True',   'string',  1, 1, 0, 0),
     ('condition', 'nextStep_False',  'string',  1, 1, 0, 0),
     ('condition', 'nextStep',        'string',  1, 1, 0, 0),
 
+    /*
     ---- COMMENTED: emergency (no file in rtds/components) ----
     ('emergency', 'active',               'bit', 1, 0, 0, 0),
     ('emergency', 'emergencyId',          'string',  1, 0, 0, 0),

@@ -22,12 +22,15 @@ Legend: ✅ present · ⬜ not yet · 🔒 legacy (superseded).
 | sendSms | `http_call` | [spec](../specs/sendSms.spec.md) | ✅ [sendSms.js](../components/sendSms.js) | JS twin `executeSendSms` (`sendSms`) | ✅ |
 | sendEmail | `http_call` | [spec](../specs/sendEmail.spec.md) | ✅ [sendMail.js](../components/sendMail.js) | JS twin `executeSendEmail` (`sendMail`) | ✅ |
 | setVariables | `set_attributes` | [spec](../specs/setVariables.spec.md) | ✅ [setVariables.js](../components/setVariables.js) | JS twin `executeSetVariables` (`setVariables`) | ✅ |
+| condition | `local_eval` + `http_call` (queue tier) | [spec](../specs/condition.spec.md) | ✅ [condition.js](../components/condition.js) | JS twin `executeCondition` (`condition`) | ✅ |
 | guardRouting | `http_call` + multi-node | [spec](../specs/guardRouting.spec.md) | ✅ [guardRouting.js](../components/guardRouting.js) | GUI-exit `guard_routing` (via `guard`) | ✅ |
 | guardTui | `http_call` + multi-node | [spec](../specs/guardTui.spec.md) | ✅ [guardTui.js](../components/guardTui.js) | GUI-exit `guard_tui` (`guardTui`) | ✅ |
 | scheduler | `http_call` composite (single status call → embedded say) | [spec](../specs/scheduler.spec.md) | ✅ [checkSchedule.js](../components/checkSchedule.js) | ⬜ not registered | ⬜ |
 | internalTransfer | composite (`redirect` primitive) | [spec](../specs/internalTransfer.spec.md) | ✅ [internalTransfer.js](../components/internalTransfer.js) | ⬜ not registered | ⬜ |
 | externalTransfer | composite (`redirect` primitive) | [spec](../specs/externalTransfer.spec.md) | ✅ [externalTransfer.js](../components/externalTransfer.js) | ⬜ not registered | ⬜ |
 | say | `gui_exit` + say primitive | [spec](../specs/say.spec.md) | ✅ [say.js](../components/say.js) | GUI-exit `play_prompt` (`say`) | ✅ |
+| menu | `gui_exit` | [spec](../specs/menu.spec.md) | ✅ [menu.js](../components/menu.js) | GUI-exit `menu` (`menu`) | ⏳ |
+| flowJump | `flow_jump` | [spec](../specs/flowJump.spec.md) | ✅ [flowJump.js](../components/flowJump.js) | ⬜ twin `executeFlowJump` deferred (cross-flow re-fetch) | ⬜ `operationId` / `nextStep_Failure` deferred |
 
 ## Canonical hand-built example (no operation spec)
 

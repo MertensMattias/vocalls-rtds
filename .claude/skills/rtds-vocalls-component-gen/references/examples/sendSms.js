@@ -1,6 +1,6 @@
 <mxGraphModel
-  dx="3341"
-  dy="2330"
+  dx="2661"
+  dy="2597"
   grid="1"
   gridSize="10"
   guides="1"
@@ -37,6 +37,7 @@
       CompanyInformation_nl=""
       GeneralKnowledge_nl=""
       Translations_nl=""
+      Sections="[]"
       id="vocalls-master-layer"
     >
       <mxCell />

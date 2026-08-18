@@ -122,6 +122,13 @@ _rtPromptLanguageMap = { 1: "NL", 2: "FR", 3: "DE", 4: "EN" };
 // Phonebook lookup endpoint. Available for future use.
 _rtPhonebookEndpoint = `/phonebookapi-${environment}`;
 
+// Wallboard queue-statistics API (Tringer panel). executeCondition and the
+// condition component GET:
+//   _rtQueueStatsUrl + '?queues=' + queue + '&company_id=' + _rtQueueStatsCompanyId
+// Full absolute URL -- this API lives outside _rtBaseUrl.
+_rtQueueStatsUrl = "https://panel.internal.tringer.cloud/api/company/wallboard/queues";
+_rtQueueStatsCompanyId = 1;
+
 // KeyLog endpoint. KeyLog (an onCallEnd finaliser) POSTs to _rtBaseUrl + this.
 _rtKeyLogEndpoint = `/ivrapi-${environment}/api/KeyLog`;
 

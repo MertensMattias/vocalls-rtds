@@ -1,6 +1,6 @@
 <mxGraphModel
-  dx="2069"
-  dy="2273"
+  dx="3511"
+  dy="2597"
   grid="1"
   gridSize="10"
   guides="1"
@@ -10,8 +10,8 @@
   fold="1"
   page="1"
   pageScale="1"
-  pageWidth="827"
-  pageHeight="1169"
+  pageWidth="850"
+  pageHeight="1100"
 >
   <root>
     <object
@@ -19,7 +19,7 @@
       MaxEntryCount=""
       MaxEntryNodeId=""
       SpeechRecognitionEngine=""
-      Code="__rtParams = {};&#xa;&#xa;__getValue = function () {&#xa;    if (typeof getValue === &#39;undefined&#39;) {&#xa;        Logger.warn(&#39;[menu] shared function unavailable -- library not loaded&#39;, { fn: &#39;getValue&#39; });&#xa;        return undefined;&#xa;    }&#xa;    return getValue.apply(null, arguments);&#xa;};&#xa;&#xa;__activeFlag = function () {&#xa;    if (typeof activeFlag === &#39;undefined&#39;) {&#xa;        Logger.warn(&#39;[menu] shared function unavailable -- library not loaded&#39;, { fn: &#39;activeFlag&#39; });&#xa;        return undefined;&#xa;    }&#xa;    return activeFlag.apply(null, arguments);&#xa;};&#xa;&#xa;__extractParams = function () {&#xa;    if (typeof extractParams === &#39;undefined&#39;) {&#xa;        Logger.warn(&#39;[menu] shared function unavailable -- library not loaded&#39;, { fn: &#39;extractParams&#39; });&#xa;        return undefined;&#xa;    }&#xa;    return extractParams.apply(null, arguments);&#xa;};&#xa;&#xa;__setupConfig = function () {&#xa;    if (typeof setupConfig === &#39;undefined&#39;) {&#xa;        Logger.warn(&#39;[menu] shared function unavailable -- library not loaded&#39;, { fn: &#39;setupConfig&#39; });&#xa;        return undefined;&#xa;    }&#xa;    return setupConfig.apply(null, arguments);&#xa;};&#xa;&#xa;__hasKey = function () {&#xa;    if (typeof hasKey === &#39;undefined&#39;) {&#xa;        Logger.warn(&#39;[menu] shared function unavailable -- library not loaded&#39;, { fn: &#39;hasKey&#39; });&#xa;        return undefined;&#xa;    }&#xa;    return hasKey.apply(null, arguments);&#xa;};&#xa;&#xa;__setVariable = function () {&#xa;    if (typeof setVariable === &#39;undefined&#39;) {&#xa;        Logger.warn(&#39;[menu] shared function unavailable -- library not loaded&#39;, { fn: &#39;setVariable&#39; });&#xa;        return undefined;&#xa;    }&#xa;    return setVariable.apply(null, arguments);&#xa;};&#xa;&#xa;function __collectMenuKeys(__params) {&#xa;    var __keys = [];&#xa;    var __k;&#xa;    var __key;&#xa;    for (__k in __params) {&#xa;        if (!__params.hasOwnProperty(__k)) { continue; }&#xa;        if (__k.indexOf(&#39;nextStep_&#39;) !== 0) { continue; }&#xa;        if (__k === &#39;nextStep_DefaultChoice&#39;) { continue; }&#xa;        if (!__getValue(__params, __k, &#39;&#39;)) { continue; }&#xa;        __key = __k.substring(&#39;nextStep_&#39;.length);&#xa;        if (__key) { __keys.push(__key); }&#xa;    }&#xa;    return __keys;&#xa;}&#xa;&#xa;function __buildMenuMessages(__params, __validKeys, __language) {&#xa;    var __static = __getValue(__params, &#39;staticMessage_&#39; + __language, &#39;&#39;);&#xa;    if (__static) { return [__static]; }&#xa;    var __messages = [];&#xa;    var __i;&#xa;    var __seg;&#xa;    for (__i = 0; __i &lt; __validKeys.length; __i++) {&#xa;        __seg = __getValue(__params, &#39;menuChoiceMessage_&#39; + __validKeys[__i] + &#39;_&#39; + __language, &#39;&#39;);&#xa;        if (__seg) { __messages.push(__seg); }&#xa;    }&#xa;    return __messages;&#xa;}&#xa;&#xa;function __isAllowedKey(__digit, __allowedKeys) {&#xa;    if (!__digit) { return false; }&#xa;    var __i;&#xa;    for (__i = 0; __i &lt; __allowedKeys.length; __i++) {&#xa;        if (__allowedKeys[__i] === __digit) { return true; }&#xa;    }&#xa;    return false;&#xa;}&#xa;&#xa;function __joinMessages(__messages) {&#xa;    var __parts = [];&#xa;    var __i;&#xa;    var __seg;&#xa;    for (__i = 0; __i &lt; __messages.length; __i++) {&#xa;        __seg = String(__messages[__i] == null ? &#39;&#39; : __messages[__i]).replace(/^\s+|\s+$/g, &#39;&#39;);&#xa;        if (__seg) { __parts.push(__seg); }&#xa;    }&#xa;    return __parts.join(&#39; &#39;);&#xa;}"
+      Code="__rtParams = {};&#xa;&#xa;__getValue = function () {&#xa;    if (typeof getValue === &#39;undefined&#39;) {&#xa;        Logger.warn(&#39;[menu] shared function unavailable -- library not loaded&#39;, { fn: &#39;getValue&#39; });&#xa;        return undefined;&#xa;    }&#xa;    return getValue.apply(null, arguments);&#xa;};&#xa;&#xa;__activeFlag = function () {&#xa;    if (typeof activeFlag === &#39;undefined&#39;) {&#xa;        Logger.warn(&#39;[menu] shared function unavailable -- library not loaded&#39;, { fn: &#39;activeFlag&#39; });&#xa;        return undefined;&#xa;    }&#xa;    return activeFlag.apply(null, arguments);&#xa;};&#xa;&#xa;__extractParams = function () {&#xa;    if (typeof extractParams === &#39;undefined&#39;) {&#xa;        Logger.warn(&#39;[menu] shared function unavailable -- library not loaded&#39;, { fn: &#39;extractParams&#39; });&#xa;        return undefined;&#xa;    }&#xa;    return extractParams.apply(null, arguments);&#xa;};&#xa;&#xa;__setupConfig = function () {&#xa;    if (typeof setupConfig === &#39;undefined&#39;) {&#xa;        Logger.warn(&#39;[menu] shared function unavailable -- library not loaded&#39;, { fn: &#39;setupConfig&#39; });&#xa;        return undefined;&#xa;    }&#xa;    return setupConfig.apply(null, arguments);&#xa;};&#xa;&#xa;__hasKey = function () {&#xa;    if (typeof hasKey === &#39;undefined&#39;) {&#xa;        Logger.warn(&#39;[menu] shared function unavailable -- library not loaded&#39;, { fn: &#39;hasKey&#39; });&#xa;        return undefined;&#xa;    }&#xa;    return hasKey.apply(null, arguments);&#xa;};&#xa;&#xa;__setVariable = function () {&#xa;    if (typeof setVariable === &#39;undefined&#39;) {&#xa;        Logger.warn(&#39;[menu] shared function unavailable -- library not loaded&#39;, { fn: &#39;setVariable&#39; });&#xa;        return undefined;&#xa;    }&#xa;    return setVariable.apply(null, arguments);&#xa;};&#xa;&#xa;__collectMenuKeys = function (__params) {&#xa;    var __keys = [];&#xa;    var __k;&#xa;    var __key;&#xa;&#xa;    for (__k in __params) {&#xa;        if (!__params.hasOwnProperty(__k)) {&#xa;            continue;&#xa;        }&#xa;        if (__k.indexOf(&#39;nextStep_&#39;) !== 0) {&#xa;            continue;&#xa;        }&#xa;        if (__k === &#39;nextStep_DefaultChoice&#39;) {&#xa;            continue;&#xa;        }&#xa;        if (!__getValue(__params, __k, &#39;&#39;)) {&#xa;            continue;&#xa;        }&#xa;        __key = __k.substring(&#39;nextStep_&#39;.length);&#xa;        if (__key) {&#xa;            __keys.push(__key);&#xa;        }&#xa;    }&#xa;&#xa;    return __keys;&#xa;};&#xa;&#xa;&#xa;__buildMenuMessages = function (__params, __validKeys, __language) {&#xa;    var __static = __getValue(__params, &#39;staticMessage_&#39; + __language, &#39;&#39;);&#xa;    if (__static) { return [__static]; }&#xa;    var __messages = [];&#xa;    var __i;&#xa;    var __seg;&#xa;    for (__i = 0; __i &lt; __validKeys.length; __i++) {&#xa;        __seg = __getValue(__params, &#39;menuChoiceMessage_&#39; + __validKeys[__i] + &#39;_&#39; + __language, &#39;&#39;);&#xa;        if (__seg) { __messages.push(__seg); }&#xa;    }&#xa;    return __messages;&#xa;};&#xa;&#xa;__isAllowedKey = function (__digit, __allowedKeys) {&#xa;    if (!__digit) { return false; }&#xa;    var __i;&#xa;    for (__i = 0; __i &lt; __allowedKeys.length; __i++) {&#xa;        if (__allowedKeys[__i] === __digit) { return true; }&#xa;    }&#xa;    return false;&#xa;};&#xa;&#xa;__joinMessages = function (__messages) {&#xa;    var __parts = [];&#xa;    var __i;&#xa;    var __seg;&#xa;    for (__i = 0; __i &lt; __messages.length; __i++) {&#xa;        __seg = String(__messages[__i] == null ? &#39;&#39; : __messages[__i]).replace(/^\s+|\s+$/g, &#39;&#39;);&#xa;        if (__seg) { __parts.push(__seg); }&#xa;    }&#xa;    return __parts.join(&#39; &#39;);&#xa;};"
       Extensions=""
       BackgroundNoise="true"
       BreathInEffect="true"
@@ -37,7 +37,6 @@
       CompanyInformation_nl=""
       GeneralKnowledge_nl=""
       Translations_nl=""
-      Sections="[]"
       id="vocalls-master-layer"
     >
       <mxCell />
@@ -67,7 +66,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code="language = (typeof language === &#39;string&#39; &amp;&amp; language.trim() !== &#39;&#39;) ? language.toUpperCase() : &#39;NL&#39;;&#xa;&#xa;__rtOutcome = &#39;nextStep&#39;;&#xa;__rtParams = __setupConfig(__configJSON);&#xa;&#xa;__allowedKeys = [];&#xa;__messages = [];&#xa;__menuMessages = &#39;&#39;;&#xa;__maxTries = 1;&#xa;__menuTries = 0;&#xa;__menuInvalid = false;&#xa;__repromptKey = &#39;&#39;;&#xa;&#xa;if (!_headers) { _headers = {}; }&#xa;Logger.debug(&#39;[menu] config resolved&#39;, { params: __rtParams, language: language, outcome: __rtOutcome });"
+      Code="language = (typeof language === &#39;string&#39; &amp;&amp; language.trim() !== &#39;&#39;) ? language.toUpperCase() : &#39;NL&#39;;&#xa;&#xa;__rtOutcome = &#39;nextStep&#39;;&#xa;__rtParams = __setupConfig(__configJSON);&#xa;&#xa;__rtDtmf = null;&#xa;__allowedKeys = [];&#xa;__messages = [];&#xa;__menuMessages = &#39;&#39;;&#xa;__maxTries = 1;&#xa;__menuTries = 0;&#xa;__menuInvalid = false;&#xa;__repromptKey = &#39;&#39;;&#xa;&#xa;if (!_headers) { _headers = {}; }&#xa;Logger.debug(&#39;[menu] config resolved&#39;, { params: __rtParams, language: language, outcome: __rtOutcome });"
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
@@ -109,7 +108,7 @@
       Text_nl=""
       AltTexts_nl=""
       DynamicNextTabGuid=""
-      ContinueAfter=""
+      ContinueAfter="0"
       WaitForPrevious="false"
       Cache="false"
       EscapeXML="true"
@@ -301,7 +300,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code="var __digit = String(_rtDtmf == null ? &#39;&#39; : _rtDtmf);&#xa;if (__digit &amp;&amp; __isAllowedKey(__digit, __allowedKeys)) {&#xa;    __rtOutcome = &#39;nextStep_&#39; + __digit;&#xa;    __menuInvalid = false;&#xa;    Logger.info(&#39;[menu] key accepted&#39;, { key: __digit, outcome: __rtOutcome });&#xa;    return;&#xa;}&#xa;__menuInvalid = true;&#xa;__repromptKey = __digit ? &#39;invalidChoiceMessage&#39; : &#39;noChoiceMessage&#39;;&#xa;Logger.info(&#39;[menu] invalid keypress&#39;, { key: __digit, tries: __menuTries, maxTries: __maxTries, outcome: __rtOutcome });"
+      Code="var __digit = String(__rtDtmf == null ? &#39;&#39; : __rtDtmf);&#xa;if (__digit &amp;&amp; __isAllowedKey(__digit, __allowedKeys)) {&#xa;    __rtOutcome = &#39;nextStep_&#39; + __digit;&#xa;    __menuInvalid = false;&#xa;    Logger.info(&#39;[menu] key accepted&#39;, { key: __digit, outcome: __rtOutcome });&#xa;    return;&#xa;}&#xa;__menuInvalid = true;&#xa;&#xa;__repromptKey = __digit ? &#39;invalidChoiceMessage&#39; : &#39;noChoiceMessage&#39;;&#xa;Logger.info(&#39;[menu] invalid keypress&#39;, { key: __digit, tries: __menuTries, maxTries: __maxTries, outcome: __rtOutcome });"
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
@@ -311,6 +310,16 @@
         <mxGeometry x="703.5" y="846" width="168" height="80" as="geometry" />
       </mxCell>
     </object>
+    <mxCell
+      id="249"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;"
+      parent="baselayer"
+      source="230"
+      target="247"
+      edge="1"
+    >
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
     <object
       label="{__getValue(__rtParams, __repromptKey + &#39;_&#39; + language, &#39;&#39;)}"
       Type="say"
@@ -335,13 +344,7 @@
       id="230"
     >
       <mxCell style="sayNode" parent="baselayer" vertex="1">
-        <mxGeometry
-          x="139.25"
-          y="920"
-          width="356.5"
-          height="80"
-          as="geometry"
-        />
+        <mxGeometry x="-356" y="900" width="356.5" height="80" as="geometry" />
       </mxCell>
     </object>
     <object
@@ -380,7 +383,7 @@
     <object
       label="output"
       Type="transient"
-      OnEnter="_rtNextStep = __getValue(__rtParams, __rtOutcome, &#39;&#39;);&#xa;Logger.info(&#39;[menu] exit&#39;, { outcome: __rtOutcome, nextStep: _rtNextStep });"
+      OnEnter="_rtNextStep = __getValue(__rtParams, __rtOutcome, &#39;&#39;) || __getValue(__rtParams, &#39;nextStep&#39;, &#39;&#39;);&#xa;Logger.info(&#39;[menu] exit&#39;, { outcome: __rtOutcome, nextStep: _rtNextStep });"
       OnLeave=""
       MaxEntryCount=""
       MaxEntryNodeId=""
@@ -556,16 +559,6 @@
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
     <mxCell
-      id="231"
-      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;"
-      parent="baselayer"
-      source="230"
-      target="122"
-      edge="1"
-    >
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-    <mxCell
       id="241"
       style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;"
       parent="baselayer"
@@ -688,6 +681,59 @@
       edge="1"
     >
       <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell
+      id="250"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;"
+      parent="baselayer"
+      source="251"
+      target="200"
+      edge="1"
+    >
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <object
+      label="1000ms"
+      Type="pause"
+      OnEnter=""
+      OnLeave=""
+      DynamicNextId=""
+      Interval="1000"
+      MaxEntryNodeId=""
+      MaxEntryCount=""
+      id="247"
+    >
+      <mxCell style="pauseNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-242.75" y="760" width="130" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <object
+      label="1000ms"
+      Type="pause"
+      OnEnter=""
+      OnLeave=""
+      DynamicNextId=""
+      Interval="1000"
+      MaxEntryNodeId=""
+      MaxEntryCount=""
+      id="251"
+    >
+      <mxCell style="pauseNode" parent="baselayer" vertex="1">
+        <mxGeometry x="-242.75" y="376" width="130" height="80" as="geometry" />
+      </mxCell>
+    </object>
+    <mxCell
+      id="252"
+      style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;"
+      parent="baselayer"
+      source="247"
+      target="251"
+      edge="1"
+    >
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="-177.75" y="760" as="sourcePoint" />
+        <mxPoint x="184.25" y="130" as="targetPoint" />
+      </mxGeometry>
     </mxCell>
   </root>
 </mxGraphModel>;

@@ -38,9 +38,9 @@ Every operation Type is registered into a single map, `RTDS_REGISTRY`, as one of
   `__rtParams` (via `setupConfig`) + `__rtOutcome` (a Params key) and returns nothing meaningful
   (`undefined` sync, or its `jsonHttpRequest` thenable async); the engine resolves
   `_rtNextStep = getValue(__rtParams, __rtOutcome, '')`. Registered via
-  `registerRtdsOperation(type, handler)`. `setVariables`, `setAttributes`, `sendSms`, `sendMail`
-  are JS twins (JS wins the last-write-wins registry); their canvas components stay the lockstep
-  reference but are dormant on the live path.
+  `registerRtdsOperation(type, handler)`. `setVariables`, `setAttributes`, `sendSms`, `sendMail`,
+  `condition` are JS twins (JS wins the last-write-wins registry); their canvas components stay the
+  lockstep reference but are dormant on the live path.
 - **`gui`** — a Vocalls component on the canvas, reached via an **exit key**. Registered via
   `registerRtdsExit(type, exitKey)`. The runtime stops and hands the call off to the GUI.
 
@@ -128,9 +128,10 @@ flowchart TD
   `RTDS_OP_*` variables.
 
 A GUI component and its JS twin (where both exist) must keep the **same payload + branch
-contract** — this is the lockstep rule (see [lockstep](../../conventions/lockstep.md)). Three
-twins exist today: `executeSendSms` / `executeSendEmail` / `executeSetVariables` in
-`rtds_2_runtime.js` alongside `rtds/components/sendSms.js` / `sendMail.js` / `setVariables.js`.
+contract** — this is the lockstep rule (see [lockstep](../../conventions/lockstep.md)). Four
+twins exist today: `executeSendSms` / `executeSendEmail` / `executeSetVariables` /
+`executeCondition` in `rtds_2_runtime.js` alongside `rtds/components/sendSms.js` / `sendMail.js` /
+`setVariables.js` / `condition.js`.
 
 ## Finalization mode (`RTDS_finalizing` + `finalizeFrom`)
 

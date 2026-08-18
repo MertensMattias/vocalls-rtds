@@ -1,6 +1,6 @@
 <mxGraphModel
-  dx="4009"
-  dy="2576"
+  dx="2661"
+  dy="2575"
   grid="1"
   gridSize="10"
   guides="1"

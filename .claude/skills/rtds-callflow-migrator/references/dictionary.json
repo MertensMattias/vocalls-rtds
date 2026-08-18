@@ -9,6 +9,7 @@
     "guardTui",
     "guard",
     "disconnect",
+    "condition",
     "flowJump",
     "sendSms",
     "externalTransfer",
@@ -826,6 +827,68 @@
         "name": "nextStep_Failure",
         "type": "string",
         "required": false,
+        "branch": true
+      },
+      {
+        "name": "nextStep",
+        "type": "string",
+        "required": true,
+        "branch": true
+      }
+    ],
+    "condition": [
+      {
+        "name": "active",
+        "type": "bit",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "statistic",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "queue",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "operator",
+        "type": "string",
+        "required": true,
+        "branch": false
+      },
+      {
+        "name": "compareTo",
+        "type": "string",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "required": false,
+        "branch": false
+      },
+      {
+        "name": "nextStep_True",
+        "type": "string",
+        "required": true,
+        "branch": true
+      },
+      {
+        "name": "nextStep_False",
+        "type": "string",
+        "required": true,
         "branch": true
       },
       {

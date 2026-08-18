@@ -1,6 +1,6 @@
 <mxGraphModel
-  dx="4009"
-  dy="2576"
+  dx="2661"
+  dy="2597"
   grid="1"
   gridSize="10"
   guides="1"
@@ -37,6 +37,7 @@
       CompanyInformation_nl=""
       GeneralKnowledge_nl=""
       Translations_nl=""
+      Sections="[]"
       id="vocalls-master-layer"
     >
       <mxCell />
@@ -172,8 +173,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code='__redirectTry = __redirectTry + 1;
-&#xa;__redirectStatus[__redirectTry] = "calling";'
+      Code='__redirectTry = __redirectTry + 1; &#xa;__redirectStatus[__redirectTry] = "calling";'
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
@@ -189,8 +189,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code='__redirectTry = __redirectTry + 1;
-&#xa;__redirectStatus[__redirectTry] = "calling";'
+      Code='__redirectTry = __redirectTry + 1; &#xa;__redirectStatus[__redirectTry] = "calling";'
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""
@@ -226,19 +225,7 @@
       OnEnter=""
       OnLeave=""
       DynamicNextId=""
-      Code='__redirectStatus[__redirectTry] = "executed";
-&#xa;
-&#xa;if (__redirectResult.Details.ClientSpecific.Party2.Status == 4) {
-&#xa;    __redirectStatus[__redirectTry] = "no_reaction";
-&#xa;} else if (__redirectResult.Details.ClientSpecific.Party2.Status == 1) {
-&#xa;    __redirectStatus[__redirectTry] = "rejected";
-&#xa;} else if (__redirectResult.Details.ClientSpecific.Party2.Status == 0) {
-&#xa;    __redirectStatus[__redirectTry] = "rejected_voicebox";
-&#xa;} else {
-&#xa;    __redirectStatus[__redirectTry] = "unknown_reason_rejected";
-&#xa;}
-&#xa;log_debug("Status[" + __redirectTry + "]: " + __redirectResult.Details.ClientSpecific.Party2.Status);
-&#xa;log_debug("Reason[" + __redirectTry + "]: " + __redirectStatus[__redirectTry]);'
+      Code='__redirectStatus[__redirectTry] = "executed"; &#xa; &#xa;if (__redirectResult.Details.ClientSpecific.Party2.Status == 4) { &#xa;    __redirectStatus[__redirectTry] = "no_reaction"; &#xa;} else if (__redirectResult.Details.ClientSpecific.Party2.Status == 1) { &#xa;    __redirectStatus[__redirectTry] = "rejected"; &#xa;} else if (__redirectResult.Details.ClientSpecific.Party2.Status == 0) { &#xa;    __redirectStatus[__redirectTry] = "rejected_voicebox"; &#xa;} else { &#xa;    __redirectStatus[__redirectTry] = "unknown_reason_rejected"; &#xa;} &#xa;log_debug("Status[" + __redirectTry + "]: " + __redirectResult.Details.ClientSpecific.Party2.Status); &#xa;log_debug("Reason[" + __redirectTry + "]: " + __redirectStatus[__redirectTry]);'
       MaxEntryNodeId=""
       MaxEntryCount=""
       DynamicNextTabGuid=""

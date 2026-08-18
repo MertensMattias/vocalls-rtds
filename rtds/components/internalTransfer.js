@@ -1,6 +1,6 @@
 <mxGraphModel
-  dx="4009"
-  dy="2576"
+  dx="2661"
+  dy="2597"
   grid="1"
   gridSize="10"
   guides="1"
@@ -37,6 +37,7 @@
       CompanyInformation_nl=""
       GeneralKnowledge_nl=""
       Translations_nl=""
+      Sections="[]"
       id="vocalls-master-layer"
     >
       <mxCell />
@@ -196,8 +197,7 @@
     <object
       label=""
       Type="redirect"
-      OnEnter="Logger.info(&#39;__transferDest: &#39; + __transferDest);
-&#xa;Logger.info(&#39;__transferParams: &#39; + __transferParams);"
+      OnEnter="Logger.info(&#39;__transferDest: &#39; + __transferDest); &#xa;Logger.info(&#39;__transferParams: &#39; + __transferParams);"
       OnLeave=""
       Destination="{__transferDest}"
       Parameters="X-Context:{__transferParams};"
@@ -280,8 +280,7 @@
     <object
       label=""
       Type="redirect"
-      OnEnter="Logger.info(&#39;__transferDest: &#39; + __transferDest);
-&#xa;Logger.info(&#39;__transferParams: &#39; + __transferParams);"
+      OnEnter="Logger.info(&#39;__transferDest: &#39; + __transferDest); &#xa;Logger.info(&#39;__transferParams: &#39; + __transferParams);"
       OnLeave=""
       Destination="{__transferDest}"
       Parameters="X-Context:{__transferParams};"

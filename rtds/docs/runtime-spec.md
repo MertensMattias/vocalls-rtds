@@ -80,7 +80,7 @@ Each operation has:
 - `ttsMessages` — optional `{ "NL": "...", "FR": "..." }` map of per-language spoken text. Present on
   **any prompt-playing operation** — i.e. one whose `params` carry `prompt` + `applicationId` (`say`,
   and any future PlayPrompt-style Type). It is a **sibling** of `params` in the routing table, not a
-  member. The runtime folds a copy into the op config at handoff (see §4.8) so prompt components read
+  member. The runtime folds a copy into the op config at handoff (see §4.9) so prompt components read
   it from their resolved config; `${var}` placeholders in the text are resolved by the component.
 
 ### 1.5 Operation types and their Vocalls mapping
@@ -96,7 +96,7 @@ The full RTDS operation set spans two categories:
 | `SendEmail` | POST to RTDS gateway; branches `NextStep_Success` / `NextStep_Failure` / `NextStep` | Implemented |
 | `Emergency` | Check an emergency flag via HTTP; branches to `NextStep_Transfer`, `NextStep_Disconnect`, `NextStep_Continue`, or `NextStep_Failure` | Not yet implemented — runStep skips to NextStep with a warning |
 | `Schedule` | Check a schedule ID via HTTP; branches to named `NextStep_*` keys | Not yet implemented — runStep skips to NextStep with a warning |
-| `Condition` | Evaluate a queue statistic; branches `NextStep_True` / `NextStep_False` | Not yet implemented — runStep skips to NextStep with a warning |
+| `condition` | Generic predicate branch — compares a `${var}` value, a `time`/`date` clock value, or a wallboard queue statistic to `compareTo` with `operator`; branches `nextStep_True` / `nextStep_False`, fail-safe false | Implemented — JS twin `executeCondition` (§4.8) |
 | `CheckAttribute` | Compare a session variable value; branches `NextStep_True` / `NextStep_False` | Not yet implemented — runStep skips to NextStep with a warning |
 | `FlowJump` | Replace the active SourceId and restart | Not yet implemented — runStep skips to NextStep with a warning |
 | `IVRLogging` | Write a log record; always has `NextStep` | Not yet implemented — runStep skips to NextStep with a warning |
@@ -233,11 +233,25 @@ Resolution order:
 
 Unified `__rtOutcome` contract (mirrors `rtds/components/setVariables.js`). Builds `__rtParams = setupConfig(op.params)`, seeds `__rtOutcome = 'nextStep'`, then:
 - **Active defaults `true`** — `if (!activeFlag(getValue(__rtParams, 'active', true)))` skips (logs, returns; outcome stays `'nextStep'`). Byte-identical to the `setVariables.js` component; only an explicit falsey `Active` skips.
-- Otherwise `walk(__rtParams, …)` skips the control keys `active` / `nextStep` (case-insensitive) and writes every other key via `setVariable(key, value)` — a bare key lands on `varObj`, a dotted key targets `varObj` / `globalThis` / a named reachable object (see §4.11). Values keep the type `setupConfig` resolved.
+- Otherwise `walk(__rtParams, …)` skips the control keys `active` / `nextStep` (case-insensitive) and writes every other key via `setVariable(key, value)` — a bare key lands on `varObj`, a dotted key targets `varObj` / `globalThis` / a named reachable object (see §4.12). Values keep the type `setupConfig` resolved.
 
 Returns nothing (sync `undefined`). The engine resolves `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` after it returns.
 
-### 4.8 `prepareGuiHandoff(op)`
+### 4.8 `executeCondition(op)`
+
+Generic predicate branch (reworked from the legacy ACD-statistic handler — see
+`rtds/specs/condition.spec.md`). JS twin of `rtds/components/condition.js`:
+
+- Builds `__rtParams = setupConfig(op.params)` — so `value` / `compareTo` are usually `${var}` placeholders resolved varObj-first at this point.
+- **Active defaults `true`** — inactive skips evaluation and takes `nextStep`.
+- Resolves the left-hand operand from one of three tiers, selected by the optional `statistic` Param:
+  - *(absent)* — the `value` Param (sync);
+  - `time` / `date` — `clockStatistic()` in `rtds_3_vocallsEnv.js`: `HHMM` / `YYYYMMDD` integers, platform-local (sync);
+  - anything else — a wallboard queue statistic for the `queue` Param, `GET _rtQueueStatsUrl?queues=<queue>&company_id=<_rtQueueStatsCompanyId>`, field extracted by `extractQueueStatistic()` (`mm:ss` durations → seconds). **Async** — returns a thenable resolving `{ nextStepId }`; `runStep` chains on it directly and the engine awaits the result returned to it (§4.10), so queue-gating works mid-call.
+- Evaluates `evaluateCondition(lhs, operator, compareTo)` — the **single shared predicate body** in `rtds_3_vocallsEnv.js`, also called by the component through its `__evaluateCondition` alias. Operators: `eq` / `ne` (numeric when both sides parse as finite numbers, else case-insensitive string), `gt` / `lt` / `ge` / `le` (numeric only; non-numeric operand → warn + false), `contains` / `notContains` (case-insensitive substring), `isEmpty` (value trims to `''`). Unknown operator → warn + false.
+- Branches `nextStep_True` on true, `nextStep_False` on false (the fail-safe landing for every degraded path — unknown operator, missing `queue`, failed stats lookup), resolved via `resolveNextStep` (falls back to `nextStep` when the branch key is absent).
+
+### 4.9 `prepareGuiHandoff(op)`
 
 Before returning an exit key, sets the dispatcher handoff state on `context.session.variables`:
 - `RTDS_currentOpId` = `op.id`
@@ -247,11 +261,11 @@ Before returning an exit key, sets the dispatcher handoff state on `context.sess
 
 The runtime does **not** mirror params into per-key `RTDS_OP_*` session variables — the GUI node reads `RTDS_currentOpConfig` instead.
 
-### 4.9 `runStep(startOpId)`
+### 4.10 `runStep(startOpId)`
 
 Core dispatch loop. Takes an operation id string, looks it up in `context.session.variables.RTDS_opIndex` (`opIndex.get(currentId)`), and dispatches:
 
-- JS-handled type: the handler runs inline. A **sync** handler (returns `undefined` — e.g. `setVariables`) is resolved immediately: the engine — the **single resolver** — runs `_rtNextStep = getValue(__rtParams, __rtOutcome, '')` and advances `currentId` (or ends the flow on `''`), so a sync-only path returns the exit key as a **plain string**. An **async** handler (returns a thenable — the Send* HTTP twins) is chained off; the same resolver line runs after it settles and `runStep` returns a promise of the exit key. The thenable branch is expected only under `RTDS_finalizing` (the finalize tail, where the platform awaits the return): the prod Vocalls engine cannot await a native Promise — it stringifies it (`"[object Promise]"`) and the dispatch `case` node falls through to disconnect — so an async op on the interactive path logs a warn. The handler's return value is used only for sync-vs-async timing, never routing. `Active` defaults `true` on the JS twins.
+- JS-handled type: the handler runs inline and returns `{ nextStepId }`. A **sync** handler's result advances `currentId` immediately (no `nextStepId` → end of flow, `"disconnect"`), so a sync-only path returns the exit key as a **plain string**. An **async** handler (returns a thenable — the Send* HTTP twins, `condition`'s queue tier) is chained **directly** (`result.then(...)`, no native-`Promise` wrapping, so what bubbles up stays the platform's own thenable): the loop resumes from the resolved `nextStepId` and `runStep` returns a promise of the exit key. A result returned to the dispatch code is awaited by the engine — interactive path included — so async JS twins work mid-call. A rejected thenable logs the error, writes `RTDS_error`, and resolves `"disconnect"`. `Active` defaults `true` on the JS twins.
 - GUI-exit type: calls `prepareGuiHandoff`, returns the exit key string.
 - **Unregistered type** (no real handler yet — e.g. `Emergency`, `Schedule`): logs a warning and **skips to the op's `NextStep`**, continuing the loop. Only when there is no `NextStep` does it end the flow (`"disconnect"`).
 - Missing step (id not in opIndex): logs warning, writes `RTDS_error`, returns `"disconnect"`.
@@ -259,11 +273,11 @@ Core dispatch loop. Takes an operation id string, looks it up in `context.sessio
 
 Implemented as a `while` loop (not recursion) to avoid stack overflow on long JS-handled chains. A **step budget** (`RTDS_MAX_STEPS`, threaded through async re-entries so it spans sync and async hops as one run) bounds total dispatch steps; exhausting it writes `RTDS_error = 'RTDS_CYCLE_DETECTED'` and returns `"disconnect"`, so a cyclic `NextStep` chain (including among unregistered types) cannot hang the call leg, while bounded retry/reprompt revisits of a node still run.
 
-### 4.10 `resumeFrom(nextStepId)`
+### 4.11 `resumeFrom(nextStepId)`
 
 Re-entry point after a GUI node completes. The GUI node must have written the chosen outcome Id into `context.session.variables.RTDS_nextStepId`. `resumeFrom` reads that value and calls `runStep`. The `RTDS_opIndex` is already in session — no re-fetch required.
 
-### 4.11 `setVariable(path, value)` — and `getScoped(key, default)`
+### 4.12 `setVariable(path, value)` — and `getScoped(key, default)`
 
 Defined in `rtds_3_vocallsEnv.js`; the matched write/read pair for operator data.
 
@@ -374,8 +388,7 @@ The following operation types follow the same architectural pattern as `SetVaria
 
 - `Emergency` — HTTP call to check an emergency flag; multi-branch result
 - `Schedule` — HTTP call to evaluate a schedule; multi-branch result
-- `Condition` — Vocalls queue statistic evaluation; `NextStep_True` / `NextStep_False`
-- `CheckAttribute` — session variable comparison; `NextStep_True` / `NextStep_False`
+- `CheckAttribute` — session variable comparison; `NextStep_True` / `NextStep_False` (largely covered by the implemented `condition` op, which compares `${var}` placeholders)
 - `FlowJump` — replace `RTDS_sourceId`, re-fetch JSON, restart loop
 - All GUI-exit types — wiring defined in dispatch table, handoff logic implemented; GUI nodes not yet wired in the Vocalls canvas
 
@@ -402,7 +415,7 @@ Contains all core functions used by the two entry points (A and B):
 - `getFirstOperation(operations)` — finds the entry-point operation
 - `runStep(opId)` — main dispatch loop
 - `resumeFrom(nextStepId)` — re-entry handler after GUI nodes
-- Handler functions: `executeSetVariables(op)`, `executeSendSms(op)`, `executeSendEmail(op)`
+- Handler functions: `executeSetVariables(op)`, `executeSendSms(op)`, `executeSendEmail(op)`, `executeCondition(op)`
 - `prepareGuiHandoff(op)` — bridges JS and GUI layers
 - Configuration globals (`_rtBaseUrl`, `_rtGetSourceIdEndpoint`, …) are set by `callScripts/main.js`
 

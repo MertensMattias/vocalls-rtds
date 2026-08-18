@@ -519,6 +519,118 @@ function executeSetVariables(op) {
 }
 
 // ===========================================================================
+// executeCondition(op)
+//   JS-handled operation. Generic predicate branch reworked from the legacy
+//   PureConnect handler NAllo_RTDS_Condition.xml: resolves a left-hand operand
+//   from one of three tiers, evaluates
+//   evaluateCondition(lhs, operator, compareTo) (the single predicate body in
+//   rtds_3_vocallsEnv.js, shared with the canvas component's
+//   __evaluateCondition alias), and branches nextStep_True / nextStep_False.
+//
+//   Tiers (selected by the optional `statistic` Param):
+//     (absent)          -> `value` Param, usually a ${var} placeholder (sync)
+//     "time" / "date"   -> clockStatistic() -- HHMM / YYYYMMDD local (sync)
+//     anything else     -> wallboard queue statistic for the `queue` Param via
+//                          GET _rtQueueStatsUrl (async -- returns a thenable
+//                          resolving { nextStepId }, like the Send* twins;
+//                          runStep chains on it directly and the engine awaits
+//                          the returned chain, see runtime-spec §4.10)
+//
+//   Fail-safe: unknown operator, non-numeric ordering operands, missing queue,
+//   HTTP failure, or an unresolvable statistic all evaluate false ->
+//   nextStep_False; inactive skips to nextStep.
+//   Token note: params resolve via setupConfig (${var}, varObj-first) for exact
+//   parity with the component's init node, not via resolveTokens ($(ATTR)).
+// ===========================================================================
+
+/**
+ * @param {Object} op
+ * @returns {{ nextStepId: ?string }|Promise<{ nextStepId: ?string }>}
+ */
+function executeCondition(op) {
+  if (!op || !op.params) {
+    var missingNext = resolveNextStep(op, null);
+    Logger.warn("[RTDS] Condition missing params -- skipping", {
+      nextStep: missingNext ? missingNext : "(none)",
+    });
+    return { nextStepId: missingNext };
+  }
+
+  var rtParams = setupConfig(op.params);
+
+  if (!activeFlag(getValue(rtParams, "active", true))) {
+    var skipNext = resolveNextStep(op, null);
+    Logger.info("[RTDS] Condition skipped -- inactive", {
+      nextStep: skipNext ? skipNext : "(none)",
+    });
+    return { nextStepId: skipNext };
+  }
+
+  var operator = String(getValue(rtParams, "operator", ""));
+  var compareTo = String(getValue(rtParams, "compareTo", ""));
+  var statistic = String(getValue(rtParams, "statistic", "")).trim();
+
+  function branch(lhs) {
+    var result = lhs === null ? false : evaluateCondition(lhs, operator, compareTo);
+    var nextStepId = resolveNextStep(
+      op,
+      result ? "nextStep_True" : "nextStep_False",
+    );
+    Logger.info("[RTDS] Condition evaluated", {
+      statistic: statistic,
+      value: lhs,
+      operator: operator,
+      compareTo: compareTo,
+      result: result,
+      nextStep: nextStepId ? nextStepId : "(none)",
+    });
+    return { nextStepId: nextStepId };
+  }
+
+  if (statistic === "") {
+    return branch(String(getValue(rtParams, "value", "")));
+  }
+
+  var statLower = statistic.toLowerCase();
+  if (statLower === "time" || statLower === "date") {
+    return branch(clockStatistic(statLower));
+  }
+
+  // Wallboard queue tier (async).
+  var queue = String(getValue(rtParams, "queue", ""));
+  if (!queue) {
+    Logger.warn("[RTDS] Condition queue statistic without queue -- false", {
+      statistic: statistic,
+    });
+    return branch(null);
+  }
+  var timeout = getValue(rtParams, "timeout", 5000);
+  var url =
+    _rtQueueStatsUrl +
+    "?queues=" +
+    encodeURIComponent(queue) +
+    "&company_id=" +
+    encodeURIComponent(String(_rtQueueStatsCompanyId));
+
+  return jsonHttpRequest(url, { method: "GET", timeout: timeout }, _headers).then(
+    function (result) {
+      if (!result || result.success !== true) {
+        Logger.warn("[RTDS] Condition stats request failed -- false", {
+          statusCode: result && result.statusCode,
+          queue: queue,
+        });
+        return branch(null);
+      }
+      return branch(extractQueueStatistic(result.response, queue, statistic));
+    },
+    function (err) {
+      Logger.error("[RTDS] Condition stats request error -- false", { queue: queue }, err);
+      return branch(null);
+    },
+  );
+}
+
+// ===========================================================================
 // prepareGuiHandoff(op)
 //   Sets the dispatcher handoff state on context.session.variables:
 //   RTDS_currentOpId / RTDS_currentOpType, RTDS_currentOpConfig (a shallow copy of
@@ -956,7 +1068,11 @@ function requestRoutingTable(url, timeoutMs) {
             Logger.warn("[RTDS] fetchAndStart: body parse failed", {
               error: bodyErr.message,
             });
-            return { ok: false, authoritative: false, code: "RTDS_PARSE_ERROR" };
+            return {
+              ok: false,
+              authoritative: false,
+              code: "RTDS_PARSE_ERROR",
+            };
           }
         }
 
@@ -1123,7 +1239,9 @@ function fetchAndStart(sourceId) {
       { sourceId: sourceId, error: r.code },
     );
     return requestRoutingTable(url, retryTimeoutMs).then(function (r2) {
-      return r2.ok ? startFromApi(r2.body, "api-retry") : disconnectWith(r2.code);
+      return r2.ok
+        ? startFromApi(r2.body, "api-retry")
+        : disconnectWith(r2.code);
     });
   });
 }
@@ -1414,16 +1532,18 @@ function executeSendEmail(op) {
 // ===========================================================================
 
 // --- JS twins (inline handlers, unified __rtOutcome contract) ---
-// setVariables / setAttributes / sendSms / sendMail dispatch as inline JS twins:
-// each stages __rtParams + __rtOutcome and the engine resolves _rtNextStep (see
-// runStep's JS branch). The registry is last-write-wins, so registering these as
-// JS (and NOT as GUI exits) makes the JS path win. Their canvas components
-// (rtds/components/) remain the lockstep reference but are no longer reached on
-// the live path for these Types. setAttributes shares executeSetVariables.
+// setVariables / setAttributes / sendSms / sendMail / condition dispatch as
+// inline JS twins: each stages __rtParams + __rtOutcome and the engine resolves
+// _rtNextStep (see runStep's JS branch). The registry is last-write-wins, so
+// registering these as JS (and NOT as GUI exits) makes the JS path win. Their
+// canvas components (rtds/components/) remain the lockstep reference but are no
+// longer reached on the live path for these Types. setAttributes shares
+// executeSetVariables.
 registerRtdsOperation("setVariables", executeSetVariables);
 registerRtdsOperation("setAttributes", executeSetVariables);
 registerRtdsOperation("sendSms", executeSendSms);
 registerRtdsOperation("sendMail", executeSendEmail);
+registerRtdsOperation("condition", executeCondition);
 
 // --- GUI-exit Types -- handled by Vocalls components on the canvas ---
 registerRtdsExit("internalTransfer", "internal_transfer");

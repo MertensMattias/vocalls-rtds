@@ -41,10 +41,10 @@ CATALOG = REPO / "rtds" / "docs" / "operations-catalog.md"
 # and an authored spec are catalogued. Operations without a component were dropped
 # along with their specs; add a row back here when its component + spec land.
 ROW_ORDER = [
-    "sendSms", "sendEmail", "setVariables",
+    "sendSms", "sendEmail", "setVariables", "condition",
     "guardRouting", "guardTui", "scheduler",
     "internalTransfer", "externalTransfer",
-    "say",
+    "say", "menu", "flowJump",
 ]
 
 # Map operation name -> spec filename (all are name.spec.md today).
